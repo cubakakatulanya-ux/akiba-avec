@@ -1,4 +1,4 @@
-/* Kitabu AVEC — noyau : registre chaîné, calculs, données de démonstration, rendu */
+/* Akiba AVEC — noyau : registre chaîné, calculs, données de démonstration, rendu */
 'use strict';
 
 /* ---------- SHA-256 (fonctionne hors ligne, sans dépendance) ---------- */
@@ -483,7 +483,7 @@ function render() {
   if (App.updateReady && !document.getElementById('updbar')) {
     const bar = document.createElement('div');
     bar.id = 'updbar'; bar.className = 'updbar'; bar.setAttribute('role', 'status');
-    bar.innerHTML = `<span><b>Nouvelle version de Kitabu</b><span class="small">Vos données sont gardées.</span></span><button class="btn sm primary" data-act="reloadApp">Mettre à jour</button>`;
+    bar.innerHTML = `<span><b>Nouvelle version d\'Akiba</b><span class="small">Vos données sont gardées.</span></span><button class="btn sm primary" data-act="reloadApp">Mettre à jour</button>`;
     document.getElementById('app').appendChild(bar);
   }
   if (typeof I18N !== 'undefined') I18N.apply(document.getElementById('app'));

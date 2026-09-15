@@ -1,4 +1,6 @@
-# Lancer Kitabu AVEC
+# Lancer Akiba AVEC
+
+Assistance : **Ubora** — appel ou WhatsApp **0998 275 144** · contact@uborahub.com
 
 Ce dossier contient l'application complète. Il n'y a rien à installer sur un serveur : ce sont des fichiers simples.
 
@@ -12,10 +14,10 @@ Le HTTPS est obligatoire pour que l'application marche hors ligne.
 ## 2. Installer sur chaque téléphone
 1. Avec du réseau, ouvrez le lien dans **Chrome**.
 2. Menu ⋮ → **Ajouter à l'écran d'accueil** (ou « Installer l'application »).
-3. Ouvrez Kitabu une fois depuis l'icône. Ensuite, **il marche sans réseau**.
+3. Ouvrez Akiba une fois depuis l'icône. Ensuite, **il marche sans réseau**.
 
 ## 3. Quitter la démonstration
-Au premier lancement, Kitabu montre des AVEC fictives. Sur l'écran d'accueil, touchez **Commencer avec mes vraies données** :
+Au premier lancement, Akiba montre des AVEC fictives. Sur l'écran d'accueil, touchez **Commencer avec mes vraies données** :
 - **Organisation** : créez le compte, puis ajoutez les animateurs (chacun reçoit un code). Les animateurs créent les AVEC, que l'organisation valide.
 - **AVEC autonome** : créez directement le groupe.
 

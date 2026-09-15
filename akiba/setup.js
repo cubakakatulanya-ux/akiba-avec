@@ -1,4 +1,4 @@
-/* Kitabu AVEC — démarrage réel : quitter la démo, compte organisation, équipe d'animateurs, codes des comptes */
+/* Akiba AVEC — démarrage réel : quitter la démo, compte organisation, équipe d'animateurs, codes des comptes */
 'use strict';
 
 const emptyData = () => ({

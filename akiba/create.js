@@ -1,4 +1,4 @@
-/* Kitabu AVEC — création d'une AVEC en 5 étapes : tout est prévu dès le départ */
+/* Akiba AVEC — création d'une AVEC en 5 étapes : tout est prévu dès le départ */
 'use strict';
 
 const C_STEPS = ['Groupe', 'Règlement', 'Membres', 'Bureau', 'Démarrage'];
@@ -99,7 +99,7 @@ const C_RENDER = {
     const sel = (id, label, hint, v) => `<div class="field"><label for="${id}">${label}</label><select id="${id}" class="input">${L.map(m => `<option value="${m.id}" ${m.id === v ? 'selected' : ''}>${esc(m.name)}</option>`).join('')}</select>${hint ? `<p class="hint">${hint}</p>` : ''}</div>`;
     return `<section class="card stack"><h2>Le bureau</h2>
         ${sel('cbP', 'Président(e)', 'Dirige la réunion et fait respecter le règlement.', R.P || def(0))}
-        ${sel('cbS', 'Secrétaire', 'Tient Kitabu pendant la réunion.', R.S || def(1))}
+        ${sel('cbS', 'Secrétaire', 'Tient Akiba pendant la réunion.', R.S || def(1))}
         ${sel('cbT', 'Trésorier(ère)', 'Garde la caisse fermée à la maison. Ne garde aucune clé.', R.T || def(2))}
       </section>
       <section class="card stack"><h2>Les compteurs</h2><p class="hint">Ils comptent l'argent à haute voix à chaque réunion.</p>
@@ -274,7 +274,7 @@ function importCahier(avec, d) {
   if (social) appendTx(avec, { meetingId: meet.id, type: 'REPORT_IN', ref: 'social', amount: social, note: 'Caisse sociale reprise du cahier', by });
   const st = stats(avec);
   const diff = credit - st.loanFund;   // > 0 : bénéfices déjà gagnés ; < 0 : argent manquant
-  if (diff > 0) appendTx(avec, { meetingId: meet.id, type: 'REPORT_IN', ref: 'credit', amount: diff, note: 'Bénéfices déjà gagnés avant Kitabu (intérêts, amendes)', by });
+  if (diff > 0) appendTx(avec, { meetingId: meet.id, type: 'REPORT_IN', ref: 'credit', amount: diff, note: 'Bénéfices déjà gagnés avant Akiba (intérêts, amendes)', by });
   if (diff < 0) appendTx(avec, { meetingId: meet.id, type: 'REPORT_OUT', ref: 'credit', amount: -diff, note: 'Argent manquant constaté à la reprise du cahier', by });
   const fin = stats(avec).cash;
   Object.assign(meet, {

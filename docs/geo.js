@@ -1,4 +1,4 @@
-/* Kitabu AVEC — découpage administratif de la RDC : 26 provinces, 145 territoires, villes et communes de Kinshasa.
+/* Akiba AVEC — découpage administratif de la RDC : 26 provinces, 145 territoires, villes et communes de Kinshasa.
    Secteurs, groupements et villages : saisie libre, avec les noms déjà utilisés proposés automatiquement. */
 'use strict';
 

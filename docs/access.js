@@ -1,4 +1,4 @@
-/* Kitabu AVEC — validation des AVEC par l'organisation et plan B pour les codes perdus.
+/* Akiba AVEC — validation des AVEC par l'organisation et plan B pour les codes perdus.
    Tout marche sans internet : les codes se transmettent par un simple appel téléphonique. */
 'use strict';
 

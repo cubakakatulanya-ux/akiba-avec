@@ -1,4 +1,4 @@
-/* Kitabu AVEC — icône sur l'écran d'accueil, stockage protégé et sauvegarde chiffrée (contre la perte ou la désinstallation) */
+/* Akiba AVEC — icône sur l'écran d'accueil, stockage protégé et sauvegarde chiffrée (contre la perte ou la désinstallation) */
 'use strict';
 
 const isInstalled = () => {
@@ -7,9 +7,9 @@ const isInstalled = () => {
 const isIOS = () => /iphone|ipad|ipod/i.test(navigator.userAgent || '');
 
 window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); App.installEvt = e; if (!App.sheet) render(); });
-window.addEventListener('appinstalled', () => { App.installEvt = null; protectStorage(); App.toast('Kitabu est sur l\'écran d\'accueil'); render(); });
+window.addEventListener('appinstalled', () => { App.installEvt = null; protectStorage(); App.toast('Akiba est sur l\'écran d\'accueil'); render(); });
 
-/* Demande au navigateur de ne jamais effacer les données de Kitabu pour libérer de la place. */
+/* Demande au navigateur de ne jamais effacer les données d\'Akiba pour libérer de la place. */
 function protectStorage() {
   if (!navigator.storage || !navigator.storage.persist) return Promise.resolve(false);
   return navigator.storage.persisted().then(p => p || navigator.storage.persist()).then(v => { App.persisted = !!v; return App.persisted; }).catch(() => false);
@@ -19,7 +19,7 @@ protectStorage();
 function installBanner() {
   if (!window.KITABU_PWA || isInstalled()) return '';
   return `<button class="alert warn" style="border-top:0;border-right:0;border-bottom:0;width:100%;text-align:left" data-act="go" data-to="dev.backup">
-    ${icSpan('home')}<span style="flex:1"><b>Installer Kitabu sur l'écran d'accueil</b><span class="small">Une icône, et l'application s'ouvre sans réseau.</span></span>${ic('chev')}</button>`;
+    ${icSpan('home')}<span style="flex:1"><b>Installer Akiba sur l'écran d'accueil</b><span class="small">Une icône, et l'application s'ouvre sans réseau.</span></span>${ic('chev')}</button>`;
 }
 ACT.install = () => {
   const ev = App.installEvt;
@@ -49,28 +49,29 @@ SCREENS['dev.backup'] = () => {
   const last = K.data.lastBackup;
   const back = K.session ? trBack() : 'login';
   const step = (n, t) => `<li>${t}</li>`;
-  return `<div class="shell">${topbar('Installer et protéger', 'Kitabu sur ce téléphone', backBtn(back))}<main class="main">
+  return `<div class="shell">${topbar('Installer et protéger', 'Akiba sur ce téléphone', backBtn(back))}<main class="main">
     <section class="card stack"><h2>Icône sur l'écran d'accueil</h2>
-      ${installed ? `<div class="alert good">${icSpan('check')}<div><b>Kitabu est installé</b><span class="small">Ouvrez-le toujours depuis l'icône verte, même sans réseau.</span></div></div>`
-        : !window.KITABU_PWA ? `<p class="small muted">Cette page est une version de démonstration. Pour installer Kitabu, ouvrez l'adresse officielle de l'application dans Chrome.</p>`
-        : App.installEvt ? `<button class="btn primary block xl" data-act="install">${ic('home')} Installer Kitabu</button><p class="hint">Une icône verte apparaît sur l'écran d'accueil.</p>`
-        : isIOS() ? `<ol class="small" style="margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:6px">${step(1, 'Ouvrez Kitabu dans Safari.')}${step(2, 'Touchez le bouton Partager (carré avec une flèche).')}${step(3, 'Choisissez « Sur l\'écran d\'accueil », puis « Ajouter ».')}</ol>`
-        : `<ol class="small" style="margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:6px">${step(1, 'Ouvrez Kitabu dans Chrome.')}${step(2, 'Touchez le menu ⋮ en haut à droite.')}${step(3, 'Choisissez « Installer l\'application » ou « Ajouter à l\'écran d\'accueil ».')}</ol>`}
+      ${installed ? `<div class="alert good">${icSpan('check')}<div><b>Akiba est installé</b><span class="small">Ouvrez-le toujours depuis l'icône verte, même sans réseau.</span></div></div>`
+        : !window.KITABU_PWA ? `<p class="small muted">Cette page est une version de démonstration. Pour installer Akiba, ouvrez l'adresse officielle de l'application dans Chrome.</p>`
+        : App.installEvt ? `<button class="btn primary block xl" data-act="install">${ic('home')} Installer Akiba</button><p class="hint">Une icône verte apparaît sur l'écran d'accueil.</p>`
+        : isIOS() ? `<ol class="small" style="margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:6px">${step(1, 'Ouvrez Akiba dans Safari.')}${step(2, 'Touchez le bouton Partager (carré avec une flèche).')}${step(3, 'Choisissez « Sur l\'écran d\'accueil », puis « Ajouter ».')}</ol>`
+        : `<ol class="small" style="margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:6px">${step(1, 'Ouvrez Akiba dans Chrome.')}${step(2, 'Touchez le menu ⋮ en haut à droite.')}${step(3, 'Choisissez « Installer l\'application » ou « Ajouter à l\'écran d\'accueil ».')}</ol>`}
     </section>
 
+    ${supportCard()}
     ${licenceCard()}
     <section class="card stack"><h2>Mises à jour</h2>
-      <p class="small muted">Kitabu se met à jour tout seul, <b>sans désinstaller</b> et <b>sans perdre les données</b>. Il suffit de l'ouvrir de temps en temps avec du réseau. Si une saisie est en cours, un bandeau « Mettre à jour » apparaît.</p>
+      <p class="small muted">Akiba se met à jour tout seul, <b>sans désinstaller</b> et <b>sans perdre les données</b>. Il suffit de l'ouvrir de temps en temps avec du réseau. Si une saisie est en cours, un bandeau « Mettre à jour » apparaît.</p>
       <div class="row between small"><span>Version sur ce téléphone</span><b class="mono">${esc(window.KITABU_VERSION || 'démonstration')}</b></div>
     </section>
 
     <section class="card stack"><h2>Éviter une désinstallation par erreur</h2>
-      <p class="small muted">Aucune application ne peut interdire totalement sa désinstallation : c'est le téléphone qui décide. Voici comment protéger Kitabu et surtout ses données.</p>
+      <p class="small muted">Aucune application ne peut interdire totalement sa désinstallation : c'est le téléphone qui décide. Voici comment protéger Akiba et surtout ses données.</p>
       <div class="row between small"><span>Données protégées contre l'effacement automatique</span>${App.persisted ? '<span class="chip good">Oui</span>' : '<span class="chip warn">Pas encore</span>'}</div>
       <ol class="small" style="margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:7px">
         <li><b>Mettez l'icône dans un dossier « AVEC »</b>, loin des applications que l'on supprime souvent.</li>
         <li><b>Verrouillez le téléphone du groupe</b> par un schéma ou un code connu du bureau seulement.</li>
-        <li><b>Android : « Épinglage d'application »</b> (Paramètres › Sécurité › Épingler l'application). Kitabu reste à l'écran et on ne peut pas quitter ni désinstaller sans le code du téléphone.</li>
+        <li><b>Android : « Épinglage d'application »</b> (Paramètres › Sécurité › Épingler l'application). Akiba reste à l'écran et on ne peut pas quitter ni désinstaller sans le code du téléphone.</li>
         <li><b>Téléphones de l'organisation</b> : un outil de gestion des appareils (Google Family Link ou Android Enterprise) peut bloquer la désinstallation.</li>
         <li><b>Ne jamais</b> utiliser « Effacer les données » de Chrome ou un nettoyeur de mémoire sur ce téléphone.</li>
         <li><b>Faites une sauvegarde chaque semaine</b> (ci-dessous) et envoyez les données dès qu'il y a du réseau.</li>
@@ -78,7 +79,7 @@ SCREENS['dev.backup'] = () => {
     </section>
 
     <section class="card stack"><h2>Sauvegarde</h2>
-      <p class="small muted">Un fichier chiffré avec un mot de passe. Gardez-le sur une carte mémoire, sur l'ordinateur de l'organisation ou dans Google Drive. Si le téléphone est perdu ou si Kitabu est effacé, on restaure tout sur un autre téléphone.</p>
+      <p class="small muted">Un fichier chiffré avec un mot de passe. Gardez-le sur une carte mémoire, sur l'ordinateur de l'organisation ou dans Google Drive. Si le téléphone est perdu ou si Akiba est effacé, on restaure tout sur un autre téléphone.</p>
       <div class="row between small"><span>Dernière sauvegarde</span><b>${last ? ago(last) : 'jamais'}</b></div>
       ${last && daysAgo(last) > 7 && hasRealData() ? `<div class="alert warn">${icSpan('alert')}<div><b>Sauvegarde trop ancienne</b><span class="small">Faites-en une nouvelle aujourd'hui.</span></div></div>` : ''}
       ${canBackup() ? `<button class="btn brand block" data-act="backupSheet">${ic('shield')} Créer une sauvegarde</button>` : '<p class="hint">Connectez-vous (bureau, animateur ou organisation) pour créer une sauvegarde.</p>'}
@@ -107,7 +108,7 @@ ACT.backupRun = async () => {
     const file = JSON.stringify({ app: 'kitabu-avec', format: 1, created: Date.now(), avecs: K.data.avecs.length, salt: b64enc(salt), iv: b64enc(iv), data: b64enc(cipher) });
     const url = URL.createObjectURL(new Blob([file], { type: 'application/json' }));
     const a = document.createElement('a');
-    a.href = url; a.download = `kitabu-sauvegarde-${isoDay(Date.now())}.kitabu`;
+    a.href = url; a.download = `akiba-sauvegarde-${isoDay(Date.now())}.akiba`;
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(url), 5000);
     K.data.lastBackup = Date.now(); DB.save();
@@ -121,7 +122,7 @@ ACT.restoreSheet = () => {
   if (!canEncrypt()) return App.toast('Ce navigateur ne permet pas le déchiffrement. Mettez Chrome à jour.');
   App.openSheet(`<h2>Restaurer une sauvegarde</h2>
     <p class="muted">Pour remplacer un téléphone perdu, cassé ou effacé. Les données de démonstration de ce téléphone seront remplacées.</p>
-    <div class="field"><label for="rsF">Fichier de sauvegarde (.kitabu)</label><input id="rsF" class="input" type="file" accept=".kitabu,.json,application/json"></div>
+    <div class="field"><label for="rsF">Fichier de sauvegarde (.akiba)</label><input id="rsF" class="input" type="file" accept=".akiba,.kitabu,.json,application/json"></div>
     <div class="field"><label for="rsP">Mot de passe de sauvegarde</label><input id="rsP" class="input" type="password" autocomplete="off"></div>
     <button class="btn primary block xl" data-act="restoreRun">${ic('sync')} Restaurer</button>`);
 };
@@ -131,7 +132,7 @@ ACT.restoreRun = async () => {
   if (!f || !f.files || !f.files[0]) return App.toast('Choisissez le fichier de sauvegarde');
   try {
     const box = JSON.parse(await f.files[0].text());
-    if (box.app !== 'kitabu-avec') return App.toast('Ce fichier n\'est pas une sauvegarde Kitabu');
+    if (box.app !== 'kitabu-avec') return App.toast('Ce fichier n\'est pas une sauvegarde Akiba');
     let plain;
     try { plain = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: b64dec(box.iv) }, await backupKey(p, b64dec(box.salt)), b64dec(box.data)); }
     catch (e) { return App.toast('Mot de passe faux, ou fichier abîmé'); }

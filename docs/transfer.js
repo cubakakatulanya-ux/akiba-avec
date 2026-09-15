@@ -1,4 +1,4 @@
-/* Kitabu AVEC — mettre une AVEC sur le téléphone du groupe (ou sur un nouveau téléphone), sans internet.
+/* Akiba AVEC — mettre une AVEC sur le téléphone du groupe (ou sur un nouveau téléphone), sans internet.
    Un fichier chiffré + un code de 8 signes donné de vive voix. Le fichier apporte aussi la licence du partenaire. */
 'use strict';
 
@@ -28,7 +28,7 @@ async function buildTransfer(avec, code) {
 
 async function importTransfer(text, code) {
   let box;
-  try { box = JSON.parse(text); } catch (e) { return { error: 'Ce fichier n\'est pas un fichier Kitabu' }; }
+  try { box = JSON.parse(text); } catch (e) { return { error: 'Ce fichier n\'est pas un fichier Akiba' }; }
   if (!box || box.app !== TRANSFER_KIND) return { error: box && box.app === 'kitabu-avec' ? 'C\'est une sauvegarde : utilisez « Restaurer sur ce téléphone »' : 'Ce fichier n\'est pas un transfert d\'AVEC' };
   let body;
   try {
@@ -75,9 +75,9 @@ ACT.transferSheet = d => {
   if (!avec || !canMove(avec)) return App.toast('Réservé au bureau, à l\'animateur ou à l\'organisation');
   App.openSheet(`<h2>Envoyer « ${esc(avec.name)} »</h2>
     <ol class="small" style="margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:6px">
-      <li>Kitabu crée un fichier protégé par un code.</li>
+      <li>Akiba crée un fichier protégé par un code.</li>
       <li>Envoyez le fichier au téléphone du groupe : WhatsApp, Bluetooth ou carte mémoire.</li>
-      <li>Sur le téléphone du groupe : ouvrir Kitabu › <b>Recevoir une AVEC</b>, choisir le fichier, taper le code.</li>
+      <li>Sur le téléphone du groupe : ouvrir Akiba › <b>Recevoir une AVEC</b>, choisir le fichier, taper le code.</li>
       <li>Les membres se connectent avec leur nom et leur code secret.</li></ol>
     <div class="alert warn">${icSpan('alert')}<div><b>Un seul téléphone tient le cahier</b><span class="small">Après l'envoi, ce téléphone ne peut plus ouvrir de réunion pour cette AVEC. Il garde une copie à consulter.</span></div></div>
     <button class="btn primary block xl" data-act="transferRun" data-id="${avec.id}">${ic('sync')} Créer le fichier</button>`);
@@ -93,11 +93,11 @@ ACT.transferRun = async d => {
   secLog(avec, 'AVEC envoyée vers un autre téléphone', null, whoName());
   DB.save();
   App.lastTransfer = { code, file };
-  const fname = 'kitabu-' + avec.name.toLowerCase().normalize('NFD').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') + '.kitabu';
+  const fname = 'akiba-' + avec.name.toLowerCase().normalize('NFD').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') + '.akiba';
   let shared = false;
   try {
     const f = new File([file], fname, { type: 'application/octet-stream' });
-    if (navigator.canShare && navigator.canShare({ files: [f] })) { await navigator.share({ files: [f], title: 'Kitabu : ' + avec.name }); shared = true; }
+    if (navigator.canShare && navigator.canShare({ files: [f] })) { await navigator.share({ files: [f], title: 'Akiba : ' + avec.name }); shared = true; }
   } catch (e) { /* partage annulé : on télécharge */ }
   if (!shared && window.URL && URL.createObjectURL) {
     const url = URL.createObjectURL(new Blob([file], { type: 'application/octet-stream' }));
@@ -113,8 +113,8 @@ ACT.transferRun = async d => {
 
 /* ---------- recevoir ---------- */
 ACT.receiveSheet = () => App.openSheet(`<h2>Recevoir une AVEC</h2>
-  <p class="muted">Pour le téléphone du groupe. Vous avez reçu un fichier <b>.kitabu</b> et un code de 8 signes (de l'animateur, de l'organisation ou de l'ancien téléphone).</p>
-  <div class="field"><label for="rcF">Fichier reçu</label><input id="rcF" class="input" type="file" accept=".kitabu,application/octet-stream,application/json"></div>
+  <p class="muted">Pour le téléphone du groupe. Vous avez reçu un fichier <b>.akiba</b> et un code de 8 signes (de l'animateur, de l'organisation ou de l'ancien téléphone).</p>
+  <div class="field"><label for="rcF">Fichier reçu</label><input id="rcF" class="input" type="file" accept=".akiba,.kitabu,application/octet-stream,application/json"></div>
   <div class="field"><label for="rcC">Code de transfert</label><input id="rcC" class="input bignum" maxlength="9" autocomplete="off" autocapitalize="characters" style="text-transform:uppercase" placeholder="ABCD-EFGH"></div>
   <button class="btn primary block xl" data-act="receiveRun">${ic('check')} Recevoir l'AVEC</button>`);
 ACT.receiveRun = async () => {

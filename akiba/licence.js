@@ -1,5 +1,5 @@
-/* Kitabu AVEC — accès réservé aux partenaires agréés.
-   Chaque licence est signée par l'administrateur de Kitabu (clé secrète gardée hors de l'application).
+/* Akiba AVEC — accès réservé aux partenaires agréés.
+   Chaque licence est signée par l'administrateur d\'Akiba (clé secrète gardée hors de l'application).
    Le téléphone vérifie la signature sans internet avec la clé publique ci-dessous : un code modifié ou inventé est refusé. */
 'use strict';
 
@@ -35,21 +35,22 @@ SCREENS['lic.gate'] = () => {
   return `<div class="shell">
     <header class="hero">
       <div class="label" style="color:inherit;opacity:.8">Épargne et crédit villageois</div>
-      <h1>Kitabu</h1>
+      <h1>Akiba</h1>
       <p>Application réservée aux organisations et aux groupes partenaires agréés.</p>
     </header>
     <main class="main">
       ${r.expired ? `<div class="alert bad">${icSpan('alert')}<div><b>${esc(r.why)}</b><span class="small">Les données restent sur ce téléphone. Demandez le renouvellement de la licence de « ${esc(r.data.name)} ».</span></div></div>` : ''}
-      <section class="card stack"><h2>Activer Kitabu</h2>
-        <p class="small muted">Ouvrez le lien d'activation reçu de l'administrateur de Kitabu, scannez son QR code d'activation, ou collez le code ci-dessous.</p>
+      <section class="card stack"><h2>Activer Akiba</h2>
+        <p class="small muted">Ouvrez le lien d'activation reçu de l'administrateur d\'Akiba, scannez son QR code d'activation, ou collez le code ci-dessous.</p>
         <div class="field"><label for="licC">Code de licence</label><textarea id="licC" class="input mono" rows="4" autocomplete="off" spellcheck="false" autocapitalize="off"></textarea></div>
         <button class="btn primary block xl" data-act="licActivate">${ic('key')} Activer</button>
       </section>
       <section class="card stack"><h2>Téléphone d'une AVEC</h2>
-        <p class="small muted">L'animateur vous a envoyé un fichier <b>.kitabu</b> et un code : recevez votre AVEC directement. La licence arrive avec le fichier.</p>
+        <p class="small muted">L'animateur vous a envoyé un fichier <b>.akiba</b> et un code : recevez votre AVEC directement. La licence arrive avec le fichier.</p>
         <button class="btn ghost block" data-act="receiveSheet">${ic('sync')} Recevoir une AVEC</button>
       </section>
-      <div class="card small muted">Pas de licence ? Adressez-vous à votre organisation partenaire ou à l'administrateur de Kitabu. Chaque licence porte le nom du partenaire et une date de fin.</div>
+      ${supportCard()}
+      <div class="card small muted">Pas de licence ? Adressez-vous à votre organisation partenaire ou à l'administrateur d\'Akiba. Chaque licence porte le nom du partenaire et une date de fin.</div>
     </main></div>`;
 };
 ACT.licActivate = async () => {

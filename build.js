@@ -1,25 +1,27 @@
-// Construit dist/ : la version de Kitabu prête à héberger (installable, marche hors ligne).
+// Construit dist/ : la version d\'Akiba prête à héberger (installable, marche hors ligne).
 // Usage : node build.js
 const fs = require('fs'), path = require('path');
-const src = path.join(__dirname, 'kitabu'), out = path.join(__dirname, process.argv[2] || 'dist');
+const src = path.join(__dirname, 'akiba'), out = path.join(__dirname, process.argv[2] || 'dist');
 fs.rmSync(out, { recursive: true, force: true });
 fs.mkdirSync(out, { recursive: true });
 
 const html = fs.readFileSync(path.join(src, 'index.html'), 'utf8');
 const scripts = [...html.matchAll(/<script src="([^"]+)"><\/script>/g)].map(m => m[1]);
 scripts.forEach(f => fs.copyFileSync(path.join(src, f), path.join(out, f)));
+const assets = ['ubora-logo.png'];                                   // images de l'application (gardées hors ligne)
+assets.forEach(f => fs.copyFileSync(path.join(src, f), path.join(out, f)));
 const cut = html.indexOf('</style>') + '</style>'.length;
-const head = html.slice(0, cut).replace('<title>Kitabu AVEC</title>', '');
+const head = html.slice(0, cut).replace('<title>Akiba AVEC</title>', '');
 const body = html.slice(cut);
-const version = 'kitabu-' + new Date().toISOString().slice(0, 16).replace(/\D/g, '');
+const version = 'akiba-' + new Date().toISOString().slice(0, 16).replace(/\D/g, '');
 
 fs.writeFileSync(path.join(out, 'index.html'), `<!doctype html>
 <html lang="fr"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Kitabu AVEC</title>
+<title>Akiba AVEC</title>
 <meta name="description" content="Gestion des associations villageoises d'épargne et de crédit, même sans réseau.">
 <link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="icon-192.png">
-<meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Kitabu">
+<meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Akiba">
 ${head}
 <style>html,body{margin:0}</style>
 </head><body>
@@ -61,7 +63,7 @@ fs.writeFileSync(path.join(out, 'icon-192.png'), iconPng(192));
 fs.writeFileSync(path.join(out, 'icon-512.png'), iconPng(512));
 
 fs.writeFileSync(path.join(out, 'manifest.webmanifest'), JSON.stringify({
-  id: './', name: 'Kitabu AVEC', short_name: 'Kitabu', lang: 'fr', start_url: './', scope: './', display: 'standalone', orientation: 'portrait',
+  id: './', name: 'Akiba AVEC', short_name: 'Akiba', lang: 'fr', start_url: './', scope: './', display: 'standalone', orientation: 'portrait',
   background_color: '#0F4D3A', theme_color: '#0F4D3A', categories: ['finance', 'productivity'],
   description: "Le cahier de l'AVEC dans le téléphone, même sans réseau.",
   icons: [
@@ -72,8 +74,8 @@ fs.writeFileSync(path.join(out, 'manifest.webmanifest'), JSON.stringify({
   ]
 }, null, 2));
 
-const files = ['./', 'index.html', 'manifest.webmanifest', 'icon.svg', 'icon-192.png', 'icon-512.png', ...scripts];
-fs.writeFileSync(path.join(out, 'sw.js'), `// Kitabu : garde l'application dans le téléphone pour qu'elle s'ouvre sans réseau.
+const files = ['./', 'index.html', 'manifest.webmanifest', 'icon.svg', 'icon-192.png', 'icon-512.png', ...assets, ...scripts];
+fs.writeFileSync(path.join(out, 'sw.js'), `// Akiba : garde l'application dans le téléphone pour qu'elle s'ouvre sans réseau.
 const CACHE = '${version}';
 const FILES = ${JSON.stringify(files)};
 // « reload » : on télécharge toujours la vraie nouvelle version, jamais une copie gardée par le navigateur.

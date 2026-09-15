@@ -1,4 +1,4 @@
-/* Kitabu AVEC — langues de la RDC : sélecteur, traduction de l'interface, éditeur de traductions */
+/* Akiba AVEC — langues de la RDC : sélecteur, traduction de l'interface, éditeur de traductions */
 'use strict';
 
 ICONS.globe = '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.7 3.8 5.7 3.8 9s-1.3 6.3-3.8 9c-2.5-2.7-3.8-5.7-3.8-9S9.5 5.7 12 3z"/>';
@@ -87,7 +87,7 @@ const TR = {
   'La caisse est juste': { ln: 'Sanduku ezali malamu', sw: 'Sanduku liko sawa', kg: 'Kesi kele mbote' },
   'Étape enregistrée': { ln: 'Eteni ekomami', sw: 'Hatua imeandikwa' },
   'Retour à l\'accueil': { ln: 'Zonga na ebandeli', sw: 'Rudi mwanzo' },
-  'Mon carnet': { ln: 'Kaye na ngai', sw: 'Kitabu changu', kg: 'Buku na mono', lua: 'Mukanda wanyi' },
+  'Mon carnet': { ln: 'Kaye na ngai', sw: 'Akiba changu', kg: 'Buku na mono', lua: 'Mukanda wanyi' },
   'Mon épargne': { ln: 'Mbongo na ngai ebombami', sw: 'Akiba yangu' },
   'Parts achetées': { ln: 'Biteni nasombi', sw: 'Hisa zilizonunuliwa' },
   'Valeur si partage': { ln: 'Motuya soki bakaboli', sw: 'Thamani wakati wa kugawa' },
@@ -204,13 +204,13 @@ function canTranslate() {
   return true;
 }
 SCREENS['tr.edit'] = p => {
-  if (!canTranslate()) return `<div class="shell">${topbar('Traduire Kitabu', '', backBtn(K.session ? homeScreen() : 'login'))}<main class="main"><div class="alert warn"><div><b>Réservé au bureau, à l'animateur et à l'organisation</b></div></div></main></div>`;
+  if (!canTranslate()) return `<div class="shell">${topbar('Traduire Akiba', '', backBtn(K.session ? homeScreen() : 'login'))}<main class="main"><div class="alert warn"><div><b>Réservé au bureau, à l'animateur et à l'organisation</b></div></div></main></div>`;
   const langs = I18N.langs().filter(l => l.id !== 'fr');
   const lang = langs.some(l => l.id === p.lang) ? p.lang : 'ln';
   const w = I18N.words(lang);
   const missingOnly = p.missing === '1';
   const keys = TR_KEYS.filter(k => !missingOnly || !w[k]);
-  return `<div class="shell no-tr">${topbar('Traduire Kitabu', `${esc(I18N.name(lang))} · ${pct(I18N.coverage(lang))} traduit`, backBtn(trBack()))}<main class="main">
+  return `<div class="shell no-tr">${topbar('Traduire Akiba', `${esc(I18N.name(lang))} · ${pct(I18N.coverage(lang))} traduit`, backBtn(trBack()))}<main class="main">
     <p class="muted">Écrivez chaque phrase dans la langue choisie, comme on la dit au village. Gardez <b>{n}</b> à sa place : c'est un nom ou un numéro. Une case vide reste en français.</p>
     <div class="row" style="flex-wrap:wrap;gap:6px">${langs.map(l => `<button class="btn sm ${l.id === lang ? 'brand' : 'ghost'}" data-act="go" data-to="tr.edit" data-lang="${l.id}">${esc(l.name)}</button>`).join('')}
       <button class="btn sm ghost" data-act="addLangSheet">${ic('plus')} Autre langue</button></div>

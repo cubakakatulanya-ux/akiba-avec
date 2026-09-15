@@ -1,4 +1,4 @@
-/* Kitabu AVEC — fiche membre : nom et sexe obligatoires ; âge, téléphone, activité, adresse facultatifs */
+/* Akiba AVEC — fiche membre : nom et sexe obligatoires ; âge, téléphone, activité, adresse facultatifs */
 'use strict';
 
 const ACTIVITIES = ['Agriculture', 'Petit commerce', 'Élevage', 'Pêche', 'Artisanat', 'Couture', 'Transport (moto, vélo)', 'Enseignement', 'Santé', 'Travaux ménagers', 'Élève ou étudiant', 'Salarié', 'Sans activité'];

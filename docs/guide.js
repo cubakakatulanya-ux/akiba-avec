@@ -1,10 +1,10 @@
-/* Kitabu AVEC — guide d'utilisation */
+/* Akiba AVEC — guide d'utilisation */
 'use strict';
 
 const GUIDE = [
-  { id: 'bref', icon: 'book', t: 'Kitabu en bref', b: `
-    <p>Kitabu remplace les cahiers de l'AVEC : le cahier de caisse, les carnets des membres, le registre des crédits et le procès-verbal des réunions. Tout est calculé par le téléphone, sans erreur de calcul, et <b>marche sans réseau</b>.</p>
-    <h4>Qui utilise Kitabu ?</h4>
+  { id: 'bref', icon: 'book', t: 'Akiba en bref', b: `
+    <p>Akiba remplace les cahiers de l'AVEC : le cahier de caisse, les carnets des membres, le registre des crédits et le procès-verbal des réunions. Tout est calculé par le téléphone, sans erreur de calcul, et <b>marche sans réseau</b>.</p>
+    <h4>Qui utilise Akiba ?</h4>
     <ul>
       <li><b>Le bureau de l'AVEC</b> (président, secrétaire, trésorier) tient les réunions et enregistre l'argent.</li>
       <li><b>Les porte-clés</b> confirment le comptage de la caisse avec leur code secret.</li>
@@ -23,29 +23,29 @@ const GUIDE = [
       <li><b>Démarrage</b> : <b>Nouveau groupe</b> (caisse vide) ou <b>Groupe déjà en cours</b>.</li>
     </ol>
     <h4>Groupe qui avait déjà un cahier</h4>
-    <p>Choisissez « Groupe déjà en cours » et recopiez le cahier : parts achetées par chaque membre, reste à payer sur chaque crédit, caisse sociale, puis l'argent compté dans la caisse de crédit. Kitabu enregistre tout dans une séance « Reprise du cahier », scellée. S'il manque de l'argent par rapport au cahier, l'écart est signalé.</p>
-    <div class="tip">À la fin, Kitabu affiche <b>un code secret différent pour chaque membre</b>, une seule fois. Recopiez-les sur de petits papiers et donnez-les en main propre.</div>` },
+    <p>Choisissez « Groupe déjà en cours » et recopiez le cahier : parts achetées par chaque membre, reste à payer sur chaque crédit, caisse sociale, puis l'argent compté dans la caisse de crédit. Akiba enregistre tout dans une séance « Reprise du cahier », scellée. S'il manque de l'argent par rapport au cahier, l'écart est signalé.</p>
+    <div class="tip">À la fin, Akiba affiche <b>un code secret différent pour chaque membre</b>, une seule fois. Recopiez-les sur de petits papiers et donnez-les en main propre.</div>` },
   { id: 'connexion', icon: 'users', t: 'Comment une AVEC se connecte', b: `
     <h4>L'AVEC a été créée sur son propre téléphone</h4>
-    <p>Chaque membre ouvre Kitabu, touche <b>Membre d'une AVEC</b>, choisit son AVEC, touche <b>son nom</b> et tape <b>son code secret</b>. Le bureau voit la réunion ; les autres membres voient leur carnet.</p>
+    <p>Chaque membre ouvre Akiba, touche <b>Membre d'une AVEC</b>, choisit son AVEC, touche <b>son nom</b> et tape <b>son code secret</b>. Le bureau voit la réunion ; les autres membres voient leur carnet.</p>
     <h4>L'AVEC a été créée sur le téléphone de l'animateur</h4>
     <ol><li>L'animateur ouvre l'AVEC puis touche <b>Envoyer vers le téléphone du groupe</b>.</li>
-      <li>Il envoie le fichier <b>.kitabu</b> par WhatsApp, Bluetooth ou carte mémoire, et dit le <b>code de 8 signes</b> de vive voix.</li>
-      <li>Sur le téléphone du groupe : ouvrir Kitabu, toucher <b>Recevoir une AVEC</b>, choisir le fichier, taper le code. La licence arrive avec le fichier.</li>
+      <li>Il envoie le fichier <b>.akiba</b> par WhatsApp, Bluetooth ou carte mémoire, et dit le <b>code de 8 signes</b> de vive voix.</li>
+      <li>Sur le téléphone du groupe : ouvrir Akiba, toucher <b>Recevoir une AVEC</b>, choisir le fichier, taper le code. La licence arrive avec le fichier.</li>
       <li>Les membres se connectent ensuite avec leur nom et leur code.</li></ol>
     <h4>Le groupe change de téléphone</h4>
     <p>Sur l'ancien téléphone : <b>Plus › Changer de téléphone</b>, puis même chose. L'ancien téléphone garde une copie mais ne peut plus ouvrir de réunion : il n'y a jamais deux cahiers différents.</p>
     <h4>Le groupe avait un cahier papier</h4>
     <p>À la création, choisir <b>Groupe déjà en cours</b> et recopier le cahier (voir « Créer l'AVEC »).</p>` },
   { id: 'reunion', icon: 'calendar', t: 'La réunion, étape par étape', b: `
-    <p>Sur l'accueil, un membre du bureau touche <b>Ouvrir la réunion</b>. Kitabu guide la réunion dans l'ordre. On ne peut pas sauter une étape.</p>
+    <p>Sur l'accueil, un membre du bureau touche <b>Ouvrir la réunion</b>. Akiba guide la réunion dans l'ordre. On ne peut pas sauter une étape.</p>
     <ol>
       <li><b>Présences</b> : pour chaque membre, touchez « Là », « Retard » ou « Absent ».</li>
       <li><b>Comptage</b> : les porte-clés ouvrent la caisse devant tous. On compte l'argent et on écrit le montant. S'il ne correspond pas au cahier, il faut expliquer l'écart.</li>
       <li><b>Caisse sociale</b> : chaque présent verse la cotisation. On peut aussi donner une aide (maladie, deuil).</li>
       <li><b>Épargne</b> : chaque membre achète de 1 à 5 parts avec les boutons + et −. Les timbres jaunes montrent les parts.</li>
       <li><b>Remboursements</b> : écrivez ce que chaque emprunteur rembourse. « Échéance » met le montant prévu.</li>
-      <li><b>Crédits</b> : l'assemblée écoute les demandes. Kitabu montre le maximum permis et calcule l'intérêt.</li>
+      <li><b>Crédits</b> : l'assemblée écoute les demandes. Akiba montre le maximum permis et calcule l'intérêt.</li>
       <li><b>Amendes</b> : les retards paient sur place. L'amende d'un absent est notée comme dette.</li>
       <li><b>Clôture</b> : on recompte tout l'argent, les trois porte-clés tapent leur code et la réunion est <b>scellée</b>.</li>
     </ol>
@@ -54,7 +54,7 @@ const GUIDE = [
     <p>L'épargne se fait en <b>parts</b>. Toutes les parts ont la même valeur pendant le cycle (par exemple 1 000 FC). À chaque réunion, un membre achète de 1 à 5 parts.</p>
     <p>Le carnet du membre montre ses parts à chaque réunion, son épargne totale et <b>la valeur de ses parts si le partage avait lieu aujourd'hui</b>. Cette valeur augmente grâce aux intérêts et aux amendes.</p>` },
   { id: 'credit', icon: 'hand', t: 'Les crédits', b: `
-    <h4>Règles appliquées par Kitabu</h4>
+    <h4>Règles appliquées par Akiba</h4>
     <ul>
       <li>Un membre emprunte au plus <b>3 fois son épargne</b>, et jamais plus que l'argent disponible dans la caisse de crédit.</li>
       <li><b>Un seul crédit à la fois</b> par membre.</li>
@@ -74,7 +74,7 @@ const GUIDE = [
   { id: 'amendes', icon: 'gavel', t: 'Les amendes', b: `
     <ul>
       <li><b>Retard</b> : le membre est là, il paie tout de suite.</li>
-      <li><b>Absence</b> : le membre n'est pas là, il ne peut pas payer. Kitabu note une <b>amende due</b>, sans compter d'argent dans la caisse. Elle est proposée au paiement dès sa prochaine présence.</li>
+      <li><b>Absence</b> : le membre n'est pas là, il ne peut pas payer. Akiba note une <b>amende due</b>, sans compter d'argent dans la caisse. Elle est proposée au paiement dès sa prochaine présence.</li>
       <li><b>Autres amendes</b> (bavardage, téléphone, oubli) : bouton « Autre amende ».</li>
     </ul>
     <div class="tip">Une amende due qui n'est jamais payée est retirée de la part du membre au partage.</div>` },
@@ -86,7 +86,7 @@ const GUIDE = [
       <li><b>Deux personnes</b> pour chaque crédit, aide, annulation, arrivée ou départ de membre.</li>
       <li><b>Comptage obligatoire</b> à l'ouverture et à la clôture. Tout écart doit être expliqué, et il est envoyé à l'animateur et à l'organisation.</li>
       <li><b>Rien ne s'efface.</b> Une erreur se corrige avec « Annuler » dans le Journal, pendant la réunion, avec une raison. L'annulation reste visible par tous.</li>
-      <li><b>Journal scellé</b> : chaque écriture contient l'empreinte de la précédente. Changer un seul chiffre casse la chaîne, et Kitabu affiche « Fraude détectée ».</li>
+      <li><b>Journal scellé</b> : chaque écriture contient l'empreinte de la précédente. Changer un seul chiffre casse la chaîne, et Akiba affiche « Fraude détectée ».</li>
       <li><b>Soldes calculés</b> : personne ne peut taper un solde à la main. Tout vient des écritures.</li>
     </ul>` },
   { id: 'validation', icon: 'clip', t: 'Validation d\'une AVEC par l\'organisation', b: `
@@ -110,7 +110,7 @@ const GUIDE = [
     </ol>
     <p>Ensuite, vous choisissez vous-même un nouveau code. Personne ne le voit.</p>
     <div class="tip">Chaque déblocage est noté dans <b>Plus › Sécurité et carte de secours</b>. Quand il reste 2 codes ou moins sur la carte, le bureau en crée une nouvelle.</div>` },
-  { id: 'lancer', icon: 'building', t: 'Lancer Kitabu pour de vrai', b: `
+  { id: 'lancer', icon: 'building', t: 'Lancer Akiba pour de vrai', b: `
     <ol>
       <li>Sur l'écran d'accueil, touchez <b>Commencer avec mes vraies données</b>. La démonstration est effacée de ce téléphone.</li>
       <li><b>Organisation</b> : créez le compte, puis <b>Ajouter un animateur</b> pour chaque animateur. Chacun reçoit un code et le change avec <b>Mon code</b>.</li>
@@ -119,7 +119,7 @@ const GUIDE = [
     </ol>
     <div class="tip">Pendant la phase pilote, gardez aussi le cahier papier.</div>` },
   { id: 'audio', icon: 'volume', t: 'Écouter au lieu de lire', b: `
-    <p>Kitabu peut <b>lire à voix haute</b>, même sans réseau, avec la voix installée sur le téléphone.</p>
+    <p>Akiba peut <b>lire à voix haute</b>, même sans réseau, avec la voix installée sur le téléphone.</p>
     <ul><li>Dans ce guide : <b>Écouter cette partie</b> ou <b>Écouter tout le guide</b>.</li>
       <li>Pendant la réunion : <b>Écouter cette étape</b> explique ce qu'il faut faire.</li>
       <li>Dans le carnet : <b>Écouter mon carnet</b> dit l'épargne et la valeur des parts.</li>
@@ -127,13 +127,13 @@ const GUIDE = [
     <div class="tip">Pas de son ? Montez le volume, puis vérifiez dans les paramètres du téléphone que « Services vocaux Google » est installé, avec la langue française téléchargée.</div>` },
   { id: 'installer', icon: 'home', t: 'Icône, protection et sauvegarde', b: `
     <h4>Mettre l'icône sur l'écran d'accueil</h4>
-    <ol><li>Ouvrez l'adresse de Kitabu dans <b>Chrome</b>, avec du réseau.</li><li>Touchez <b>Installer Kitabu</b> (ou menu ⋮ › « Ajouter à l'écran d'accueil »).</li><li>Une icône verte apparaît. Ensuite, Kitabu s'ouvre <b>sans réseau</b>.</li></ol>
+    <ol><li>Ouvrez l'adresse d\'Akiba dans <b>Chrome</b>, avec du réseau.</li><li>Touchez <b>Installer Akiba</b> (ou menu ⋮ › « Ajouter à l'écran d'accueil »).</li><li>Une icône verte apparaît. Ensuite, Akiba s'ouvre <b>sans réseau</b>.</li></ol>
     <h4>Mises à jour</h4>
-    <p>Kitabu se met à jour <b>tout seul</b>, sans le désinstaller et <b>sans perdre les données</b>. Ouvrez-le de temps en temps avec du réseau : la nouvelle version s'installe en arrière-plan. Si vous êtes en train d'écrire, un bandeau <b>Mettre à jour</b> apparaît : touchez-le quand vous avez fini.</p>
+    <p>Akiba se met à jour <b>tout seul</b>, sans le désinstaller et <b>sans perdre les données</b>. Ouvrez-le de temps en temps avec du réseau : la nouvelle version s'installe en arrière-plan. Si vous êtes en train d'écrire, un bandeau <b>Mettre à jour</b> apparaît : touchez-le quand vous avez fini.</p>
     <h4>Éviter une désinstallation par erreur</h4>
     <p>Aucune application ne peut interdire complètement sa désinstallation : c'est le téléphone qui décide. Mais on peut bien le protéger :</p>
     <ul><li>Rangez l'icône dans un dossier « AVEC » et verrouillez le téléphone par un code.</li>
-      <li>Android : activez <b>l'épinglage d'application</b> (Paramètres › Sécurité). Kitabu reste à l'écran ; il faut le code du téléphone pour en sortir.</li>
+      <li>Android : activez <b>l'épinglage d'application</b> (Paramètres › Sécurité). Akiba reste à l'écran ; il faut le code du téléphone pour en sortir.</li>
       <li>Pour les téléphones de l'organisation, un outil de gestion des appareils (Family Link, Android Enterprise) bloque la désinstallation.</li>
       <li>N'utilisez jamais « Effacer les données » de Chrome ni les nettoyeurs de mémoire.</li></ul>
     <h4>Sauvegarde</h4>
@@ -147,14 +147,14 @@ const GUIDE = [
     </ul>
     <p>Dès que le réseau revient (au marché, en ville), touchez le badge puis <b>Envoyer maintenant</b>. L'animateur et l'organisation ne voient que les données envoyées.</p>` },
   { id: 'membres', icon: 'users', t: 'Gérer les membres', b: `
-    <h4>Nouveau membre</h4><p><b>Membres › Ajouter un membre</b>, avec l'accord d'un 2ᵉ membre du bureau. On remplit la fiche : nom et sexe obligatoires ; âge, téléphone (ex. 099 123 4567), activité et adresse facultatifs. Kitabu donne un code secret provisoire à remettre en main propre.</p>
+    <h4>Nouveau membre</h4><p><b>Membres › Ajouter un membre</b>, avec l'accord d'un 2ᵉ membre du bureau. On remplit la fiche : nom et sexe obligatoires ; âge, téléphone (ex. 099 123 4567), activité et adresse facultatifs. Akiba donne un code secret provisoire à remettre en main propre.</p>
     <h4>Compléter ou corriger une fiche</h4><p>Ouvrez le carnet du membre puis <b>Modifier les informations</b>. Le bureau ou le membre lui-même peut le faire ; chaque changement est noté dans le journal de sécurité.</p>
     <h4>Départ d'un membre</h4><p>Pendant une réunion ouverte, ouvrez son carnet puis <b>Départ du groupe</b>. Il récupère son épargne, moins son crédit et ses amendes dues. Les bénéfices restent au groupe.</p>
     <div class="formula">Argent rendu = épargne − crédit restant − amendes dues</div>
     <h4>Code oublié</h4><p>Un membre du bureau ouvre le carnet du membre puis <b>Code oublié</b>. L'ancien code ne marche plus.</p>
     <h4>Changer de responsable</h4><p><b>Plus › Bureau et porte-clés</b>, après décision de l'assemblée.</p>` },
   { id: 'partage', icon: 'split', t: 'Fin de cycle et partage', b: `
-    <p>Un cycle dure en général 12 mois. Kitabu prévient <b>4 semaines avant la fin</b>. Avant le partage, les membres doivent rembourser leurs crédits.</p>
+    <p>Un cycle dure en général 12 mois. Akiba prévient <b>4 semaines avant la fin</b>. Avant le partage, les membres doivent rembourser leurs crédits.</p>
     <h4>Le calcul</h4>
     <div class="formula">Total = caisse de crédit + crédits à récupérer + amendes dues<br>Valeur d'une part = Total ÷ nombre de parts<br>Chaque membre reçoit = ses parts × valeur − ce qu'il doit encore</div>
     <div class="formula">Exemple : 1 180 000 FC ÷ 1 000 parts = 1 180 FC la part<br>Kavira a 60 parts → 70 800 FC, moins 5 000 FC de crédit → reçoit 65 800 FC</div>
@@ -168,7 +168,7 @@ const GUIDE = [
     </ol>
     <div class="tip">La caisse sociale et le reste des arrondis passent automatiquement au cycle suivant.</div>` },
   { id: 'cycle', icon: 'calendar', t: 'Commencer un nouveau cycle', b: `
-    <p>Juste après le partage, Kitabu ouvre l'écran <b>Nouveau cycle</b> :</p>
+    <p>Juste après le partage, Akiba ouvre l'écran <b>Nouveau cycle</b> :</p>
     <ol>
       <li>L'assemblée garde ou change le règlement : valeur de la part, cotisation, intérêt, durée.</li>
       <li>On confirme ou on réélit le bureau et les porte-clés.</li>
@@ -205,6 +205,7 @@ const GUIDE = [
     <h4>Il y a un écart de caisse, que faire ?</h4><p>Recomptez devant tous. Si l'écart reste, écrivez l'explication. La réunion peut être fermée, mais l'animateur verra l'écart.</p>
     <h4>J'ai tapé un mauvais montant.</h4><p>Pendant la réunion : <b>Journal</b>, touchez « Annuler » sur l'écriture, donnez la raison et le code d'un 2ᵉ membre du bureau, puis refaites l'opération. Après la clôture, on ne peut plus rien changer.</p>
     <h4>Le téléphone est perdu ou cassé.</h4><p>Les données déjà envoyées sont sauvegardées. D'où l'importance d'envoyer dès que le réseau est là.</p>
+    <h4>Qui appeler en cas de problème ?</h4><p><b>Ubora</b>, entreprise sociale : appel ou WhatsApp au <b>0998 275 144</b>, ou e-mail <b>contact@uborahub.com</b>. Les boutons Appeler et WhatsApp sont dans Plus, dans ce guide et sur l'écran d'activation.</p>
     <h4>Un membre veut voir son compte.</h4><p>Il se connecte avec son nom et son code : il voit seulement son carnet.</p>` }
 ];
 
@@ -222,10 +223,11 @@ SCREENS.guide = p => {
   const sections = GUIDE.filter(g => !GUIDE_WHO[g.id] || GUIDE_WHO[g.id].includes(role));
   const isAnim = s && s.kind === 'anim';
   const open = p.s || (isAnim ? 'animateur' : s && s.kind === 'org' ? 'organisation' : 'bref');
-  return `<div class="shell">${topbar('Guide d\'utilisation', 'Kitabu AVEC', isAnim ? '' : backBtn(back))}<main class="main">
-    <div><h1>Comment utiliser Kitabu</h1><p class="muted">Touchez un titre pour l'ouvrir. Les mots en gras sont ceux que vous voyez à l'écran. Touchez « Écouter » pour que le téléphone lise à voix haute, même sans réseau.</p></div>
+  return `<div class="shell">${topbar('Guide d\'utilisation', 'Akiba AVEC', isAnim ? '' : backBtn(back))}<main class="main">
+    <div><h1>Comment utiliser Akiba</h1><p class="muted">Touchez un titre pour l'ouvrir. Les mots en gras sont ceux que vous voyez à l'écran. Touchez « Écouter » pour que le téléphone lise à voix haute, même sans réseau.</p></div>
     <div class="row">${speakBtn('all', '.g summary, .g .gb p, .g .gb li, .g .gb h4, .g .gb .formula, .g .gb .tip', 'Écouter tout le guide')}</div>
     ${sections.map(g => `<details class="g" id="g-${g.id}" ${g.id === open ? 'open' : ''}><summary><span class="gi">${ic(g.icon)}</span>${g.t}</summary><div class="gb">
       <div>${speakBtn(g.id, `#g-${g.id} summary, #g-${g.id} .gb p, #g-${g.id} .gb li, #g-${g.id} .gb h4, #g-${g.id} .gb .formula, #g-${g.id} .gb .tip`, 'Écouter cette partie')}</div>${g.b}</div></details>`).join('')}
+    ${supportCard()}
   </main>${isAnim ? tabbar(N_TABS, 'guide') : ''}</div>`;
 };

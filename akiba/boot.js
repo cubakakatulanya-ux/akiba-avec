@@ -1,4 +1,4 @@
-/* Kitabu AVEC — démarrage */
+/* Akiba AVEC — démarrage */
 'use strict';
 DB.load();
 DB.save();

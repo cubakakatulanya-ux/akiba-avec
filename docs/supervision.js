@@ -1,4 +1,4 @@
-/* Kitabu AVEC — connexion, animateur, organisation, création d'AVEC */
+/* Akiba AVEC — connexion, animateur, organisation, création d'AVEC */
 'use strict';
 
 const me_user = () => userById(K.session.userId);
@@ -19,7 +19,7 @@ SCREENS.login = () => `<div class="shell">
     <button class="langbtn" data-act="langSheet" aria-label="Choisir la langue">${ic('globe')}<span class="no-tr">${esc(I18N.name())}</span></button>
     <svg class="ledger" viewBox="0 0 200 200" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><rect x="30" y="20" width="140" height="170" rx="10"/>${[55, 80, 105, 130, 155].map(y => `<path d="M50 ${y}h100"/>`).join('')}<path d="M80 20v170"/></svg>
     <div class="label" style="color:inherit;opacity:.8">Épargne et crédit villageois</div>
-    <h1>Kitabu</h1>
+    <h1>Akiba</h1>
     <p>Le cahier de l'AVEC, dans le téléphone. Il marche sans réseau et garde chaque franc en sécurité.</p>
   </header>
   <main class="main">
@@ -38,6 +38,7 @@ SCREENS.login = () => `<div class="shell">
       ${licKind() === 'demo' ? '<p class="hint">Licence de démonstration : les vraies données ne sont pas disponibles.</p>' : `<button class="btn primary block" data-act="goLive">${ic('check')} Commencer avec mes vraies données</button>`}
       <button class="btn sm ghost" data-act="resetDemo">Remettre la démo à zéro</button>
     </div>`}
+    ${uboraFooter()}
   </main></div>`;
 ACT.resetDemo = () => App.openSheet(`<h2>Remettre la démo à zéro ?</h2><p class="muted">Toutes les réunions ajoutées sur ce téléphone seront effacées et les données fictives rechargées.</p>
   <button class="btn danger block xl" data-act="resetDemoOk">Effacer et recharger</button><button class="btn ghost block" data-act="closeSheet">Garder mes données</button>`);
@@ -88,6 +89,7 @@ SCREENS['n.home'] = () => {
     <div class="list">${rows.map(r => `<button class="li" data-act="go" data-to="n.avec" data-id="${r.avec.id}"><span class="health ${r.h.level}" aria-label="${r.h.level}"></span>
       <span class="grow"><b>${esc(r.avec.name)}</b><span class="small muted">${esc(r.avec.village)} · ${r.avec.members.length} membres · réunion ${r.st.last ? ago(r.st.last.date) : '—'}</span></span>
       <span class="end"><span class="num">${fck(r.st.sum.EPARGNE)}</span><br>${r.avec.status === 'pending' ? '<span class="chip warn">À valider</span>' : r.avec.status === 'refused' ? '<span class="chip bad">Refusée</span>' : r.h.alerts.length ? `<span class="chip ${r.h.level}">${r.h.alerts.length} alerte${r.h.alerts.length > 1 ? 's' : ''}</span>` : '<span class="chip good">RAS</span>'}</span></button>`).join('')}</div>
+    ${supportCard()}
     <button class="btn ghost block" data-act="unlockSheet">${ic('lock')} Débloquer un membre (code perdu)</button>
     <button class="btn ghost block" data-act="go" data-to="dev.backup">${ic('shield')} Installer et sauvegarder</button>
     <div class="grid2"><button class="btn ghost" data-act="go" data-to="tr.edit" data-lang="ln">${ic('globe')} Langues</button><button class="btn ghost" data-act="userPinSheet">${ic('key')} Mon code</button></div>
@@ -210,6 +212,7 @@ SCREENS['o.home'] = p => {
         <div class="list">${anims.map(a => { const mine = all.filter(r => r.avec.animId === a.id); const al = mine.reduce((s, r) => s + r.h.alerts.length, 0);
           return `<button class="li" data-act="go" data-to="o.home" data-anim="${a.id}"><span class="av">${esc(initials(a.name))}</span><span class="grow"><b>${esc(a.name)}</b><span class="small muted">${mine.length} AVEC · ${mine.reduce((s, r) => s + r.avec.members.length, 0)} membres</span></span>${al ? `<span class="chip warn">${al} alertes</span>` : '<span class="chip good">RAS</span>'}</button>`; }).join('')}</div>
         <button class="btn ghost block" data-act="addAnimSheet">${ic('plus')} Ajouter un animateur</button>
+        ${supportCard()}
         <p class="hint">Les AVEC autonomes n'apparaissent jamais ici : leurs données restent à elles.</p>
       </div>
     </div>

@@ -1,4 +1,4 @@
-<title>Kitabu AVEC</title>
+<title>Akiba AVEC</title>
 <meta name="theme-color" content="#0F4D3A">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -270,6 +270,15 @@ details.g h4{margin:6px 0 0;font-size:.95rem}
 .live{display:inline-flex;align-items:center;gap:6px;font-weight:800}
 .live i{width:8px;height:8px;border-radius:50%;background:#7EE2A8;display:block;animation:pulse 1.6s ease-in-out infinite}
 @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(126,226,168,.7)}50%{box-shadow:0 0 0 6px rgba(126,226,168,0)}}
+/* assistance Ubora */
+.support .ubora-logo{width:68px;height:68px;flex:none;border-radius:50%;box-shadow:0 0 0 1px var(--line)}
+.support-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.support-actions .btn{padding:10px 6px;font-size:.9rem;text-decoration:none}
+.btn.wa{background:#25D366;color:#06301a}
+.ubora-foot{display:flex;align-items:center;gap:10px;justify-content:center;padding:10px 0 4px;color:var(--ink-2);font-size:.85rem;text-align:left}
+.ubora-foot .ubora-logo{width:40px;height:40px;flex:none;border-radius:50%;box-shadow:0 0 0 1px var(--line)}
+.ubora-foot a{color:var(--brand);text-decoration:none}
+@media (max-width:360px){.support-actions{grid-template-columns:1fr}}
 .updbar{position:fixed;left:50%;transform:translateX(-50%);bottom:92px;z-index:55;width:calc(100% - 32px);max-width:488px;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;border-radius:14px;background:var(--ink);color:var(--ground);box-shadow:var(--shadow)}
 .updbar b{display:block}
 .langbtn{position:absolute;right:14px;top:14px;z-index:1;background:rgba(255,255,255,.16);color:inherit;border:0;border-radius:999px;padding:6px 12px;font-weight:800;font-size:.8rem;display:inline-flex;gap:6px;align-items:center}
@@ -290,6 +299,7 @@ details.g h4{margin:6px 0 0;font-size:.95rem}
 <script src="guide.js"></script>
 <script src="audio.js"></script>
 <script src="i18n.js"></script>
+<script src="support.js"></script>
 <script src="licence.js"></script>
 <script src="transfer.js"></script>
 <script src="boot.js"></script>
