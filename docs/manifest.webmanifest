@@ -1,0 +1,43 @@
+{
+  "id": "./",
+  "name": "Kitabu AVEC",
+  "short_name": "Kitabu",
+  "lang": "fr",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0F4D3A",
+  "theme_color": "#0F4D3A",
+  "categories": [
+    "finance",
+    "productivity"
+  ],
+  "description": "Le cahier de l'AVEC dans le téléphone, même sans réseau.",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
