@@ -15,7 +15,7 @@ const GUIDE = [
     <p>Akiba est développée par l'<b>Entreprise Sociale Ubora</b>, qui assure aussi l'assistance : appel ou WhatsApp au <b>0998 275 144</b>, e-mail <b>contact@uborahub.com</b>.</p>
     <div class="tip">Une AVEC <b>autonome</b> (sans organisation) utilise seulement l'interface du groupe. Personne d'autre ne voit ses données.</div>` },
   { id: 'debut', icon: 'plus', t: 'Créer l\'AVEC et commencer', b: `
-    <p>Touchez <b>Créer une nouvelle AVEC</b> sur l'écran d'accueil. Un animateur ou une organisation le fait depuis son propre espace. Tout se prépare en 5 étapes, avec l'assemblée réunie.</p>
+    <p>Touchez <b>Créer une AVEC</b> sur l'écran d'accueil. La première fois, Akiba demande le <b>code de validation</b> délivré par l'Entreprise Sociale Ubora. Un animateur ou une organisation crée l'AVEC depuis son propre espace. Tout se prépare en 5 étapes, avec l'assemblée réunie.</p>
     <ol>
       <li><b>Groupe</b> : nom, puis le lieu. La <b>province</b> et le <b>territoire ou la ville</b> se choisissent dans la liste officielle de toute la RDC (26 provinces, 145 territoires, villes et communes de Kinshasa). Le secteur, le groupement et le village s'écrivent : les noms déjà utilisés sont proposés pour éviter les fautes. Puis le jour et le rythme des réunions. L'organisation choisit aussi l'animateur.</li>
       <li><b>Règlement</b> : valeur d'une part, nombre de parts par réunion, caisse sociale, durée et date de début du cycle, intérêt, crédit maximum, durée des crédits, amendes. Un exemple chiffré montre ce que les règles donnent.</li>
@@ -28,7 +28,11 @@ const GUIDE = [
     <div class="tip">À la fin, Akiba affiche <b>un code secret différent pour chaque membre</b>, une seule fois. Recopiez-les sur de petits papiers et donnez-les en main propre.</div>` },
   { id: 'connexion', icon: 'users', t: 'Comment une AVEC se connecte', b: `
     <h4>L'AVEC a été créée sur son propre téléphone</h4>
-    <p>Chaque membre ouvre Akiba, touche <b>Membre d'une AVEC</b>, choisit son AVEC, touche <b>son nom</b> et tape <b>son code secret</b>. Le bureau voit la réunion ; les autres membres voient leur carnet.</p>
+    <ol>
+      <li>Ouvrir Akiba et toucher le grand bouton jaune <b>AVEC</b>. S'il n'y a qu'une AVEC sur le téléphone (ou si c'est la dernière utilisée), son nom est déjà affiché.</li>
+      <li><b>Tenir la réunion</b> : le président, le secrétaire ou le trésorier présent touche son nom (ils sont seuls dans cette partie) et tape son code secret. Puis <b>Ouvrir la réunion</b> (ou <b>Continuer la réunion</b>).</li>
+      <li><b>Voir mon carnet</b> : tout membre touche <b>Tous les membres</b>, cherche son nom, tape son code et voit son épargne, ses crédits et ses amendes.</li>
+    </ol>
     <div class="tip">Une <b>AVEC autonome</b> n'a besoin ni d'animateur ni d'organisation : elle se crée directement sur son propre téléphone, et tout se passe dans le groupe (réunions, codes perdus, changement de téléphone).</div>
     <h4>AVEC accompagnée, créée sur le téléphone de l'animateur</h4>
     <ol><li>L'animateur ouvre l'AVEC puis touche <b>Envoyer vers le téléphone du groupe</b>.</li>
@@ -106,7 +110,7 @@ const GUIDE = [
       <li>Sur le téléphone du groupe : <b>Activer l'AVEC</b>. C'est fait, sans internet.</li></ol>
     <div class="tip">Le code d'activation ne marche que pour ce groupe. Après 5 codes faux, l'écran se bloque 10 minutes.</div>` },
   { id: 'perdu', icon: 'key', t: 'Code secret perdu : le plan B', b: `
-    <p>Sur l'écran de connexion, sous la liste des noms, touchez <b>J'ai oublié mon code secret</b>, puis votre nom. Trois solutions, toutes sans internet :</p>
+    <p>Touchez le bouton <b>AVEC</b>, puis en bas <b>J'ai oublié mon code secret</b>, puis votre nom. Trois solutions, toutes sans internet :</p>
     <ol>
       <li><b>Deux membres du bureau</b> présents tapent leur propre code. Ils confirment que c'est bien vous.</li>
       <li><b>La carte de secours du groupe</b> : 6 codes à usage unique, reçus à la création de l'AVEC et gardés sur papier dans la caisse. On en tape un, puis on le barre.</li>
@@ -210,7 +214,7 @@ const GUIDE = [
     <h4>J'ai tapé un mauvais montant.</h4><p>Pendant la réunion : <b>Journal</b>, touchez « Annuler » sur l'écriture, donnez la raison et le code d'un 2ᵉ membre du bureau, puis refaites l'opération. Après la clôture, on ne peut plus rien changer.</p>
     <h4>Le téléphone est perdu ou cassé.</h4><p>Les données déjà envoyées sont sauvegardées. D'où l'importance d'envoyer dès que le réseau est là.</p>
     <h4>Qui appeler en cas de problème ?</h4><p><b>Ubora</b>, entreprise sociale : appel ou WhatsApp au <b>0998 275 144</b>, ou e-mail <b>contact@uborahub.com</b>. Les boutons Appeler et WhatsApp sont dans Plus, dans ce guide et sur l'écran d'activation.</p>
-    <h4>Un membre veut voir son compte.</h4><p>Il se connecte avec son nom et son code : il voit seulement son carnet.</p>` }
+    <h4>Un membre veut voir son compte.</h4><p><b>AVEC › Voir mon carnet › Tous les membres</b>, puis son nom et son code : il voit seulement son carnet.</p>` }
 ];
 
 /* parties du guide réservées à certains rôles (les autres sont pour tout le monde) */

@@ -278,7 +278,7 @@ SCREENS['a.security'] = () => {
       <button class="btn ghost block" data-act="rescueNewSheet">${ic('shield')} Créer une nouvelle carte</button></div>
     <div class="card stack"><h3>Si quelqu'un perd son code</h3>
       <ol class="small" style="margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:6px">
-        <li>Sur l'écran de connexion, touchez « J'ai oublié mon code » sous la liste des noms.</li>
+        <li>Sur l'accueil, touchez le bouton « AVEC », puis en bas « J'ai oublié mon code secret ».</li>
         <li>Choisissez : deux membres du bureau, la carte de secours${avec.orgId ? ', ou un appel à l\'animateur' : ''}.</li>
         <li>Le membre choisit un nouveau code, qui ne s'affiche jamais.</li></ol></div>
     <section class="section"><h2>Journal de sécurité</h2><div class="list">${(avec.security || []).slice().reverse().slice(0, 40).map(e => `<div class="li"><span class="grow"><b>${esc(cap(e.type))}${e.memberId ? ' · ' + esc(memberOf(avec, e.memberId)?.name || '') : ''}</b><span class="small muted">${fdt(e.ts)}${e.via ? ' · ' + esc(e.via) : ''}</span></span></div>`).join('') || '<div class="li muted">Aucun évènement pour le moment</div>'}</div></section>

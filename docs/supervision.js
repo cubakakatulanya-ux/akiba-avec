@@ -81,8 +81,19 @@ SCREENS['l.avec'] = () => `<div class="shell">${topbar('Choisir mon AVEC', 'Sur 
 SCREENS['l.member'] = p => {
   const a = avecById(p.id);
   const sorted = a.members.filter(m => !m.left).sort((x, y) => (isBureau(y) - isBureau(x)) || (y.key - x.key));
-  return `<div class="shell">${topbar(a.name, 'Touchez votre nom', backBtn('l.avec'))}<main class="main">
-    <div><h1 style="font-size:1.45rem">Touchez votre nom</h1><p class="muted">Pour tenir la réunion, un membre du <b>bureau</b> se connecte (président, secrétaire ou trésorier). Les autres membres voient leur carnet.</p></div>
+  const bureau = sorted.filter(isBureau), open = openMeeting(a);
+  // d'abord la réunion (bureau seulement, en grand) ; la liste complète sert à consulter son carnet
+  if (!p.list) return `<div class="shell">${topbar(a.name, esc(a.village), backBtn('l.avec'))}<main class="main">
+    <section class="section"><h2>${open ? `Continuer la réunion n°${open.n}` : 'Tenir la réunion'}</h2>
+      <p class="muted">Le responsable présent touche son nom et tape son code.</p>
+      <div class="stack" style="gap:10px">${bureau.map(m => `<button class="who" data-act="loginMember" data-avec="${a.id}" data-id="${m.id}">${avatar(m)}<span><b>${esc(m.name)}</b><span class="small muted">${roleLabel(m)}</span></span></button>`).join('') || '<div class="card muted">Aucun membre du bureau dans ce groupe.</div>'}</div>
+    </section>
+    <section class="section"><h2>Voir mon carnet</h2>
+      <button class="who" data-act="go" data-to="l.member" data-id="${a.id}" data-list="1"><span class="ic" style="background:var(--maize-soft);color:var(--warn)">${ic('book')}</span><span><b>Tous les membres</b><span class="small muted">Touchez votre nom : épargne, crédits, amendes</span></span></button>
+    </section>
+    <button class="btn ghost block" data-act="go" data-to="l.lost" data-avec="${a.id}">${ic('key')} J'ai oublié mon code secret</button></main></div>`;
+  return `<div class="shell">${topbar(a.name, 'Tous les membres', backBtn('l.member', `data-id="${a.id}"`))}<main class="main">
+    <div><h1 style="font-size:1.45rem">Touchez votre nom</h1><p class="muted">Pour voir votre carnet : épargne, crédits et amendes. Le <b>bureau</b> peut aussi se connecter ici.</p></div>
     ${sorted.length > 12 ? `<input id="lmS" class="input" type="search" placeholder="Chercher mon nom…" aria-label="Chercher mon nom" autocomplete="off" data-in="findName">` : ''}
     <div class="list">${sorted.map(m => `<button class="li" data-act="loginMember" data-avec="${a.id}" data-id="${m.id}" data-name="${esc(m.name.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, ''))}">${avatar(m)}<span class="grow"><b>${esc(m.name)}</b><span class="small muted">${roleLabel(m)}</span></span>${ic('chev')}</button>`).join('')}</div>
     <button class="btn ghost block" data-act="go" data-to="l.lost" data-avec="${a.id}">${ic('key')} J'ai oublié mon code secret</button></main></div>`;
