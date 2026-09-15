@@ -14,6 +14,23 @@ const alertHtml = (a, to) => `<button class="alert ${a.lvl}" style="border-top:0
   <span style="width:22px;flex:none">${ic('alert')}</span><span style="flex:1;min-width:0"><b>${esc(a.title)}</b><span class="small">${esc(a.avec.name)} · ${esc(a.detail)}</span></span></button>`;
 
 /* ---------- connexion ---------- */
+const LAST_AVEC = 'kitabu.lastAvec';
+const lastAvecId = () => { try { return localStorage.getItem(LAST_AVEC) || ''; } catch (e) { return ''; } };
+const rememberAvec = id => { try { localStorage.setItem(LAST_AVEC, id); } catch (e) { /* rien */ } };
+/* le grand bouton « AVEC » : une seule AVEC (ou la dernière utilisée) = un toucher jusqu'à la liste des noms */
+function avecCard() {
+  const list = K.data.avecs;
+  const inner = (name, sub) => `<span class="ic">${ic('users')}</span><span class="t"><b>AVEC</b><span class="nm">${name}</span><span class="sub">${sub}</span></span>${ic('chev')}`;
+  if (!list.length) return `<div class="avec-main empty"><span class="ic">${ic('users')}</span><span class="t"><b>AVEC</b><span class="sub">Aucune AVEC sur ce téléphone. Touchez « Recevoir une AVEC » (envoyée par l'animateur) ou « Créer une AVEC ».</span></span></div>`;
+  const pick = list.length === 1 ? list[0] : list.find(a => a.id === lastAvecId());
+  if (pick) return `<button class="avec-main" data-act="go" data-to="l.member" data-id="${pick.id}">${inner(esc(pick.name), esc(pick.village) + ' · touchez pour entrer')}</button>
+    ${list.length > 1 ? `<button class="linkbtn" data-act="go" data-to="l.avec">Autre AVEC sur ce téléphone (${list.length})</button>` : ''}`;
+  return `<button class="avec-main" data-act="go" data-to="l.avec">${inner('Choisir mon AVEC', list.length + ' AVEC sur ce téléphone')}</button>`;
+}
+INP.findName = el => {
+  const q = el.value.trim().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+  document.querySelectorAll('.li[data-name]').forEach(li => { li.hidden = !!q && !li.dataset.name.includes(q); });
+};
 SCREENS.login = () => {
   const hasAnim = K.data.users.some(u => u.role === 'anim' && !u.remote);
   const hasOrg = K.data.users.some(u => u.role === 'org' && !u.remote);
@@ -38,11 +55,11 @@ SCREENS.login = () => {
   <main class="main">
     ${licenceBanner()}${installBanner()}
     <h2>Qui êtes-vous ?</h2>
-    <div class="stack" style="gap:10px">
-      ${who('l.avec', '', 'users', 'background:var(--maize-soft);color:var(--warn)', "Membre d'une AVEC", 'Bureau, porte-clé ou membre')}
+    ${avecCard()}
+    ${hasAnim || hasOrg ? `<div class="stack" style="gap:8px"><span class="label">Autres accès</span>
       ${hasAnim ? who('l.users', 'anim', 'map', 'background:var(--brand-soft);color:var(--brand)', 'Animateur de terrain', 'Je suis plusieurs AVEC') : ''}
       ${hasOrg ? who('l.users', 'org', 'building', 'background:var(--surface-2);color:var(--ink)', 'Organisation', 'Tableau de bord de nos AVEC') : ''}
-    </div>
+    </div>` : ''}
     <div class="quicks">
       ${quick('receiveSheet', '', 'sync', 'Recevoir une AVEC')}
       ${canCreate ? quick('createAvec', '', 'plus', 'Créer une AVEC') : ''}
@@ -64,13 +81,14 @@ SCREENS['l.member'] = p => {
   const a = avecById(p.id);
   const sorted = a.members.filter(m => !m.left).sort((x, y) => (isBureau(y) - isBureau(x)) || (y.key - x.key));
   return `<div class="shell">${topbar(a.name, 'Touchez votre nom', backBtn('l.avec'))}<main class="main">
-    <p class="muted">Le bureau tient les réunions. Les autres membres voient leur carnet.</p>
-    <div class="list">${sorted.map(m => `<button class="li" data-act="loginMember" data-avec="${a.id}" data-id="${m.id}">${avatar(m)}<span class="grow"><b>${esc(m.name)}</b><span class="small muted">${roleLabel(m)}</span></span>${ic('chev')}</button>`).join('')}</div>
+    <div><h1 style="font-size:1.45rem">Touchez votre nom</h1><p class="muted">Pour tenir la réunion, un membre du <b>bureau</b> se connecte (président, secrétaire ou trésorier). Les autres membres voient leur carnet.</p></div>
+    ${sorted.length > 12 ? `<input id="lmS" class="input" type="search" placeholder="Chercher mon nom…" aria-label="Chercher mon nom" autocomplete="off" data-in="findName">` : ''}
+    <div class="list">${sorted.map(m => `<button class="li" data-act="loginMember" data-avec="${a.id}" data-id="${m.id}" data-name="${esc(m.name.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, ''))}">${avatar(m)}<span class="grow"><b>${esc(m.name)}</b><span class="small muted">${roleLabel(m)}</span></span>${ic('chev')}</button>`).join('')}</div>
     <button class="btn ghost block" data-act="go" data-to="l.lost" data-avec="${a.id}">${ic('key')} J'ai oublié mon code secret</button></main></div>`;
 };
 ACT.loginMember = d => {
   const a = avecById(d.avec), m = memberOf(a, d.id);
-  askPin(m, 'Connexion', () => { K.session = { kind: 'avec', avecId: a.id, memberId: m.id }; DB.save(); App.go('a.home'); });
+  askPin(m, 'Connexion', () => { K.session = { kind: 'avec', avecId: a.id, memberId: m.id }; rememberAvec(a.id); DB.save(); App.go('a.home'); });
 };
 SCREENS['l.users'] = p => {
   const list = K.data.users.filter(u => u.role === p.role && !u.remote);

@@ -126,6 +126,7 @@ ACT.receiveRun = async () => {
   try { text = await readFileText(f.files[0]); } catch (e) { return App.toast('Impossible de lire ce fichier'); }
   const r = await importTransfer(text, fval('rcC'));
   if (r.error) return App.toast(r.error);
+  rememberAvec(r.id);
   App.go('l.member', { id: r.id });
   App.toast(`« ${r.name} » est sur ce téléphone. Chaque membre touche son nom et tape son code.`);
 };

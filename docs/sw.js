@@ -1,5 +1,5 @@
 // Akiba : garde l'application dans le téléphone pour qu'elle s'ouvre sans réseau.
-const CACHE = 'akiba-202609151644';
+const CACHE = 'akiba-202609151650';
 const FILES = ["./","index.html","manifest.webmanifest","icon.svg","icon-192.png","icon-512.png","ubora-logo.png","qrcode.min.js","core.js","avec.js","supervision.js","cycle.js","member-form.js","geo.js","create.js","access.js","setup.js","install.js","guide.js","audio.js","i18n.js","support.js","licence.js","transfer.js","admin.js","boot.js"];
 // « reload » : on télécharge toujours la vraie nouvelle version, jamais une copie gardée par le navigateur.
 self.addEventListener('install', e => e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES.map(f => new Request(f, { cache: 'reload' })))).then(() => self.skipWaiting())));
