@@ -61,7 +61,7 @@ SCREENS.login = () => {
       ${hasOrg ? who('l.users', 'org', 'building', 'background:var(--surface-2);color:var(--ink)', 'Organisation', 'Tableau de bord de nos AVEC') : ''}
     </div>` : ''}
     <div class="quicks">
-      ${quick('receiveSheet', '', 'sync', 'Recevoir une AVEC')}
+      ${K.data.mode !== 'prod' || !K.data.avecs.length ? quick('receiveSheet', '', 'sync', 'Recevoir une AVEC') : ''}
       ${canCreate ? quick('createAvec', '', 'plus', 'Créer une AVEC') : ''}
       ${quick('go', 'guide', 'book', 'Guide')}
     </div>
@@ -76,7 +76,8 @@ ACT.resetDemoOk = () => { DB.reset(); Object.keys(_chain).forEach(k => delete _c
 SCREENS['l.avec'] = () => `<div class="shell">${topbar('Choisir mon AVEC', 'Sur ce téléphone', backBtn('login'))}<main class="main">
   <div class="list">${K.data.avecs.map(a => `<button class="li" data-act="go" data-to="l.member" data-id="${a.id}"><span class="av" style="border-radius:12px">${ic('users')}</span>
     <span class="grow"><b>${esc(a.name)}</b><span class="small muted">${esc(a.village)} · ${a.members.length} membres</span></span>
-    ${a.status === 'pending' ? '<span class="chip warn">À valider</span>' : a.status === 'refused' ? '<span class="chip bad">Refusée</span>' : `<span class="chip ${a.orgId ? 'brand' : ''}">${a.orgId ? 'Suivie' : 'Autonome'}</span>`}</button>`).join('') || '<div class="li muted">Aucune AVEC sur ce téléphone. Créez-en une depuis l\'accueil.</div>'}</div></main></div>`;
+    ${a.status === 'pending' ? '<span class="chip warn">À valider</span>' : a.status === 'refused' ? '<span class="chip bad">Refusée</span>' : `<span class="chip ${a.orgId ? 'brand' : ''}">${a.orgId ? 'Suivie' : 'Autonome'}</span>`}</button>`).join('') || '<div class="li muted">Aucune AVEC sur ce téléphone. Créez-en une depuis l\'accueil.</div>'}</div>
+  <button class="linkbtn" data-act="receiveSheet">Recevoir une autre AVEC (fichier envoyé par l'animateur)</button></main></div>`;
 SCREENS['l.member'] = p => {
   const a = avecById(p.id);
   const sorted = a.members.filter(m => !m.left).sort((x, y) => (isBureau(y) - isBureau(x)) || (y.key - x.key));

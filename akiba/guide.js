@@ -51,6 +51,8 @@ const GUIDE = [
       <li><b>Amendes</b> : les retards paient sur place. L'amende d'un absent est notée comme dette.</li>
       <li><b>Clôture</b> : on recompte tout l'argent, les trois porte-clés tapent leur code et la réunion est <b>scellée</b>.</li>
     </ol>
+    <h4>D'une réunion à l'autre</h4>
+    <p>Akiba reprend la suite tout seul : au début, un <b>résumé de la réunion précédente</b> (caisse, échéances du jour, amendes dues, absents) ; à l'épargne, les <b>parts habituelles</b> de chaque membre sont proposées ; aux remboursements, les <b>échéances du jour</b> sont déjà écrites. Il suffit de vérifier et de corriger.</p>
     <div class="tip">Si le téléphone s'éteint pendant la réunion, rien n'est perdu : touchez <b>Continuer la réunion</b>.</div>` },
   { id: 'epargne', icon: 'coins', t: 'Épargne et parts', b: `
     <p>L'épargne se fait en <b>parts</b>. Toutes les parts ont la même valeur pendant le cycle (par exemple 1 000 FC). À chaque réunion, un membre achète de 1 à 5 parts.</p>

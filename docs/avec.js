@@ -160,12 +160,45 @@ ACT.stepDone = d => {
 };
 const nextBtn = (i, label) => `<div class="sticky-foot"><button class="btn primary block xl" data-act="${typeof label === 'object' ? label.act : 'stepDone'}" data-i="${i}">${typeof label === 'object' ? label.text : label} ${ic('chev')}</button></div>`;
 
+/* ---------- reprise d'une réunion à l'autre ---------- */
+const lastClosedMeeting = avec => avec.meetings.filter(x => x.status === 'closed' && !x.kind && (x.cycle || 1) === avec.cycle.n).sort((a, b) => b.date - a.date)[0] || null;
+function partsIn(avec, meeting, memberId) {
+  if (!meeting) return 0;
+  const an = annulledSet(avec);
+  return avec.tx.filter(t => t.meetingId === meeting.id && t.type === 'EPARGNE' && t.memberId === memberId && !an.has(t.id)).reduce((a, t) => a + (t.parts || 0), 0);
+}
+const installment = l => Math.min(l.remaining, Math.ceil(l.due / l.months / 100) * 100);
+function loanDueNow(l, date) {
+  if (l.status === 'retard') return true;
+  const last = l.pays.length ? l.pays[l.pays.length - 1].ts : l.ts;
+  return date - last >= 25 * DAY;                                     // environ un mois depuis le crédit ou le dernier paiement
+}
+function previousCard(avec, m, st) {
+  const prev = lastClosedMeeting(avec);
+  if (!prev) return '';
+  const absents = Object.values(prev.presence || {}).filter(v => v === 'A').length;
+  const dueLoans = st.activeLoans.filter(l => loanDueNow(l, m.date));
+  const debts = activeM(avec).filter(x => st.mem[x.id].fineDebt > 0);
+  const gap = prev.closeCount - prev.closeExpected;
+  const cell = (label, value, extra = '') => `<div><span class="small muted">${label}</span><b class="num" style="display:block">${value}</b>${extra}</div>`;
+  return `<section class="card stack prev">
+    <div class="row between"><span class="label">Depuis la réunion n°${prev.n}</span><span class="small muted">${fdate(prev.date)}</span></div>
+    <div class="grid2">
+      ${cell('Caisse fermée avec', fc(prev.closeCount), gap ? `<span class="chip bad">écart ${fc(gap)}</span>` : '')}
+      ${cell('Échéances aujourd\'hui', dueLoans.length ? fc(dueLoans.reduce((a, l) => a + installment(l), 0)) : 'aucune', dueLoans.length ? `<span class="small muted">${dueLoans.length} crédit${dueLoans.length > 1 ? 's' : ''}</span>` : '')}
+      ${cell('Amendes dues', debts.length ? `${debts.length} membre${debts.length > 1 ? 's' : ''}` : 'aucune')}
+      ${cell('Absents la dernière fois', absents)}
+    </div>
+    <p class="hint">Akiba reprend la suite : parts habituelles proposées, échéances pré-remplies, amendes dues rappelées.</p>
+  </section>`;
+}
+
 const STEP = {
   presence(avec, m) {
     const c = { P: 0, R: 0, A: 0 };
     Object.values(m.presence).forEach(v => c[v]++);
     const locked = m.stepDone >= 6;
-    return `<div><h2>Qui est là ?</h2><p class="muted">Touchez pour chaque membre. Les amendes d'absence et de retard seront proposées plus tard.</p></div>
+    return `${m.stepDone < 1 ? previousCard(avec, m, stats(avec)) : ''}<div><h2>Qui est là ?</h2><p class="muted">Touchez pour chaque membre. Les amendes d'absence et de retard seront proposées plus tard.</p></div>
       <div class="list">${activeM(avec).filter(x => m.presence[x.id]).map(x => `<div class="mrow">${avatar(x)}<div class="grow"><b>${esc(x.name)}</b><span class="small muted">${roleLabel(x)}</span></div>
         <div class="seg">${[['P', 'Là'], ['R', 'Retard'], ['A', 'Absent']].map(([k, l]) => `<button class="${k} ${m.presence[x.id] === k ? 'on' : ''}" data-act="pres" data-id="${x.id}" data-v="${k}" ${locked ? 'disabled' : ''} aria-pressed="${m.presence[x.id] === k}">${l}</button>`).join('')}</div></div>`).join('')}</div>
       <div class="totals"><span>${c.P} là · ${c.R} en retard · ${c.A} absents</span></div>
@@ -199,11 +232,16 @@ const STEP = {
   epargne(avec, m, st) {
     if (m.stepDone >= 3) return `${doneBanner('Parts achetées et inscrites dans chaque carnet.')}<div class="list">${txRows(avec, meetTx(avec, m, ['EPARGNE']), 'Aucune part achetée')}</div>${nextBtn(3, 'Suivant')}`;
     const here = presentMembers(avec, m);
-    const dr = draft(m.id + ':ep', () => ({ parts: {} }));
+    const dr = draft(m.id + ':ep', () => {
+      const prev = lastClosedMeeting(avec), o = {};
+      if (prev) here.forEach(x => { const p = partsIn(avec, prev, x.id); if (p) o[x.id] = Math.min(p, avec.settings.maxParts); });
+      return { parts: o, prefilled: Object.keys(o).length > 0 };
+    });
     const max = avec.settings.maxParts;
     const tot = here.reduce((a, x) => a + (dr.parts[x.id] || 0), 0);
     return `<div><h2>Achat de parts</h2><p class="muted">1 part = ${fc(avec.settings.partValue)}. Chaque membre achète de 1 à ${max} parts.</p></div>
-      <button class="btn ghost block" data-act="partsAll">Mettre 1 part à tout le monde</button>
+      ${dr.prefilled ? `<div class="tip">Proposé : les mêmes parts qu'à la dernière réunion. Ajustez avec + et −.</div>` : ''}
+      <div class="grid2"><button class="btn ghost" data-act="partsAll">1 part à ceux à 0</button><button class="btn ghost" data-act="partsZero">Tout remettre à 0</button></div>
       <div class="list">${here.map(x => { const n = dr.parts[x.id] || 0; return `<div class="mrow">${avatar(x)}<div class="grow"><b>${esc(x.name)}</b>${stampsHtml(n, max)}<span class="small muted num">${n ? fc(n * avec.settings.partValue) : 'aucune part'} · total ${st.mem[x.id].parts} parts</span></div>
         <div class="pm"><button data-act="parts" data-id="${x.id}" data-d="-1" aria-label="Retirer une part">−</button><output>${n}</output><button class="plus" data-act="parts" data-id="${x.id}" data-d="1" aria-label="Ajouter une part">+</button></div></div>`; }).join('')}</div>
       <div class="totals"><span>${tot} parts</span><b class="num">${fc(tot * avec.settings.partValue)}</b></div>
@@ -212,12 +250,14 @@ const STEP = {
   remb(avec, m, st) {
     if (m.stepDone >= 4) return `${doneBanner('Remboursements enregistrés.')}<div class="list">${txRows(avec, meetTx(avec, m, ['REMB']), 'Aucun remboursement')}</div>${nextBtn(4, 'Suivant')}`;
     const loans = st.activeLoans.slice().sort((a, b) => (b.status === 'retard') - (a.status === 'retard'));
+    const dueToday = l => m.presence[l.memberId] !== 'A' && loanDueNow(l, m.date);
+    const preTotal = loans.reduce((a, l) => a + (dueToday(l) ? installment(l) : 0), 0);
     if (!loans.length) return `<div><h2>Remboursements</h2></div><div class="card muted">Aucun crédit en cours dans le groupe.</div>${nextBtn(4, 'Suivant')}`;
-    return `<div><h2>Remboursements</h2><p class="muted">Écrivez ce que chaque membre rembourse aujourd'hui. Le bouton « Échéance » met le montant prévu.</p></div>
+    return `<div><h2>Remboursements</h2><p class="muted">Les échéances du jour sont déjà écrites. Corrigez si un membre paie moins ou plus. Le bouton « Échéance » remet le montant prévu.</p></div>
       <div class="list">${loans.map(l => { const x = memberOf(avec, l.memberId); const abs = m.presence[x.id] === 'A'; const inst = Math.min(l.remaining, Math.ceil(l.due / l.months / 100) * 100);
         return `<div class="mrow" style="flex-wrap:wrap">${avatar(x)}<div class="grow"><b>${esc(x.name)}</b><span class="small muted num">Reste ${fc(l.remaining)} · fin ${fdate(l.dueDate)}</span> ${l.status === 'retard' ? `<span class="chip bad">${l.daysLate} j de retard</span>` : ''}${abs ? ' <span class="chip">absent</span>' : ''}</div>
-        <div class="row" style="gap:6px"><input id="rb-${l.id}" class="input num" style="width:112px;text-align:right" inputmode="numeric" placeholder="0" data-in="rembTotal" data-max="${l.remaining}" aria-label="Montant remboursé par ${esc(x.name)}"><button class="btn sm" data-act="fillInst" data-id="${l.id}" data-v="${inst}">Échéance</button></div></div>`; }).join('')}</div>
-      <div class="totals"><span>Total reçu</span><b class="num" id="rbTot">0 FC</b></div>
+        <div class="row" style="gap:6px"><input id="rb-${l.id}" class="input num" style="width:112px;text-align:right" inputmode="numeric" placeholder="0" data-in="rembTotal" data-max="${l.remaining}" value="${dueToday(l) ? inst : ''}" aria-label="Montant remboursé par ${esc(x.name)}"><button class="btn sm" data-act="fillInst" data-id="${l.id}" data-v="${inst}">Échéance</button></div></div>`; }).join('')}</div>
+      <div class="totals"><span>Total reçu</span><b class="num" id="rbTot">${fc(preTotal)}</b></div>
       ${nextBtn(4, { act: 'saveRemb', text: 'Enregistrer les remboursements' })}`;
   },
   credit(avec, m, st) {
@@ -280,6 +320,7 @@ function updateCloseBtn() {
 ACT.pres = d => { const { avec } = cur(); openMeeting(avec).presence[d.id] = d.v; DB.save(); render(); };
 ACT.dToggle = d => { App.draft[d.k][d.id] = !App.draft[d.k][d.id]; render(); };
 ACT.parts = d => { const { avec } = cur(); const p = App.draft.parts; p[d.id] = Math.max(0, Math.min(avec.settings.maxParts, (p[d.id] || 0) + +d.d)); render(); };
+ACT.partsZero = () => { App.draft.parts = {}; App.draft.prefilled = false; render(); };
 ACT.partsAll = () => { const { avec } = cur(); const m = openMeeting(avec); presentMembers(avec, m).forEach(x => { if (!App.draft.parts[x.id]) App.draft.parts[x.id] = 1; }); render(); };
 ACT.fillInst = d => { const el = document.getElementById('rb-' + d.id); el.value = d.v; INP.rembTotal(); };
 INP.rembTotal = () => {
