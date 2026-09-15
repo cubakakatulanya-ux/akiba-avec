@@ -19,8 +19,11 @@ function supportCard() {
     <p class="small muted" style="text-align:center"><b class="num">${UBORA.telShow}</b> · ${UBORA.email}</p>
   </section>`;
 }
-function uboraFooter() {
-  return `<footer class="ubora-foot no-tr">${UBORA_LOGO}<span><span class="small muted">Application développée par l'Entreprise Sociale Ubora</span><br><a href="tel:${UBORA.tel}"><b class="num">${UBORA.telShow}</b></a> · <a href="${waLink()}" target="_blank" rel="noopener">WhatsApp</a> · <a href="mailto:${UBORA.email}">${UBORA.email}</a></span></footer>`;
+/* pied de page commun à tous les écrans ; espace réservé à la barre d'onglets seulement quand elle existe */
+function appFooter(screenHtml) {
+  const tabs = screenHtml.includes('class="tabbar"');
+  return `<footer class="appfoot no-tr"><img class="ubora-logo" src="ubora-logo.png" width="256" height="256" alt="" aria-hidden="true">
+    <span>Akiba · Développée par l'Entreprise Sociale Ubora<br><a href="tel:${UBORA.tel}">${UBORA.telShow}</a> · <a href="${waLink()}" target="_blank" rel="noopener">WhatsApp</a></span></footer>${tabs ? '<div class="tabspace" aria-hidden="true"></div>' : ''}`;
 }
 ICONS.chat = '<path d="M20 12a8 8 0 0 1-11.8 7L4 20l1.1-4A8 8 0 1 1 20 12z"/><path d="M9 10h6M9 13h4"/>';
 ICONS.mail = '<rect x="3.5" y="5.5" width="17" height="13" rx="2"/><path d="M4 7l8 6 8-6"/>';

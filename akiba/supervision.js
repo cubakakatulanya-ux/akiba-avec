@@ -14,33 +14,43 @@ const alertHtml = (a, to) => `<button class="alert ${a.lvl}" style="border-top:0
   <span style="width:22px;flex:none">${ic('alert')}</span><span style="flex:1;min-width:0"><b>${esc(a.title)}</b><span class="small">${esc(a.avec.name)} · ${esc(a.detail)}</span></span></button>`;
 
 /* ---------- connexion ---------- */
-SCREENS.login = () => `<div class="shell">
+SCREENS.login = () => {
+  const hasAnim = K.data.users.some(u => u.role === 'anim' && !u.remote);
+  const hasOrg = K.data.users.some(u => u.role === 'org' && !u.remote);
+  const canCreate = !(K.data.mode === 'prod' && K.data.orgs.length);
+  const who = (to, role, icon, tint, title, sub) => `<button class="who" data-act="go" data-to="${to}" ${role ? `data-role="${role}"` : ''}><span class="ic" style="${tint}">${ic(icon)}</span><span><b>${title}</b><span class="small muted">${sub}</span></span></button>`;
+  const quick = (act, to, icon, label, extra = '') => `<button class="quick" data-act="${act}" ${to ? `data-to="${to}"` : ''} ${extra}>${ic(icon)}<span>${label}</span></button>`;
+  const demo = K.data.mode === 'prod'
+    ? (K.data.orgs.length ? '' : `<button class="btn ghost block" data-act="go" data-to="s.org">${ic('building')} Créer le compte de mon organisation</button>`)
+    : `<div class="demo">
+        <p class="small"><b>Démonstration</b> · codes secrets <b class="mono">1234</b> · carte de secours <b class="mono">2468-1357</b></p>
+        ${licKind() === 'demo' ? '<p class="hint">Licence de démonstration : les vraies données ne sont pas disponibles.</p>' : `<button class="btn primary block" data-act="goLive">${ic('check')} Commencer avec mes vraies données</button>`}
+        <button class="linkbtn" data-act="resetDemo">Remettre la démo à zéro</button>
+      </div>`;
+  return `<div class="shell">
   <header class="hero">
     <button class="langbtn" data-act="langSheet" aria-label="Choisir la langue">${ic('globe')}<span class="no-tr">${esc(I18N.name())}</span></button>
     <svg class="ledger" viewBox="0 0 200 200" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><rect x="30" y="20" width="140" height="170" rx="10"/>${[55, 80, 105, 130, 155].map(y => `<path d="M50 ${y}h100"/>`).join('')}<path d="M80 20v170"/></svg>
     <div class="label" style="color:inherit;opacity:.8">Épargne et crédit villageois</div>
     <h1>Akiba</h1>
-    <p>Le cahier de l'AVEC, dans le téléphone. Il marche sans réseau et garde chaque franc en sécurité.</p>
-    <p class="small" style="opacity:.85">Développée par l'Entreprise Sociale Ubora</p>
+    <p>Le cahier de l'AVEC dans le téléphone, même sans réseau.</p>
   </header>
   <main class="main">
     ${licenceBanner()}${installBanner()}
     <h2>Qui êtes-vous ?</h2>
-    <button class="who" data-act="go" data-to="l.avec"><span class="ic" style="background:var(--maize-soft);color:var(--warn)">${ic('users')}</span><span><b>Membre d'une AVEC</b><span class="small muted">Bureau, porte-clé ou membre</span></span></button>
-    <button class="btn ghost block" data-act="receiveSheet">${ic('sync')} Recevoir une AVEC sur ce téléphone</button>
-    ${!K.data.users.some(u => u.role === 'anim' && !u.remote) ? '' : `<button class="who" data-act="go" data-to="l.users" data-role="anim"><span class="ic" style="background:var(--brand-soft);color:var(--brand)">${ic('map')}</span><span><b>Animateur de terrain</b><span class="small muted">Je suis plusieurs AVEC</span></span></button>`}
-    ${!K.data.users.some(u => u.role === 'org' && !u.remote) ? '' : `<button class="who" data-act="go" data-to="l.users" data-role="org"><span class="ic" style="background:var(--surface-2);color:var(--ink)">${ic('building')}</span><span><b>Organisation</b><span class="small muted">Tableau de bord de toutes nos AVEC</span></span></button>`}
-    ${K.data.mode === 'prod' && K.data.orgs.length ? '' : `<div class="divider">ou</div>
-    <button class="who" data-act="go" data-to="c.avec" data-from="login"><span class="ic" style="background:var(--good-soft);color:var(--good)">${ic('plus')}</span><span><b>Créer une nouvelle AVEC</b><span class="small muted">Groupe autonome, sans organisation</span></span></button>`}
-    <button class="btn ghost block" data-act="go" data-to="guide">${ic('book')} Guide d'utilisation</button>
-    ${K.data.mode === 'prod' ? (K.data.orgs.length ? '' : '<button class="btn ghost block" data-act="go" data-to="s.org">' + ic('building') + ' Créer le compte de mon organisation</button>')
-      : `<div class="card stack" style="box-shadow:none;background:transparent;border:1.5px dashed var(--line)">
-      <p class="small"><b>Version de démonstration.</b> AVEC fictives du Nord-Kivu : 5 suivies par « Mwangaza Développement » (dont 1 à valider) et 1 autonome. Codes secrets : <b class="mono">1234</b> · carte de secours : <b class="mono">2468-1357</b>.</p>
-      ${licKind() === 'demo' ? '<p class="hint">Licence de démonstration : les vraies données ne sont pas disponibles.</p>' : `<button class="btn primary block" data-act="goLive">${ic('check')} Commencer avec mes vraies données</button>`}
-      <button class="btn sm ghost" data-act="resetDemo">Remettre la démo à zéro</button>
-    </div>`}
-    ${uboraFooter()}
+    <div class="stack" style="gap:10px">
+      ${who('l.avec', '', 'users', 'background:var(--maize-soft);color:var(--warn)', "Membre d'une AVEC", 'Bureau, porte-clé ou membre')}
+      ${hasAnim ? who('l.users', 'anim', 'map', 'background:var(--brand-soft);color:var(--brand)', 'Animateur de terrain', 'Je suis plusieurs AVEC') : ''}
+      ${hasOrg ? who('l.users', 'org', 'building', 'background:var(--surface-2);color:var(--ink)', 'Organisation', 'Tableau de bord de nos AVEC') : ''}
+    </div>
+    <div class="quicks">
+      ${quick('receiveSheet', '', 'sync', 'Recevoir une AVEC')}
+      ${canCreate ? quick('go', 'c.avec', 'plus', 'Créer une AVEC', 'data-from="login"') : ''}
+      ${quick('go', 'guide', 'book', 'Guide')}
+    </div>
+    ${demo}
   </main></div>`;
+};
 ACT.resetDemo = () => App.openSheet(`<h2>Remettre la démo à zéro ?</h2><p class="muted">Toutes les réunions ajoutées sur ce téléphone seront effacées et les données fictives rechargées.</p>
   <button class="btn danger block xl" data-act="resetDemoOk">Effacer et recharger</button><button class="btn ghost block" data-act="closeSheet">Garder mes données</button>`);
 ACT.resetDemoOk = () => { DB.reset(); Object.keys(_chain).forEach(k => delete _chain[k]); App.go('login'); App.toast('Démo rechargée'); };

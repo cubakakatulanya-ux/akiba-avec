@@ -513,7 +513,6 @@ SCREENS['a.member'] = p => {
     ${memberInfo(x)}
     ${memberActions(avec, me, x, d)}
     <section class="section"><h2>Historique</h2><div class="list">${hist.map(t => `<div class="li" style="${an.has(t.id) ? 'opacity:.5;text-decoration:line-through' : ''}"><span class="grow"><b>${TX[t.type].l}${t.parts ? ' · ' + t.parts + ' parts' : ''}</b><span class="small muted">${fdate(t.ts)}${t.note ? ' · ' + esc(t.note) : ''}</span></span><span class="end num" style="color:${TX[t.type].in ? 'var(--ink)' : 'var(--warn)'}">${fc(t.amount)}</span></div>`).join('') || '<div class="li muted">Rien pour le moment</div>'}</div></section>
-    ${self ? uboraFooter() : ''}
   </main>${self ? '' : tabbar(A_TABS, 'a.members')}</div>`;
 };
 function loanLi(avec, l, withName = true) {

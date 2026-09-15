@@ -478,7 +478,8 @@ const App = {
 function render() {
   const locked = typeof licenceRequired === 'function' && licenceRequired() && !(App.licence && App.licence.ok);
   const fn = locked && !/^adm\./.test(App.screen) ? SCREENS['lic.gate'] : (SCREENS[App.screen] || SCREENS.login);
-  document.getElementById('app').innerHTML = fn(App.params) +
+  const screenHtml = fn(App.params);
+  document.getElementById('app').innerHTML = screenHtml + (typeof appFooter === 'function' ? appFooter(screenHtml) : '') +
     (App.sheet ? `<div class="scrim" data-act="scrim"><div class="sheet" role="dialog" aria-modal="true"><div class="sheethead"><div class="grab"></div><button class="iconbtn shut" data-act="closeSheet" aria-label="Fermer">${ic('x')}</button></div>${App.sheet}</div></div>` : '');
   if (App.updateReady && !document.getElementById('updbar')) {
     const bar = document.createElement('div');
