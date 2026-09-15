@@ -70,6 +70,7 @@ function meetingLi(avec, m) {
 SCREENS['a.home'] = () => {
   const { avec, me, st } = cur();
   if (!isActive(avec)) return SCREENS['a.pending']();
+  if (avec.movedOut) return SCREENS['a.moved']();
   if (!isBureau(me)) return SCREENS['a.member']({ id: me.id });
   const open = openMeeting(avec);
   const next = avec.meetings.reduce((a, m) => Math.max(a, m.n), 0) + 1;
@@ -102,6 +103,7 @@ SCREENS['a.home'] = () => {
 ACT.startMeeting = () => {
   const { avec, me } = cur();
   if (!isActive(avec)) return App.toast('L\'AVEC doit d\'abord être validée par l\'organisation');
+  if (avec.movedOut) return App.toast('Cette AVEC est sur un autre téléphone : la réunion se tient là-bas');
   if (!isBureau(me)) return App.toast('Seul le bureau peut ouvrir une réunion');
   if (openMeeting(avec)) return App.go('a.meet');
   const n = avec.meetings.reduce((a, m) => Math.max(a, m.n), 0) + 1;

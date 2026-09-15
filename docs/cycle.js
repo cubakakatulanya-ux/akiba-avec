@@ -356,6 +356,7 @@ SCREENS['a.more'] = () => {
       ${li('a.roles', 'users', 'Bureau et porte-clés', 'Changer un responsable')}
       ${li('a.security', 'shield', 'Sécurité et carte de secours', `${(avec.rescue || []).filter(r => !r.used).length} codes de secours valables`)}
       ${li('a.member', 'user', 'Mon carnet et mon code', esc(me.name)).replace('data-to="a.member"', `data-to="a.member" data-id="${me.id}"`)}
+      ${li('', 'sync', 'Changer de téléphone', 'Mettre l\'AVEC sur un nouveau téléphone', 'transferSheet').replace('data-act="transferSheet"', `data-act="transferSheet" data-id="${avec.id}"`)}
       ${li('dev.backup', 'home', 'Installer et sauvegarder', K.data.lastBackup ? 'Dernière sauvegarde ' + ago(K.data.lastBackup) : 'Aucune sauvegarde pour le moment')}
       ${li('guide', 'book', 'Guide d\'utilisation', 'Tout sur l\'AVEC et l\'application')}
       ${li('', 'globe', 'Langue', I18N.name(), 'langSheet')}

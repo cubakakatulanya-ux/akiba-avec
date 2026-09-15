@@ -26,8 +26,9 @@ SCREENS.login = () => `<div class="shell">
     ${licenceBanner()}${installBanner()}
     <h2>Qui êtes-vous ?</h2>
     <button class="who" data-act="go" data-to="l.avec"><span class="ic" style="background:var(--maize-soft);color:var(--warn)">${ic('users')}</span><span><b>Membre d'une AVEC</b><span class="small muted">Bureau, porte-clé ou membre</span></span></button>
-    ${!K.data.users.some(u => u.role === 'anim') ? '' : `<button class="who" data-act="go" data-to="l.users" data-role="anim"><span class="ic" style="background:var(--brand-soft);color:var(--brand)">${ic('map')}</span><span><b>Animateur de terrain</b><span class="small muted">Je suis plusieurs AVEC</span></span></button>`}
-    ${!K.data.users.some(u => u.role === 'org') ? '' : `<button class="who" data-act="go" data-to="l.users" data-role="org"><span class="ic" style="background:var(--surface-2);color:var(--ink)">${ic('building')}</span><span><b>Organisation</b><span class="small muted">Tableau de bord de toutes nos AVEC</span></span></button>`}
+    <button class="btn ghost block" data-act="receiveSheet">${ic('sync')} Recevoir une AVEC sur ce téléphone</button>
+    ${!K.data.users.some(u => u.role === 'anim' && !u.remote) ? '' : `<button class="who" data-act="go" data-to="l.users" data-role="anim"><span class="ic" style="background:var(--brand-soft);color:var(--brand)">${ic('map')}</span><span><b>Animateur de terrain</b><span class="small muted">Je suis plusieurs AVEC</span></span></button>`}
+    ${!K.data.users.some(u => u.role === 'org' && !u.remote) ? '' : `<button class="who" data-act="go" data-to="l.users" data-role="org"><span class="ic" style="background:var(--surface-2);color:var(--ink)">${ic('building')}</span><span><b>Organisation</b><span class="small muted">Tableau de bord de toutes nos AVEC</span></span></button>`}
     ${K.data.mode === 'prod' && K.data.orgs.length ? '' : `<div class="divider">ou</div>
     <button class="who" data-act="go" data-to="c.avec" data-from="login"><span class="ic" style="background:var(--good-soft);color:var(--good)">${ic('plus')}</span><span><b>Créer une nouvelle AVEC</b><span class="small muted">Groupe autonome, sans organisation</span></span></button>`}
     <button class="btn ghost block" data-act="go" data-to="guide">${ic('book')} Guide d'utilisation</button>
@@ -59,7 +60,7 @@ ACT.loginMember = d => {
   askPin(m, 'Connexion', () => { K.session = { kind: 'avec', avecId: a.id, memberId: m.id }; DB.save(); App.go('a.home'); });
 };
 SCREENS['l.users'] = p => {
-  const list = K.data.users.filter(u => u.role === p.role);
+  const list = K.data.users.filter(u => u.role === p.role && !u.remote);
   return `<div class="shell">${topbar(p.role === 'org' ? 'Organisation' : 'Animateurs', 'Choisissez votre compte', backBtn('login'))}<main class="main">
     <div class="list">${list.map(u => `<button class="li" data-act="loginUser" data-id="${u.id}"><span class="av">${esc(initials(u.name))}</span><span class="grow"><b>${esc(u.name)}</b><span class="small muted">${esc(orgOf(u.orgId).name)}${u.zone ? ' · ' + esc(u.zone) : ''}</span></span>${ic('chev')}</button>`).join('')}</div></main></div>`;
 };
@@ -110,6 +111,7 @@ SCREENS['n.avec'] = p => {
   const late = st.activeLoans.filter(l => l.status === 'retard');
   return `<div class="shell ${isOrg ? '' : ''}">${topbar(avec.name, `${esc(avec.village)}, ${esc(avec.territoire)} · ${esc(anim ? anim.name : '')}`, backBtn(isOrg ? 'o.home' : 'n.home'))}<main class="main">
     ${statusBanner(avec, u)}
+    ${transferBlock(avec)}
     <div class="row small muted" style="flex-wrap:wrap;gap:8px">${ic('cloud')}<span>Données reçues ${avec.lastSync ? ago(avec.lastSync) : 'jamais'}. Lecture seule : seul le bureau du groupe écrit dans le cahier.</span></div>
     ${h.alerts.map(a => `<div class="alert ${a.lvl}"><span style="width:22px;flex:none">${ic('alert')}</span><div><b>${esc(a.title)}</b><span class="small">${esc(a.detail)}</span></div></div>`).join('') || '<div class="alert good"><span style="width:22px;flex:none">' + ic('check') + '</span><div><b>Rien à signaler</b><span class="small">Caisse juste, crédits à jour, réunions régulières.</span></div></div>'}
     <div class="kpis">

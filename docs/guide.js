@@ -25,6 +25,18 @@ const GUIDE = [
     <h4>Groupe qui avait déjà un cahier</h4>
     <p>Choisissez « Groupe déjà en cours » et recopiez le cahier : parts achetées par chaque membre, reste à payer sur chaque crédit, caisse sociale, puis l'argent compté dans la caisse de crédit. Kitabu enregistre tout dans une séance « Reprise du cahier », scellée. S'il manque de l'argent par rapport au cahier, l'écart est signalé.</p>
     <div class="tip">À la fin, Kitabu affiche <b>un code secret différent pour chaque membre</b>, une seule fois. Recopiez-les sur de petits papiers et donnez-les en main propre.</div>` },
+  { id: 'connexion', icon: 'users', t: 'Comment une AVEC se connecte', b: `
+    <h4>L'AVEC a été créée sur son propre téléphone</h4>
+    <p>Chaque membre ouvre Kitabu, touche <b>Membre d'une AVEC</b>, choisit son AVEC, touche <b>son nom</b> et tape <b>son code secret</b>. Le bureau voit la réunion ; les autres membres voient leur carnet.</p>
+    <h4>L'AVEC a été créée sur le téléphone de l'animateur</h4>
+    <ol><li>L'animateur ouvre l'AVEC puis touche <b>Envoyer vers le téléphone du groupe</b>.</li>
+      <li>Il envoie le fichier <b>.kitabu</b> par WhatsApp, Bluetooth ou carte mémoire, et dit le <b>code de 8 signes</b> de vive voix.</li>
+      <li>Sur le téléphone du groupe : ouvrir Kitabu, toucher <b>Recevoir une AVEC</b>, choisir le fichier, taper le code. La licence arrive avec le fichier.</li>
+      <li>Les membres se connectent ensuite avec leur nom et leur code.</li></ol>
+    <h4>Le groupe change de téléphone</h4>
+    <p>Sur l'ancien téléphone : <b>Plus › Changer de téléphone</b>, puis même chose. L'ancien téléphone garde une copie mais ne peut plus ouvrir de réunion : il n'y a jamais deux cahiers différents.</p>
+    <h4>Le groupe avait un cahier papier</h4>
+    <p>À la création, choisir <b>Groupe déjà en cours</b> et recopier le cahier (voir « Créer l'AVEC »).</p>` },
   { id: 'reunion', icon: 'calendar', t: 'La réunion, étape par étape', b: `
     <p>Sur l'accueil, un membre du bureau touche <b>Ouvrir la réunion</b>. Kitabu guide la réunion dans l'ordre. On ne peut pas sauter une étape.</p>
     <ol>
