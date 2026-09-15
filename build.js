@@ -19,7 +19,7 @@ fs.writeFileSync(path.join(out, 'index.html'), `<!doctype html>
 <html lang="fr"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Akiba AVEC</title>
-<meta name="description" content="Gestion des associations villageoises d'épargne et de crédit, même sans réseau.">
+<meta name="description" content="Gestion des associations villageoises d'épargne et de crédit, même sans réseau. Développée par l'Entreprise Sociale Ubora."><meta name="author" content="Entreprise Sociale Ubora">
 <link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="icon-192.png">
 <meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Akiba">
 ${head}
@@ -65,7 +65,7 @@ fs.writeFileSync(path.join(out, 'icon-512.png'), iconPng(512));
 fs.writeFileSync(path.join(out, 'manifest.webmanifest'), JSON.stringify({
   id: './', name: 'Akiba AVEC', short_name: 'Akiba', lang: 'fr', start_url: './', scope: './', display: 'standalone', orientation: 'portrait',
   background_color: '#0F4D3A', theme_color: '#0F4D3A', categories: ['finance', 'productivity'],
-  description: "Le cahier de l'AVEC dans le téléphone, même sans réseau.",
+  description: "Le cahier de l'AVEC dans le téléphone, même sans réseau. Développée par l'Entreprise Sociale Ubora.",
   icons: [
     { src: 'icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
     { src: 'icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },

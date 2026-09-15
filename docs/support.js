@@ -10,7 +10,7 @@ const waLink = () => `https://wa.me/${UBORA.wa}?text=${encodeURIComponent('Bonjo
 
 function supportCard() {
   return `<section class="card stack support no-tr">
-    <div class="row" style="gap:14px">${UBORA_LOGO}<div><span class="label">Assistance</span><b style="display:block;font-family:var(--f-display);font-size:1.15rem">Ubora</b><span class="small muted">Une question, un problème ? Appelez ou écrivez-nous.</span></div></div>
+    <div class="row" style="gap:14px">${UBORA_LOGO}<div><span class="label">Assistance</span><b style="display:block;font-family:var(--f-display);font-size:1.15rem">Ubora</b><span class="small muted">Akiba est développée par l'Entreprise Sociale Ubora. Une question, un problème ? Appelez ou écrivez-nous.</span></div></div>
     <div class="support-actions">
       <a class="btn brand" href="tel:${UBORA.tel}">${ic('hand')} Appeler</a>
       <a class="btn wa" href="${waLink()}" target="_blank" rel="noopener">${ic('chat')} WhatsApp</a>
@@ -20,7 +20,7 @@ function supportCard() {
   </section>`;
 }
 function uboraFooter() {
-  return `<footer class="ubora-foot no-tr">${UBORA_LOGO}<span><span class="small muted">Assistance Ubora</span><br><a href="tel:${UBORA.tel}"><b class="num">${UBORA.telShow}</b></a> · <a href="${waLink()}" target="_blank" rel="noopener">WhatsApp</a> · <a href="mailto:${UBORA.email}">${UBORA.email}</a></span></footer>`;
+  return `<footer class="ubora-foot no-tr">${UBORA_LOGO}<span><span class="small muted">Application développée par l'Entreprise Sociale Ubora</span><br><a href="tel:${UBORA.tel}"><b class="num">${UBORA.telShow}</b></a> · <a href="${waLink()}" target="_blank" rel="noopener">WhatsApp</a> · <a href="mailto:${UBORA.email}">${UBORA.email}</a></span></footer>`;
 }
 ICONS.chat = '<path d="M20 12a8 8 0 0 1-11.8 7L4 20l1.1-4A8 8 0 1 1 20 12z"/><path d="M9 10h6M9 13h4"/>';
 ICONS.mail = '<rect x="3.5" y="5.5" width="17" height="13" rx="2"/><path d="M4 7l8 6 8-6"/>';

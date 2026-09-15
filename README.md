@@ -10,6 +10,8 @@ Le cahier des **Associations Villageoises d'Épargne et de Crédit (AVEC)** dans
 - Plan B pour les codes secrets perdus : deux membres du bureau, carte de secours, ou appel à l'animateur.
 - Langues : français, lingala, swahili, kikongo, tshiluba, et écran de traduction pour les autres langues (ngbaka, ngbandi, mbanza…).
 
+*Application développée par l'**Entreprise Sociale Ubora**.*
+
 ## Assistance
 **Ubora**, entreprise sociale : appel ou WhatsApp **0998 275 144** · contact@uborahub.com
 

@@ -37,6 +37,7 @@ SCREENS['lic.gate'] = () => {
       <div class="label" style="color:inherit;opacity:.8">Épargne et crédit villageois</div>
       <h1>Akiba</h1>
       <p>Application réservée aux organisations et aux groupes partenaires agréés.</p>
+      <p class="small" style="opacity:.85">Développée par l'Entreprise Sociale Ubora</p>
     </header>
     <main class="main">
       ${r.expired ? `<div class="alert bad">${icSpan('alert')}<div><b>${esc(r.why)}</b><span class="small">Les données restent sur ce téléphone. Demandez le renouvellement de la licence de « ${esc(r.data.name)} ».</span></div></div>` : ''}

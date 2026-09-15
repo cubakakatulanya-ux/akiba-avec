@@ -62,6 +62,7 @@ SCREENS['dev.backup'] = () => {
     ${licenceCard()}
     <section class="card stack"><h2>Mises à jour</h2>
       <p class="small muted">Akiba se met à jour tout seul, <b>sans désinstaller</b> et <b>sans perdre les données</b>. Il suffit de l'ouvrir de temps en temps avec du réseau. Si une saisie est en cours, un bandeau « Mettre à jour » apparaît.</p>
+      <div class="row between small"><span>Développée par</span><b>Entreprise Sociale Ubora</b></div>
       <div class="row between small"><span>Version sur ce téléphone</span><b class="mono">${esc(window.KITABU_VERSION || 'démonstration')}</b></div>
     </section>
 

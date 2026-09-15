@@ -21,6 +21,7 @@ SCREENS.login = () => `<div class="shell">
     <div class="label" style="color:inherit;opacity:.8">Épargne et crédit villageois</div>
     <h1>Akiba</h1>
     <p>Le cahier de l'AVEC, dans le téléphone. Il marche sans réseau et garde chaque franc en sécurité.</p>
+    <p class="small" style="opacity:.85">Développée par l'Entreprise Sociale Ubora</p>
   </header>
   <main class="main">
     ${licenceBanner()}${installBanner()}

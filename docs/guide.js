@@ -12,6 +12,7 @@ const GUIDE = [
       <li><b>L'animateur</b> suit plusieurs AVEC, reçoit les alertes et note ses visites. Il ne peut rien modifier.</li>
       <li><b>L'organisation</b> voit le tableau de bord de toutes les AVEC qu'elle accompagne.</li>
     </ul>
+    <p>Akiba est développée par l'<b>Entreprise Sociale Ubora</b>, qui assure aussi l'assistance : appel ou WhatsApp au <b>0998 275 144</b>, e-mail <b>contact@uborahub.com</b>.</p>
     <div class="tip">Une AVEC <b>autonome</b> (sans organisation) utilise seulement l'interface du groupe. Personne d'autre ne voit ses données.</div>` },
   { id: 'debut', icon: 'plus', t: 'Créer l\'AVEC et commencer', b: `
     <p>Touchez <b>Créer une nouvelle AVEC</b> sur l'écran d'accueil. Un animateur ou une organisation le fait depuis son propre espace. Tout se prépare en 5 étapes, avec l'assemblée réunie.</p>
