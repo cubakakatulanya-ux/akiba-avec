@@ -338,6 +338,7 @@ function seed() {
     const start = now - ((d.weeks - 1) * 7 + gap) * DAY;
     const avec = {
       id: 'avec' + ai, name: d.name, village: d.village, territoire: d.terr, orgId: d.org, animId: d.anim,
+      province: 'Nord-Kivu', entite: d.terr === 'Butembo' ? 'ville' : 'territoire', secteur: d.terr === 'Lubero' ? 'Bamate' : '', groupement: '',
       createdAt: start - 14 * DAY, cycle: { n: d.p === 'late' ? 2 : 1, start, end: start + (d.p === 'ecart' ? 4 : 12) * 30 * DAY },
       settings: { partValue: d.part, maxParts: 5, socialFee: d.social, rate: d.p === 'auto' ? 5 : 10, maxMult: 3, maxMonths: 3, fineAbsent: 500, fineLate: 200, cycleMonths: d.p === 'ecart' ? 4 : 12 },
       members, meetings: [], tx: [], visits: [], lastSync: 0,
@@ -416,7 +417,7 @@ function seed() {
   const pm = ['Bahati Kavugho', 'Furaha Masika', 'Neema Kahindo', 'Sifa Mbambu', 'Riziki Kasoki', 'Faida Katungu', 'Paluku Muhesi', 'Kambale Siviri', 'Mwamini Vihamba', 'Solange Lwanzo', 'Jeanine Kombi', 'Espérance Maliro']
     .map((name, i) => ({ id: 'mp-' + i, name, sex: /^(Paluku|Kambale)/.test(name) ? 'M' : 'F', pin: '1234', phone: '+243 99 ' + (401 + i) + ' 20 ' + (10 + i), role: ['president', 'secretaire', 'tresorier', 'compteur', 'compteur'][i] || 'membre', key: i >= 5 && i <= 7 }));
   data.avecs.push({
-    id: 'avec-p', name: 'Tuungane Wamama', village: 'Mayangose', territoire: 'Beni', orgId: 'org1', animId: 'u-a2',
+    id: 'avec-p', name: 'Tuungane Wamama', village: 'Mayangose', territoire: 'Beni', province: 'Nord-Kivu', entite: 'territoire', secteur: 'Beni-Mbau', groupement: '', orgId: 'org1', animId: 'u-a2',
     createdAt: now - 2 * DAY, submittedAt: now - 2 * DAY, cycle: { n: 1, start: now, end: now + 12 * 30 * DAY }, cycles: [],
     settings: { partValue: 1000, maxParts: 5, socialFee: 500, rate: 10, maxMult: 3, maxMonths: 3, fineAbsent: 500, fineLate: 200, cycleMonths: 12, meetingDay: 'Jeudi', frequency: 7 },
     members: pm, meetings: [], tx: [], visits: [], lastSync: now - 2 * DAY,

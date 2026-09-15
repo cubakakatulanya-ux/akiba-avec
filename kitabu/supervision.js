@@ -181,7 +181,7 @@ SCREENS['o.home'] = p => {
           <thead><tr><th></th><th>AVEC</th><th>Animateur</th><th class="r">Membres</th><th class="r">Épargne</th><th class="r">Crédits</th><th class="r">PAR</th><th>Cycle</th><th>Dernière réunion</th><th>Reçu</th></tr></thead>
           <tbody>${rows.sort((a, b) => LVL[a.h.level] - LVL[b.h.level]).map(r => `<tr class="click" data-act="go" data-to="n.avec" data-id="${r.avec.id}">
             <td><span class="health ${r.h.level}"></span></td>
-            <td><b>${esc(r.avec.name)}</b><br><span class="small muted">${esc(r.avec.village)}, ${esc(r.avec.territoire)}</span></td>
+            <td><b>${esc(r.avec.name)}</b><br><span class="small muted">${placeShort(r.avec)}</span></td>
             <td>${esc(userById(r.avec.animId)?.name || '—')}</td>
             <td class="r num">${r.avec.members.length}</td>
             <td class="r num">${fc(r.st.sum.EPARGNE)}</td>

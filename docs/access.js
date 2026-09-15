@@ -106,7 +106,7 @@ SCREENS['o.review'] = p => {
   const line = (k, v) => `<div class="li"><span class="grow muted">${k}</span><b style="text-align:right">${v}</b></div>`;
   return `<div class="shell">${topbar('Valider une AVEC', esc(avec.name), backBtn('o.home'))}<main class="main">
     ${avec.status === 'active' ? '<div class="alert good"><div><b>Cette AVEC est déjà validée</b></div></div>' : avec.status === 'refused' ? `<div class="alert bad"><div><b>Refusée</b><span class="small">${esc(avec.refusedReason || '')}</span></div></div>` : ''}
-    <div><h1>${esc(avec.name)}</h1><p class="muted">${esc(avec.village)}, ${esc(avec.territoire)} · créée par ${esc(userById(avec.animId)?.name || '—')} ${ago(avec.submittedAt || avec.createdAt)} · code de demande ${fmtReq(avec.requestCode)}</p></div>
+    <div><h1>${esc(avec.name)}</h1><p class="muted">${placeShort(avec)}${avec.groupement ? ' · groupement ' + esc(avec.groupement) : ''}${avec.secteur ? ' · ' + esc(avec.secteur) : ''} · créée par ${esc(userById(avec.animId)?.name || '—')} ${ago(avec.submittedAt || avec.createdAt)} · code de demande ${fmtReq(avec.requestCode)}</p></div>
     <section class="section"><h2>Contrôles automatiques</h2><div class="list">${reviewChecks(avec).map(c => `<div class="li"><span style="width:22px;flex:none;color:${c.good ? 'var(--good)' : 'var(--warn)'}">${ic(c.good ? 'check' : 'alert')}</span><span class="grow">${c.text}</span>${c.good ? '' : '<span class="chip warn">à vérifier</span>'}</div>`).join('')}</div></section>
     <section class="section"><h2>Règlement</h2><div class="list">
       ${line('Réunions', `${esc(s.meetingDay || '—')}, ${(s.frequency || 7) === 14 ? 'toutes les 2 semaines' : 'chaque semaine'}`)}

@@ -16,7 +16,7 @@ const GUIDE = [
   { id: 'debut', icon: 'plus', t: 'Créer l\'AVEC et commencer', b: `
     <p>Touchez <b>Créer une nouvelle AVEC</b> sur l'écran d'accueil. Un animateur ou une organisation le fait depuis son propre espace. Tout se prépare en 5 étapes, avec l'assemblée réunie.</p>
     <ol>
-      <li><b>Groupe</b> : nom, village, territoire, jour et rythme des réunions, date de création. L'organisation choisit aussi l'animateur.</li>
+      <li><b>Groupe</b> : nom, puis le lieu. La <b>province</b> et le <b>territoire ou la ville</b> se choisissent dans la liste officielle de toute la RDC (26 provinces, 145 territoires, villes et communes de Kinshasa). Le secteur, le groupement et le village s'écrivent : les noms déjà utilisés sont proposés pour éviter les fautes. Puis le jour et le rythme des réunions. L'organisation choisit aussi l'animateur.</li>
       <li><b>Règlement</b> : valeur d'une part, nombre de parts par réunion, caisse sociale, durée et date de début du cycle, intérêt, crédit maximum, durée des crédits, amendes. Un exemple chiffré montre ce que les règles donnent.</li>
       <li><b>Membres</b> : une fiche par personne. <b>Obligatoire</b> : nom et sexe. <b>Facultatif</b> : âge, téléphone, activité, adresse. Pour aller plus vite, on peut aussi coller une liste de noms, puis compléter les fiches.</li>
       <li><b>Bureau</b> : président, secrétaire, trésorier, deux compteurs et <b>trois porte-clés</b>. Le trésorier garde la caisse, il ne peut donc pas garder une clé.</li>
@@ -106,6 +106,13 @@ const GUIDE = [
       <li><b>AVEC autonome</b> : créez directement votre groupe.</li>
     </ol>
     <div class="tip">Pendant la phase pilote, gardez aussi le cahier papier.</div>` },
+  { id: 'audio', icon: 'volume', t: 'Écouter au lieu de lire', b: `
+    <p>Kitabu peut <b>lire à voix haute</b>, même sans réseau, avec la voix installée sur le téléphone.</p>
+    <ul><li>Dans ce guide : <b>Écouter cette partie</b> ou <b>Écouter tout le guide</b>.</li>
+      <li>Pendant la réunion : <b>Écouter cette étape</b> explique ce qu'il faut faire.</li>
+      <li>Dans le carnet : <b>Écouter mon carnet</b> dit l'épargne et la valeur des parts.</li>
+      <li>Touchez à nouveau le bouton pour <b>arrêter</b>.</li></ul>
+    <div class="tip">Pas de son ? Montez le volume, puis vérifiez dans les paramètres du téléphone que « Services vocaux Google » est installé, avec la langue française téléchargée.</div>` },
   { id: 'installer', icon: 'home', t: 'Icône, protection et sauvegarde', b: `
     <h4>Mettre l'icône sur l'écran d'accueil</h4>
     <ol><li>Ouvrez l'adresse de Kitabu dans <b>Chrome</b>, avec du réseau.</li><li>Touchez <b>Installer Kitabu</b> (ou menu ⋮ › « Ajouter à l'écran d'accueil »).</li><li>Une icône verte apparaît. Ensuite, Kitabu s'ouvre <b>sans réseau</b>.</li></ol>
@@ -195,7 +202,9 @@ SCREENS.guide = p => {
   const isAnim = s && s.kind === 'anim';
   const open = p.s || (isAnim ? 'animateur' : s && s.kind === 'org' ? 'organisation' : 'bref');
   return `<div class="shell">${topbar('Guide d\'utilisation', 'Kitabu AVEC', isAnim ? '' : backBtn(back))}<main class="main">
-    <div><h1>Comment utiliser Kitabu</h1><p class="muted">Touchez un titre pour l'ouvrir. Les mots en gras sont ceux que vous voyez à l'écran.</p></div>
-    ${GUIDE.map(g => `<details class="g" ${g.id === open ? 'open' : ''}><summary><span class="gi">${ic(g.icon)}</span>${g.t}</summary><div class="gb">${g.b}</div></details>`).join('')}
+    <div><h1>Comment utiliser Kitabu</h1><p class="muted">Touchez un titre pour l'ouvrir. Les mots en gras sont ceux que vous voyez à l'écran. Touchez « Écouter » pour que le téléphone lise à voix haute, même sans réseau.</p></div>
+    <div class="row">${speakBtn('all', '.g summary, .g .gb p, .g .gb li, .g .gb h4, .g .gb .formula, .g .gb .tip', 'Écouter tout le guide')}</div>
+    ${GUIDE.map(g => `<details class="g" id="g-${g.id}" ${g.id === open ? 'open' : ''}><summary><span class="gi">${ic(g.icon)}</span>${g.t}</summary><div class="gb">
+      <div>${speakBtn(g.id, `#g-${g.id} summary, #g-${g.id} .gb p, #g-${g.id} .gb li, #g-${g.id} .gb h4, #g-${g.id} .gb .formula, #g-${g.id} .gb .tip`, 'Écouter cette partie')}</div>${g.b}</div></details>`).join('')}
   </main>${isAnim ? tabbar(N_TABS, 'guide') : ''}</div>`;
 };

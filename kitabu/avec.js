@@ -149,7 +149,7 @@ SCREENS['a.meet'] = p => {
   const step = p.step != null && p.step !== '' ? Math.min(+p.step, m.stepDone + 1) : Math.min(m.stepDone + 1, 7);
   const bar = `<div class="steps" role="list">${STEPS.map((s, i) => `<button class="stp ${i === step ? 'cur' : i <= m.stepDone ? 'done' : ''}" data-act="go" data-to="a.meet" data-step="${i}" ${i > m.stepDone + 1 ? 'disabled' : ''}><i>${i <= m.stepDone && i !== step ? '✓' : i + 1}</i>${s.l}</button>`).join('')}</div>`;
   return `<div class="shell">${topbar(`Réunion n°${m.n}`, `${fdate(m.date)} · étape ${step + 1} sur 8`, backBtn('a.home'), syncPill(avec))}
-    <main class="main">${bar}${STEP[STEPS[step].id](avec, m, st, me, step)}</main></div>`;
+    <main class="main">${bar}<div class="row">${speakBtn('step' + step, '.main h2, .main > div > p.muted', 'Écouter cette étape', I18N.cur())}</div>${STEP[STEPS[step].id](avec, m, st, me, step)}</main></div>`;
 };
 ACT.stepDone = d => {
   const { avec } = cur(); const m = openMeeting(avec);
@@ -502,6 +502,7 @@ SCREENS['a.member'] = p => {
     <div class="row">${avatar(x)}<div><h1 style="font-size:1.5rem">${esc(x.name)}</h1><span class="muted small">${roleLabel(x)}${ageOf(x) ? ' · ' + ageOf(x) + ' ans' : ''}${x.activity ? ' · ' + esc(x.activity) : ''}</span></div></div>
     <section class="caisse"><div class="label" style="color:inherit;opacity:.8">Mon épargne</div><div class="big num">${grp(d.savings)}<small>FC</small></div>
       <div class="split"><div><span>Parts achetées</span><b class="num">${d.parts}</b></div><div><span>Valeur si partage</span><b class="num">${fc(d.parts * st.shareValue)}</b></div></div></section>
+    <div class="row">${speakBtn('carnet', '.main h1, .caisse .label, .caisse .big, .caisse .split span, .caisse .split b', 'Écouter mon carnet', I18N.cur())}</div>
     <section class="section"><h2>Timbres d'épargne</h2><div class="card" style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px">
       ${closed.map(m => { const n = byMeet[m.id] || 0; return `<div style="text-align:center"><div class="small muted">R${m.n}</div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:2px;justify-items:center;margin-top:3px">${Array.from({ length: 5 }, (_, i) => `<span style="width:9px;height:9px;border-radius:50%;${i < n ? 'background:var(--maize)' : 'border:1.5px solid var(--line)'}"></span>`).join('')}</div></div>`; }).join('') || '<span class="muted">Pas encore de réunion</span>'}
     </div></section>

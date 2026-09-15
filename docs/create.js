@@ -12,7 +12,7 @@ function cDraft(p) {
   if (!App.cdraft || App.cdraft.done || (p.from && App.cdraft.from !== p.from)) {
     App.cdraft = {
       from, step: 1, mode: 'new', names: '', members: [], roles: {}, nextId: 0, editing: null,
-      g: { name: '', village: '', territoire: '', animId: '', meetingDay: 'Samedi', frequency: 7, createdOn: isoDay(Date.now()) },
+      g: { name: '', province: '', territoire: '', entite: '', secteur: '', groupement: '', village: '', animId: '', meetingDay: 'Samedi', frequency: 7, createdOn: isoDay(Date.now()) },
       r: { partValue: 1000, maxParts: 5, socialFee: 500, rate: 10, maxMult: 3, maxMonths: 3, fineAbsent: 500, fineLate: 200, cycleMonths: 12, cycleStart: isoDay(Date.now()) },
       rep: { social: '', credit: '', rows: {} }
     };
@@ -50,8 +50,7 @@ const C_RENDER = {
     const anims = u ? K.data.users.filter(x => x.role === 'anim' && x.orgId === u.orgId) : [];
     return `<section class="card stack"><h2>Le groupe</h2>
       <div class="field"><label for="cgN">Nom du groupe</label><input id="cgN" class="input" value="${esc(g.name)}" placeholder="Ex. Tuungane" autocomplete="off"></div>
-      <div class="grid2"><div class="field"><label for="cgV">Village ou quartier</label><input id="cgV" class="input" value="${esc(g.village)}"></div>
-      <div class="field"><label for="cgT">Territoire</label><input id="cgT" class="input" value="${esc(g.territoire)}"></div></div>
+      ${geoFields('cg', g)}
       ${d.from === 'org' ? pickSel('cgA', 'Animateur qui accompagne le groupe', anims.map(a => [a.id, esc(a.name)]), g.animId) : ''}
       <div class="grid2">${pickSel('cgJ', 'Jour de réunion', DAYS.map(x => [x, x]), g.meetingDay)}${pickSel('cgQ', 'Rythme', [[7, 'Chaque semaine'], [14, 'Toutes les 2 semaines']], g.frequency)}</div>
       <div class="field"><label for="cgO">Date de création du groupe</label><input id="cgO" type="date" class="input" value="${g.createdOn}"></div>
@@ -123,7 +122,8 @@ function summaryNew(d) {
   const start = fromIso(r.cycleStart);
   const line = (k, v) => `<div class="row between small"><span class="muted">${k}</span><b style="text-align:right">${v}</b></div>`;
   return `<div class="receipt stack"><span class="label">Récapitulatif</span>
-    ${line('Groupe', `${esc(g.name)} · ${esc(g.village)}`)}
+    ${line('Groupe', esc(g.name))}
+    ${line('Lieu', [g.village, g.groupement && 'groupement ' + g.groupement, g.secteur, entiteLabel(g), g.province].filter(Boolean).map(esc).join(', '))}
     ${line('Membres', `${d.members.length} (${d.members.filter(m => m.sex === 'F').length} femmes)`)}
     ${line('Réunions', `${g.meetingDay}, ${+g.frequency === 14 ? 'toutes les 2 semaines' : 'chaque semaine'}`)}
     ${line('Présidence', nm(R.P))}${line('Trésorerie', nm(R.T))}${line('Porte-clés', [R.K1, R.K2, R.K3].map(nm).join(', '))}
@@ -154,7 +154,7 @@ function repriseForm(d) {
 }
 
 function readStep(step, d) {
-  if (step === 1 && fval('cgN') !== null) Object.assign(d.g, { name: fval('cgN').trim(), village: fval('cgV').trim(), territoire: fval('cgT').trim(), animId: fval('cgA') || '', meetingDay: fval('cgJ'), frequency: +fval('cgQ'), createdOn: fval('cgO') || d.g.createdOn });
+  if (step === 1 && fval('cgN') !== null) Object.assign(d.g, { name: fval('cgN').trim(), ...readGeo('cg'),animId: fval('cgA') || '', meetingDay: fval('cgJ'), frequency: +fval('cgQ'), createdOn: fval('cgO') || d.g.createdOn });
   if (step === 2 && fval('crP') !== null) Object.assign(d.r, { partValue: +fval('crP'), maxParts: +fval('crX'), socialFee: +fval('crS'), cycleMonths: +fval('crC'), rate: +fval('crR'), maxMult: +fval('crM'), maxMonths: +fval('crD'), cycleStart: fval('crB') || d.r.cycleStart, fineAbsent: +fval('crF'), fineLate: +fval('crL') });
   if (step === 4 && fval('cbP') !== null) d.roles = { P: fval('cbP'), S: fval('cbS'), T: fval('cbT'), C1: fval('cbC1'), C2: fval('cbC2'), K1: fval('cbK1'), K2: fval('cbK2'), K3: fval('cbK3') };
   if (step === 5 && fval('rsS') !== null) {
@@ -165,6 +165,8 @@ function readStep(step, d) {
 function validateStep(step, d) {
   if (step === 1) {
     if (d.g.name.length < 2) return 'Écrivez le nom du groupe';
+    if (!d.g.province) return 'Choisissez la province';
+    if (!d.g.territoire) return 'Choisissez le territoire ou la ville';
     if (!d.g.village) return 'Écrivez le village ou le quartier';
     if (d.from === 'org' && !d.g.animId) return 'Choisissez l\'animateur';
     if (K.data.avecs.some(a => a.name.toLowerCase() === d.g.name.toLowerCase() && a.village.toLowerCase() === d.g.village.toLowerCase())) return 'Une AVEC porte déjà ce nom dans ce village';
@@ -297,6 +299,7 @@ ACT.cCreate = () => {
   }));
   const avec = {
     id, name: g.name, village: g.village, territoire: g.territoire || '—',
+    province: g.province, entite: g.entite, secteur: g.secteur, groupement: g.groupement,
     orgId: d.from === 'login' ? null : u.orgId, animId: d.from === 'org' ? g.animId : d.from === 'anim' ? u.id : null,
     createdAt: fromIso(g.createdOn), cycle: { n: 1, start, end: start + r.cycleMonths * 30 * DAY }, cycles: [],
     settings: { partValue: r.partValue, maxParts: r.maxParts, socialFee: r.socialFee, rate: r.rate, maxMult: r.maxMult, maxMonths: r.maxMonths, fineAbsent: r.fineAbsent, fineLate: r.fineLate, cycleMonths: r.cycleMonths, meetingDay: g.meetingDay, frequency: g.frequency },
