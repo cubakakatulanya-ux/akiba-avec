@@ -29,7 +29,8 @@ const GUIDE = [
   { id: 'connexion', icon: 'users', t: 'Comment une AVEC se connecte', b: `
     <h4>L'AVEC a été créée sur son propre téléphone</h4>
     <p>Chaque membre ouvre Akiba, touche <b>Membre d'une AVEC</b>, choisit son AVEC, touche <b>son nom</b> et tape <b>son code secret</b>. Le bureau voit la réunion ; les autres membres voient leur carnet.</p>
-    <h4>L'AVEC a été créée sur le téléphone de l'animateur</h4>
+    <div class="tip">Une <b>AVEC autonome</b> n'a besoin ni d'animateur ni d'organisation : elle se crée directement sur son propre téléphone, et tout se passe dans le groupe (réunions, codes perdus, changement de téléphone).</div>
+    <h4>AVEC accompagnée, créée sur le téléphone de l'animateur</h4>
     <ol><li>L'animateur ouvre l'AVEC puis touche <b>Envoyer vers le téléphone du groupe</b>.</li>
       <li>Il envoie le fichier <b>.akiba</b> par WhatsApp, Bluetooth ou carte mémoire, et dit le <b>code de 8 signes</b> de vive voix.</li>
       <li>Sur le téléphone du groupe : ouvrir Akiba, toucher <b>Recevoir une AVEC</b>, choisir le fichier, taper le code. La licence arrive avec le fichier.</li>

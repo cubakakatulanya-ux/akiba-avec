@@ -8,7 +8,7 @@ fs.mkdirSync(out, { recursive: true });
 const html = fs.readFileSync(path.join(src, 'index.html'), 'utf8');
 const scripts = [...html.matchAll(/<script src="([^"]+)"><\/script>/g)].map(m => m[1]);
 scripts.forEach(f => fs.copyFileSync(path.join(src, f), path.join(out, f)));
-const assets = ['ubora-logo.png'];                                   // images de l'application (gardées hors ligne)
+const assets = ['ubora-logo.png', 'qrcode.min.js'];                                   // images de l'application (gardées hors ligne)
 assets.forEach(f => fs.copyFileSync(path.join(src, f), path.join(out, f)));
 const cut = html.indexOf('</style>') + '</style>'.length;
 const head = html.slice(0, cut).replace('<title>Akiba AVEC</title>', '');

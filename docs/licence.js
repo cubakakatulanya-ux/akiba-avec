@@ -47,10 +47,11 @@ SCREENS['lic.gate'] = () => {
         <button class="btn primary block xl" data-act="licActivate">${ic('key')} Activer</button>
       </section>
       <section class="card stack"><h2>Téléphone d'une AVEC</h2>
-        <p class="small muted">L'animateur vous a envoyé un fichier <b>.akiba</b> et un code : recevez votre AVEC directement. La licence arrive avec le fichier.</p>
+        <p class="small muted">Vous avez reçu un fichier <b>.akiba</b> et un code (de votre animateur, ou de l'ancien téléphone de votre groupe) : recevez votre AVEC directement. La licence arrive avec le fichier.</p>
         <button class="btn ghost block" data-act="receiveSheet">${ic('sync')} Recevoir une AVEC</button>
       </section>
       ${supportCard()}
+      <button class="btn ghost block" data-act="go" data-to="adm.home">${ic('key')} Espace administrateur Ubora</button>
       <div class="card small muted">Pas de licence ? Adressez-vous à votre organisation partenaire ou à l'administrateur d\'Akiba. Chaque licence porte le nom du partenaire et une date de fin.</div>
     </main></div>`;
 };
