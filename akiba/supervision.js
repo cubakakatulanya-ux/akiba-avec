@@ -113,7 +113,7 @@ ACT.loginUser = d => {
 };
 
 /* ---------- animateur ---------- */
-const N_TABS = [{ id: 'n.home', icon: 'users', label: 'Mes AVEC' }, { id: 'n.alerts', icon: 'alert', label: 'Alertes' }, { id: 'c.avec', icon: 'plus', label: 'Nouvelle AVEC' }, { id: 'guide', icon: 'book', label: 'Guide' }];
+const N_TABS = [{ id: 'n.home', icon: 'users', label: 'Mes AVEC' }, { id: 'n.alerts', icon: 'alert', label: 'Alertes' }, { id: 't.home', icon: 'clip', label: 'Formation' }, { id: 'c.avec', icon: 'plus', label: 'Nouvelle AVEC' }, { id: 'guide', icon: 'book', label: 'Guide' }];
 const myAvecs = u => K.data.avecs.filter(a => u.role === 'org' ? a.orgId === u.orgId : a.animId === u.id);
 SCREENS['n.home'] = () => {
   const u = me_user();
@@ -168,6 +168,7 @@ SCREENS['n.avec'] = p => {
     <div class="alert ${ch.ok ? 'good' : 'bad'}"><span style="width:22px;flex:none">${ic('shield')}</span><div><b>${ch.ok ? 'Journal intact' : 'Journal altéré'}</b><span class="small">${ch.ok ? `${avec.tx.length} écritures vérifiées par empreinte` : esc(ch.reason)}</span></div></div>
     <section class="section"><h2>Réunions reçues</h2><div class="list">${st.meetings.slice(-6).reverse().map(m => meetingLi(avec, m)).join('') || '<div class="li muted">Aucune</div>'}</div></section>
     ${late.length ? `<section class="section"><h2>Crédits en retard</h2><div class="list">${late.map(l => loanLi(avec, l)).join('')}</div></section>` : ''}
+    ${trainingBlock(avec)}
     ${profileHtml(avec)}
     ${cycleInfo(avec, st)}
     <section class="section"><div class="row between"><h2>Visites</h2>${isOrg ? '' : `<button class="btn sm brand" data-act="visitSheet" data-id="${avec.id}">${ic('clip')} Noter une visite</button>`}</div>
@@ -205,6 +206,7 @@ SCREENS['o.home'] = p => {
       <div class="row" style="flex-wrap:wrap;gap:6px">
         <button class="btn sm ${p.anim ? 'ghost' : 'brand'}" data-act="go" data-to="o.home">Toutes</button>
         ${anims.map(a => `<button class="btn sm ${p.anim === a.id ? 'brand' : 'ghost'}" data-act="go" data-to="o.home" data-anim="${a.id}">${esc(a.name)}</button>`).join('')}
+        <button class="btn sm ghost" data-act="go" data-to="t.home">${ic('clip')} Formation</button>
         <button class="btn sm ghost" data-act="go" data-to="guide">${ic('book')} Guide</button>
         <button class="btn sm ghost" data-act="go" data-to="tr.edit" data-lang="ln">${ic('globe')} Langues</button>
         <button class="btn sm ghost" data-act="userPinSheet">${ic('key')} Mon code</button>
@@ -218,13 +220,14 @@ SCREENS['o.home'] = p => {
       <div class="kpi"><span>Épargne cumulée</span><b class="num">${fck(tot(r => r.st.sum.EPARGNE))}</b><span>cycle en cours</span></div>
       <div class="kpi"><span>Crédits en cours</span><b class="num">${fck(outstanding)}</b><span>${tot(r => r.st.activeLoans.length)} crédits</span></div>
       <div class="kpi"><span>Portefeuille à risque</span><b class="num" style="color:${late / (outstanding || 1) > .1 ? 'var(--bad)' : 'inherit'}">${pct(outstanding ? late / outstanding : 0)}</b><span>${fck(late)} en retard</span></div>
+      <div class="kpi"><span>Formation</span><b class="num">${rows.length ? pct(tot(r => trainingCount(r.avec)) / (rows.length * 7)) : '—'}</b><span>des 7 modules réalisés</span></div>
       <div class="kpi"><span>Caisses sociales</span><b class="num">${fck(tot(r => r.st.socialFund))}</b><span>${fck(tot(r => r.st.sum.AIDE))} d'aides versées</span></div>
     </div>
     <div class="dash">
       <div class="stack">
         <h2>AVEC</h2>
         <div class="tablewrap"><table>
-          <thead><tr><th></th><th>AVEC</th><th>Animateur</th><th class="r">Membres</th><th class="r">Épargne</th><th class="r">Crédits</th><th class="r">PAR</th><th>Cycle</th><th>Dernière réunion</th><th>Reçu</th></tr></thead>
+          <thead><tr><th></th><th>AVEC</th><th>Animateur</th><th class="r">Membres</th><th class="r">Épargne</th><th class="r">Crédits</th><th class="r">PAR</th><th>Formation</th><th>Cycle</th><th>Dernière réunion</th><th>Reçu</th></tr></thead>
           <tbody>${rows.sort((a, b) => LVL[a.h.level] - LVL[b.h.level]).map(r => `<tr class="click" data-act="go" data-to="n.avec" data-id="${r.avec.id}">
             <td><span class="health ${r.h.level}"></span></td>
             <td><b>${esc(r.avec.name)}</b><br><span class="small muted">${placeShort(r.avec)}</span></td>
@@ -233,6 +236,7 @@ SCREENS['o.home'] = p => {
             <td class="r num">${fc(r.st.sum.EPARGNE)}</td>
             <td class="r num">${fc(r.st.outstanding)}</td>
             <td class="r num" style="color:${r.st.par > .1 ? 'var(--bad)' : 'inherit'}">${pct(r.st.par)}</td>
+            <td>${trainingChip(r.avec)}</td>
             <td>n°${r.avec.cycle.n} · fin ${fdate(cycleEnd(r.avec))}</td>
             <td>${r.st.last ? ago(r.st.last.date) : '—'}</td>
             <td>${pending(r.avec) ? `<span class="chip warn">${ago(r.avec.lastSync)}</span>` : '<span class="chip good">à jour</span>'}</td></tr>`).join('')}</tbody>

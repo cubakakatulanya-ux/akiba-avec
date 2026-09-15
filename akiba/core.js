@@ -251,6 +251,7 @@ function migrate(d) {
   d.orgs = d.orgs || []; d.users = d.users || []; d.avecs = d.avecs || [];
   d.avecs.forEach(a => {
     ['meetings', 'tx', 'visits', 'cycles', 'security', 'rescue', 'members'].forEach(k => { if (!Array.isArray(a[k])) a[k] = []; });
+    if (!a.trainings || typeof a.trainings !== 'object') a.trainings = {};
     a.status = a.status || 'active';
     a.settings = Object.assign({ partValue: 1000, maxParts: 5, socialFee: 500, rate: 10, maxMult: 3, maxMonths: 3, fineAbsent: 500, fineLate: 200, cycleMonths: 12, frequency: 7 }, a.settings || {});
     a.cycle = a.cycle || { n: 1, start: a.createdAt || Date.now() };
@@ -368,6 +369,9 @@ function seed() {
       settings: { partValue: d.part, maxParts: 5, socialFee: d.social, rate: d.p === 'auto' ? 5 : 10, maxMult: 3, maxMonths: 3, fineAbsent: 500, fineLate: 200, cycleMonths: d.p === 'ecart' ? 4 : 12 },
       members, meetings: [], tx: [], visits: [], lastSync: 0,
       status: 'active', requestCode: 'DEMO' + ai + 'X', rescue: RESCUE_DEMO.map(c => ({ h: hashCode(c), used: false })), security: [],
+      // formation déjà réalisée par l'animateur (démonstration) : modules 1 à 4 avant la 1re réunion, puis 5, 6 et 7
+      trainings: Object.fromEntries((d.anim ? ['m1', 'm2', 'm3', 'm4'].concat(d.p === 'missed' ? [] : ['m5', 'm6'], d.p === 'late' ? ['m7'] : []) : [])
+        .map((k, i) => [k, { ts: start + (i < 4 ? (i - 3) * 7 : (i - 3) * 28) * DAY, by: d.anim }])),
       cycles: d.p === 'late' ? [{ n: 1, start: start - 53 * 7 * DAY, end: start - 7 * DAY, parts: 1284, value: 2710, distributed: 3479640, socialKept: 38000, members: 15, meetings: 50 }] : []
     };
     data.avecs.push(avec);

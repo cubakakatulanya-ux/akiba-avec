@@ -74,6 +74,11 @@ button{cursor:pointer}
 .avec-main>svg{width:28px;height:28px;flex:none}
 .avec-main.empty{background:var(--surface);color:var(--ink);border:1.5px dashed var(--line);box-shadow:none}
 .avec-main.empty .ic{background:var(--maize-soft);color:var(--warn)}
+.trainrow{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.tstep{height:40px;border-radius:10px;border:1.5px solid var(--line);background:var(--surface);font-family:var(--f-display);font-weight:800;color:var(--ink-2)}
+.tstep.done{background:var(--brand);border-color:var(--brand);color:var(--brand-ink)}
+.tlist{margin:0;padding-left:1.25em;display:flex;flex-direction:column;gap:7px}
+.tlist li::marker{color:var(--brand);font-weight:800}
 .quicks{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:8px}
 .quick{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:78px;padding:10px 6px;border-radius:14px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-weight:700;font-size:.82rem;line-height:1.2;text-align:center;touch-action:manipulation;transition:border-color .15s ease,transform .08s ease}
 .quick svg{color:var(--brand)}
@@ -322,7 +327,7 @@ details.g h4{margin:6px 0 0;font-size:.95rem}
 </style>
 <style>html,body{margin:0}</style>
 </head><body>
-<script>window.KITABU_PWA = true; window.KITABU_VERSION = 'akiba-202609151815';</script>
+<script>window.KITABU_PWA = true; window.KITABU_VERSION = 'akiba-202609151903';</script>
 
 <div id="app"></div>
 <script src="core.js"></script>
@@ -342,6 +347,7 @@ details.g h4{margin:6px 0 0;font-size:.95rem}
 <script src="licence.js"></script>
 <script src="transfer.js"></script>
 <script src="admin.js"></script>
+<script src="training.js"></script>
 <script src="boot.js"></script>
 
 </body></html>

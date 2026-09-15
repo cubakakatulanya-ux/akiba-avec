@@ -188,6 +188,7 @@ const GUIDE = [
       <li><b>Mes AVEC</b> : un point vert, orange ou rouge montre l'état de chaque groupe.</li>
       <li><b>Alertes</b> : écarts de caisse, crédits en retard, réunions manquées, journal altéré, fin de cycle, données non envoyées.</li>
       <li>Dans une AVEC : chiffres clés, réunions reçues, crédits en retard, cycles passés, et <b>Noter une visite</b> avec vos observations.</li>
+      <li><b>Formation</b> : les 7 modules de la méthode AVEC (groupe et élections, règles, règlement intérieur, première réunion, premier crédit, premier remboursement, partage). Chaque module dit quoi faire avec l'assemblée et où le faire dans Akiba ; cochez-le pour chaque AVEC.</li>
       <li>L'animateur <b>ne peut rien modifier</b> dans les comptes du groupe. Il conseille et vérifie.</li>
     </ul>` },
   { id: 'organisation', icon: 'building', t: 'Pour l\'organisation', b: `
@@ -196,6 +197,7 @@ const GUIDE = [
       <li>Filtrez par animateur avec les boutons en haut.</li>
       <li>Le tableau des AVEC indique le cycle, la dernière réunion et la date du dernier envoi. Touchez une ligne pour voir le détail.</li>
       <li>Créez une AVEC et confiez-la à un animateur avec <b>Nouvelle AVEC</b>.</li>
+      <li><b>Formation</b> : consultez les 7 modules et suivez l'avancement de chaque AVEC (colonne « Formation » et fiche de l'AVEC).</li>
       <li>Les AVEC autonomes n'apparaissent jamais dans votre tableau.</li>
     </ul>` },
   { id: 'mots', icon: 'clip', t: 'Mots à connaître', b: `
