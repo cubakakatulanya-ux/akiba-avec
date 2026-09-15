@@ -99,7 +99,7 @@ function reviewChecks(avec) {
 SCREENS['o.review'] = p => {
   const u = me_user();
   const avec = avecById(p.id);
-  if (!avec || u.role !== 'org' || avec.orgId !== u.orgId) return SCREENS['o.home']({});
+  if (!avec || u.role !== 'org' || avec.orgId !== u.orgId) return SCREENS[homeScreen()]({});
   const s = avec.settings, st = stats(avec);
   const names = list => list.map(x => esc(x.name)).join(', ') || '—';
   const by = r => names(avec.members.filter(x => x.role === r));

@@ -42,7 +42,7 @@ function pinHtml() {
     <div class="pin-dots">${[0, 1, 2, 3].map(i => `<span class="${i < p.val.length ? 'on' : ''}"></span>`).join('')}</div>
     <div class="keypad">${[1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => `<button data-act="pinKey" data-k="${n}">${n}</button>`).join('')}
       <button class="fn" data-act="closeSheet">Annuler</button><button data-act="pinKey" data-k="0">0</button><button class="fn" data-act="pinKey" data-k="del" aria-label="Effacer">⌫</button></div>
-    <p class="hint" style="text-align:center">Démonstration : les AVEC d'exemple utilisent le code 1234</p>`;
+    ${K.data.mode === 'prod' ? '' : '<p class="hint" style="text-align:center">Démonstration : les AVEC d\'exemple utilisent le code 1234</p>'}`;
 }
 ACT.pinKey = d => {
   const p = App.pin;
@@ -553,7 +553,7 @@ SCREENS['a.journal'] = p => {
       <span class="small">${ch.ok ? 'Chaque écriture porte l\'empreinte de la précédente. Changer un seul chiffre casse la chaîne.' : esc(ch.reason) + '. L\'animateur et l\'organisation voient cette alerte.'}</span></div></div>
     <div class="row" style="flex-wrap:wrap">
       <button class="btn sm" data-act="verifyNow">${ic('shield')} Vérifier maintenant</button>
-      ${K.data.tamper ? `<button class="btn sm brand" data-act="untamper">Annuler la fraude simulée</button>` : `<button class="btn sm danger" data-act="tamper">Simuler une fraude</button>`}
+      ${K.data.mode === 'prod' ? '' : K.data.tamper ? `<button class="btn sm brand" data-act="untamper">Annuler la fraude simulée</button>` : `<button class="btn sm danger" data-act="tamper">Simuler une fraude</button>`}
     </div>
     <div class="list">${rows.map(t => { const mm = memberOf(avec, t.memberId); const canAnnul = open && t.meetingId === open.id && t.type !== 'ANNUL' && !an.has(t.id) && isBureau(me);
       return `<div class="li" style="${t.id === brokenId ? 'background:var(--bad-soft)' : ''}">
@@ -568,6 +568,7 @@ SCREENS['a.journal'] = p => {
 };
 ACT.verifyNow = () => { const { avec } = cur(); delete _chain[avec.id]; const r = chainOf(avec); render(); App.toast(r.ok ? `Vérifié : ${r.n} écritures intactes` : 'Attention : ' + r.reason); };
 ACT.tamper = () => {
+  if (K.data.mode === 'prod') return;   // démonstration seulement
   const { avec } = cur();
   const t = avec.tx[Math.floor(avec.tx.length * .6)];
   K.data.tamper = { avecId: avec.id, id: t.id, amount: t.amount };

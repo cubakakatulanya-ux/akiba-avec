@@ -23,18 +23,18 @@ SCREENS.login = () => `<div class="shell">
     <p>Le cahier de l'AVEC, dans le téléphone. Il marche sans réseau et garde chaque franc en sécurité.</p>
   </header>
   <main class="main">
-    ${installBanner()}
+    ${licenceBanner()}${installBanner()}
     <h2>Qui êtes-vous ?</h2>
     <button class="who" data-act="go" data-to="l.avec"><span class="ic" style="background:var(--maize-soft);color:var(--warn)">${ic('users')}</span><span><b>Membre d'une AVEC</b><span class="small muted">Bureau, porte-clé ou membre</span></span></button>
     ${!K.data.users.some(u => u.role === 'anim') ? '' : `<button class="who" data-act="go" data-to="l.users" data-role="anim"><span class="ic" style="background:var(--brand-soft);color:var(--brand)">${ic('map')}</span><span><b>Animateur de terrain</b><span class="small muted">Je suis plusieurs AVEC</span></span></button>`}
     ${!K.data.users.some(u => u.role === 'org') ? '' : `<button class="who" data-act="go" data-to="l.users" data-role="org"><span class="ic" style="background:var(--surface-2);color:var(--ink)">${ic('building')}</span><span><b>Organisation</b><span class="small muted">Tableau de bord de toutes nos AVEC</span></span></button>`}
-    <div class="divider">ou</div>
-    <button class="who" data-act="go" data-to="c.avec" data-from="login"><span class="ic" style="background:var(--good-soft);color:var(--good)">${ic('plus')}</span><span><b>Créer une nouvelle AVEC</b><span class="small muted">Groupe autonome, sans organisation</span></span></button>
+    ${K.data.mode === 'prod' && K.data.orgs.length ? '' : `<div class="divider">ou</div>
+    <button class="who" data-act="go" data-to="c.avec" data-from="login"><span class="ic" style="background:var(--good-soft);color:var(--good)">${ic('plus')}</span><span><b>Créer une nouvelle AVEC</b><span class="small muted">Groupe autonome, sans organisation</span></span></button>`}
     <button class="btn ghost block" data-act="go" data-to="guide">${ic('book')} Guide d'utilisation</button>
     ${K.data.mode === 'prod' ? (K.data.orgs.length ? '' : '<button class="btn ghost block" data-act="go" data-to="s.org">' + ic('building') + ' Créer le compte de mon organisation</button>')
       : `<div class="card stack" style="box-shadow:none;background:transparent;border:1.5px dashed var(--line)">
       <p class="small"><b>Version de démonstration.</b> AVEC fictives du Nord-Kivu : 5 suivies par « Mwangaza Développement » (dont 1 à valider) et 1 autonome. Codes secrets : <b class="mono">1234</b> · carte de secours : <b class="mono">2468-1357</b>.</p>
-      <button class="btn primary block" data-act="goLive">${ic('check')} Commencer avec mes vraies données</button>
+      ${licKind() === 'demo' ? '<p class="hint">Licence de démonstration : les vraies données ne sont pas disponibles.</p>' : `<button class="btn primary block" data-act="goLive">${ic('check')} Commencer avec mes vraies données</button>`}
       <button class="btn sm ghost" data-act="resetDemo">Remettre la démo à zéro</button>
     </div>`}
   </main></div>`;
@@ -143,7 +143,8 @@ ACT.saveVisit = d => {
 
 /* ---------- organisation ---------- */
 SCREENS['o.home'] = p => {
-  const u = me_user();
+  const u = K.session && K.session.userId ? me_user() : null;
+  if (!u || u.role !== 'org') return SCREENS[homeScreen()]({});   // tableau de bord réservé à l'organisation
   const org = orgOf(u.orgId);
   const anims = K.data.users.filter(x => x.role === 'anim' && x.orgId === org.id);
   const all = myAvecs(u).filter(isActive).map(sup);

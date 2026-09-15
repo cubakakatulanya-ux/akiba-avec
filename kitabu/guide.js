@@ -116,6 +116,8 @@ const GUIDE = [
   { id: 'installer', icon: 'home', t: 'Icône, protection et sauvegarde', b: `
     <h4>Mettre l'icône sur l'écran d'accueil</h4>
     <ol><li>Ouvrez l'adresse de Kitabu dans <b>Chrome</b>, avec du réseau.</li><li>Touchez <b>Installer Kitabu</b> (ou menu ⋮ › « Ajouter à l'écran d'accueil »).</li><li>Une icône verte apparaît. Ensuite, Kitabu s'ouvre <b>sans réseau</b>.</li></ol>
+    <h4>Mises à jour</h4>
+    <p>Kitabu se met à jour <b>tout seul</b>, sans le désinstaller et <b>sans perdre les données</b>. Ouvrez-le de temps en temps avec du réseau : la nouvelle version s'installe en arrière-plan. Si vous êtes en train d'écrire, un bandeau <b>Mettre à jour</b> apparaît : touchez-le quand vous avez fini.</p>
     <h4>Éviter une désinstallation par erreur</h4>
     <p>Aucune application ne peut interdire complètement sa désinstallation : c'est le téléphone qui décide. Mais on peut bien le protéger :</p>
     <ul><li>Rangez l'icône dans un dossier « AVEC » et verrouillez le téléphone par un code.</li>
@@ -194,17 +196,24 @@ const GUIDE = [
     <h4>Un membre veut voir son compte.</h4><p>Il se connecte avec son nom et son code : il voit seulement son carnet.</p>` }
 ];
 
+/* parties du guide réservées à certains rôles (les autres sont pour tout le monde) */
+const GUIDE_WHO = {
+  animateur: ['anim', 'org', 'none'], organisation: ['org', 'none'], lancer: ['org', 'none'],
+  validation: ['org', 'anim', 'bureau', 'none'], installer: ['org', 'anim', 'bureau', 'none'], debut: ['org', 'anim', 'bureau', 'none']
+};
 SCREENS.guide = p => {
   const s = K.session;
   let back = 'login', me = null;
   if (s && s.kind === 'avec' && avecById(s.avecId)) { me = memberOf(avecById(s.avecId), s.memberId); back = isBureau(me) ? 'a.more' : 'a.home'; }
   else if (s && s.kind === 'org') back = 'o.home';
+  const role = !s ? 'none' : s.kind === 'avec' ? (isBureau(me) ? 'bureau' : 'membre') : s.kind;
+  const sections = GUIDE.filter(g => !GUIDE_WHO[g.id] || GUIDE_WHO[g.id].includes(role));
   const isAnim = s && s.kind === 'anim';
   const open = p.s || (isAnim ? 'animateur' : s && s.kind === 'org' ? 'organisation' : 'bref');
   return `<div class="shell">${topbar('Guide d\'utilisation', 'Kitabu AVEC', isAnim ? '' : backBtn(back))}<main class="main">
     <div><h1>Comment utiliser Kitabu</h1><p class="muted">Touchez un titre pour l'ouvrir. Les mots en gras sont ceux que vous voyez à l'écran. Touchez « Écouter » pour que le téléphone lise à voix haute, même sans réseau.</p></div>
     <div class="row">${speakBtn('all', '.g summary, .g .gb p, .g .gb li, .g .gb h4, .g .gb .formula, .g .gb .tip', 'Écouter tout le guide')}</div>
-    ${GUIDE.map(g => `<details class="g" id="g-${g.id}" ${g.id === open ? 'open' : ''}><summary><span class="gi">${ic(g.icon)}</span>${g.t}</summary><div class="gb">
+    ${sections.map(g => `<details class="g" id="g-${g.id}" ${g.id === open ? 'open' : ''}><summary><span class="gi">${ic(g.icon)}</span>${g.t}</summary><div class="gb">
       <div>${speakBtn(g.id, `#g-${g.id} summary, #g-${g.id} .gb p, #g-${g.id} .gb li, #g-${g.id} .gb h4, #g-${g.id} .gb .formula, #g-${g.id} .gb .tip`, 'Écouter cette partie')}</div>${g.b}</div></details>`).join('')}
   </main>${isAnim ? tabbar(N_TABS, 'guide') : ''}</div>`;
 };

@@ -10,6 +10,9 @@ Le cahier des **Associations Villageoises d'Épargne et de Crédit (AVEC)** dans
 - Plan B pour les codes secrets perdus : deux membres du bureau, carte de secours, ou appel à l'animateur.
 - Langues : français, lingala, swahili, kikongo, tshiluba, et écran de traduction pour les autres langues (ngbaka, ngbandi, mbanza…).
 
+## Accès réservé
+Kitabu est **réservé aux partenaires agréés**. Sans licence valable délivrée par l'auteur, l'application n'affiche que l'écran d'activation. Chaque licence est signée numériquement et vérifiée sur le téléphone, même sans internet. Voir [LICENSE](LICENSE) : tous droits réservés.
+
 ## Utiliser l'application
 L'application publiée se trouve dans le dossier `docs/` et est servie par **GitHub Pages**. Voir [LANCER.md](LANCER.md) pour l'installer sur les téléphones.
 

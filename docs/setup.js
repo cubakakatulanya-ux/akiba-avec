@@ -13,11 +13,11 @@ function wipeTo(data) {
 
 ACT.goLive = () => App.openSheet(`<h2>Commencer avec de vraies données</h2>
   <p class="muted">Les AVEC de démonstration seront effacées de ce téléphone. Les traductions sont gardées.</p>
-  <button class="who" data-act="go" data-to="s.org"><span class="ic" style="background:var(--brand-soft);color:var(--brand)">${ic('building')}</span><span><b>Je suis une organisation</b><span class="small muted">Créer le compte, puis les animateurs. Les animateurs créent les AVEC.</span></span></button>
+  ${licKind() === 'avec' ? '' : `<button class="who" data-act="go" data-to="s.org"><span class="ic" style="background:var(--brand-soft);color:var(--brand)">${ic('building')}</span><span><b>Je suis une organisation</b><span class="small muted">Créer le compte, puis les animateurs. Les animateurs créent les AVEC.</span></span></button>`}
   <button class="who" data-act="liveAvec"><span class="ic" style="background:var(--good-soft);color:var(--good)">${ic('users')}</span><span><b>Je suis une AVEC autonome</b><span class="small muted">Créer directement notre groupe, sans organisation.</span></span></button>`);
 ACT.liveAvec = () => { wipeTo(emptyData()); App.cdraft = null; App.go('c.avec', { from: 'login' }); };
 
-SCREENS['s.org'] = () => `<div class="shell">${topbar('Compte de l\'organisation', 'Démarrage réel', backBtn('login'))}<main class="main">
+SCREENS['s.org'] = () => licKind() !== 'org' ? SCREENS.login() : `<div class="shell">${topbar('Compte de l\'organisation', 'Démarrage réel', backBtn('login'))}<main class="main">
   <p class="muted">Ce compte voit toutes les AVEC que vous accompagnez, valide les nouveaux groupes et gère les animateurs.</p>
   <section class="card stack">
     <div class="field"><label for="soN">Nom de l'organisation</label><input id="soN" class="input" autocomplete="off"></div>

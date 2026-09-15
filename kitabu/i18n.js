@@ -186,7 +186,7 @@ ACT.langSheet = () => {
       return `<button class="li" data-act="setLang" data-l="${l.id}" aria-pressed="${l.id === cur}" style="${l.id === cur ? 'background:var(--brand-soft)' : ''}">
         <span class="grow"><b>${esc(l.name)}${l.id === cur ? ' ✓' : ''}</b><span class="small muted">${esc(l.where || '')}</span></span>${chip}</button>`; }).join('')}</div>
     <p class="hint no-tr">Les mots qui ne sont pas encore traduits restent en français. Les traductions fournies sont des brouillons : faites-les relire par des locuteurs de la zone.</p>
-    <button class="btn ghost block no-tr" data-act="go" data-to="tr.edit" data-lang="${cur === 'fr' ? 'ln' : cur}">${ic('globe')} Traduire ou corriger une langue</button>`);
+    ${canTranslate() ? `<button class="btn ghost block no-tr" data-act="go" data-to="tr.edit" data-lang="${cur === 'fr' ? 'ln' : cur}">${ic('globe')} Traduire ou corriger une langue</button>` : ''}`);
 };
 ACT.setLang = d => { I18N.set(d.l); App.closeSheet(); App.toast('Langue : ' + I18N.name(d.l)); };
 
@@ -196,7 +196,15 @@ function trBack() {
   if (!s) return 'login';
   return s.kind === 'org' ? 'o.home' : s.kind === 'anim' ? 'n.home' : 'a.more';
 }
+/* traduire : organisation, animateur ou bureau d'une AVEC (pas les simples membres) */
+function canTranslate() {
+  const s = K.session;
+  if (!s) return K.data.mode !== 'prod';
+  if (s.kind === 'avec') { const a = avecById(s.avecId); return !!a && isBureau(memberOf(a, s.memberId)); }
+  return true;
+}
 SCREENS['tr.edit'] = p => {
+  if (!canTranslate()) return `<div class="shell">${topbar('Traduire Kitabu', '', backBtn(K.session ? homeScreen() : 'login'))}<main class="main"><div class="alert warn"><div><b>Réservé au bureau, à l'animateur et à l'organisation</b></div></div></main></div>`;
   const langs = I18N.langs().filter(l => l.id !== 'fr');
   const lang = langs.some(l => l.id === p.lang) ? p.lang : 'ln';
   const w = I18N.words(lang);

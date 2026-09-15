@@ -242,11 +242,36 @@ function health(avec, st, chain) {
 
 /* ---------- stockage ---------- */
 const K = { data: null, session: null };
+// ⚠ NE JAMAIS CHANGER cette clé : les données réelles des téléphones installés y sont rangées.
+// Une évolution des données se fait dans migrate(), jamais en changeant la clé.
 const STORE = 'kitabu.avec.v4';
+const OLD_STORES = ['kitabu.avec.v3', 'kitabu.avec.v2', 'kitabu.avec.v1'];
+function migrate(d) {
+  d.net = d.net || { online: true };
+  d.orgs = d.orgs || []; d.users = d.users || []; d.avecs = d.avecs || [];
+  d.avecs.forEach(a => {
+    ['meetings', 'tx', 'visits', 'cycles', 'security', 'rescue', 'members'].forEach(k => { if (!Array.isArray(a[k])) a[k] = []; });
+    a.status = a.status || 'active';
+    a.settings = Object.assign({ partValue: 1000, maxParts: 5, socialFee: 500, rate: 10, maxMult: 3, maxMonths: 3, fineAbsent: 500, fineLate: 200, cycleMonths: 12, frequency: 7 }, a.settings || {});
+    a.cycle = a.cycle || { n: 1, start: a.createdAt || Date.now() };
+    if (!a.cycle.end) a.cycle.end = a.cycle.start + a.settings.cycleMonths * 30 * DAY;
+    if (!a.requestCode) a.requestCode = randCode(6);
+    a.members.forEach(m => { if (!m.phone) m.phone = '—'; if (m.activity == null) m.activity = ''; if (m.address == null) m.address = ''; if (!m.role) m.role = 'membre'; });
+  });
+  d.schema = 5;
+  return d;
+}
 const DB = {
   load() {
     try { const raw = localStorage.getItem(STORE); if (raw) K.data = JSON.parse(raw); } catch (e) { K.data = null; }
+    if (!K.data || !K.data.avecs) {
+      // récupérer les vraies données laissées par une ancienne version (jamais les données de démonstration)
+      for (const key of OLD_STORES) {
+        try { const old = JSON.parse(localStorage.getItem(key) || 'null'); if (old && old.mode === 'prod' && Array.isArray(old.avecs)) { K.data = old; K.recovered = key; break; } } catch (e) { /* clé illisible : on passe */ }
+      }
+    }
     if (!K.data || !K.data.avecs) K.data = seed();
+    migrate(K.data);
     try { K.session = JSON.parse(localStorage.getItem(STORE + '.s') || 'null'); } catch (e) { K.session = null; }
   },
   save() {
@@ -451,11 +476,19 @@ const App = {
   }
 };
 function render() {
-  const fn = SCREENS[App.screen] || SCREENS.login;
+  const locked = typeof licenceRequired === 'function' && licenceRequired() && !(App.licence && App.licence.ok);
+  const fn = locked ? SCREENS['lic.gate'] : (SCREENS[App.screen] || SCREENS.login);
   document.getElementById('app').innerHTML = fn(App.params) +
     (App.sheet ? `<div class="scrim" data-act="scrim"><div class="sheet" role="dialog" aria-modal="true"><div class="sheethead"><div class="grab"></div><button class="iconbtn shut" data-act="closeSheet" aria-label="Fermer">${ic('x')}</button></div>${App.sheet}</div></div>` : '');
+  if (App.updateReady && !document.getElementById('updbar')) {
+    const bar = document.createElement('div');
+    bar.id = 'updbar'; bar.className = 'updbar'; bar.setAttribute('role', 'status');
+    bar.innerHTML = `<span><b>Nouvelle version de Kitabu</b><span class="small">Vos données sont gardées.</span></span><button class="btn sm primary" data-act="reloadApp">Mettre à jour</button>`;
+    document.getElementById('app').appendChild(bar);
+  }
   if (typeof I18N !== 'undefined') I18N.apply(document.getElementById('app'));
 }
+ACT.reloadApp = () => { DB.save(); location.reload(); };
 ACT.scrim = (d, el, e) => { if (e.target === el) App.closeSheet(); };
 ACT.closeSheet = () => App.closeSheet();
 ACT.go = d => App.go(d.to, Object.assign({}, d));
@@ -529,7 +562,8 @@ ACT.syncSheet = () => {
     ${avec ? `<div class="grid2"><div class="kpi"><span>En attente</span><b class="num">${pending(avec)}</b></div><div class="kpi"><span>Dernier envoi</span><b style="font-size:1.05rem">${avec.lastSync ? ago(avec.lastSync) : 'jamais'}</b></div></div>
     ${avec.orgId ? '' : '<p class="hint">Cette AVEC est autonome : la sauvegarde en ligne protège vos données si le téléphone est perdu. Aucune organisation ne les voit.</p>'}
     <button class="btn primary block xl" data-act="doSync">${ic('sync')} Envoyer maintenant</button>` : ''}
-    <div class="row between card"><div><b>Simuler l'absence de réseau</b><p class="hint">Pour tester le mode village</p></div><button class="toggle ${on ? '' : 'on'}" data-act="toggleNet" aria-label="Simuler hors ligne"></button></div>`);
+    ${K.data.mode === 'prod' ? '' : `<div class="row between card"><div><b>Simuler l'absence de réseau</b><p class="hint">Démonstration : pour tester le mode village</p></div><button class="toggle ${on ? '' : 'on'}" data-act="toggleNet" aria-label="Simuler hors ligne"></button></div>`}`);
 };
 ACT.doSync = () => { const a = avecById(K.session.avecId); syncAvec(a); App.closeSheet(); };
-ACT.toggleNet = () => { K.data.net.online = !K.data.net.online; DB.save(); ACT.syncSheet(); };
+ACT.toggleNet = () => {
+  if (K.data.mode === 'prod') return; K.data.net.online = !K.data.net.online; DB.save(); ACT.syncSheet(); };

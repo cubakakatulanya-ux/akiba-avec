@@ -58,6 +58,12 @@ SCREENS['dev.backup'] = () => {
         : `<ol class="small" style="margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:6px">${step(1, 'Ouvrez Kitabu dans Chrome.')}${step(2, 'Touchez le menu ⋮ en haut à droite.')}${step(3, 'Choisissez « Installer l\'application » ou « Ajouter à l\'écran d\'accueil ».')}</ol>`}
     </section>
 
+    ${licenceCard()}
+    <section class="card stack"><h2>Mises à jour</h2>
+      <p class="small muted">Kitabu se met à jour tout seul, <b>sans désinstaller</b> et <b>sans perdre les données</b>. Il suffit de l'ouvrir de temps en temps avec du réseau. Si une saisie est en cours, un bandeau « Mettre à jour » apparaît.</p>
+      <div class="row between small"><span>Version sur ce téléphone</span><b class="mono">${esc(window.KITABU_VERSION || 'démonstration')}</b></div>
+    </section>
+
     <section class="card stack"><h2>Éviter une désinstallation par erreur</h2>
       <p class="small muted">Aucune application ne peut interdire totalement sa désinstallation : c'est le téléphone qui décide. Voici comment protéger Kitabu et surtout ses données.</p>
       <div class="row between small"><span>Données protégées contre l'effacement automatique</span>${App.persisted ? '<span class="chip good">Oui</span>' : '<span class="chip warn">Pas encore</span>'}</div>

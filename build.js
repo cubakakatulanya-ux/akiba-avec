@@ -23,7 +23,7 @@ fs.writeFileSync(path.join(out, 'index.html'), `<!doctype html>
 ${head}
 <style>html,body{margin:0}</style>
 </head><body>
-<script>window.KITABU_PWA = true;</script>
+<script>window.KITABU_PWA = true; window.KITABU_VERSION = '${version}';</script>
 ${body}
 </body></html>
 `);
@@ -76,7 +76,8 @@ const files = ['./', 'index.html', 'manifest.webmanifest', 'icon.svg', 'icon-192
 fs.writeFileSync(path.join(out, 'sw.js'), `// Kitabu : garde l'application dans le téléphone pour qu'elle s'ouvre sans réseau.
 const CACHE = '${version}';
 const FILES = ${JSON.stringify(files)};
-self.addEventListener('install', e => e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)).then(() => self.skipWaiting())));
+// « reload » : on télécharge toujours la vraie nouvelle version, jamais une copie gardée par le navigateur.
+self.addEventListener('install', e => e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES.map(f => new Request(f, { cache: 'reload' })))).then(() => self.skipWaiting())));
 self.addEventListener('activate', e => e.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim())));
 self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
