@@ -114,7 +114,7 @@ const GUIDE = [
     <div class="tip">Chaque déblocage est noté dans <b>Plus › Sécurité et carte de secours</b>. Quand il reste 2 codes ou moins sur la carte, le bureau en crée une nouvelle.</div>` },
   { id: 'lancer', icon: 'building', t: 'Lancer Akiba pour de vrai', b: `
     <ol>
-      <li>Sur l'écran d'accueil, touchez <b>Commencer avec mes vraies données</b>. La démonstration est effacée de ce téléphone.</li>
+      <li>Tout le monde peut installer Akiba et essayer la démonstration. Sur l'écran d'accueil, touchez <b>Commencer avec mes vraies données</b> : Akiba demande le <b>code de validation</b> délivré par l'Entreprise Sociale Ubora (une seule fois par téléphone). La démonstration est ensuite effacée.</li>
       <li><b>Organisation</b> : créez le compte, puis <b>Ajouter un animateur</b> pour chaque animateur. Chacun reçoit un code et le change avec <b>Mon code</b>.</li>
       <li>Les animateurs créent les AVEC, et l'organisation les valide.</li>
       <li><b>AVEC autonome</b> : créez directement votre groupe.</li>

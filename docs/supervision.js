@@ -45,10 +45,11 @@ SCREENS.login = () => {
     </div>
     <div class="quicks">
       ${quick('receiveSheet', '', 'sync', 'Recevoir une AVEC')}
-      ${canCreate ? quick('go', 'c.avec', 'plus', 'Créer une AVEC', 'data-from="login"') : ''}
+      ${canCreate ? quick('createAvec', '', 'plus', 'Créer une AVEC') : ''}
       ${quick('go', 'guide', 'book', 'Guide')}
     </div>
     ${demo}
+    <button class="linkbtn" data-act="go" data-to="adm.home">Espace administrateur Ubora</button>
   </main></div>`;
 };
 ACT.resetDemo = () => App.openSheet(`<h2>Remettre la démo à zéro ?</h2><p class="muted">Toutes les réunions ajoutées sur ce téléphone seront effacées et les données fictives rechargées.</p>
@@ -100,7 +101,6 @@ SCREENS['n.home'] = () => {
     <div class="list">${rows.map(r => `<button class="li" data-act="go" data-to="n.avec" data-id="${r.avec.id}"><span class="health ${r.h.level}" aria-label="${r.h.level}"></span>
       <span class="grow"><b>${esc(r.avec.name)}</b><span class="small muted">${esc(r.avec.village)} · ${r.avec.members.length} membres · réunion ${r.st.last ? ago(r.st.last.date) : '—'}</span></span>
       <span class="end"><span class="num">${fck(r.st.sum.EPARGNE)}</span><br>${r.avec.status === 'pending' ? '<span class="chip warn">À valider</span>' : r.avec.status === 'refused' ? '<span class="chip bad">Refusée</span>' : r.h.alerts.length ? `<span class="chip ${r.h.level}">${r.h.alerts.length} alerte${r.h.alerts.length > 1 ? 's' : ''}</span>` : '<span class="chip good">RAS</span>'}</span></button>`).join('')}</div>
-    ${supportCard()}
     <button class="btn ghost block" data-act="unlockSheet">${ic('lock')} Débloquer un membre (code perdu)</button>
     <button class="btn ghost block" data-act="go" data-to="dev.backup">${ic('shield')} Installer et sauvegarder</button>
     <div class="grid2"><button class="btn ghost" data-act="go" data-to="tr.edit" data-lang="ln">${ic('globe')} Langues</button><button class="btn ghost" data-act="userPinSheet">${ic('key')} Mon code</button></div>
@@ -223,7 +223,7 @@ SCREENS['o.home'] = p => {
         <div class="list">${anims.map(a => { const mine = all.filter(r => r.avec.animId === a.id); const al = mine.reduce((s, r) => s + r.h.alerts.length, 0);
           return `<button class="li" data-act="go" data-to="o.home" data-anim="${a.id}"><span class="av">${esc(initials(a.name))}</span><span class="grow"><b>${esc(a.name)}</b><span class="small muted">${mine.length} AVEC · ${mine.reduce((s, r) => s + r.avec.members.length, 0)} membres</span></span>${al ? `<span class="chip warn">${al} alertes</span>` : '<span class="chip good">RAS</span>'}</button>`; }).join('')}</div>
         <button class="btn ghost block" data-act="addAnimSheet">${ic('plus')} Ajouter un animateur</button>
-        ${supportCard()}
+        ${anims.length ? `<button class="btn ghost block" data-act="animCodesSheet">${ic('key')} Code oublié d'un animateur</button>` : ''}
         <p class="hint">Les AVEC autonomes n'apparaissent jamais ici : leurs données restent à elles.</p>
       </div>
     </div>

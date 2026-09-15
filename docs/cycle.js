@@ -362,7 +362,6 @@ SCREENS['a.more'] = () => {
       ${li('', 'globe', 'Langue', I18N.name(), 'langSheet')}
       ${li('', 'cloud', 'Synchronisation', `${pending(avec)} écriture(s) à envoyer`, 'syncSheet')}
     </div>
-    ${supportCard()}
     <section class="section"><h2>Règlement intérieur · cycle ${avec.cycle.n}</h2><div class="list">
       ${[['Valeur d\'une part', fc(s.partValue)], ['Parts par réunion', '1 à ' + s.maxParts], ['Caisse sociale', fc(s.socialFee) + ' par réunion'], ['Intérêt du crédit', s.rate + ' % par mois'], ['Crédit maximum', s.maxMult + ' × l\'épargne'], ['Durée maximum du crédit', s.maxMonths + ' mois'], ['Amende absence / retard', fc(s.fineAbsent) + ' / ' + fc(s.fineLate)], ['Durée du cycle', (s.cycleMonths || 12) + ' mois'], ['Réunions', (s.meetingDay ? s.meetingDay + ', ' : '') + ((s.frequency || 7) === 14 ? 'toutes les 2 semaines' : 'chaque semaine')]]
         .map(([k, v]) => `<div class="li"><span class="grow">${k}</span><b class="num">${v}</b></div>`).join('')}

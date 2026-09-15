@@ -11,7 +11,8 @@ function wipeTo(data) {
   DB.save();
 }
 
-ACT.goLive = () => App.openSheet(`<h2>Commencer avec de vraies données</h2>
+ACT.goLive = () => requireLicence(goLiveSheet);
+const goLiveSheet = () => App.openSheet(`<h2>Commencer avec de vraies données</h2>
   <p class="muted">Les AVEC de démonstration seront effacées de ce téléphone. Les traductions sont gardées.</p>
   ${licKind() === 'avec' ? '' : `<button class="who" data-act="go" data-to="s.org"><span class="ic" style="background:var(--brand-soft);color:var(--brand)">${ic('building')}</span><span><b>Je suis une organisation</b><span class="small muted">Créer le compte, puis les animateurs. Les animateurs créent les AVEC.</span></span></button>`}
   <button class="who" data-act="liveAvec"><span class="ic" style="background:var(--good-soft);color:var(--good)">${ic('users')}</span><span><b>Je suis une AVEC autonome</b><span class="small muted">Créer directement notre groupe, sans organisation.</span></span></button>`);
@@ -66,6 +67,13 @@ ACT.resetUserPin = d => {
     x.pin = newPin(); DB.save();
     App.openSheet(`<h2>Nouveau code de ${esc(x.name)}</h2><div class="receipt" style="text-align:center">${bigCode(x.pin)}</div><p class="hint">L'ancien code ne marche plus.</p><button class="btn primary block xl" data-act="closeSheet">C'est noté</button>`);
   });
+};
+ACT.animCodesSheet = () => {
+  const boss = me_user();
+  const anims = K.data.users.filter(x => x.role === 'anim' && x.orgId === boss.orgId && !x.remote);
+  App.openSheet(`<h2>Code oublié d'un animateur</h2>
+    <p class="muted">Choisissez l'animateur. Vous confirmez avec votre propre code, puis Akiba affiche son nouveau code une seule fois.</p>
+    <div class="list">${anims.map(a => `<button class="li" data-act="resetUserPin" data-id="${a.id}"><span class="av">${esc(initials(a.name))}</span><span class="grow"><b>${esc(a.name)}</b><span class="small muted">${esc(a.zone || '')}${a.phone ? ' · ' + esc(a.phone) : ''}</span></span>${ic('chev')}</button>`).join('')}</div>`);
 };
 ACT.userPinSheet = () => App.openSheet(`<h2>Changer mon code</h2>
   <div class="field"><label for="upO">Code actuel</label><input id="upO" class="input num" type="password" inputmode="numeric" maxlength="4" autocomplete="off"></div>

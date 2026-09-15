@@ -1,28 +1,27 @@
 # Lancer Akiba AVEC
 
-Assistance : **Ubora** — appel ou WhatsApp **0998 275 144** · contact@uborahub.com
+Application développée par l'**Entreprise Sociale Ubora**.
+Assistance : appel ou WhatsApp **0998 275 144** · contact@uborahub.com
 
-Ce dossier contient l'application complète. Il n'y a rien à installer sur un serveur : ce sont des fichiers simples.
+## 1. L'adresse de l'application
+**https://cubakakatulanya-ux.github.io/akiba-avec/**
 
-## 1. Mettre en ligne (une seule fois)
-Déposez **tout le dossier** sur n'importe quel hébergement web en **HTTPS** :
-- Netlify Drop (glisser le dossier sur app.netlify.com/drop), GitHub Pages, Cloudflare Pages,
-- ou le serveur web de l'organisation.
+L'application est hébergée gratuitement sur GitHub Pages, en HTTPS. Les mises à jour se font en envoyant le code sur GitHub : les téléphones prennent la nouvelle version tout seuls, sans désinstaller.
 
-Le HTTPS est obligatoire pour que l'application marche hors ligne.
+## 2. Installer sur un téléphone ou une tablette
+1. Avec du réseau, ouvrir l'adresse dans **Chrome**.
+2. Toucher **« Installer Akiba »** (ou menu ⋮ → « Ajouter à l'écran d'accueil »).
+3. Ouvrir Akiba depuis l'icône verte. Ensuite, **il marche sans réseau**.
 
-## 2. Installer sur chaque téléphone
-1. Avec du réseau, ouvrez le lien dans **Chrome**.
-2. Menu ⋮ → **Ajouter à l'écran d'accueil** (ou « Installer l'application »).
-3. Ouvrez Akiba une fois depuis l'icône. Ensuite, **il marche sans réseau**.
+Tout le monde peut installer Akiba et essayer la **démonstration** (AVEC fictives, codes secrets 1234).
 
-## 3. Quitter la démonstration
-Au premier lancement, Akiba montre des AVEC fictives. Sur l'écran d'accueil, touchez **Commencer avec mes vraies données** :
-- **Organisation** : créez le compte, puis ajoutez les animateurs (chacun reçoit un code). Les animateurs créent les AVEC, que l'organisation valide.
-- **AVEC autonome** : créez directement le groupe.
+## 3. Commencer les vraies opérations
+Sur l'écran d'accueil, toucher **« Commencer avec mes vraies données »** ou **« Créer une AVEC »**. Akiba demande alors le **code de validation** délivré par l'Entreprise Sociale Ubora (une seule fois par téléphone) :
+- **Organisation** : créer le compte, puis ajouter les animateurs. Les animateurs créent les AVEC, que l'organisation valide.
+- **AVEC autonome** : créer directement le groupe, sans animateur ni organisation.
+- **Téléphone d'une AVEC accompagnée** : « Recevoir une AVEC » avec le fichier et le code envoyés par l'animateur (le code de validation arrive avec le fichier).
 
 ## 4. Avant le lancement réel : à savoir
-- **Les données restent dans chaque téléphone.** Pour que l'organisation voie les données de tous les téléphones et que le « En direct » marche entre appareils, il faut brancher un serveur de synchronisation (étape suivante du projet).
+- **Les données restent dans chaque téléphone.** Faites une **sauvegarde chiffrée chaque semaine** (Plus › Installer et sauvegarder) et gardez le cahier papier pendant la phase pilote.
 - **Faites relire les traductions** (lingala, swahili, kikongo, tshiluba) et traduire les langues du Sud-Ubangi avec l'écran « Traduire ».
-- **Sauvegarde** : tant que la synchronisation n'est pas branchée, un téléphone perdu = données perdues. Gardez le cahier papier pendant la phase pilote.
-- **Mise à jour** : remplacez les fichiers sur l'hébergement ; les téléphones prennent la nouvelle version à la prochaine ouverture avec réseau.
+- **Codes de validation** : ils ont une date de fin. Pour prolonger, l'administrateur crée un nouveau code.

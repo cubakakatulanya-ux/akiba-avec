@@ -36,7 +36,7 @@ SCREENS['lic.gate'] = () => {
     <header class="hero">
       <div class="label" style="color:inherit;opacity:.8">Épargne et crédit villageois</div>
       <h1>Akiba</h1>
-      <p>Application réservée aux organisations et aux groupes partenaires agréés.</p>
+      <p>Ce téléphone contient de vraies données : il doit être validé par l'administrateur d'Akiba pour continuer.</p>
       <p class="small" style="opacity:.85">Développée par l'Entreprise Sociale Ubora</p>
     </header>
     <main class="main">
@@ -64,6 +64,33 @@ ACT.licActivate = async () => {
   licSet(token); App.licence = res;
   App.go('login'); App.toast(`Licence activée : ${res.data.name}`);
 };
+/* Akiba est libre à installer et à découvrir (démonstration).
+   Pour commencer les vraies opérations, un code de validation de l'administrateur est demandé, une seule fois. */
+function requireLicence(then) {
+  if (!licenceRequired() || (App.licence && App.licence.ok && licKind() !== 'demo')) return then();
+  App.licThen = then;
+  const r = App.licence || {};
+  App.openSheet(`<h2>Code de validation</h2>
+    <p class="muted">Akiba est libre à installer et à découvrir. Pour commencer les vraies opérations, il faut un <b>code de validation</b> délivré par l'Entreprise Sociale Ubora. Il se demande une seule fois par téléphone.</p>
+    ${r.expired ? `<div class="alert bad">${icSpan('alert')}<div><b>${esc(r.why)}</b><span class="small">Demandez un nouveau code.</span></div></div>` : ''}
+    <div class="field"><label for="licS">Code ou lien de validation</label><textarea id="licS" class="input mono" rows="4" autocomplete="off" spellcheck="false" autocapitalize="off"></textarea></div>
+    <button class="btn primary block xl" data-act="licSheetOk">${ic('key')} Valider</button>
+    <p class="small muted" style="text-align:center">Pas de code ? Ubora : <a href="tel:${UBORA.tel}" style="color:var(--brand);font-weight:700">${UBORA.telShow}</a> · <a href="${waLink()}" target="_blank" rel="noopener" style="color:var(--brand);font-weight:700">WhatsApp</a></p>`);
+}
+ACT.licSheetOk = async () => {
+  const raw = (fval('licS') || '').replace(/\s+/g, '');
+  const token = (raw.match(/licence=([\w.-]+)/) || [])[1] || raw;
+  if (!token) return App.toast('Collez le code de validation');
+  const res = await verifyLicence(token);
+  if (!res.ok) return App.toast(res.why || 'Code de licence non valable');
+  if (res.data.kind === 'demo') return App.toast('Ce code sert seulement à la démonstration');
+  licSet(token); App.licence = res;
+  const then = App.licThen; App.licThen = null;
+  App.closeSheet(); App.toast(`Téléphone validé : ${res.data.name}`);
+  if (then) then();
+};
+ACT.createAvec = () => requireLicence(() => App.go('c.avec', { from: 'login' }));
+
 function licenceBanner() {
   const r = App.licence;
   if (!licenceRequired() || !r || !r.ok || !r.exp) return '';

@@ -476,7 +476,8 @@ const App = {
   }
 };
 function render() {
-  const locked = typeof licenceRequired === 'function' && licenceRequired() && !(App.licence && App.licence.ok);
+  // libre à installer et à découvrir ; un téléphone avec de vraies données doit être validé
+  const locked = typeof licenceRequired === 'function' && licenceRequired() && K.data.mode === 'prod' && !(App.licence && App.licence.ok);
   const fn = locked && !/^adm\./.test(App.screen) ? SCREENS['lic.gate'] : (SCREENS[App.screen] || SCREENS.login);
   const screenHtml = fn(App.params);
   document.getElementById('app').innerHTML = screenHtml + (typeof appFooter === 'function' ? appFooter(screenHtml) : '') +
