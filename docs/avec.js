@@ -296,7 +296,7 @@ const STEP = {
       <div class="card stack">
         <div class="stack" style="gap:6px">${ins.map(k => `<div class="row between small"><span>${TX[k].l}</span><b class="num" style="color:var(--good)">+ ${fc(by(k))}</b></div>`).join('')}
           ${outs.map(k => `<div class="row between small"><span>${TX[k].l}</span><b class="num" style="color:var(--bad)">− ${fc(by(k))}</b></div>`).join('')}</div>
-        <div class="row between" style="border-top:1px solid var(--line);padding-top:10px"><span>Ouverture ${fc(m.openCount)} ${tOut > tIn ? '−' : '+'} ${fc(Math.abs(tIn - tOut))}</span></div>
+        <div class="row between" style="border-top:1px solid var(--line);padding-top:10px"><span>Ouverture ${fc(m.openCount != null ? m.openCount : st.cash - (tIn - tOut))} ${tOut > tIn ? '−' : '+'} ${fc(Math.abs(tIn - tOut))}</span></div>
         <div class="row between"><span class="label">Doit être dans la caisse</span><b class="num" style="font-family:var(--f-display);font-size:1.5rem">${fc(st.cash)}</b></div>
         <div class="field"><label for="closeCount">Argent compté (FC)</label><input id="closeCount" class="input bignum num" inputmode="numeric" autocomplete="off" placeholder="0" value="${esc(dr.closeCount || '')}" data-in="gap" data-exp="${st.cash}" data-out="closeGap"></div>
         <div id="closeGap">${gapHtml(parseAmt(dr.closeCount), st.cash, filled)}</div>
