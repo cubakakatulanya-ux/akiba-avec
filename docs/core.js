@@ -484,7 +484,12 @@ function render() {
   const locked = typeof licenceRequired === 'function' && licenceRequired() && K.data.mode === 'prod' && !(App.licence && App.licence.ok);
   const fn = locked && !/^adm\./.test(App.screen) ? SCREENS['lic.gate'] : (SCREENS[App.screen] || SCREENS.login);
   const screenHtml = fn(App.params);
-  document.getElementById('app').innerHTML = screenHtml + (typeof appFooter === 'function' ? appFooter(screenHtml) : '') +
+  // animation d'entrée seulement quand l'écran ou la feuille change (pas à chaque touche du clavier)
+  const appEl = document.getElementById('app'), key = App.screen + JSON.stringify(App.params || {});
+  appEl.classList.toggle('enter', key !== render.lastKey);
+  appEl.classList.toggle('sheet-enter', !!App.sheet && !render.hadSheet);
+  render.lastKey = key; render.hadSheet = !!App.sheet;
+  appEl.innerHTML = screenHtml + (typeof appFooter === 'function' ? appFooter(screenHtml) : '') +
     (App.sheet ? `<div class="scrim" data-act="scrim"><div class="sheet" role="dialog" aria-modal="true"><div class="sheethead"><div class="grab"></div><button class="iconbtn shut" data-act="closeSheet" aria-label="Fermer">${ic('x')}</button></div>${App.sheet}</div></div>` : '');
   if (App.updateReady && !document.getElementById('updbar')) {
     const bar = document.createElement('div');

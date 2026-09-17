@@ -198,6 +198,7 @@ const GUIDE = [
       <li>Le tableau des AVEC indique le cycle, la dernière réunion et la date du dernier envoi. Touchez une ligne pour voir le détail.</li>
       <li>Créez une AVEC et confiez-la à un animateur avec <b>Nouvelle AVEC</b>.</li>
       <li><b>Formation</b> : consultez les 7 modules et suivez l'avancement de chaque AVEC (colonne « Formation » et fiche de l'AVEC).</li>
+      <li><b>Excel</b> : un fichier .xlsx avec 7 onglets (synthèse, AVEC, membres, réunions, crédits, formation, alertes) pour vos rapports. Touchez « Excel », puis Télécharger ou Partager. Choisissez d'abord un animateur pour n'exporter que ses AVEC.</li>
       <li>Les AVEC autonomes n'apparaissent jamais dans votre tableau.</li>
     </ul>` },
   { id: 'mots', icon: 'clip', t: 'Mots à connaître', b: `

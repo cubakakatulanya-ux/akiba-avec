@@ -132,6 +132,7 @@ SCREENS['n.home'] = () => {
       <span class="grow"><b>${esc(r.avec.name)}</b><span class="small muted">${esc(r.avec.village)} · ${r.avec.members.length} membres · réunion ${r.st.last ? ago(r.st.last.date) : '—'}</span></span>
       <span class="end"><span class="num">${fck(r.st.sum.EPARGNE)}</span><br>${r.avec.status === 'pending' ? '<span class="chip warn">À valider</span>' : r.avec.status === 'refused' ? '<span class="chip bad">Refusée</span>' : r.h.alerts.length ? `<span class="chip ${r.h.level}">${r.h.alerts.length} alerte${r.h.alerts.length > 1 ? 's' : ''}</span>` : '<span class="chip good">RAS</span>'}</span></button>`).join('')}</div>
     <button class="btn ghost block" data-act="unlockSheet">${ic('lock')} Débloquer un membre (code perdu)</button>
+    <button class="btn ghost block" data-act="exportSheet">${ic('chart')} Exporter mes AVEC vers Excel</button>
     <button class="btn ghost block" data-act="go" data-to="dev.backup">${ic('shield')} Installer et sauvegarder</button>
     <div class="grid2"><button class="btn ghost" data-act="go" data-to="tr.edit" data-lang="ln">${ic('globe')} Langues</button><button class="btn ghost" data-act="userPinSheet">${ic('key')} Mon code</button></div>
   </main>${tabbar(N_TABS, 'n.home')}</div>`;
@@ -207,6 +208,7 @@ SCREENS['o.home'] = p => {
         <button class="btn sm ${p.anim ? 'ghost' : 'brand'}" data-act="go" data-to="o.home">Toutes</button>
         ${anims.map(a => `<button class="btn sm ${p.anim === a.id ? 'brand' : 'ghost'}" data-act="go" data-to="o.home" data-anim="${a.id}">${esc(a.name)}</button>`).join('')}
         <button class="btn sm ghost" data-act="go" data-to="t.home">${ic('clip')} Formation</button>
+        <button class="btn sm ghost" data-act="exportSheet" data-anim="${esc(p.anim || '')}">${ic('chart')} Excel</button>
         <button class="btn sm ghost" data-act="go" data-to="guide">${ic('book')} Guide</button>
         <button class="btn sm ghost" data-act="go" data-to="tr.edit" data-lang="ln">${ic('globe')} Langues</button>
         <button class="btn sm ghost" data-act="userPinSheet">${ic('key')} Mon code</button>

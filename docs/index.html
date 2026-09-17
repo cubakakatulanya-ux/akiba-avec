@@ -314,6 +314,129 @@ details.g h4{margin:6px 0 0;font-size:.95rem}
 .updbar b{display:block}
 .langbtn{position:absolute;right:14px;top:14px;z-index:1;background:rgba(255,255,255,.16);color:inherit;border:0;border-radius:999px;padding:6px 12px;font-weight:800;font-size:.8rem;display:inline-flex;gap:6px;align-items:center}
 .langbtn svg{width:16px;height:16px}
+/* ---------- finition premium ---------- */
+:root{
+  --ground:#F3F6F2; --surface-2:#EAF0E9; --line:#DDE6DE; --ink-2:#4F635B;
+  --brand-2:#17684E; --brand-deep:#093325; --maize-2:#FFCD2E;
+  --sh-1:0 1px 2px rgba(16,38,31,.05),0 1px 0 rgba(16,38,31,.03);
+  --sh-2:0 1px 2px rgba(16,38,31,.05),0 10px 26px -14px rgba(16,38,31,.28);
+  --sh-3:0 2px 6px rgba(16,38,31,.08),0 26px 50px -26px rgba(9,51,37,.6);
+  --r:18px; --r-sm:12px; --ease:cubic-bezier(.2,.8,.2,1);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#08110E; --surface:#101C18; --surface-2:#182822; --line:#21352E;
+    --brand-2:#2F9470; --brand-deep:#1F6E53; --maize-2:#FFD34D;
+    --sh-1:0 1px 0 rgba(255,255,255,.03),0 1px 2px rgba(0,0,0,.4);
+    --sh-2:0 1px 0 rgba(255,255,255,.03),0 12px 28px -14px rgba(0,0,0,.9);
+    --sh-3:0 1px 0 rgba(255,255,255,.04),0 28px 56px -26px rgba(0,0,0,.95);
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#08110E; --surface:#101C18; --surface-2:#182822; --line:#21352E;
+  --brand-2:#2F9470; --brand-deep:#1F6E53; --maize-2:#FFD34D;
+  --sh-1:0 1px 0 rgba(255,255,255,.03),0 1px 2px rgba(0,0,0,.4);
+  --sh-2:0 1px 0 rgba(255,255,255,.03),0 12px 28px -14px rgba(0,0,0,.9);
+  --sh-3:0 1px 0 rgba(255,255,255,.04),0 28px 56px -26px rgba(0,0,0,.95);
+}
+body{letter-spacing:.003em}
+h1{letter-spacing:-.02em}
+.label{letter-spacing:.12em}
+/* en-têtes : dégradé profond et reflet */
+.topbar{background:linear-gradient(135deg,var(--brand-2) 0%,var(--brand) 45%,var(--brand-deep) 100%);box-shadow:0 1px 0 rgba(255,255,255,.06) inset,var(--sh-2);padding-bottom:12px}
+.topbar .t b{font-size:1.18rem;letter-spacing:-.01em}
+.iconbtn{transition:background .2s var(--ease),transform .1s ease}
+.iconbtn:active{transform:scale(.92)}
+.hero{background:radial-gradient(120% 90% at 88% -10%,rgba(242,183,5,.26),transparent 55%),radial-gradient(90% 70% at -10% 110%,rgba(126,226,168,.16),transparent 60%),linear-gradient(160deg,var(--brand-2),var(--brand) 55%,var(--brand-deep));border-radius:0 0 34px 34px;box-shadow:var(--sh-3);padding-bottom:34px}
+.hero h1{font-size:3.3rem;text-shadow:0 2px 18px rgba(0,0,0,.18)}
+.hero::before,.caisse::before{opacity:.55}
+.langbtn{background:rgba(255,255,255,.14);box-shadow:0 0 0 1px rgba(255,255,255,.14) inset;backdrop-filter:blur(6px)}
+/* surfaces */
+.card,.list,.kpi,.tablewrap{border-color:var(--line);box-shadow:var(--sh-1);border-radius:var(--r)}
+details.g{border:1px solid var(--line);box-shadow:var(--sh-1)}
+.li{min-height:60px;padding:13px 16px}
+button.li{transition:background .2s var(--ease)}
+button.li:active{background:var(--surface-2)}
+.kpi{padding:15px 16px;position:relative;overflow:hidden}
+.kpi>span:first-child{display:block;font-size:.68rem;text-transform:uppercase;letter-spacing:.05em;font-weight:800;line-height:1.3;color:var(--ink-2)}
+.kpi b{font-size:1.7rem;letter-spacing:-.02em;margin:6px 0 2px}
+.caisse{background:radial-gradient(110% 80% at 100% 0%,rgba(242,183,5,.22),transparent 55%),linear-gradient(150deg,var(--brand-2),var(--brand) 50%,var(--brand-deep));border-radius:24px;box-shadow:var(--sh-3)}
+.caisse .big{font-size:2.7rem;letter-spacing:-.025em;text-shadow:0 2px 14px rgba(0,0,0,.15)}
+.caisse .split div{background:rgba(255,255,255,.1);box-shadow:0 0 0 1px rgba(255,255,255,.08) inset;border-radius:14px}
+.av{box-shadow:0 0 0 2px var(--surface),0 0 0 3px var(--line)}
+.chip{padding:4px 10px;letter-spacing:.01em}
+/* boutons */
+.btn{border-radius:14px;transition:transform .12s var(--ease),filter .2s ease,box-shadow .2s var(--ease)}
+.btn.primary{background:linear-gradient(180deg,var(--maize-2),var(--maize));box-shadow:0 1px 0 rgba(255,255,255,.5) inset,0 10px 22px -12px rgba(168,99,0,.75)}
+.btn.primary:not(:disabled){box-shadow:0 1px 0 rgba(255,255,255,.5) inset,0 10px 22px -12px rgba(168,99,0,.75)}
+.btn.brand{background:linear-gradient(180deg,var(--brand-2),var(--brand));box-shadow:0 1px 0 rgba(255,255,255,.14) inset,0 10px 22px -12px rgba(9,51,37,.8)}
+.btn.ghost{background:var(--surface);border:1px solid var(--line);box-shadow:var(--sh-1)}
+.btn.ghost:hover:not(:disabled){border-color:var(--brand);filter:none}
+.btn.xl{border-radius:18px;letter-spacing:-.005em}
+.btn.sm{border-radius:11px}
+/* entrée AVEC */
+.avec-main{position:relative;overflow:hidden;border-radius:24px;padding:20px;background:radial-gradient(120% 120% at 100% 0%,rgba(255,255,255,.35),transparent 50%),linear-gradient(160deg,var(--maize-2),var(--maize));box-shadow:0 1px 0 rgba(255,255,255,.5) inset,0 22px 40px -22px rgba(168,99,0,.85)}
+.avec-main::after{content:"";position:absolute;right:-40px;bottom:-60px;width:170px;height:170px;border-radius:50%;background:rgba(255,255,255,.14);pointer-events:none}
+.avec-main>*{position:relative;z-index:1}
+.avec-main .ic{background:rgba(255,255,255,.55);box-shadow:0 1px 0 rgba(255,255,255,.7) inset,0 6px 14px -8px rgba(0,0,0,.35)}
+.who{border:1px solid var(--line);box-shadow:var(--sh-1);border-radius:18px;transition:border-color .2s var(--ease),box-shadow .2s var(--ease),transform .12s var(--ease)}
+.who:hover{box-shadow:var(--sh-2)}
+.quick{border-color:var(--line);box-shadow:var(--sh-1);border-radius:16px}
+/* formulaires */
+.input,select.input,textarea.input{border-width:1px;border-radius:14px;background:var(--surface);box-shadow:0 1px 2px rgba(16,38,31,.04) inset}
+.input:focus{box-shadow:0 0 0 4px var(--brand-soft)}
+.choice span{border-width:1px;border-radius:14px;transition:background .2s var(--ease),border-color .2s var(--ease)}
+.seg{border-radius:12px}
+.seg button{border-radius:9px;transition:background .2s var(--ease),color .2s var(--ease)}
+.seg button.on{box-shadow:0 4px 10px -6px rgba(0,0,0,.45)}
+.pm button{box-shadow:var(--sh-1)}
+.pm button.plus{background:linear-gradient(180deg,var(--brand-2),var(--brand));box-shadow:0 8px 16px -10px rgba(9,51,37,.8)}
+.keypad button{border-radius:18px;box-shadow:var(--sh-1);border-color:var(--line)}
+.keypad button:not(.fn):active{background:var(--surface-2)}
+.pin-dots span{transition:background .15s ease,transform .15s var(--ease)}
+.pin-dots span.on{transform:scale(1.1)}
+/* réunion : étapes */
+.stp::before{z-index:0}
+.stp i{z-index:1;box-shadow:var(--sh-1);transition:background .2s var(--ease)}
+.stp.cur i{box-shadow:0 0 0 5px var(--maize-soft)}
+.totals{border-radius:16px;box-shadow:0 0 0 1px var(--line) inset}
+/* alertes : fond doux, pastille au lieu du trait */
+.alert{border-left:0;border-radius:16px;box-shadow:0 0 0 1px var(--line) inset}
+.alert.bad{box-shadow:0 0 0 1px color-mix(in srgb,var(--bad) 22%,transparent) inset}
+.alert.warn{box-shadow:0 0 0 1px color-mix(in srgb,var(--warn) 22%,transparent) inset}
+.alert.good{box-shadow:0 0 0 1px color-mix(in srgb,var(--good) 22%,transparent) inset}
+.tip{border-left:0;border-radius:14px;box-shadow:0 0 0 1px color-mix(in srgb,var(--maize) 35%,transparent) inset}
+/* barre d'onglets translucide */
+.tabbar{background:var(--surface);box-shadow:0 -10px 30px -22px rgba(9,51,37,.5)}
+@supports ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+  .tabbar{background:color-mix(in srgb,var(--surface) 86%,transparent);-webkit-backdrop-filter:saturate(1.6) blur(16px);backdrop-filter:saturate(1.6) blur(16px)}
+}
+.tab{transition:color .2s var(--ease)}
+.tab svg{transition:background .25s var(--ease),transform .2s var(--ease)}
+.tab.on svg{transform:translateY(-1px)}
+/* feuilles, messages */
+.scrim{background:rgba(4,14,10,.5)}
+.sheet{border-radius:28px 28px 0 0;box-shadow:0 -20px 50px -20px rgba(0,0,0,.45);padding-top:14px}
+.toast,.updbar{border-radius:16px;box-shadow:var(--sh-3)}
+.appfoot{border-top:0;opacity:.95}
+.xl-ic{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;flex:none;background:var(--brand-soft);color:var(--brand)}
+.xl-ic svg{width:20px;height:20px}
+/* mode sombre : en-têtes vert profond, texte clair */
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]) .topbar{background:linear-gradient(135deg,#1D5E48,#113F31 55%,#0A2A20);color:#EAF4EE}
+  :root:not([data-theme="light"]) .hero{background:radial-gradient(120% 90% at 88% -10%,rgba(245,194,46,.2),transparent 55%),linear-gradient(160deg,#1D5E48,#113F31 55%,#0A2A20);color:#EAF4EE}
+  :root:not([data-theme="light"]) .caisse{background:radial-gradient(110% 80% at 100% 0%,rgba(245,194,46,.18),transparent 55%),linear-gradient(150deg,#1D5E48,#113F31 50%,#0A2A20);color:#EAF4EE;box-shadow:0 0 0 1px rgba(255,255,255,.06) inset,var(--sh-3)}
+}
+:root[data-theme="dark"] .topbar{background:linear-gradient(135deg,#1D5E48,#113F31 55%,#0A2A20);color:#EAF4EE}
+:root[data-theme="dark"] .hero{background:radial-gradient(120% 90% at 88% -10%,rgba(245,194,46,.2),transparent 55%),linear-gradient(160deg,#1D5E48,#113F31 55%,#0A2A20);color:#EAF4EE}
+:root[data-theme="dark"] .caisse{background:radial-gradient(110% 80% at 100% 0%,rgba(245,194,46,.18),transparent 55%),linear-gradient(150deg,#1D5E48,#113F31 50%,#0A2A20);color:#EAF4EE;box-shadow:0 0 0 1px rgba(255,255,255,.06) inset,var(--sh-3)}
+/* mouvements d'entrée (seulement au changement d'écran) */
+@keyframes screenIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes sheetIn{from{transform:translateY(40px);opacity:.4}to{transform:none;opacity:1}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+#app.enter .main,#app.enter .hero~*{animation:screenIn .32s var(--ease) both}
+#app.sheet-enter .scrim{animation:fadeIn .22s ease both}
+#app.sheet-enter .sheet{animation:sheetIn .34s var(--ease) both}
 /* tablettes : plus de place, même présentation */
 @media (min-width:700px){
   .shell:not(.wide),.appfoot{max-width:680px}
@@ -327,7 +450,7 @@ details.g h4{margin:6px 0 0;font-size:.95rem}
 </style>
 <style>html,body{margin:0}</style>
 </head><body>
-<script>window.KITABU_PWA = true; window.KITABU_VERSION = 'akiba-202609160729';</script>
+<script>window.KITABU_PWA = true; window.KITABU_VERSION = 'akiba-202609170837';</script>
 
 <div id="app"></div>
 <script src="core.js"></script>
@@ -348,6 +471,7 @@ details.g h4{margin:6px 0 0;font-size:.95rem}
 <script src="transfer.js"></script>
 <script src="admin.js"></script>
 <script src="training.js"></script>
+<script src="export.js"></script>
 <script src="boot.js"></script>
 
 </body></html>
