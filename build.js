@@ -8,7 +8,7 @@ fs.mkdirSync(out, { recursive: true });
 const html = fs.readFileSync(path.join(src, 'index.html'), 'utf8');
 const scripts = [...html.matchAll(/<script src="([^"]+)"><\/script>/g)].map(m => m[1]);
 scripts.forEach(f => fs.copyFileSync(path.join(src, f), path.join(out, f)));
-const assets = ['ubora-logo.png', 'qrcode.min.js'];                                   // images de l'application (gardées hors ligne)
+const assets = ['ubora-logo.png', 'qrcode.min.js', 'blocage.txt'];                                   // images de l'application (gardées hors ligne)
 assets.forEach(f => fs.copyFileSync(path.join(src, f), path.join(out, f)));
 const cut = html.indexOf('</style>') + '</style>'.length;
 const head = html.slice(0, cut).replace('<title>Akiba AVEC</title>', '');
@@ -107,7 +107,7 @@ fs.writeFileSync(path.join(out, 'manifest.webmanifest'), JSON.stringify({
   ]
 }, null, 2));
 
-const files = ['./', 'index.html', 'manifest.webmanifest', 'icon.svg', 'icon-192.png', 'icon-512.png', ...assets, ...scripts];
+const files = ['./', 'index.html', 'manifest.webmanifest', 'icon.svg', 'icon-192.png', 'icon-512.png', ...assets.filter(f => f !== 'blocage.txt'), ...scripts];
 fs.writeFileSync(path.join(out, 'sw.js'), `// Akiba : garde l'application dans le téléphone pour qu'elle s'ouvre sans réseau.
 const CACHE = '${version}';
 const FILES = ${JSON.stringify(files)};
@@ -116,6 +116,7 @@ self.addEventListener('install', e => e.waitUntil(caches.open(CACHE).then(c => c
 self.addEventListener('activate', e => e.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim())));
 self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
+  if (e.request.url.includes('blocage.txt')) return;             // liste de blocage : toujours la version du réseau
   e.respondWith(caches.match(e.request, { ignoreSearch: true }).then(hit => hit || fetch(e.request).then(res => {
     const url = e.request.url;
     if (res.ok && (url.startsWith(self.location.origin) || /fonts\\.(googleapis|gstatic)\\.com/.test(url))) { const copy = res.clone(); caches.open(CACHE).then(c => c.put(e.request, copy)); }

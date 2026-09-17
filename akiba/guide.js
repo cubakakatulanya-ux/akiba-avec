@@ -37,7 +37,7 @@ const GUIDE = [
     <h4>AVEC accompagnée, créée sur le téléphone de l'animateur</h4>
     <ol><li>L'animateur ouvre l'AVEC puis touche <b>Envoyer vers le téléphone du groupe</b>.</li>
       <li>Il envoie le fichier <b>.akiba</b> par WhatsApp, Bluetooth ou carte mémoire, et dit le <b>code de 8 signes</b> de vive voix.</li>
-      <li>Sur le téléphone du groupe : ouvrir Akiba, toucher <b>Recevoir une AVEC</b>, choisir le fichier, taper le code. La licence arrive avec le fichier.</li>
+      <li>Sur le téléphone du groupe : ouvrir Akiba, toucher <b>Recevoir une AVEC</b>, choisir le fichier, taper le code. La validation arrive avec le fichier : ce téléphone tient les réunions de son AVEC.</li>
       <li>Les membres se connectent ensuite avec leur nom et leur code.</li></ol>
     <h4>Le groupe change de téléphone</h4>
     <p>Sur l'ancien téléphone : <b>Plus › Changer de téléphone</b>, puis même chose. L'ancien téléphone garde une copie mais ne peut plus ouvrir de réunion : il n'y a jamais deux cahiers différents.</p>
@@ -120,7 +120,8 @@ const GUIDE = [
     <div class="tip">Chaque déblocage est noté dans <b>Plus › Sécurité et carte de secours</b>. Quand il reste 2 codes ou moins sur la carte, le bureau en crée une nouvelle.</div>` },
   { id: 'lancer', icon: 'building', t: 'Lancer Akiba pour de vrai', b: `
     <ol>
-      <li>Tout le monde peut installer Akiba et essayer la démonstration. Sur l'écran d'accueil, touchez <b>Commencer avec mes vraies données</b> : Akiba demande le <b>code de validation</b> délivré par l'Entreprise Sociale Ubora (une seule fois par téléphone). La démonstration est ensuite effacée.</li>
+      <li>Tout le monde peut installer Akiba et essayer la démonstration. Sur l'écran d'accueil, touchez <b>Commencer avec mes vraies données</b> : Akiba affiche le <b>code de ce téléphone</b> : touchez « Demander le code sur WhatsApp » (ou appelez Ubora). Ubora renvoie un <b>code de validation</b> fait pour ce téléphone seulement : collez-le ou ouvrez le lien, une seule fois. La démonstration est ensuite effacée.</li>
+      <li>Le code de validation ne marche sur aucun autre téléphone : ne le partagez pas, il ne servirait à rien. Un téléphone utilisé de façon frauduleuse peut être bloqué par Ubora ; ses données restent dans le téléphone.</li>
       <li><b>Organisation</b> : créez le compte, puis <b>Ajouter un animateur</b> pour chaque animateur. Chacun reçoit un code et le change avec <b>Mon code</b>.</li>
       <li>Les animateurs créent les AVEC, et l'organisation les valide.</li>
       <li><b>AVEC autonome</b> : créez directement votre groupe.</li>

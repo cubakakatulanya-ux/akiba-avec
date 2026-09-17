@@ -42,16 +42,22 @@ if (K.recovered) setTimeout(() => App.toast('Vos données ont été retrouvées 
   else if (s && s.kind === 'org' && userById(s.userId)) App.screen = 'o.home';
   else { K.session = null; App.screen = 'login'; }
   if (!licenceRequired()) { App.licence = { ok: true, data: { name: 'Démonstration', kind: 'demo' } }; render(); return; }
-  // licence : lien d'activation (#licence=…) ou licence déjà enregistrée sur ce téléphone
-  const fromLink = (location.hash.match(/licence=([\w.-]+)/) || [])[1];
-  verifyLicence(fromLink || licGet()).then(res => {
+  // licence : lien (#licence=… et/ou &activation=…) ou licence déjà enregistrée sur ce téléphone
+  const hash = location.hash, fromLink = codeFrom(hash);
+  (async () => {
+    await migrateLegacyLicence();
+    let msg = '';
     if (fromLink) {
       try { history.replaceState(null, '', location.pathname + location.search); } catch (e) { /* rien */ }
-      if (res.ok) licSet(fromLink);
-      else if (licGet()) return verifyLicence(licGet()).then(old => { App.licence = old; render(); App.toast(res.why || 'Lien d\'activation non valable'); });
+      if (fromLink !== licGet()) { const r = await applyValidationCode(hash); if (!r.ok) msg = r.why || 'Code de validation non valable'; }
     }
-    App.licence = res;
+    App.licence = await resolveLicence();
     render();
-    if (fromLink && res.ok) App.toast(`Licence activée : ${res.data.name}`);
-  });
+    if (msg) App.toast(msg);
+    else if (fromLink && App.licence.ok) App.toast(`Téléphone validé : ${App.licence.data.name}`);
+    // liste de blocage : à l'ouverture, au retour du réseau, puis toutes les 6 heures
+    refreshBlocklist();
+    window.addEventListener('online', refreshBlocklist);
+    setInterval(refreshBlocklist, 6 * 3600e3);
+  })();
 })();

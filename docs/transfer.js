@@ -42,7 +42,11 @@ async function importTransfer(text, code) {
   if (licenceRequired() && !(App.licence && App.licence.ok)) {
     const res = await verifyLicence(body.licence);
     if (!res.ok) return { error: 'Ce téléphone n\'a pas de licence, et le fichier n\'en apporte pas de valable. Demandez un lien d\'activation.' };
-    licSet(body.licence); App.licence = res;
+    if (blockedWhy(res.data.id)) return { error: blockedWhy(res.data.id) };
+    // téléphone du groupe : il tient les réunions de l'AVEC reçue, sans créer d'organisation ni d'autre AVEC
+    licSet(body.licence); lsSet(LIMITED_STORE, res.data.id);
+    App.licence = await resolveLicence();
+    if (!App.licence.ok) return { error: App.licence.why || 'Licence refusée' };
   }
   if (K.data.mode !== 'prod') wipeTo(emptyData());                    // on quitte la démonstration
   const old = avecById(a.id);
