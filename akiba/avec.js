@@ -266,6 +266,7 @@ const STEP = {
       <div class="card row between"><span class="label">Disponible pour prêter</span><b class="num" style="font-family:var(--f-display);font-size:1.4rem">${fc(st.loanFund)}</b></div>
       <div class="list">${txRows(avec, list, 'Aucun crédit accordé à cette réunion')}</div>
       <button class="btn brand block xl" data-act="creditSheet">${ic('plus')} Accorder un crédit</button>
+      ${extMeetingBlock(avec, m, st)}
       ${nextBtn(5, m.stepDone >= 5 ? 'Suivant' : 'Terminer les crédits')}`;
   },
   amende(avec, m, st) {
@@ -286,9 +287,9 @@ const STEP = {
   },
   cloture(avec, m, st) {
     const dr = draft(m.id + ':close', () => ({ locks: {} }));
-    const all = meetTx(avec, m, ['SOCIAL', 'EPARGNE', 'REMB', 'AMENDE', 'CREDIT', 'AIDE']).filter(t => !t.annulled);
+    const all = meetTx(avec, m, ['SOCIAL', 'EPARGNE', 'REMB', 'AMENDE', 'CREDIT', 'AIDE', 'EXT_IN', 'EXT_FEE', 'EXT_REPAY']).filter(t => !t.annulled);
     const by = type => all.filter(t => t.type === type).reduce((a, t) => a + t.amount, 0);
-    const ins = ['EPARGNE', 'SOCIAL', 'REMB', 'AMENDE'], outs = ['CREDIT', 'AIDE'];
+    const ins = ['EPARGNE', 'SOCIAL', 'REMB', 'AMENDE'].concat(by('EXT_IN') ? ['EXT_IN'] : []), outs = ['CREDIT', 'AIDE'].concat(['EXT_FEE', 'EXT_REPAY'].filter(k => by(k)));
     const tIn = ins.reduce((a, k) => a + by(k), 0), tOut = outs.reduce((a, k) => a + by(k), 0);
     const holders = keyHolders(avec);
     const filled = (dr.closeCount || '').trim() !== '';
@@ -507,7 +508,7 @@ SCREENS['a.receipt'] = p => {
     <div class="alert good"><span style="width:26px;flex:none">${ic('lock')}</span><div><b>Réunion n°${m.n} fermée et scellée</b><span class="small">Plus personne ne peut modifier ces écritures.</span></div></div>
     <div class="receipt stack">
       <div class="row between"><span class="label">Reçu de réunion</span><span class="small muted">${fdt(m.closedAt)}</span></div>
-      ${['EPARGNE', 'SOCIAL', 'REMB', 'AMENDE', 'CREDIT', 'AIDE'].map(k => `<div class="row between small"><span>${TX[k].l}</span><b class="num">${fc(s(k))}</b></div>`).join('')}
+      ${['EPARGNE', 'SOCIAL', 'REMB', 'AMENDE', 'CREDIT', 'AIDE', 'EXT_IN', 'EXT_FEE', 'EXT_REPAY'].filter(k => !/^EXT_/.test(k) || s(k)).map(k => `<div class="row between small"><span>${TX[k].l}</span><b class="num">${fc(s(k))}</b></div>`).join('')}
       <div class="row between" style="border-top:1px dashed var(--line);padding-top:8px"><span>Argent compté</span><b class="num">${fc(m.closeCount)}</b></div>
       ${gap ? `<div class="chip bad">Écart ${fc(gap)} — ${esc(m.note)}</div>` : '<div class="chip good">Caisse juste</div>'}
       <div class="small muted">Clés : ${m.validators.map(id => esc(memberOf(avec, id).name)).join(', ')}</div>
@@ -576,6 +577,7 @@ SCREENS['a.loans'] = () => {
       <div class="kpi"><span>Intérêts gagnés</span><b class="num">${fck(st.interest)}</b><span>pour le partage</span></div>
       <div class="kpi"><span>Disponible</span><b class="num">${fck(st.loanFund)}</b><span>caisse de crédit</span></div></div>
     <section class="section"><h2>En cours</h2><div class="list">${act.map(l => loanLi(avec, l)).join('') || '<div class="li muted">Aucun crédit en cours</div>'}</div></section>
+    ${extLoansSection(avec, st)}
     ${done.length ? `<section class="section"><h2>Soldés</h2><div class="list">${done.slice(0, 15).map(l => loanLi(avec, l)).join('')}</div></section>` : ''}
   </main>${tabbar(A_TABS, 'a.loans')}</div>`;
 };

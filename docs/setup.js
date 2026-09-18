@@ -22,7 +22,7 @@ SCREENS['s.org'] = () => licKind() !== 'org' ? SCREENS.login() : `<div class="sh
   <p class="muted">Ce compte voit toutes les AVEC que vous accompagnez, valide les nouveaux groupes et gère les animateurs.</p>
   <section class="card stack">
     <div class="field"><label for="soN">Nom de l'organisation</label><input id="soN" class="input" autocomplete="off"></div>
-    <div class="field"><label for="soZ">Zone d'intervention</label><input id="soZ" class="input" placeholder="Ex. Sud-Ubangi, Gemena et Budjala"></div>
+    ${geoZoneFields('so', {}, 'Précision sur la zone')}
     <div class="field"><label for="soP">Nom du responsable du compte</label><input id="soP" class="input" autocomplete="off"></div>
     ${pinFields('soc')}
   </section>
@@ -30,12 +30,12 @@ SCREENS['s.org'] = () => licKind() !== 'org' ? SCREENS.login() : `<div class="sh
   <button class="btn primary block xl" data-act="saveOrg">${ic('check')} Créer le compte</button>
 </main></div>`;
 ACT.saveOrg = () => {
-  const name = (fval('soN') || '').trim(), zone = (fval('soZ') || '').trim(), boss = (fval('soP') || '').trim();
+  const name = (fval('soN') || '').trim(), g = readGeoZone('so'), boss = (fval('soP') || '').trim();
   if (name.length < 3) return App.toast('Écrivez le nom de l\'organisation');
   if (boss.length < 3) return App.toast('Écrivez le nom du responsable');
   const pin = readNewPin('soc'); if (!pin) return;
   const data = emptyData();
-  const org = { id: 'org-' + uid(), name, zone, secret: randCode(8) + randCode(8), createdAt: Date.now() };
+  const org = { id: 'org-' + uid(), name, zone: zoneLabel(g), province: g.province, territoire: g.territoire, entite: g.entite, secret: randCode(8) + randCode(8), createdAt: Date.now() };
   const user = { id: 'u-' + uid(), role: 'org', orgId: org.id, name: boss, pin };
   data.orgs.push(org); data.users.push(user);
   wipeTo(data);
@@ -45,8 +45,8 @@ ACT.saveOrg = () => {
 
 ACT.addAnimSheet = () => App.openSheet(`<h2>Ajouter un animateur</h2>
   <div class="field"><label for="anN">Nom complet</label><input id="anN" class="input" autocomplete="off"></div>
-  <div class="grid2"><div class="field"><label for="anZ">Zone</label><input id="anZ" class="input" placeholder="Territoire, secteur"></div>
-  <div class="field"><label for="anT">Téléphone</label><input id="anT" class="input" inputmode="tel"></div></div>
+  ${geoZoneFields('an', {}, 'Précision sur la zone')}
+  <div class="field"><label for="anT">Téléphone</label><input id="anT" class="input" inputmode="tel"></div>
   <button class="btn primary block xl" data-act="saveAnim">${ic('plus')} Ajouter</button>`);
 ACT.saveAnim = () => {
   const u = me_user();
@@ -54,7 +54,8 @@ ACT.saveAnim = () => {
   if (name.length < 3) return App.toast('Écrivez le nom complet');
   if (K.data.users.some(x => x.orgId === u.orgId && x.name.toLowerCase() === name.toLowerCase())) return App.toast('Ce nom existe déjà');
   const pin = newPin();
-  K.data.users.push({ id: 'u-' + uid(), role: 'anim', orgId: u.orgId, name, zone: (fval('anZ') || '').trim(), phone: (fval('anT') || '').trim(), pin });
+  const g = readGeoZone('an');
+  K.data.users.push({ id: 'u-' + uid(), role: 'anim', orgId: u.orgId, name, zone: zoneLabel(g), province: g.province, territoire: g.territoire, entite: g.entite, phone: (fval('anT') || '').trim(), pin });
   DB.save();
   App.openSheet(`<h2>${esc(name)} peut se connecter</h2>
     <div class="receipt" style="text-align:center"><span class="label">Code secret provisoire</span>${bigCode(pin)}</div>

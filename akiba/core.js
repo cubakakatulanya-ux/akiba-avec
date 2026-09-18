@@ -82,6 +82,9 @@ const TX = {
   DETTE: { l: 'Amende due (pas encore payée)', in: null },
   REPORT_OUT: { l: 'Report vers le cycle suivant', in: false },
   REPORT_IN: { l: 'Report du cycle précédent', in: true },
+  EXT_IN: { l: 'Crédit extérieur reçu', in: true },
+  EXT_FEE: { l: 'Frais du crédit extérieur', in: false },
+  EXT_REPAY: { l: 'Remboursement au prêteur', in: false },
   ANNUL: { l: 'Annulation', in: null }
 };
 
@@ -160,13 +163,17 @@ function stats(avec, opt = {}) {
   const act = txs.filter(t => t.type !== 'ANNUL' && !annulled.has(t.id));
   const mem = {};
   avec.members.forEach(x => mem[x.id] = { parts: 0, savings: 0, social: 0, fines: 0, fineDebt: 0, loans: [], left: !!x.left });
-  const sum = { EPARGNE: 0, SOCIAL: 0, REMB: 0, AMENDE: 0, CREDIT: 0, AIDE: 0, PARTAGE: 0, DEPART: 0, DETTE: 0 };
+  const sum = { EPARGNE: 0, SOCIAL: 0, REMB: 0, AMENDE: 0, CREDIT: 0, AIDE: 0, PARTAGE: 0, DEPART: 0, DETTE: 0, EXT_IN: 0, EXT_FEE: 0, EXT_REPAY: 0 };
   const rep = { REPORT_IN: { social: 0, credit: 0 }, REPORT_OUT: { social: 0, credit: 0 } };
-  const loans = {};
+  const loans = {}, exts = {};
   let parts = 0;
   for (const t of act) {
     if (rep[t.type]) { rep[t.type][t.ref] += t.amount; continue; }
     sum[t.type] += t.amount;
+    // crédit extérieur (IMF, banque…) : il renforce la caisse de crédit, mais reste une dette du groupe
+    if (t.type === 'EXT_IN') exts[t.id] = { id: t.id, lender: t.note || '', ag: t.ref || '', principal: t.amount, rate: t.rate || 0, months: t.months || 1, ts: t.ts, due: Math.round(t.amount * (1 + (t.rate || 0) / 100 * (t.months || 1))), paid: 0, fees: 0, feeList: [], dueDate: t.ts + (t.months || 1) * 30 * DAY };
+    if (t.type === 'EXT_FEE' && exts[t.ref]) { exts[t.ref].fees += t.amount; exts[t.ref].feeList.push(t); }
+    if (t.type === 'EXT_REPAY' && exts[t.ref]) exts[t.ref].paid += t.amount;
     const m = mem[t.memberId];
     if (t.type === 'EPARGNE') { parts += t.parts; if (m) { m.parts += t.parts; m.savings += t.amount; } }
     if (t.type === 'SOCIAL' && m) m.social += t.amount;
@@ -188,7 +195,15 @@ function stats(avec, opt = {}) {
   const lateAmt = activeLoans.filter(l => l.status === 'retard').reduce((a, l) => a + l.remaining, 0);
   const interest = loanList.reduce((a, l) => a + Math.max(0, l.paid - l.principal), 0);
   const socialFund = sum.SOCIAL + rep.REPORT_IN.social - sum.AIDE - rep.REPORT_OUT.social;
-  const loanFund = sum.EPARGNE + sum.REMB + sum.AMENDE + rep.REPORT_IN.credit - sum.CREDIT - sum.PARTAGE - sum.DEPART - rep.REPORT_OUT.credit;
+  const extList = Object.values(exts).map(e => {
+    e.remaining = Math.max(0, e.due - e.paid);
+    e.status = e.remaining === 0 ? 'solde' : now > e.dueDate ? 'retard' : 'cours';
+    e.daysLate = e.status === 'retard' ? Math.floor((now - e.dueDate) / DAY) : 0;
+    e.interestPaid = Math.max(0, e.paid - e.principal);
+    return e;
+  }).sort((a, b) => b.ts - a.ts);
+  const extDebt = extList.reduce((a, e) => a + e.remaining, 0);
+  const loanFund = sum.EPARGNE + sum.REMB + sum.AMENDE + rep.REPORT_IN.credit + sum.EXT_IN - sum.EXT_FEE - sum.EXT_REPAY - sum.CREDIT - sum.PARTAGE - sum.DEPART - rep.REPORT_OUT.credit;
   const active = avec.members.filter(x => !x.left);
   const activeParts = active.reduce((a, x) => a + mem[x.id].parts, 0);
   const fineDebt = active.reduce((a, x) => a + Math.max(0, mem[x.id].fineDebt), 0);
@@ -198,11 +213,12 @@ function stats(avec, opt = {}) {
   const ecarts = meetings.filter(m => m.closeCount !== m.closeExpected);
   return {
     sum, rep, mem, parts: activeParts, fineDebt, cycleN: cyc, loanList, activeLoans, outstanding, lateAmt, interest, socialFund, loanFund,
+    extList, extDebt, extActive: extList.filter(e => e.status !== 'solde'),
     cash: socialFund + loanFund, par: outstanding ? lateAmt / outstanding : 0,
     meetings, last: meetings[meetings.length - 1], attendance: slots ? pres / slots : 0, ecarts,
     women: active.filter(m => m.sex === 'F').length, activeCount: active.length,
-    // valeur d'une part si le partage avait lieu aujourd'hui (caisse de crédit + crédits et amendes à recouvrer)
-    shareValue: activeParts ? (loanFund + outstanding + fineDebt) / activeParts : s.partValue
+    // valeur d'une part si le partage avait lieu aujourd'hui : caisse de crédit + crédits et amendes à recouvrer − dette extérieure
+    shareValue: activeParts ? (loanFund + outstanding + fineDebt - extDebt) / activeParts : s.partValue
   };
 }
 
@@ -234,6 +250,12 @@ function health(avec, st, chain) {
   }
   const late = st.activeLoans.filter(l => l.status === 'retard');
   if (late.length) push(st.par > .1 ? 'bad' : 'warn', `${late.length} crédit${late.length > 1 ? 's' : ''} en retard`, `${fc(st.lateAmt)} à recouvrer · PAR ${pct(st.par)}`);
+  (st.extActive || []).forEach(e => {
+    const left = Math.ceil((e.dueDate - Date.now()) / DAY);
+    if (e.status === 'retard') push('bad', 'Crédit extérieur en retard', `${e.lender} · reste ${fc(e.remaining)} depuis le ${fdate(e.dueDate)}`);
+    else if (left <= 28) push('warn', `Crédit extérieur à rembourser dans ${left} jours`, `${e.lender} · reste ${fc(e.remaining)}`);
+    if (st.loanFund + st.outstanding < e.remaining) push('bad', 'Le fonds de crédit ne couvre plus la dette extérieure', `${e.lender} · reste ${fc(e.remaining)}`);
+  });
   const pending = avec.tx.filter(t => !t.synced).length;
   if (avec.orgId && pending && daysAgo(avec.lastSync || 0) > 3) push('warn', 'Données non synchronisées', `Dernière synchronisation ${ago(avec.lastSync || 0)}`);
   const level = alerts.some(a => a.lvl === 'bad') ? 'bad' : alerts.length ? 'warn' : 'good';
@@ -416,6 +438,16 @@ function seed() {
           appendTx(avec, { meetingId: meet.id, type: 'CREDIT', memberId: m.id, amount, months: forced ? 1 : 1 + Math.floor(r() * 3), rate: avec.settings.rate, by, note: pick(['Petit commerce', 'Semences de haricot', 'Frais scolaires', 'Achat de chèvre', 'Stock de farine']), ts: tick() });
           fund -= amount;
         });
+      }
+      // démonstration : crédit extérieur d'une IMF, approuvé par l'AG, avec frais d'adhésion et de dossier
+      if (d.p === 'good' && w === 5) {
+        const ext = appendTx(avec, { meetingId: meet.id, type: 'EXT_IN', amount: 300000, rate: 2, months: 6, note: 'IMF Tujenge Mikopo', ref: `AG du ${isoDay(date - 7 * DAY)} : 16 pour, 1 contre`, by, ts: tick() });
+        appendTx(avec, { meetingId: meet.id, type: 'EXT_FEE', ref: ext.id, amount: 10000, note: 'Frais d\'adhésion', by, ts: tick() });
+        appendTx(avec, { meetingId: meet.id, type: 'EXT_FEE', ref: ext.id, amount: 5000, note: 'Frais de dossier', by, ts: tick() });
+      }
+      if (d.p === 'good' && (w === 9 || w === 13)) {
+        const e = stats(avec).extActive[0];
+        if (e) appendTx(avec, { meetingId: meet.id, type: 'EXT_REPAY', ref: e.id, amount: Math.min(e.remaining, 56000), note: e.lender, by, ts: tick() });
       }
       const sf = stats(avec);
       members.forEach(m => {

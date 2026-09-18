@@ -60,6 +60,20 @@ function geoFields(p, g = {}) {
     <div class="field"><label for="${p}V">Village ou quartier</label><input id="${p}V" class="input" list="${p}VL" value="${esc(g.village || '')}" autocomplete="off" placeholder="Ex. Kirumba">${dl(p + 'VL', 'village')}</div>`;
 }
 INP.geoProv = el => { const t = document.getElementById(el.dataset.p + 'Terr'); if (t) t.innerHTML = geoOptions(el.value, ''); };
+/* province + territoire seulement : organisation, animateur */
+function geoZoneFields(p, g = {}, label = 'Zone d\'intervention') {
+  const curT = g.territoire ? `${Object.keys(ENTITE).find(k => ENTITE[k] === (g.entite || 'territoire')) || 'T'}:${g.territoire}` : '';
+  return `<div class="grid2">
+    <div class="field"><label for="${p}Prov">Province</label><select id="${p}Prov" class="input" data-in="geoProv" data-p="${p}"><option value="">Choisir…</option>${RDC.map(e => `<option ${e.p === g.province ? 'selected' : ''}>${e.p}</option>`).join('')}</select></div>
+    <div class="field"><label for="${p}Terr">Territoire ou ville</label><select id="${p}Terr" class="input">${geoOptions(g.province, curT)}</select></div>
+  </div>
+  <div class="field"><label for="${p}Zone">${label} <span class="opt">facultatif</span></label><input id="${p}Zone" class="input" value="${esc(g.zone || '')}" autocomplete="off" placeholder="Ex. Gemena et Budjala"></div>`;
+}
+function readGeoZone(p) {
+  const [k, ...rest] = (fval(p + 'Terr') || '').split(':');
+  return { province: fval(p + 'Prov') || '', territoire: rest.join(':'), entite: ENTITE[k] || '', zone: (fval(p + 'Zone') || '').trim() };
+}
+const zoneLabel = x => [x.zone, x.territoire ? entiteLabel(x) : '', x.province].filter(Boolean).join(' · ');
 function readGeo(p) {
   const raw = fval(p + 'Terr') || '';
   const [k, ...rest] = raw.split(':');

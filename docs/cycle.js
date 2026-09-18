@@ -33,7 +33,7 @@ function sharePlan(avec, st) {
   });
   const parts = rows.reduce((a, r) => a + r.d.parts, 0);
   const ded = rows.reduce((a, r) => a + r.ded, 0);
-  const pool = st.loanFund + ded;
+  const pool = st.loanFund + ded - (st.extDebt || 0);              // l'argent emprunté dehors n'appartient pas aux membres
   const value = parts ? pool / parts : 0;
   rows.forEach(r => {
     r.gross = r.d.parts * value;
@@ -42,7 +42,9 @@ function sharePlan(avec, st) {
     r.grossR = r.blocked ? 0 : r.net + r.ded;                          // part inscrite = argent reçu + dettes retenues
   });
   const paid = rows.reduce((a, r) => a + r.net, 0);
-  return { rows: rows.sort((a, b) => b.d.parts - a.d.parts), parts, ded, pool, value, paid, remainder: st.loanFund - paid, blocked: rows.filter(r => r.blocked) };
+  const extDebt = st.extDebt || 0;
+  // le prêteur extérieur est remboursé en premier, avec la caisse de crédit
+  return { rows: rows.sort((a, b) => b.d.parts - a.d.parts), parts, ded, pool, value, paid, extDebt, extShort: extDebt > st.loanFund, remainder: st.loanFund - extDebt - paid, blocked: rows.filter(r => r.blocked) };
 }
 
 SCREENS['a.share'] = () => {
@@ -59,21 +61,24 @@ SCREENS['a.share'] = () => {
       ${line('Argent de la caisse de crédit', fc(st.loanFund))}
       ${line('+ Crédits encore à rembourser', fc(st.outstanding))}
       ${line('+ Amendes encore dues', fc(st.fineDebt))}
+      ${st.extDebt ? line('− Crédit extérieur à rembourser au prêteur', fc(st.extDebt)) : ''}
       ${line('= Total à partager', fc(plan.pool), true)}
       ${line('÷ Parts des membres', grp(plan.parts))}
       <div class="row between" style="border-top:1px solid var(--line);padding-top:10px"><span class="label">Une part vaut</span><b class="num" style="font-family:var(--f-display);font-size:1.6rem">${fc(plan.value)}</b></div>
       <p class="hint">Achetée ${fc(pv)}, une part vaut ${fc(plan.value)}, soit ${plan.value >= pv ? '+' : ''}${pct(plan.value / pv - 1)}. Ce qu'un membre doit encore (crédit, amendes) est retiré de sa part. La caisse sociale (${fc(st.socialFund)}) n'est pas partagée : elle reste au groupe pour le cycle suivant.</p>
     </div>
+    ${st.extDebt ? (plan.extShort ? `<div class="alert bad"><span style="width:22px;flex:none">${ic('alert')}</span><div><b>La caisse ne suffit pas pour rembourser le prêteur</b><span class="small">Il reste ${fc(st.extDebt)} à rendre, la caisse de crédit a ${fc(st.loanFund)}. Récupérez d'abord les crédits des membres.</span></div></div>`
+      : `<div class="alert warn"><span style="width:22px;flex:none">${ic('building')}</span><div><b>Le prêteur est remboursé avant le partage</b><span class="small">${fc(st.extDebt)} sortent de la caisse de crédit pour solder le crédit extérieur, puis le reste est partagé.</span></div></div>`) : ''}
     ${plan.blocked.length ? `<div class="alert bad"><span style="width:22px;flex:none">${ic('alert')}</span><div><b>${plan.blocked.length} membre${plan.blocked.length > 1 ? 's doivent plus que leur' : ' doit plus que sa'} part</b><span class="small">${plan.blocked.map(r => esc(r.x.name)).join(', ')} : rembourser la différence avant le partage.</span></div></div>` : ''}
     ${left > 28 ? `<div class="alert warn"><span style="width:22px;flex:none">${ic('calendar')}</span><div><b>Le cycle n'est pas fini</b><span class="small">Fin prévue le ${fdate(cycleEnd(avec))}. Ce tableau est une simulation ; faites le partage seulement si l'assemblée l'a décidé.</span></div></div>` : ''}
     <div class="tablewrap"><table><thead><tr><th>Membre</th><th class="r">Parts</th><th class="r">Valeur</th><th class="r">Retenu</th><th class="r">Reçoit</th></tr></thead><tbody>
       ${plan.rows.map(r => `<tr style="${r.blocked ? 'background:var(--bad-soft)' : ''}"><td>${esc(r.x.name)}</td><td class="r num">${r.d.parts}</td><td class="r num">${fc(r.gross)}</td><td class="r num">${r.ded ? '− ' + fc(r.ded) : '—'}</td><td class="r num"><b>${r.blocked ? 'doit ' + fc(r.ded - r.gross) : fc(r.net)}</b></td></tr>`).join('')}
     </tbody></table></div>
     <div class="receipt stack">
-      ${line('Argent donné aux membres', fc(plan.paid))}${line('Reste des arrondis (cycle suivant)', fc(plan.remainder))}${line('Caisse sociale (cycle suivant)', fc(st.socialFund))}
+      ${plan.extDebt ? line('Remboursé d\'abord au prêteur', fc(plan.extDebt)) : ''}${line('Argent donné aux membres', fc(plan.paid))}${line('Reste des arrondis (cycle suivant)', fc(plan.remainder))}${line('Caisse sociale (cycle suivant)', fc(st.socialFund))}
     </div>
     ${isBureau(me) ? (open ? `<div class="alert warn"><div><b>Réunion n°${open.n} ouverte</b><span class="small">Fermez-la d'abord : le partage se fait dans une séance à part.</span></div></div>`
-      : `<button class="btn primary block xl" data-act="go" data-to="a.shareRun" ${plan.blocked.length || !plan.parts ? 'disabled' : ''}>${ic('split')} Faire le partage maintenant</button>`) : ''}
+      : `<button class="btn primary block xl" data-act="go" data-to="a.shareRun" ${plan.blocked.length || !plan.parts || plan.extShort ? 'disabled' : ''}>${ic('split')} Faire le partage maintenant</button>`) : ''}
     ${avec.cycles.length ? '<button class="btn ghost block" data-act="go" data-to="a.cycles">Historique des cycles</button>' : ''}
   </main></div>`;
 };
@@ -98,6 +103,7 @@ SCREENS['a.shareRun'] = () => {
     <div class="receipt stack">
       <div class="row between"><span>À donner aux ${plan.rows.filter(r => r.net > 0).length} membres</span><b class="num">${fc(plan.paid)}</b></div>
       <div class="row between small"><span>Crédits et amendes retenus</span><span class="num">${fc(plan.ded)}</span></div>
+      ${plan.extDebt ? `<div class="row between small"><span>Remboursé au prêteur (crédit extérieur)</span><span class="num">${fc(plan.extDebt)}</span></div>` : ''}
       <div class="row between small"><span>Reste dans la caisse pour le cycle ${avec.cycle.n + 1}</span><span class="num">${fc(st.socialFund + plan.remainder)}</span></div>
     </div>
     <section class="section"><h3>Les trois clés</h3>
@@ -112,6 +118,7 @@ ACT.runShare = () => {
   const plan = sharePlan(avec, st);
   const dr = App.draft;
   if (plan.blocked.length) return App.toast('Des membres doivent rembourser avant le partage');
+  if (plan.extShort) return App.toast('La caisse de crédit ne suffit pas pour rembourser le prêteur');
   if (!closeReady(avec)) return App.toast('Il manque le comptage ou une clé');
   const v = parseAmt(dr.closeCount);
   if (v !== st.cash && !(dr.closeNote || '').trim()) return App.toast('Expliquez l\'écart : c\'est obligatoire');
@@ -122,6 +129,8 @@ ACT.runShare = () => {
   };
   activeM(avec).forEach(x => m.presence[x.id] = 'P');
   avec.meetings.push(m);
+  // 1. le prêteur extérieur d'abord
+  st.extActive.forEach(e => appendTx(avec, { meetingId: m.id, type: 'EXT_REPAY', ref: e.id, amount: e.remaining, note: `${e.lender} · soldé avant le partage`, by }));
   plan.rows.forEach(r => {
     r.d.loans.filter(l => l.status !== 'solde').forEach(l => appendTx(avec, { meetingId: m.id, type: 'REMB', memberId: r.x.id, ref: l.id, amount: l.remaining, note: 'Retenu sur le partage', by }));
     if (r.debt > 0) appendTx(avec, { meetingId: m.id, type: 'AMENDE', ref: 'DETTE', memberId: r.x.id, amount: r.debt, note: 'Amendes dues, retenues sur le partage', by });
@@ -341,6 +350,26 @@ ACT.saveDepart = d => {
   DB.save(); App.closeSheet(); App.toast(`${x.name} a quitté le groupe`);
 };
 
+/* ---------- lieu du groupe (liste officielle des provinces et territoires) ---------- */
+ACT.placeSheet = () => {
+  const { avec, me } = cur();
+  if (!isBureau(me)) return App.toast('Réservé au bureau');
+  App.openSheet(`<h2>Lieu du groupe</h2>
+    <p class="muted">Province et territoire ou ville : liste officielle de la RDC. Le reste s'écrit ; les noms déjà utilisés sont proposés.</p>
+    ${geoFields('pl', avec)}
+    <button class="btn primary block xl" data-act="savePlace">${ic('check')} Enregistrer le lieu</button>`);
+};
+ACT.savePlace = () => {
+  const { avec, me } = cur();
+  if (!isBureau(me)) return App.toast('Réservé au bureau');
+  const g = readGeo('pl');
+  if (!g.province) return App.toast('Choisissez la province');
+  if (!g.territoire) return App.toast('Choisissez le territoire ou la ville');
+  if (!g.village) return App.toast('Écrivez le village ou le quartier');
+  Object.assign(avec, g);
+  DB.save(); App.closeSheet(); App.toast('Lieu enregistré : ' + placeShort(avec).replace(/<[^>]+>/g, ''));
+};
+
 /* ---------- plus ---------- */
 SCREENS['a.more'] = () => {
   const { avec, me } = cur();
@@ -352,8 +381,10 @@ SCREENS['a.more'] = () => {
     <h1>Plus</h1>
     <div class="list">
       ${li('a.share', 'split', 'Partage de fin de cycle', `Cycle ${avec.cycle.n} · fin le ${fdate(cycleEnd(avec))}`)}
+      ${li('a.imf', 'chart', 'Dossier pour une IMF', 'Partager les chiffres du groupe pour un crédit extérieur')}
       ${li('a.cycles', 'calendar', 'Historique des cycles', `${avec.cycles.length} cycle${avec.cycles.length > 1 ? 's' : ''} terminé${avec.cycles.length > 1 ? 's' : ''}`)}
       ${li('a.roles', 'users', 'Bureau et porte-clés', 'Changer un responsable')}
+      ${li('', 'map', 'Lieu du groupe', placeShort(avec) || 'À compléter', 'placeSheet')}
       ${li('a.security', 'shield', 'Sécurité et carte de secours', `${(avec.rescue || []).filter(r => !r.used).length} codes de secours valables`)}
       ${li('a.member', 'user', 'Mon carnet et mon code', esc(me.name)).replace('data-to="a.member"', `data-to="a.member" data-id="${me.id}"`)}
       ${li('', 'sync', 'Changer de téléphone', 'Mettre l\'AVEC sur un nouveau téléphone', 'transferSheet').replace('data-act="transferSheet"', `data-act="transferSheet" data-id="${avec.id}"`)}

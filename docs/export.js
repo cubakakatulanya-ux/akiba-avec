@@ -105,12 +105,18 @@ function exportSheets(avecs) {
       { h: 'Valeur de la part achetée (FC)', w: 14, t: 'n' }, { h: 'Parts', w: 9, t: 'n' }, { h: 'Épargne (FC)', w: 13, t: 'n' }, { h: 'Valeur actuelle d\'une part (FC)', w: 14, t: 'n' },
       { h: 'Crédits en cours (nombre)', w: 10, t: 'n' }, { h: 'Crédits en cours (FC)', w: 13, t: 'n' }, { h: 'En retard (FC)', w: 12, t: 'n' }, { h: 'PAR', w: 8, t: 'p' },
       { h: 'Intérêts reçus (FC)', w: 12, t: 'n' }, { h: 'Amendes payées (FC)', w: 12, t: 'n' }, { h: 'Caisse sociale (FC)', w: 12, t: 'n' }, { h: 'Aides versées (FC)', w: 12, t: 'n' },
-      { h: 'Argent en caisse (FC)', w: 13, t: 'n' }, { h: 'Écarts de caisse', w: 10, t: 'n' }, { h: 'Formation (modules sur 7)', w: 11, t: 'n' }, { h: 'Visites de l\'animateur', w: 10, t: 'n' }
+      { h: 'Argent en caisse (FC)', w: 13, t: 'n' }, { h: 'Écarts de caisse', w: 10, t: 'n' }, { h: 'Formation (modules sur 7)', w: 11, t: 'n' }, { h: 'Visites de l\'animateur', w: 10, t: 'n' },
+      { h: 'Crédit extérieur restant (FC)', w: 13, t: 'n' }, { h: 'Frais du crédit extérieur (FC)', w: 13, t: 'n' }
     ],
     rows: rows.map(({ a, st }) => [a.name, STATUS_TXT[a.status || 'active'] || a.status, animName(a), a.province, a.territoire, a.village,
       a.settings.meetingDay, a.cycle.n, a.cycle.start, cycleEnd(a), st.activeCount, st.women, st.meetings.length, st.last ? st.last.date : null, st.attendance,
       a.settings.partValue, st.parts, st.sum.EPARGNE, Math.round(st.shareValue), st.activeLoans.length, st.outstanding, st.lateAmt, st.par,
-      st.interest, st.sum.AMENDE, st.socialFund, st.sum.AIDE, st.cash, st.ecarts.length, trainingCount(a), (a.visits || []).length])
+      st.interest, st.sum.AMENDE, st.socialFund, st.sum.AIDE, st.cash, st.ecarts.length, trainingCount(a), (a.visits || []).length, st.extDebt, st.sum.EXT_FEE])
+  };
+  const extSheet = {
+    name: 'Crédits extérieurs', cols: [{ h: 'AVEC', w: 24 }, { h: 'Prêteur', w: 24 }, { h: 'Décision de l\'AG', w: 40 }, { h: 'Date', w: 12, t: 'd' }, { h: 'Montant (FC)', w: 12, t: 'n' }, { h: 'Intérêt par mois', w: 9, t: 'p' }, { h: 'Durée (mois)', w: 9, t: 'n' },
+      { h: 'Frais (FC)', w: 11, t: 'n' }, { h: 'Total dû (FC)', w: 12, t: 'n' }, { h: 'Remboursé (FC)', w: 12, t: 'n' }, { h: 'Reste (FC)', w: 11, t: 'n' }, { h: 'Échéance', w: 12, t: 'd' }, { h: 'Situation', w: 11 }],
+    rows: rows.flatMap(({ a, st }) => st.extList.map(e => [a.name, e.lender, e.ag, e.ts, e.principal, e.rate / 100, e.months, e.fees, e.due, e.paid, e.remaining, e.dueDate, e.status === 'solde' ? 'Remboursé' : e.status === 'retard' ? 'En retard' : 'En cours']))
   };
 
   const memberSheet = {
@@ -170,7 +176,7 @@ function exportSheets(avecs) {
     name: 'Alertes', cols: [{ h: 'AVEC', w: 24 }, { h: 'Niveau', w: 10 }, { h: 'Alerte', w: 34 }, { h: 'Détail', w: 60 }],
     rows: rows.flatMap(({ a, st }) => health(a, st, chainOf(a)).alerts.sort((x, y) => LVL[x.lvl] - LVL[y.lvl]).map(al => [a.name, al.lvl === 'bad' ? 'Urgent' : 'À surveiller', al.title, al.detail]))
   };
-  return [synth, avecSheet, memberSheet, meetSheet, loanSheet, trainSheet, alertSheet];
+  return [synth, avecSheet, memberSheet, meetSheet, loanSheet, extSheet, trainSheet, alertSheet];
 }
 function exportFile(p) {
   const { u, avecs } = exportScope(p);
@@ -191,7 +197,7 @@ ACT.exportSheet = d => {
   App.openSheet(`<h2>Exporter vers Excel</h2>
     <p class="muted">${avecs.length} AVEC${who ? ' de ' + esc(who) : ''} · fichier .xlsx qui s'ouvre dans Excel, Google Sheets ou WPS, même sans réseau.</p>
     <div class="list">${[['chart', 'Synthèse', 'Les chiffres clés de l\'organisation'], ['building', 'AVEC', 'Épargne, crédits, PAR, caisse, formation'], ['users', 'Membres', 'Fiches, parts, épargne, crédit de chacun'],
-      ['calendar', 'Réunions', 'Présences, montants, écarts de caisse'], ['coins', 'Crédits', 'Montant, remboursé, reste, retards'], ['clip', 'Formation', 'Date de chaque module'], ['alert', 'Alertes', 'Ce qui demande une action']]
+      ['calendar', 'Réunions', 'Présences, montants, écarts de caisse'], ['coins', 'Crédits', 'Montant, remboursé, reste, retards'], ['building', 'Crédits extérieurs', 'IMF, décision de l\'AG, frais, reste dû'], ['clip', 'Formation', 'Date de chaque module'], ['alert', 'Alertes', 'Ce qui demande une action']]
       .map(([i, t, s]) => `<div class="li"><span class="xl-ic">${ic(i)}</span><span class="grow"><b>${t}</b><span class="small muted">${s}</span></span></div>`).join('')}</div>
     <p class="hint">Chiffres des réunions reçues par l'organisation. Les données personnelles des membres sont sensibles : partagez ce fichier seulement avec les personnes autorisées.</p>
     <button class="btn primary block xl" data-act="exportDownload">${ic('chart')} Télécharger le fichier Excel</button>
