@@ -35,12 +35,18 @@ ACT.saveOrg = () => {
   if (boss.length < 3) return App.toast('Écrivez le nom du responsable');
   const pin = readNewPin('soc'); if (!pin) return;
   const data = emptyData();
-  const org = { id: 'org-' + uid(), name, zone: zoneLabel(g), province: g.province, territoire: g.territoire, entite: g.entite, secret: randCode(8) + randCode(8), createdAt: Date.now() };
+  const codes = Array.from({ length: 6 }, rescueCode);
+  const org = { id: 'org-' + uid(), name, zone: zoneLabel(g), province: g.province, territoire: g.territoire, entite: g.entite, secret: randCode(8) + randCode(8), createdAt: Date.now(), rescue: codes.map(c => ({ h: hashCode(c), used: false })) };
   const user = { id: 'u-' + uid(), role: 'org', orgId: org.id, name: boss, pin };
   data.orgs.push(org); data.users.push(user);
   wipeTo(data);
   K.session = { kind: 'org', userId: user.id }; DB.save();
-  App.go('o.home'); App.toast(`${name} est prête. Ajoutez maintenant vos animateurs.`);
+  App.go('o.home');
+  App.openSheet(`<h2>Carte de secours de l'organisation</h2>
+    <p class="muted">Si vous oubliez votre code, un de ces codes vous laisse en choisir un nouveau. Recopiez-les maintenant : ils ne seront plus jamais affichés.</p>
+    ${rescueCardHtml(org, codes)}
+    <p class="hint">Gardez la carte dans un endroit sûr, connu de la direction seulement.</p>
+    <button class="btn primary block xl" data-act="closeSheet">J'ai recopié la carte</button>`);
 };
 
 ACT.addAnimSheet = () => App.openSheet(`<h2>Ajouter un animateur</h2>
@@ -76,9 +82,63 @@ ACT.animCodesSheet = () => {
     <p class="muted">Choisissez l'animateur. Vous confirmez avec votre propre code, puis Akiba affiche son nouveau code une seule fois.</p>
     <div class="list">${anims.map(a => `<button class="li" data-act="resetUserPin" data-id="${a.id}"><span class="av">${esc(initials(a.name))}</span><span class="grow"><b>${esc(a.name)}</b><span class="small muted">${esc(a.zone || '')}${a.phone ? ' · ' + esc(a.phone) : ''}</span></span>${ic('chev')}</button>`).join('')}</div>`);
 };
-ACT.userPinSheet = () => App.openSheet(`<h2>Changer mon code</h2>
-  <div class="field"><label for="upO">Code actuel</label><input id="upO" class="input num" type="password" inputmode="numeric" maxlength="4" autocomplete="off"></div>
-  ${pinFields('upn')}<button class="btn primary block xl" data-act="saveUserPin">Enregistrer mon code</button>`);
+ACT.userPinSheet = () => {
+  const u = me_user(), org = orgOf(u.orgId) || {};
+  const left = (org.rescue || []).filter(r => !r.used).length;
+  App.openSheet(`<h2>Changer mon code</h2>
+    <div class="field"><label for="upO">Code actuel</label><input id="upO" class="input num" type="password" inputmode="numeric" maxlength="4" autocomplete="off"></div>
+    ${pinFields('upn')}<button class="btn primary block xl" data-act="saveUserPin">Enregistrer mon code</button>
+    ${u.role === 'org' ? `<section class="card stack"><h3>Carte de secours de l'organisation</h3>
+      <p class="small muted">${left ? `${left} code${left > 1 ? 's' : ''} pas encore utilisé${left > 1 ? 's' : ''}. C'est elle qui vous dépanne si vous oubliez votre code.` : 'Aucune carte sur ce téléphone : créez-la maintenant et recopiez-la sur papier.'}</p>
+      <button class="btn ghost block" data-act="orgCardNew">${ic('shield')} Créer une nouvelle carte</button></section>` : ''}`);
+};
+/* carte de secours de l'organisation : plan B si le responsable oublie son code */
+ACT.orgCardNew = () => {
+  const u = me_user(), org = orgOf(u.orgId);
+  if (!org || u.role !== 'org') return App.toast('Réservé au compte de l\'organisation');
+  askPin(u, 'Créer une nouvelle carte', () => {
+    const codes = Array.from({ length: 6 }, rescueCode);
+    org.rescue = codes.map(c => ({ h: hashCode(c), used: false }));
+    DB.save();
+    App.openSheet(`<h2>Recopiez la carte maintenant</h2>${rescueCardHtml(org, codes)}
+      <p class="hint">Les codes de l'ancienne carte ne marchent plus. Ceux-ci ne seront plus jamais affichés.</p>
+      <button class="btn primary block xl" data-act="closeSheet">J'ai recopié la carte</button>`);
+  });
+};
+ACT.orgLostSheet = () => {
+  const users = K.data.users.filter(u => u.role === 'org' && !u.remote);
+  const org = users.length ? orgOf(users[0].orgId) : null;
+  const left = ((org || {}).rescue || []).filter(r => !r.used).length;
+  App.openSheet(`<h2>Code oublié</h2>
+    ${left ? `<p class="muted">Sortez la carte de secours de l'organisation et tapez un code pas encore barré. Barrez-le ensuite : il ne sert qu'une fois.</p>
+      ${users.length > 1 ? `<div class="field"><label for="olU">Compte</label><select id="olU" class="input">${users.map(u => `<option value="${u.id}">${esc(u.name)}</option>`).join('')}</select></div>` : `<input id="olU" type="hidden" value="${users[0].id}">`}
+      <div class="field"><label for="olC">Code de la carte</label><input id="olC" class="input bignum num" inputmode="numeric" maxlength="9" autocomplete="off" placeholder="0000-0000"></div>
+      ${pinFields('oln')}
+      <button class="btn primary block xl" data-act="orgLostOk">Enregistrer mon nouveau code</button>`
+    : `<div class="alert warn">${icSpan('alert')}<div><b>Pas de carte de secours sur ce téléphone</b><span class="small">Sans carte, le compte de l'organisation ne peut pas être débloqué ici. Restaurez la sauvegarde chiffrée sur un autre téléphone, ou appelez Ubora.</span></div></div>
+      <button class="btn ghost block" data-act="go" data-to="dev.backup">${ic('shield')} Sauvegarde et restauration</button>`}
+    <p class="small muted" style="text-align:center">Ubora : <a href="tel:${UBORA.tel}" style="color:var(--brand);font-weight:700">${UBORA.telShow}</a></p>`);
+};
+ACT.orgLostOk = () => {
+  const u = userById(fval('olU')), org = u ? orgOf(u.orgId) : null;
+  if (!u || !org) return App.toast('Compte introuvable');
+  if ((org.lostLock || 0) > Date.now()) return App.toast('Trop d\'essais. Attendez quelques minutes.');
+  const c = (fval('olC') || '').replace(/\D/g, '');
+  if (c.length !== 8) return App.toast('Le code de la carte a 8 chiffres');
+  const r = (org.rescue || []).find(x => !x.used && x.h === hashCode(c));
+  if (!r) {
+    org.lostFails = (org.lostFails || 0) + 1;
+    if (org.lostFails >= 5) { org.lostLock = Date.now() + 10 * 60e3; org.lostFails = 0; }
+    DB.save();
+    return App.toast('Code de secours faux ou déjà utilisé');
+  }
+  const pin = readNewPin('oln'); if (!pin) return;
+  r.used = Date.now(); r.by = u.id; org.lostFails = 0;
+  u.pin = pin;
+  K.session = { kind: 'org', userId: u.id };
+  DB.save(); App.closeSheet(); App.go('o.home');
+  App.toast(`Nouveau code enregistré pour ${u.name}`);
+};
 ACT.saveUserPin = () => {
   const u = me_user();
   if (fval('upO') !== u.pin) return App.toast('Le code actuel est faux');

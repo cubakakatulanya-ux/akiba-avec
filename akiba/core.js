@@ -346,7 +346,7 @@ function seed() {
   const S = ['Mbusa', 'Vighano', 'Kamabu', 'Maliro', 'Kataliko', 'Kyavumba', 'Muhesi', 'Siviri', 'Ngeleza', 'Mathe', 'Vihamba', 'Kombi', 'Lwanzo', 'Musavuli', 'Kisuba', 'Vitsange'];
   const data = {
     v: 1, net: { online: true },
-    orgs: [{ id: 'org1', name: 'Mwangaza Développement', zone: 'Nord-Kivu', secret: 'mwangaza-demo-7Q4' }],
+    orgs: [{ id: 'org1', name: 'Mwangaza Développement', zone: 'Nord-Kivu', province: 'Nord-Kivu', territoire: 'Lubero', entite: 'territoire', secret: 'mwangaza-demo-7Q4', rescue: RESCUE_DEMO.map(c => ({ h: hashCode(c), used: false })) }],
     users: [
       { id: 'u-org', role: 'org', orgId: 'org1', name: 'Coordination Mwangaza', pin: '1234' },
       { id: 'u-a1', role: 'anim', orgId: 'org1', name: 'Esther Kahindo', pin: '1234', zone: 'Lubero' },

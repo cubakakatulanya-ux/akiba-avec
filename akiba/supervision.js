@@ -105,7 +105,11 @@ ACT.loginMember = d => {
 SCREENS['l.users'] = p => {
   const list = K.data.users.filter(u => u.role === p.role && !u.remote);
   return `<div class="shell">${topbar(p.role === 'org' ? 'Organisation' : 'Animateurs', 'Choisissez votre compte', backBtn('login'))}<main class="main">
-    <div class="list">${list.map(u => `<button class="li" data-act="loginUser" data-id="${u.id}"><span class="av">${esc(initials(u.name))}</span><span class="grow"><b>${esc(u.name)}</b><span class="small muted">${esc(orgOf(u.orgId).name)}${u.zone ? ' · ' + esc(u.zone) : ''}</span></span>${ic('chev')}</button>`).join('')}</div></main></div>`;
+    <div class="list">${list.map(u => `<button class="li" data-act="loginUser" data-id="${u.id}"><span class="av">${esc(initials(u.name))}</span><span class="grow"><b>${esc(u.name)}</b><span class="small muted">${esc(orgOf(u.orgId).name)}${u.zone ? ' · ' + esc(u.zone) : ''}</span></span>${ic('chev')}</button>`).join('')}</div>
+    ${p.role === 'org'
+      ? `<button class="btn ghost block" data-act="orgLostSheet">${ic('key')} J'ai oublié mon code</button>`
+      : '<div class="card small muted">Code oublié ? Votre organisation vous en donne un nouveau : tableau de bord › « Code oublié d\'un animateur ».</div>'}
+  </main></div>`;
 };
 ACT.loginUser = d => {
   const u = userById(d.id);
