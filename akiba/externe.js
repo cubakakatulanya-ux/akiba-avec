@@ -12,7 +12,7 @@ const extInstallment = e => Math.min(e.remaining, Math.ceil(e.due / e.months / 1
 
 /* dans la réunion, étape « Crédits » */
 function extMeetingBlock(avec, m, st) {
-  const list = meetTx(avec, m, ['EXT_IN', 'EXT_FEE', 'EXT_REPAY']);
+  const list = meetTx(avec, m, ['EXT_IN', 'EXT_FEE', 'EXT_GUAR', 'EXT_REPAY']);
   return `<section class="section"><h3>Crédit extérieur (IMF, banque, ONG)</h3>
     <p class="small muted">Argent emprunté par le groupe après décision de l'assemblée générale. Il renforce la caisse de crédit ; c'est une dette du groupe.</p>
     ${list.length ? `<div class="list">${list.map(t => `<div class="li" style="${t.annulled ? 'opacity:.5;text-decoration:line-through' : ''}"><span class="grow"><b>${TX[t.type].l}</b><span class="small muted">${esc(t.note || '')}</span></span><span class="end num" style="color:${t.type === 'EXT_IN' ? 'var(--good)' : 'var(--bad)'}">${t.type === 'EXT_IN' ? '+' : '−'} ${fc(t.amount)}</span></div>`).join('')}</div>` : ''}
@@ -33,9 +33,9 @@ function extLoansSection(avec, st) {
       <div class="kpi"><span>Frais payés</span><b class="num">${fck(st.sum.EXT_FEE)}</b><span>adhésion, dossier…</span></div></div>
     ${st.extList.map(e => `<div class="card stack">
       <div class="row between"><div><b>${esc(e.lender)}</b><div class="small muted">${fdate(e.ts)} · ${esc(e.ag)}</div></div>${extChip(e)}</div>
-      ${row('Montant reçu', fc(e.principal))}${row(`Intérêts (${String(e.rate).replace('.', ',')} % × ${e.months} mois)`, fc(e.due - e.principal))}${row('Frais', fc(e.fees))}
-      ${row('Coût total (intérêts + frais)', fc(e.due - e.principal + e.fees))}${row('Remboursé', `${fc(e.paid)} / ${fc(e.due)}`)}
-      <div class="bar"><i style="width:${Math.round(Math.min(1, e.paid / e.due) * 100)}%;${e.status === 'retard' ? 'background:var(--bad)' : ''}"></i></div>
+      ${row('Montant accordé', fc(e.principal))}${e.guar ? row('− Garantie gardée par le prêteur', fc(e.guar)) : ''}${e.guar ? row('Entré dans la caisse', fc(e.netIn)) : ''}${row(`Intérêts (${String(e.rate).replace('.', ',')} % × ${e.months} mois)`, fc(e.due - e.principal))}${row('Frais', fc(e.fees))}
+      ${row('Coût total (intérêts + frais)', fc(e.due - e.principal + e.fees))}${row('Remboursé', `${fc(e.paid)} / ${fc(e.due - e.guar)}`)}${e.guar ? row('Garantie déduite du solde', fc(e.guar)) : ''}
+      <div class="bar"><i style="width:${Math.round(Math.min(1, (e.paid + e.guar) / e.due) * 100)}%;${e.status === 'retard' ? 'background:var(--bad)' : ''}"></i></div>
       ${row('Reste à rembourser', fc(e.remaining), true)}
     </div>`).join('')}</section>`;
 }
@@ -49,7 +49,9 @@ ACT.extSheet = () => {
     <div class="field"><label for="exL">Prêteur</label><input id="exL" class="input" placeholder="Ex. IMF Tujenge Mikopo, COOPEC, ONG…"></div>
     <div class="grid2"><div class="field"><label for="exA">Montant accordé (FC)</label><input id="exA" class="input num" inputmode="numeric" placeholder="0" data-in="extCalc"></div>
       <div class="field"><label for="exD">Durée (mois)</label><input id="exD" class="input num" inputmode="numeric" value="6" data-in="extCalc"></div></div>
-    <div class="field"><label for="exR">Intérêt par mois (%) — 5 % au maximum</label><input id="exR" class="input num" inputmode="decimal" placeholder="Ex. 2 ou 2,5" data-in="extCalc"></div>
+    <div class="grid2"><div class="field"><label for="exR">Intérêt par mois (%) — 5 % au maximum</label><input id="exR" class="input num" inputmode="decimal" placeholder="Ex. 2 ou 2,5" data-in="extCalc"></div>
+      <div class="field"><label for="exGar">Garantie retenue (%)</label><input id="exGar" class="input num" inputmode="decimal" placeholder="Ex. 10" data-in="extCalc"></div></div>
+    <p class="hint">La garantie est la part du crédit que le prêteur garde chez lui : elle n'entre pas dans la caisse et vient éteindre la fin de la dette au dernier remboursement.</p>
     <h3>Frais liés au crédit</h3>
     <p class="hint">S'ils sont retenus par le prêteur, écrivez-les quand même : Akiba compte le montant accordé, puis les frais qui sortent.</p>
     <div class="grid2">${EXT_FEES.map((f, i) => `<div class="field"><label for="exF${i}">${f}</label><input id="exF${i}" class="input num" inputmode="numeric" placeholder="0" data-in="extCalc"></div>`).join('')}</div>
@@ -64,9 +66,11 @@ ACT.extSheet = () => {
 };
 function extRead() {
   const a = parseAmt(fval('exA')), months = parseInt(fval('exD'), 10) || 0, rate = parseRate(fval('exR'));
+  const garPct = Math.min(50, Math.max(0, parseRate(fval('exGar'))));
+  const guar = Math.round(a * garPct / 100 / 100) * 100;            // garantie gardée par le prêteur, arrondie à 100 FC
   const fees = EXT_FEES.map((l, i) => ({ l, v: parseAmt(fval('exF' + i)) })).filter(f => f.v > 0);
   const feeTot = fees.reduce((s, f) => s + f.v, 0), interest = Math.round(a * rate / 100 * months);
-  return { a, months, rate, fees, feeTot, interest, total: a + interest, cost: interest + feeTot, net: a - feeTot };
+  return { a, months, rate, garPct, guar, fees, feeTot, interest, total: a + interest, cost: interest + feeTot, net: a - feeTot - guar, toPay: a + interest - guar };
 }
 INP.extCalc = () => {
   const o = document.getElementById('exOut'); if (!o) return;
@@ -75,10 +79,10 @@ INP.extCalc = () => {
   const row = (k, v, strong) => `<div class="row between ${strong ? '' : 'small'}"><span>${k}</span><b class="num">${v}</b></div>`;
   const end = Date.now() + x.months * 30 * DAY;
   o.innerHTML = `<div class="stack" style="gap:6px">
-    ${row('Entre réellement dans la caisse', fc(x.net))}${row('Intérêts', fc(x.interest))}${row('Frais', fc(x.feeTot))}
+    ${row('Entre réellement dans la caisse', fc(x.net))}${x.guar ? row(`Garantie gardée par le prêteur (${String(x.garPct).replace('.', ',')} %)`, fc(x.guar)) : ''}${row('Intérêts', fc(x.interest))}${row('Frais', fc(x.feeTot))}
     ${row('Coût total du crédit', fc(x.cost), true)}
-    ${row('Total à rendre au prêteur', fc(x.total), true)}
-    ${x.months ? row('Chaque mois', fc(Math.ceil(x.total / x.months / 100) * 100)) : ''}
+    ${row('Total à rendre au prêteur', fc(x.toPay), true)}${x.guar ? `<p class="hint">Sur ${fc(x.total)} dus, la garantie de ${fc(x.guar)} est déduite à la fin : le groupe ne verse que ${fc(x.toPay)}.</p>` : ''}
+    ${x.months ? row('Chaque mois', fc(Math.ceil(x.toPay / x.months / 100) * 100)) : ''}
     ${x.months && x.a ? `<p class="hint">Coût réel : environ ${String(Math.round(x.cost / x.a / x.months * 1000) / 10).replace('.', ',')} % par mois (intérêts et frais compris). Fin : ${fdate(end)}.</p>` : ''}
     ${end > cycleEnd(avec) ? `<div class="chip bad">Fin après le cycle (${fdate(cycleEnd(avec))}) : choisissez une durée plus courte</div>` : ''}</div>`;
 };
@@ -92,12 +96,15 @@ ACT.saveExt = () => {
   if (x.months < 1 || x.months > 36) return App.toast('Durée : entre 1 et 36 mois');
   if (x.rate < 0 || x.rate > 5) return App.toast('Intérêt du prêteur : 5 % par mois au maximum');
   if (x.feeTot >= x.a) return App.toast('Les frais ne peuvent pas dépasser le montant');
+  if (x.garPct > 30) return App.toast('Garantie retenue : 30 % du crédit au maximum');
+  if (x.guar + x.feeTot >= x.a) return App.toast('La garantie et les frais ne peuvent pas dépasser le montant');
   if (Date.now() + x.months * 30 * DAY > cycleEnd(avec)) return App.toast(`Le crédit doit être remboursé avant la fin du cycle (${fdate(cycleEnd(avec))}) : le partage se fait après`);
   if (!/^\d{4}-\d{2}-\d{2}$/.test(ag || '') || ag > isoDay(Date.now())) return App.toast('Écrivez la date de l\'assemblée générale (aujourd\'hui ou avant)');
   if (pour <= contre) return App.toast('Écrivez les votes : la majorité doit être pour');
   if (!document.getElementById('exOk').checked) return App.toast('Confirmez la décision de l\'assemblée générale');
   const ap = checkApprover(avec, 'ex', null); if (!ap) return;
   const t = appendTx(avec, { meetingId: m.id, type: 'EXT_IN', amount: x.a, rate: x.rate, months: x.months, note: lender, ref: `AG du ${ag} : ${pour} pour, ${contre} contre · 2e validation ${ap.name}`, by: me.id });
+  if (x.guar) appendTx(avec, { meetingId: m.id, type: 'EXT_GUAR', ref: t.id, amount: x.guar, note: `Garantie ${String(x.garPct).replace('.', ',')} % gardée par ${lender}`, by: me.id });
   x.fees.forEach(f => appendTx(avec, { meetingId: m.id, type: 'EXT_FEE', ref: t.id, amount: f.v, note: f.l, by: me.id }));
   extReqReceived(avec, lender);
   DB.save(); App.closeSheet(); App.toast(`Crédit extérieur de ${fc(x.a)} enregistré (${fc(x.net)} dans la caisse)`);
@@ -178,7 +185,7 @@ SCREENS['a.imf'] = () => {
       ${kpi('Portefeuille à risque', pct(st.par), fck(st.lateAmt) + ' en retard')}
       ${kpi('Écarts de caisse', st.ecarts.length, i.chainOk ? 'journal intact' : 'journal altéré')}
     </div>
-    ${st.extList.length ? `<div class="alert ${st.extDebt ? 'warn' : 'good'}">${icSpan('building')}<div><b>Crédit extérieur</b><span class="small">${st.extList.length} crédit(s) · reste ${fc(st.extDebt)} · frais payés ${fc(st.sum.EXT_FEE)}</span></div></div>` : ''}
+    ${st.extList.length ? `<div class="alert ${st.extDebt ? 'warn' : 'good'}">${icSpan('building')}<div><b>Crédit extérieur</b><span class="small">${st.extList.length} crédit(s) · reste ${fc(st.extDebt)} · frais payés ${fc(st.sum.EXT_FEE)}${st.sum.EXT_GUAR ? ` · garantie ${fc(st.sum.EXT_GUAR)}` : ''}</span></div></div>` : ''}
     ${bureau ? `<section class="card stack"><h2>Préparer le fichier</h2>
       <p class="small">Contenu : profil du groupe, indicateurs par cycle, réunions, crédits internes, crédits extérieurs, membres.
         <b>Jamais</b> de téléphone ni d'adresse.</p>
@@ -222,8 +229,8 @@ function imfSheets(avec, names) {
       rows: st.meetings.map(m => { const pr = Object.values(m.presence || {}), b = byMeet[m.id] || {}; return [m.n, m.date, pr.length ? pr.filter(x => x !== 'A').length / pr.length : null, b.EPARGNE || 0, b.SOCIAL || 0, b.REMB || 0, b.CREDIT || 0, b.AMENDE || 0, (m.closeCount || 0) - (m.closeExpected || 0)]; }) },
     { name: 'Crédits internes', cols: [{ h: 'Membre', w: 22 }, { h: 'Sexe', w: 6 }, { h: 'Date', w: 12, t: 'd' }, { h: 'Montant (FC)', w: 12, t: 'n' }, { h: 'Durée (mois)', w: 9, t: 'n' }, { h: 'Total dû (FC)', w: 12, t: 'n' }, { h: 'Remboursé (FC)', w: 12, t: 'n' }, { h: 'Reste (FC)', w: 11, t: 'n' }, { h: 'Situation', w: 11 }, { h: 'Jours de retard', w: 9, t: 'n' }],
       rows: st.loanList.map(l => { const m = memberOf(avec, l.memberId) || {}; return [label.get(l.memberId) || '—', m.sex === 'M' ? 'H' : 'F', l.ts, l.principal, l.months, l.due, l.paid, l.remaining, l.status === 'solde' ? 'Soldé' : l.status === 'retard' ? 'En retard' : 'En cours', l.daysLate]; }) },
-    { name: 'Crédits extérieurs', cols: [{ h: 'Prêteur', w: 24 }, { h: 'Décision de l\'AG', w: 40 }, { h: 'Date', w: 12, t: 'd' }, { h: 'Montant (FC)', w: 12, t: 'n' }, { h: 'Intérêt par mois', w: 9, t: 'p' }, { h: 'Durée (mois)', w: 9, t: 'n' }, { h: 'Frais (FC)', w: 11, t: 'n' }, { h: 'Total dû (FC)', w: 12, t: 'n' }, { h: 'Remboursé (FC)', w: 12, t: 'n' }, { h: 'Reste (FC)', w: 11, t: 'n' }, { h: 'Échéance', w: 12, t: 'd' }, { h: 'Situation', w: 11 }],
-      rows: st.extList.map(e => [e.lender, e.ag, e.ts, e.principal, e.rate / 100, e.months, e.fees, e.due, e.paid, e.remaining, e.dueDate, e.status === 'solde' ? 'Remboursé' : e.status === 'retard' ? 'En retard' : 'En cours']) },
+    { name: 'Crédits extérieurs', cols: [{ h: 'Prêteur', w: 24 }, { h: 'Décision de l\'AG', w: 40 }, { h: 'Date', w: 12, t: 'd' }, { h: 'Montant (FC)', w: 12, t: 'n' }, { h: 'Intérêt par mois', w: 9, t: 'p' }, { h: 'Durée (mois)', w: 9, t: 'n' }, { h: 'Frais (FC)', w: 11, t: 'n' }, { h: 'Garantie retenue (FC)', w: 13, t: 'n' }, { h: 'Total dû (FC)', w: 12, t: 'n' }, { h: 'Remboursé (FC)', w: 12, t: 'n' }, { h: 'Reste (FC)', w: 11, t: 'n' }, { h: 'Échéance', w: 12, t: 'd' }, { h: 'Situation', w: 11 }],
+      rows: st.extList.map(e => [e.lender, e.ag, e.ts, e.principal, e.rate / 100, e.months, e.fees, e.guar, e.due, e.paid, e.remaining, e.dueDate, e.status === 'solde' ? 'Remboursé' : e.status === 'retard' ? 'En retard' : 'En cours']) },
     { name: 'Membres', cols: [{ h: 'Membre', w: 22 }, { h: 'Sexe', w: 6 }, { h: 'Âge', w: 6, t: 'n' }, { h: 'Activité', w: 20 }, { h: 'Rôle', w: 18 }, { h: 'Parts', w: 8, t: 'n' }, { h: 'Épargne (FC)', w: 12, t: 'n' }, { h: 'Crédit en cours (FC)', w: 13, t: 'n' }],
       rows: avec.members.filter(m => !m.left).map(m => { const d = st.mem[m.id]; return [label.get(m.id), m.sex === 'M' ? 'H' : 'F', ageOf(m), m.activity || '', roleLabel(m), d.parts, d.savings, d.loans.filter(l => l.status !== 'solde').reduce((a, l) => a + l.remaining, 0)]; }) }
   ];
@@ -262,6 +269,7 @@ const EXT_STEPS = [
   { t: 'Réponse de l\'IMF', d: 'Accordée ou refusée : marquez la réponse pour garder la trace de la démarche.' },
   { t: 'Recevoir l\'argent en réunion', d: 'Pendant une réunion, étape « Crédits » › « Recevoir un crédit » : l\'argent entre dans la caisse de crédit, devant tous.' },
   { t: 'Payer les frais', d: 'Adhésion, dossier, assurance : ils sortent de la caisse et sont comptés dans le coût du crédit.' },
+  { t: 'Garantie retenue', d: 'Si le prêteur garde un pourcentage du crédit en garantie, notez-le : il n\'entre pas dans la caisse et vient éteindre la fin de la dette.' },
   { t: 'Rembourser chaque mois', d: 'Étape « Crédits » › « Rembourser le prêteur ». Akiba suit ce qui reste et prévient en cas de retard.' },
   { t: 'Solder avant le partage', d: 'Au partage de fin de cycle, le prêteur est remboursé en premier : les membres ne partagent que ce qui reste.' }
 ];
@@ -274,12 +282,13 @@ function extStepDone(avec, st, i) {
   if (i === 3) return reqs.some(r => r.status !== 'depose');
   if (i === 4) return !!st.extList.length;
   if (i === 5) return st.sum.EXT_FEE > 0;
-  if (i === 6) return st.sum.EXT_REPAY > 0;
+  if (i === 6) return st.sum.EXT_GUAR > 0 || !!st.extList.length;   // rien à retenir : la question est réglée à la réception
+  if (i === 7) return st.sum.EXT_REPAY > 0;
   return !!st.extList.length && !st.extDebt;
 }
 /* comment l'argent de l'IMF entre dans la caisse de crédit, et comment il en ressort */
 function extFlowCard(avec, st) {
-  const received = st.sum.EXT_IN, fees = st.sum.EXT_FEE, repaid = st.sum.EXT_REPAY;
+  const received = st.sum.EXT_IN, fees = st.sum.EXT_FEE, repaid = st.sum.EXT_REPAY, guar = st.sum.EXT_GUAR;
   const owed = st.extDebt, rate = avec.settings.rate;
   const extRate = st.extActive.length ? st.extActive[0].rate : (st.extList[0] || {}).rate;
   const nextDue = st.extActive.map(e => extInstallment(e)).reduce((a, b) => a + b, 0);
@@ -287,12 +296,14 @@ function extFlowCard(avec, st) {
   return `<section class="card stack"><h2>Comment l'argent circule</h2>
     <div class="stack" style="gap:6px">
       ${line('1. L\'IMF verse l\'argent, compté en réunion', (received ? '+ ' : '') + fc(received), received ? 'good' : '')}
+      ${guar ? line('1 bis. Garantie gardée par le prêteur', '− ' + fc(guar), 'warn') : ''}
       ${line('2. Il entre dans la <b>caisse de crédit</b> du groupe', fc(st.loanFund) + ' aujourd\'hui')}
       ${line('3. Les frais sortent de cette même caisse', (fees ? '− ' : '') + fc(fees), fees ? 'bad' : '')}
       ${line('4. Le groupe prête aux membres à ' + rate + ' % par mois', fck(st.outstanding) + ' dehors')}
       ${line('5. Les membres remboursent : la caisse se remplit', fck(st.sum.REMB) + ' ce cycle', 'good')}
       ${line('6. Le groupe rembourse le prêteur en réunion', (repaid ? '− ' : '') + fc(repaid), repaid ? 'bad' : '')}
-      ${line('7. Reste dû au prêteur', fc(owed), owed ? 'warn' : 'good')}
+      ${guar ? line('7. La garantie éteint la fin de la dette', fc(guar), 'good') : ''}
+      ${line((guar ? '8' : '7') + '. Reste à verser au prêteur', fc(owed), owed ? 'warn' : 'good')}
     </div>
     ${st.extActive.length ? `<div class="totals"><span>Prochaine échéance conseillée</span><b class="num">${fc(nextDue)}</b></div>` : ''}
     <p class="hint">L'argent emprunté <b>ne se partage pas</b> : il est retiré de la valeur des parts tant qu'il n'est pas rendu (valeur d'une part aujourd'hui : ${fc(st.shareValue)}). Au partage de fin de cycle, Akiba rembourse d'abord le prêteur avec la caisse de crédit, puis partage le reste entre les membres.</p>

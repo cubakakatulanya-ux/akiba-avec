@@ -101,6 +101,9 @@ const GUIDE = [
       <li><b>Rembourser chaque mois</b> : étape « Crédits » › <b>Rembourser le prêteur</b>. Akiba affiche l'échéance conseillée, ce qui reste, et prévient en cas de retard.</li>
       <li><b>Solder avant le partage</b> : au partage de fin de cycle, le prêteur est remboursé <b>en premier</b> avec la caisse de crédit ; les membres ne partagent que ce qui reste.</li>
     </ol>
+    <h4>Garantie retenue par le prêteur</h4>
+    <p>Beaucoup d'IMF gardent un <b>pourcentage du crédit en garantie</b> (souvent 5 à 20 %). Écrivez ce pourcentage au moment de recevoir le crédit : Akiba calcule le montant, ne le compte pas dans la caisse (le groupe reçoit moins d'argent) et le <b>déduit de la fin de la dette</b>. Au dernier remboursement, le groupe ne verse donc que le solde : la garantie déjà chez le prêteur éteint le reste. Maximum accepté : 30 %.</p>
+    <div class="formula">Exemple : crédit 300 000 FC · garantie 10 % · intérêt 2 % par mois sur 6 mois<br>Garantie = 30 000 FC (gardés par l'IMF)<br>Entre dans la caisse = 300 000 − 30 000 − frais<br>Total dû = 336 000 FC, moins la garantie → le groupe verse 306 000 FC</div>
     <h4>Comment cet argent alimente le fonds de crédit</h4>
     <div class="formula">Caisse de crédit = épargne des membres + remboursements + amendes<br>+ argent reçu de l'IMF − frais payés − remboursements au prêteur</div>
     <p>L'argent emprunté est prêté aux membres exactement comme l'épargne du groupe, aux mêmes règles (3 fois l'épargne au plus, un seul crédit à la fois, intérêt voté par l'assemblée). Les intérêts que paient les membres restent au groupe ; ceux que le groupe paie à l'IMF sortent de la caisse. <b>La différence entre les deux taux est le gain du groupe</b> : si le groupe prête à 10 % par mois et emprunte à 2,5 %, il gagne 7,5 points, à condition que les membres remboursent à temps.</p>

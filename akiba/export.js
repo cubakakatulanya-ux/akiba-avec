@@ -115,8 +115,8 @@ function exportSheets(avecs) {
   };
   const extSheet = {
     name: 'Crédits extérieurs', cols: [{ h: 'AVEC', w: 24 }, { h: 'Prêteur', w: 24 }, { h: 'Décision de l\'AG', w: 40 }, { h: 'Date', w: 12, t: 'd' }, { h: 'Montant (FC)', w: 12, t: 'n' }, { h: 'Intérêt par mois', w: 9, t: 'p' }, { h: 'Durée (mois)', w: 9, t: 'n' },
-      { h: 'Frais (FC)', w: 11, t: 'n' }, { h: 'Total dû (FC)', w: 12, t: 'n' }, { h: 'Remboursé (FC)', w: 12, t: 'n' }, { h: 'Reste (FC)', w: 11, t: 'n' }, { h: 'Échéance', w: 12, t: 'd' }, { h: 'Situation', w: 11 }],
-    rows: rows.flatMap(({ a, st }) => st.extList.map(e => [a.name, e.lender, e.ag, e.ts, e.principal, e.rate / 100, e.months, e.fees, e.due, e.paid, e.remaining, e.dueDate, e.status === 'solde' ? 'Remboursé' : e.status === 'retard' ? 'En retard' : 'En cours']))
+      { h: 'Frais (FC)', w: 11, t: 'n' }, { h: 'Garantie retenue (FC)', w: 13, t: 'n' }, { h: 'Total dû (FC)', w: 12, t: 'n' }, { h: 'Remboursé (FC)', w: 12, t: 'n' }, { h: 'Reste (FC)', w: 11, t: 'n' }, { h: 'Échéance', w: 12, t: 'd' }, { h: 'Situation', w: 11 }],
+    rows: rows.flatMap(({ a, st }) => st.extList.map(e => [a.name, e.lender, e.ag, e.ts, e.principal, e.rate / 100, e.months, e.fees, e.guar, e.due, e.paid, e.remaining, e.dueDate, e.status === 'solde' ? 'Remboursé' : e.status === 'retard' ? 'En retard' : 'En cours']))
   };
 
   const memberSheet = {

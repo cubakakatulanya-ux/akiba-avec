@@ -167,6 +167,7 @@ ACT.runShare = () => {
   });
   avec.cycles.push({ n: old.n, start: old.start, end: now, parts: plan.parts, value: Math.round(plan.value), partValue: avec.settings.partValue, distributed: plan.paid, socialKept: kept.social, members: plan.rows.length, meetings: st.meetings.length });
   avec.cycle = { n: next, start: now, end: now + (avec.settings.cycleMonths || 12) * 30 * DAY, rulesPending: true };
+  avec.waitlist = [];                    // les demandes de crédit non servies ne traversent pas le partage : l'assemblée repart à neuf
   DB.save();
   if (K.data.net.online) syncAvec(avec);
   App.go('a.newCycle');

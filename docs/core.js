@@ -85,6 +85,7 @@ const TX = {
   EXT_IN: { l: 'Crédit extérieur reçu', in: true },
   EXT_FEE: { l: 'Frais du crédit extérieur', in: false },
   EXT_REPAY: { l: 'Remboursement au prêteur', in: false },
+  EXT_GUAR: { l: 'Garantie retenue par le prêteur', in: false },
   ANNUL: { l: 'Annulation', in: null }
 };
 
@@ -175,7 +176,7 @@ function stats(avec, opt = {}) {
   const act = txs.filter(t => t.type !== 'ANNUL' && !annulled.has(t.id));
   const mem = {};
   avec.members.forEach(x => mem[x.id] = { parts: 0, savings: 0, social: 0, fines: 0, fineDebt: 0, loans: [], left: !!x.left });
-  const sum = { EPARGNE: 0, SOCIAL: 0, REMB: 0, AMENDE: 0, CREDIT: 0, AIDE: 0, PARTAGE: 0, DEPART: 0, DETTE: 0, EXT_IN: 0, EXT_FEE: 0, EXT_REPAY: 0 };
+  const sum = { EPARGNE: 0, SOCIAL: 0, REMB: 0, AMENDE: 0, CREDIT: 0, AIDE: 0, PARTAGE: 0, DEPART: 0, DETTE: 0, EXT_IN: 0, EXT_FEE: 0, EXT_REPAY: 0, EXT_GUAR: 0 };
   const rep = { REPORT_IN: { social: 0, credit: 0 }, REPORT_OUT: { social: 0, credit: 0 } };
   const loans = {}, exts = {};
   let parts = 0;
@@ -183,9 +184,10 @@ function stats(avec, opt = {}) {
     if (rep[t.type]) { rep[t.type][t.ref] += t.amount; continue; }
     sum[t.type] += t.amount;
     // crédit extérieur (IMF, banque…) : il renforce la caisse de crédit, mais reste une dette du groupe
-    if (t.type === 'EXT_IN') exts[t.id] = { id: t.id, lender: t.note || '', ag: t.ref || '', principal: t.amount, rate: t.rate || 0, months: t.months || 1, ts: t.ts, due: Math.round(t.amount * (1 + (t.rate || 0) / 100 * (t.months || 1))), paid: 0, fees: 0, feeList: [], dueDate: t.ts + (t.months || 1) * 30 * DAY };
+    if (t.type === 'EXT_IN') exts[t.id] = { id: t.id, lender: t.note || '', ag: t.ref || '', principal: t.amount, rate: t.rate || 0, months: t.months || 1, ts: t.ts, due: Math.round(t.amount * (1 + (t.rate || 0) / 100 * (t.months || 1))), paid: 0, fees: 0, feeList: [], guar: 0, dueDate: t.ts + (t.months || 1) * 30 * DAY };
     if (t.type === 'EXT_FEE' && exts[t.ref]) { exts[t.ref].fees += t.amount; exts[t.ref].feeList.push(t); }
     if (t.type === 'EXT_REPAY' && exts[t.ref]) exts[t.ref].paid += t.amount;
+    if (t.type === 'EXT_GUAR' && exts[t.ref]) exts[t.ref].guar += t.amount;
     const m = mem[t.memberId];
     if (t.type === 'EPARGNE') { parts += t.parts; if (m) { m.parts += t.parts; m.savings += t.amount; } }
     if (t.type === 'SOCIAL' && m) m.social += t.amount;
@@ -212,14 +214,16 @@ function stats(avec, opt = {}) {
   const interest = loanList.reduce((a, l) => a + Math.max(0, l.paid - l.principal), 0);
   const socialFund = sum.SOCIAL + rep.REPORT_IN.social - sum.AIDE - rep.REPORT_OUT.social;
   const extList = Object.values(exts).map(e => {
-    e.remaining = Math.max(0, e.due - e.paid);
+    // la garantie déjà retenue par le prêteur éteint la fin de la dette : il ne reste à payer que le solde
+    e.netIn = e.principal - e.guar;                                  // argent réellement entré dans la caisse
+    e.remaining = Math.max(0, e.due - e.paid - e.guar);
     e.status = e.remaining === 0 ? 'solde' : now > e.dueDate ? 'retard' : 'cours';
     e.daysLate = e.status === 'retard' ? Math.floor((now - e.dueDate) / DAY) : 0;
-    e.interestPaid = Math.max(0, e.paid - e.principal);
+    e.interestPaid = Math.max(0, e.paid + e.guar - e.principal);
     return e;
   }).sort((a, b) => b.ts - a.ts);
   const extDebt = extList.reduce((a, e) => a + e.remaining, 0);
-  const loanFund = sum.EPARGNE + sum.REMB + sum.AMENDE + rep.REPORT_IN.credit + sum.EXT_IN - sum.EXT_FEE - sum.EXT_REPAY - sum.CREDIT - sum.PARTAGE - sum.DEPART - rep.REPORT_OUT.credit;
+  const loanFund = sum.EPARGNE + sum.REMB + sum.AMENDE + rep.REPORT_IN.credit + sum.EXT_IN - sum.EXT_FEE - sum.EXT_REPAY - sum.EXT_GUAR - sum.CREDIT - sum.PARTAGE - sum.DEPART - rep.REPORT_OUT.credit;
   const active = avec.members.filter(x => !x.left);
   const activeParts = active.reduce((a, x) => a + mem[x.id].parts, 0);
   const fineDebt = active.reduce((a, x) => a + Math.max(0, mem[x.id].fineDebt), 0);
@@ -455,9 +459,10 @@ function seed() {
           fund -= amount;
         });
       }
-      // démonstration : crédit extérieur d'une IMF, approuvé par l'AG, avec frais d'adhésion et de dossier
+      // démonstration : crédit extérieur d'une IMF, approuvé par l'AG, avec garantie retenue et frais
       if (d.p === 'good' && w === 5) {
-        const ext = appendTx(avec, { meetingId: meet.id, type: 'EXT_IN', amount: 300000, rate: 2, months: 6, note: 'IMF Tujenge Mikopo', ref: `AG du ${isoDay(date - 7 * DAY)} : 16 pour, 1 contre`, by, ts: tick() });
+        const ext = appendTx(avec, { meetingId: meet.id, type: 'EXT_IN', amount: 330000, rate: 2, months: 6, note: 'IMF Tujenge Mikopo', ref: `AG du ${isoDay(date - 7 * DAY)} : 16 pour, 1 contre`, by, ts: tick() });
+        appendTx(avec, { meetingId: meet.id, type: 'EXT_GUAR', ref: ext.id, amount: 30000, note: 'Garantie gardée par IMF Tujenge Mikopo', by, ts: ext.ts + 1 });
         appendTx(avec, { meetingId: meet.id, type: 'EXT_FEE', ref: ext.id, amount: 10000, note: 'Frais d\'adhésion', by, ts: tick() });
         appendTx(avec, { meetingId: meet.id, type: 'EXT_FEE', ref: ext.id, amount: 5000, note: 'Frais de dossier', by, ts: tick() });
       }

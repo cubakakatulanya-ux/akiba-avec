@@ -145,6 +145,8 @@ function txRows(avec, list, empty) {
   return list.map(t => { const mm = memberOf(avec, t.memberId);
     return `<div class="li" style="${t.annulled ? 'opacity:.5;text-decoration:line-through' : ''}">${mm ? avatar(mm) : ''}<div class="grow"><b>${esc(mm ? mm.name : '—')}</b><span class="small muted">${TX[t.type].l}${t.parts ? ' · ' + t.parts + ' parts' : ''}${t.note ? ' · ' + esc(t.note) : ''}</span></div><span class="end num">${fc(t.amount)}</span></div>`; }).join('');
 }
+/* mois de retard déjà facturés sur un crédit : la pénalité ne se paie jamais deux fois pour le même mois */
+const penMonths = (avec, loan) => avec.tx.filter(t => t.type === 'AMENDE' && t.ref === 'PENAL:' + loan.id).reduce((a, t) => Math.max(a, t.months || 0), 0);
 const doneBanner = txt => `<div class="alert good"><span style="width:22px;flex:none">${ic('check')}</span><div><b>Étape enregistrée</b><span class="small">${txt}</span></div></div>`;
 const presentMembers = (avec, m) => activeM(avec).filter(x => m.presence[x.id] && m.presence[x.id] !== 'A');
 function gapHtml(v, exp, filled) {
@@ -295,11 +297,14 @@ const STEP = {
     if (m.stepDone >= 6) return `${doneBanner('Amendes enregistrées.')}<div class="list">${txRows(avec, meetTx(avec, m, ['AMENDE', 'DETTE']), 'Aucune amende')}</div>${extra}${nextBtn(6, 'Suivant')}`;
     const late = activeM(avec).filter(x => m.presence[x.id] && m.presence[x.id] !== 'P');
     const debtors = presentMembers(avec, m).filter(x => st.mem[x.id].fineDebt > 0);
-    const lateLoans = st.activeLoans.filter(l => l.penalty > 0 && m.presence[l.memberId] && m.presence[l.memberId] !== 'A' && !meetTx(avec, m, ['AMENDE']).some(t => t.ref === 'PENAL:' + l.id));
+    // un mois de retard ne se paie qu'une fois : on regarde ce qui a déjà été facturé sur ce crédit
+    const lateLoans = st.activeLoans.filter(l => l.penalty > 0 && m.presence[l.memberId] && m.presence[l.memberId] !== 'A')
+      .map(l => { const done = penMonths(avec, l); return Object.assign({}, l, { doneMonths: done, dueMonths: l.monthsLate - done, penalty: Math.round(l.remaining * avec.settings.rate / 100 * (l.monthsLate - done) / 100) * 100 }); })
+      .filter(l => l.dueMonths > 0 && l.penalty > 0);
     const dr = draft(m.id + ':fine', () => { const o = {}, p = {}, pe = {}; late.forEach(x => o[x.id] = true); debtors.forEach(x => p[x.id] = true); lateLoans.forEach(l => pe[l.id] = true); return { on: o, pay: p, pen: pe }; });
     if (!dr.pen) dr.pen = {};
     const penRows = lateLoans.map(l => { const x = memberOf(avec, l.memberId);
-      return `<div class="mrow">${avatar(x)}<div class="grow"><b>${esc(x.name)}</b><span class="small muted">Crédit en retard de ${l.daysLate} j · pénalité ${fc(l.penalty)} (${avec.settings.rate} % × ${l.monthsLate} mois sur ${fc(l.remaining)})</span></div>
+      return `<div class="mrow">${avatar(x)}<div class="grow"><b>${esc(x.name)}</b><span class="small muted">Crédit en retard de ${l.daysLate} j · pénalité ${fc(l.penalty)} (${avec.settings.rate} % × ${l.dueMonths} mois sur ${fc(l.remaining)})${l.doneMonths ? ` · ${l.doneMonths} mois déjà payés` : ''}</span></div>
         <button class="toggle ${dr.pen[l.id] ? 'on' : ''}" data-act="dToggle" data-k="pen" data-id="${l.id}" aria-label="Appliquer la pénalité" aria-pressed="${!!dr.pen[l.id]}"></button></div>`; }).join('');
     const others = meetTx(avec, m, ['AMENDE']);
     const tot = late.reduce((a, x) => a + (dr.on[x.id] && m.presence[x.id] === 'R' ? s.fineLate : 0), 0) + debtors.reduce((a, x) => a + (dr.pay[x.id] ? st.mem[x.id].fineDebt : 0), 0) + lateLoans.reduce((a, l) => a + (dr.pen[l.id] ? l.penalty : 0), 0);
@@ -313,9 +318,9 @@ const STEP = {
   },
   cloture(avec, m, st) {
     const dr = draft(m.id + ':close', () => ({ locks: {} }));
-    const all = meetTx(avec, m, ['SOCIAL', 'EPARGNE', 'REMB', 'AMENDE', 'CREDIT', 'AIDE', 'EXT_IN', 'EXT_FEE', 'EXT_REPAY']).filter(t => !t.annulled);
+    const all = meetTx(avec, m, ['SOCIAL', 'EPARGNE', 'REMB', 'AMENDE', 'CREDIT', 'AIDE', 'EXT_IN', 'EXT_FEE', 'EXT_GUAR', 'EXT_REPAY']).filter(t => !t.annulled);
     const by = type => all.filter(t => t.type === type).reduce((a, t) => a + t.amount, 0);
-    const ins = ['EPARGNE', 'SOCIAL', 'REMB', 'AMENDE'].concat(by('EXT_IN') ? ['EXT_IN'] : []), outs = ['CREDIT', 'AIDE'].concat(['EXT_FEE', 'EXT_REPAY'].filter(k => by(k)));
+    const ins = ['EPARGNE', 'SOCIAL', 'REMB', 'AMENDE'].concat(by('EXT_IN') ? ['EXT_IN'] : []), outs = ['CREDIT', 'AIDE'].concat(['EXT_FEE', 'EXT_GUAR', 'EXT_REPAY'].filter(k => by(k)));
     const tIn = ins.reduce((a, k) => a + by(k), 0), tOut = outs.reduce((a, k) => a + by(k), 0);
     const holders = keyHolders(avec);
     const filled = (dr.closeCount || '').trim() !== '';
@@ -395,8 +400,11 @@ ACT.saveFines = () => {
     appendTx(avec, { meetingId: m.id, type: a ? 'DETTE' : 'AMENDE', memberId: x.id, amount: a ? s.fineAbsent : s.fineLate, note: a ? 'Absence' : 'Retard', by: me.id });
   });
   // pénalités de retard : une amende par crédit en retard, tracée par la référence du crédit
-  st.activeLoans.filter(l => l.penalty > 0 && (App.draft.pen || {})[l.id] && m.presence[l.memberId] && m.presence[l.memberId] !== 'A').forEach(l =>
-    appendTx(avec, { meetingId: m.id, type: 'AMENDE', ref: 'PENAL:' + l.id, memberId: l.memberId, amount: l.penalty, note: `Retard de crédit · ${l.monthsLate} mois`, by: me.id }));
+  st.activeLoans.filter(l => l.penalty > 0 && (App.draft.pen || {})[l.id] && m.presence[l.memberId] && m.presence[l.memberId] !== 'A').forEach(l => {
+    const done = penMonths(avec, l), months = l.monthsLate - done;
+    const amount = Math.round(l.remaining * s.rate / 100 * months / 100) * 100;
+    if (months > 0 && amount > 0) appendTx(avec, { meetingId: m.id, type: 'AMENDE', ref: 'PENAL:' + l.id, memberId: l.memberId, amount, months: l.monthsLate, note: `Retard de crédit · ${months} mois`, by: me.id });
+  });
   finishStep(avec, m, 6, 'Amendes enregistrées');
 };
 ACT.lockPin = d => {
@@ -471,6 +479,7 @@ function waitBlock(avec, m, st) {
 ACT.waitSheet = () => {
   const { avec, me } = cur(); const m = openMeeting(avec);
   if (!isBureau(me)) return App.toast('Seul le bureau peut noter une demande');
+  if (!m) return App.toast('La demande se note pendant une réunion');
   const here = presentMembers(avec, m).filter(x => !(avec.waitlist || []).some(w => w.memberId === x.id));
   if (!here.length) return App.toast('Toutes les personnes présentes sont déjà inscrites');
   App.openSheet(`<h2>Demande non servie</h2><p class="muted">La caisse n'a pas assez d'argent aujourd'hui ? Notez la demande : ce membre passera en premier à la prochaine réunion.</p>
@@ -486,7 +495,8 @@ ACT.saveWait = () => {
   DB.save(); App.closeSheet(); App.toast(`Demande de ${memberOf(avec, mid).name} inscrite`);
 };
 ACT.waitDrop = d => {
-  const { avec } = cur();
+  const { avec, me } = cur();
+  if (!isBureau(me)) return App.toast('Seul le bureau peut retirer une demande');
   avec.waitlist = (avec.waitlist || []).filter(w => w.id !== d.id);
   DB.save(); render(); App.toast('Demande retirée');
 };

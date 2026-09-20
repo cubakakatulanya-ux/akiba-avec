@@ -21,7 +21,7 @@ const rememberAvec = id => { try { localStorage.setItem(LAST_AVEC, id); } catch 
 function avecCard() {
   const list = K.data.avecs;
   const inner = (name, sub) => `<span class="ic">${ic('users')}</span><span class="t"><b>AVEC</b><span class="nm">${name}</span><span class="sub">${sub}</span></span>${ic('chev')}`;
-  if (!list.length) return `<div class="avec-main empty"><span class="ic">${ic('users')}</span><span class="t"><b>AVEC</b><span class="sub">Aucune AVEC sur ce téléphone. Touchez « Créer une AVEC », ou « Recevoir une AVEC » si l'animateur vous a envoyé un fichier.</span></span></div>`;
+  if (!list.length) return `<div class="avec-main empty"><span class="ic">${ic('users')}</span><span class="t"><b>AVEC</b><span class="sub">Aucune AVEC sur ce téléphone. Touchez « Créer une AVEC ». Si l'animateur vous a envoyé un fichier, passez par « Autres accès » › « Recevoir une AVEC ».</span></span></div>`;
   const pick = list.length === 1 ? list[0] : list.find(a => a.id === lastAvecId());
   if (pick) return `<button class="avec-main" data-act="go" data-to="l.member" data-id="${pick.id}">${inner(esc(pick.name), esc(pick.village) + ' · touchez pour entrer')}</button>
     ${list.length > 1 ? `<button class="linkbtn" data-act="go" data-to="l.avec">Autre AVEC sur ce téléphone (${list.length})</button>` : ''}`;
@@ -42,25 +42,26 @@ SCREENS.login = () => {
         <button class="linkbtn" data-act="resetDemo">Remettre la démo à zéro</button>
       </div>`;
   return `<div class="shell">
-  <header class="hero">
+  <header class="hero tight">
     <button class="langbtn" data-act="langSheet" aria-label="Choisir la langue">${ic('globe')}<span class="no-tr">${esc(I18N.name())}</span></button>
     <svg class="ledger" viewBox="0 0 200 200" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><rect x="30" y="20" width="140" height="170" rx="10"/>${[55, 80, 105, 130, 155].map(y => `<path d="M50 ${y}h100"/>`).join('')}<path d="M80 20v170"/></svg>
-    <div class="label" style="color:inherit;opacity:.8">Épargne et crédit villageois</div>
+    <div class="label" style="color:inherit;opacity:.85">Épargne et crédit villageois</div>
     <h1>Akiba</h1>
     <p>Le cahier de l'AVEC dans le téléphone, même sans réseau.</p>
   </header>
-  <main class="main">
+  <main class="main login">
     ${licenceBanner()}${installBanner()}
-    ${ticker([{ icon: 'shield', label: "Journal scellé, impossible à modifier" }, { icon: 'sync', label: "Tout fonctionne sans réseau" }, { icon: 'calendar', label: "La réunion guidée en 8 étapes" }, { icon: 'coins', label: "Épargne, crédits, amendes, partage" }, { icon: 'users', label: "Le carnet de chaque membre" }, { icon: 'globe', label: "Français, lingala, swahili, tshiluba, kikongo" }, { icon: 'chart', label: "Export Excel pour l'organisation" }], { aria: "Ce que fait Akiba" })}
-    <h2>Qui êtes-vous ?</h2>
     ${avecCard()}
+    ${ticker([{ icon: 'shield', label: "Journal scellé, impossible à modifier" }, { icon: 'sync', label: "Tout fonctionne sans réseau" }, { icon: 'calendar', label: "La réunion guidée en 8 étapes" }, { icon: 'coins', label: "Épargne, crédits, amendes, partage" }, { icon: 'users', label: "Le carnet de chaque membre" }, { icon: 'globe', label: "Français, lingala, swahili, tshiluba, kikongo" }, { icon: 'chart', label: "Export Excel pour l'organisation" }], { aria: "Ce que fait Akiba" })}
     <div class="quicks">
-      ${K.data.mode !== 'prod' || !K.data.avecs.length ? quick('receiveSheet', '', 'sync', 'Recevoir une AVEC') : ''}
       ${canCreate ? quick('createAvec', '', 'plus', 'Créer une AVEC') : ''}
       ${quick('go', 'guide', 'book', 'Guide')}
+      ${quick('otherAccess', '', 'more', 'Autres accès')}
     </div>
     ${demo}
-    <button class="linkbtn" data-act="otherAccess">Animateur, organisation, administrateur…</button>
+    <div class="loginfoot">
+      <span class="small muted">Animateur, organisation et administrateur : touchez <b>Autres accès</b>.</span>
+    </div>
   </main></div>`;
 };
 /* animateurs, organisations et administrateur : des utilisateurs secondaires, rangés sous un lien */
@@ -72,8 +73,9 @@ ACT.otherAccess = () => {
     <div class="list">
       ${hasAnim ? row('go', 'l.users', 'anim', 'map', 'Animateur de terrain', 'Je suis plusieurs AVEC') : ''}
       ${hasOrg ? row('go', 'l.users', 'org', 'building', 'Organisation', 'Tableau de bord de nos AVEC') : ''}
-      ${row('receiveSheet', '', '', 'sync', 'Recevoir une AVEC', 'Fichier envoyé par l\'animateur')}
+      ${K.data.avecs.length ? '' : row('receiveSheet', '', '', 'sync', 'Recevoir une AVEC', 'Fichier envoyé par l\'animateur')}
       ${row('go', 'adm.home', '', 'key', 'Espace administrateur Ubora', 'Codes de validation et blocages')}
+      ${K.data.avecs.length ? row('receiveSheet', '', '', 'sync', 'Recevoir une AVEC', 'Fichier envoyé par l\'animateur') : ''}
     </div>
     <button class="btn ghost block" data-act="closeSheet">Fermer</button>`);
 };
