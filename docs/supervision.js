@@ -21,7 +21,7 @@ const rememberAvec = id => { try { localStorage.setItem(LAST_AVEC, id); } catch 
 function avecCard() {
   const list = K.data.avecs;
   const inner = (name, sub) => `<span class="ic">${ic('users')}</span><span class="t"><b>AVEC</b><span class="nm">${name}</span><span class="sub">${sub}</span></span>${ic('chev')}`;
-  if (!list.length) return `<div class="avec-main empty"><span class="ic">${ic('users')}</span><span class="t"><b>AVEC</b><span class="sub">Aucune AVEC sur ce téléphone. Touchez « Recevoir une AVEC » (envoyée par l'animateur) ou « Créer une AVEC ».</span></span></div>`;
+  if (!list.length) return `<div class="avec-main empty"><span class="ic">${ic('users')}</span><span class="t"><b>AVEC</b><span class="sub">Aucune AVEC sur ce téléphone. Touchez « Créer une AVEC », ou « Recevoir une AVEC » si l'animateur vous a envoyé un fichier.</span></span></div>`;
   const pick = list.length === 1 ? list[0] : list.find(a => a.id === lastAvecId());
   if (pick) return `<button class="avec-main" data-act="go" data-to="l.member" data-id="${pick.id}">${inner(esc(pick.name), esc(pick.village) + ' · touchez pour entrer')}</button>
     ${list.length > 1 ? `<button class="linkbtn" data-act="go" data-to="l.avec">Autre AVEC sur ce téléphone (${list.length})</button>` : ''}`;
@@ -32,10 +32,7 @@ INP.findName = el => {
   document.querySelectorAll('.li[data-name]').forEach(li => { li.hidden = !!q && !li.dataset.name.includes(q); });
 };
 SCREENS.login = () => {
-  const hasAnim = K.data.users.some(u => u.role === 'anim' && !u.remote);
-  const hasOrg = K.data.users.some(u => u.role === 'org' && !u.remote);
   const canCreate = !(K.data.mode === 'prod' && K.data.orgs.length);
-  const who = (to, role, icon, tint, title, sub) => `<button class="who" data-act="go" data-to="${to}" ${role ? `data-role="${role}"` : ''}><span class="ic" style="${tint}">${ic(icon)}</span><span><b>${title}</b><span class="small muted">${sub}</span></span></button>`;
   const quick = (act, to, icon, label, extra = '') => `<button class="quick" data-act="${act}" ${to ? `data-to="${to}"` : ''} ${extra}>${ic(icon)}<span>${label}</span></button>`;
   const demo = K.data.mode === 'prod'
     ? (K.data.orgs.length ? '' : `<button class="btn ghost block" data-act="go" data-to="s.org">${ic('building')} Créer le compte de mon organisation</button>`)
@@ -54,20 +51,31 @@ SCREENS.login = () => {
   </header>
   <main class="main">
     ${licenceBanner()}${installBanner()}
+    ${ticker([{ icon: 'shield', label: "Journal scellé, impossible à modifier" }, { icon: 'sync', label: "Tout fonctionne sans réseau" }, { icon: 'calendar', label: "La réunion guidée en 8 étapes" }, { icon: 'coins', label: "Épargne, crédits, amendes, partage" }, { icon: 'users', label: "Le carnet de chaque membre" }, { icon: 'globe', label: "Français, lingala, swahili, tshiluba, kikongo" }, { icon: 'chart', label: "Export Excel pour l'organisation" }], { aria: "Ce que fait Akiba" })}
     <h2>Qui êtes-vous ?</h2>
     ${avecCard()}
-    ${hasAnim || hasOrg ? `<div class="stack" style="gap:8px"><span class="label">Autres accès</span>
-      ${hasAnim ? who('l.users', 'anim', 'map', 'background:var(--brand-soft);color:var(--brand)', 'Animateur de terrain', 'Je suis plusieurs AVEC') : ''}
-      ${hasOrg ? who('l.users', 'org', 'building', 'background:var(--surface-2);color:var(--ink)', 'Organisation', 'Tableau de bord de nos AVEC') : ''}
-    </div>` : ''}
     <div class="quicks">
       ${K.data.mode !== 'prod' || !K.data.avecs.length ? quick('receiveSheet', '', 'sync', 'Recevoir une AVEC') : ''}
       ${canCreate ? quick('createAvec', '', 'plus', 'Créer une AVEC') : ''}
       ${quick('go', 'guide', 'book', 'Guide')}
     </div>
     ${demo}
-    <button class="linkbtn" data-act="go" data-to="adm.home">Espace administrateur Ubora</button>
+    <button class="linkbtn" data-act="otherAccess">Animateur, organisation, administrateur…</button>
   </main></div>`;
+};
+/* animateurs, organisations et administrateur : des utilisateurs secondaires, rangés sous un lien */
+ACT.otherAccess = () => {
+  const hasAnim = K.data.users.some(u => u.role === 'anim' && !u.remote);
+  const hasOrg = K.data.users.some(u => u.role === 'org' && !u.remote);
+  const row = (act, to, role, icon, title, sub) => `<button class="li" data-act="${act}" ${to ? `data-to="${to}"` : ''} ${role ? `data-role="${role}"` : ''}><span class="xl-ic">${ic(icon)}</span><span class="grow"><b>${title}</b><span class="small muted">${sub}</span></span>${ic('chev')}</button>`;
+  App.openSheet(`<h2>Autres accès</h2><p class="muted">Ces espaces servent aux animateurs, aux organisations et à Ubora. Le groupe, lui, entre par le grand bouton AVEC.</p>
+    <div class="list">
+      ${hasAnim ? row('go', 'l.users', 'anim', 'map', 'Animateur de terrain', 'Je suis plusieurs AVEC') : ''}
+      ${hasOrg ? row('go', 'l.users', 'org', 'building', 'Organisation', 'Tableau de bord de nos AVEC') : ''}
+      ${row('receiveSheet', '', '', 'sync', 'Recevoir une AVEC', 'Fichier envoyé par l\'animateur')}
+      ${row('go', 'adm.home', '', 'key', 'Espace administrateur Ubora', 'Codes de validation et blocages')}
+    </div>
+    <button class="btn ghost block" data-act="closeSheet">Fermer</button>`);
 };
 ACT.resetDemo = () => App.openSheet(`<h2>Remettre la démo à zéro ?</h2><p class="muted">Toutes les réunions ajoutées sur ce téléphone seront effacées et les données fictives rechargées.</p>
   <button class="btn danger block xl" data-act="resetDemoOk">Effacer et recharger</button><button class="btn ghost block" data-act="closeSheet">Garder mes données</button>`);
@@ -119,6 +127,12 @@ ACT.loginUser = d => {
 /* ---------- animateur ---------- */
 const N_TABS = [{ id: 'n.home', icon: 'users', label: 'Mes AVEC' }, { id: 'n.alerts', icon: 'alert', label: 'Alertes' }, { id: 't.home', icon: 'clip', label: 'Formation' }, { id: 'c.avec', icon: 'plus', label: 'Nouvelle AVEC' }, { id: 'guide', icon: 'book', label: 'Guide' }];
 const myAvecs = u => K.data.avecs.filter(a => u.role === 'org' ? a.orgId === u.orgId : a.animId === u.id);
+/* bande défilante de suivi : les alertes passent en premier, sinon les grands repères */
+function supBand(rows, extra) {
+  const al = rows.flatMap(r => r.h.alerts.map(a => Object.assign({ av: r.avec.name }, a))).sort((a, b) => LVL[a.lvl] - LVL[b.lvl]);
+  if (al.length) return ticker(al.slice(0, 10).map(a => ({ icon: 'alert', label: `${a.av} : ${a.title}`, value: a.detail })), { cls: 'alerts', aria: 'Points à vérifier' });
+  return ticker([{ icon: 'check', label: 'Aucune alerte sur les AVEC suivies' }].concat(extra || []), { aria: 'Repères du suivi' });
+}
 SCREENS['n.home'] = () => {
   const u = me_user();
   const rows = myAvecs(u).map(sup).sort((a, b) => LVL[a.h.level] - LVL[b.h.level]);
@@ -126,6 +140,7 @@ SCREENS['n.home'] = () => {
   const savings = rows.reduce((s, r) => s + r.st.sum.EPARGNE, 0);
   const nAlerts = rows.reduce((s, r) => s + r.h.alerts.length, 0);
   return `<div class="shell">${topbar(u.name, `${liveTag()} · ${esc(u.zone || '')}`, '', logoutBtn)}<main class="main">
+    ${supBand(rows, [{ icon: 'users', label: 'Membres suivis', value: String(members) }, { icon: 'coins', label: 'Épargne cumulée', value: fck(savings) }])}
     <div class="grid2">
       <div class="kpi"><span>AVEC suivies</span><b class="num">${rows.length}</b><span>${members} membres</span></div>
       <div class="kpi"><span>Épargne cumulée</span><b class="num">${fck(savings)}</b><span>données reçues</span></div>
@@ -220,6 +235,7 @@ SCREENS['o.home'] = p => {
         <button class="btn sm primary" data-act="go" data-to="c.avec" data-from="org">${ic('plus')} Nouvelle AVEC</button>
       </div>
     </div>
+    ${supBand(rows, [{ icon: 'users', label: 'Membres', value: String(members) }, { icon: 'coins', label: 'Crédits en cours', value: fck(outstanding) }, { icon: 'chart', label: 'AVEC suivies', value: String(rows.length) }])}
     <div class="kpis">
       <div class="kpi"><span>AVEC suivies</span><b class="num">${rows.length}</b><span>${rows.filter(r => r.h.level === 'good').length} sans alerte</span></div>
       <div class="kpi"><span>Membres</span><b class="num">${members}</b><span>${members ? pct(women / members) : '—'} de femmes</span></div>

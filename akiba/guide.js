@@ -27,6 +27,7 @@ const GUIDE = [
     <p>Choisissez « Groupe déjà en cours » et recopiez le cahier : parts achetées par chaque membre, reste à payer sur chaque crédit, caisse sociale, puis l'argent compté dans la caisse de crédit. Akiba enregistre tout dans une séance « Reprise du cahier », scellée. S'il manque de l'argent par rapport au cahier, l'écart est signalé.</p>
     <div class="tip">À la fin, Akiba affiche <b>un code secret différent pour chaque membre</b>, une seule fois. Recopiez-les sur de petits papiers et donnez-les en main propre.</div>` },
   { id: 'connexion', icon: 'users', t: 'Comment une AVEC se connecte', b: `
+    <p>L'écran d'accueil est fait pour le groupe : le grand bouton jaune <b>AVEC</b> mène directement aux noms des membres. Les accès de l'animateur, de l'organisation et de l'administrateur, ainsi que « Recevoir une AVEC », sont rangés sous le lien <b>« Animateur, organisation, administrateur… »</b>, en bas de l'écran.</p>
     <h4>L'AVEC a été créée sur son propre téléphone</h4>
     <ol>
       <li>Ouvrir Akiba et toucher le grand bouton jaune <b>AVEC</b>. S'il n'y a qu'une AVEC sur le téléphone (ou si c'est la dernière utilisée), son nom est déjà affiché.</li>
@@ -71,7 +72,41 @@ const GUIDE = [
     </ul>
     <h4>Exemple de calcul</h4>
     <div class="formula">Crédit 50 000 FC · 10 % par mois · 3 mois<br>Intérêt = 50 000 × 10 % × 3 = 15 000 FC<br>À rembourser = 65 000 FC, soit environ 21 700 FC par mois</div>
+    <h4>Demandes non servies : chacun son tour</h4>
+    <p>Quand la caisse n'a pas assez d'argent pour servir tout le monde, le bureau touche <b>Noter une demande non servie</b> à l'étape « Crédits ». Ces membres apparaissent en haut de l'étape à la réunion suivante, <b>dans l'ordre où ils se sont inscrits</b> : le premier inscrit est servi le premier. Le bouton <b>Servir</b> ouvre la demande avec le montant déjà écrit ; dès que le crédit est accordé, le nom sort de la liste.</p>
+    <h4>Pénalité de retard</h4>
+    <p>Un crédit qui dépasse sa date de fin <b>continue de coûter l'intérêt du groupe</b>. Akiba calcule la pénalité toute seule : <b>reste à rembourser × taux du groupe × nombre de mois commencés de retard</b>, arrondie à 100 FC. Elle est proposée à l'étape « Amendes », cochée par défaut, et le bureau peut la retirer si l'assemblée l'a décidé (maladie, deuil…). Une fois enregistrée, elle entre dans la caisse comme une amende et apparaît dans le carnet du membre.</p>
+    <div class="formula">Exemple : reste 30 000 FC · 10 % par mois · 45 jours de retard (2 mois commencés)<br>Pénalité = 30 000 × 10 % × 2 = 6 000 FC</div>
+    <h4>Solder un crédit avant la fin</h4>
+    <p>Un membre peut rembourser tout ce qui reste avant l'échéance : à l'étape « Remboursements », touchez <b>Solder</b> à côté de son nom. Akiba écrit le reste dû en entier ; le crédit passe aussitôt en « soldé » et le membre peut redemander un crédit.</p>
     <p>Un crédit qui n'est pas soldé à la date prévue passe <b>en retard</b> (en rouge). Le <b>PAR</b> (portefeuille à risque) est la part de l'argent prêté qui est en retard. Au-dessus de 10 %, c'est une alerte grave.</p>` },
+  { id: 'externe', icon: 'building', t: 'Crédit extérieur (IMF, banque, ONG)', b: `
+    <p>Quand l'épargne des membres ne suffit plus à servir toutes les demandes, le groupe peut <b>emprunter à l'extérieur</b> pour renforcer sa caisse de crédit. Cet argent n'appartient pas aux membres : c'est une <b>dette du groupe</b>. Tout se suit dans <b>Plus › Crédit extérieur (IMF)</b>.</p>
+    <h4>Les règles vérifiées par Akiba</h4>
+    <ul>
+      <li>L'<b>intérêt du prêteur ne dépasse pas 5 % par mois</b> : au-delà, Akiba refuse d'enregistrer le crédit.</li>
+      <li>Le crédit doit être <b>entièrement remboursé avant la fin du cycle</b> : la durée est refusée si elle dépasse la date de fin, car le partage vient après.</li>
+      <li>La <b>date de l'assemblée générale</b> et les votes sont obligatoires, avec une majorité pour.</li>
+      <li>Un <b>2ᵉ membre du bureau</b> valide avec son code, comme pour un crédit interne.</li>
+      <li>Les frais ne peuvent pas dépasser le montant accordé.</li>
+    </ul>
+    <h4>Le chemin, de la demande au remboursement</h4>
+    <ol>
+      <li><b>Décider en assemblée générale</b> : montant, prêteur, durée. Akiba enregistre la date de l'AG et le nombre de voix pour et contre.</li>
+      <li><b>Préparer le dossier</b> : <b>Plus › Dossier pour une IMF</b> écrit un fichier Excel à partir du cahier scellé (ancienneté, présence, épargne, remboursements à temps, PAR, écarts de caisse). Jamais de téléphone ni d'adresse ; les noms sont remplacés par « Membre 1, Membre 2… » si l'assemblée le préfère.</li>
+      <li><b>Déposer la demande</b> : notez-la dans l'écran du crédit extérieur (prêteur, montant, durée). Elle reste « Déposée » jusqu'à la réponse.</li>
+      <li><b>Réponse de l'IMF</b> : marquez <b>Accordée</b> ou <b>Refusée</b> pour garder la trace de la démarche.</li>
+      <li><b>Recevoir l'argent en réunion</b> : étape « Crédits » › <b>Recevoir un crédit</b>. L'argent est compté devant tous, validé par un 2ᵉ membre du bureau, et entre dans la <b>caisse de crédit</b>.</li>
+      <li><b>Payer les frais</b> : adhésion, dossier, assurance… Ils sortent de la caisse et sont comptés dans le coût du crédit.</li>
+      <li><b>Rembourser chaque mois</b> : étape « Crédits » › <b>Rembourser le prêteur</b>. Akiba affiche l'échéance conseillée, ce qui reste, et prévient en cas de retard.</li>
+      <li><b>Solder avant le partage</b> : au partage de fin de cycle, le prêteur est remboursé <b>en premier</b> avec la caisse de crédit ; les membres ne partagent que ce qui reste.</li>
+    </ol>
+    <h4>Comment cet argent alimente le fonds de crédit</h4>
+    <div class="formula">Caisse de crédit = épargne des membres + remboursements + amendes<br>+ argent reçu de l'IMF − frais payés − remboursements au prêteur</div>
+    <p>L'argent emprunté est prêté aux membres exactement comme l'épargne du groupe, aux mêmes règles (3 fois l'épargne au plus, un seul crédit à la fois, intérêt voté par l'assemblée). Les intérêts que paient les membres restent au groupe ; ceux que le groupe paie à l'IMF sortent de la caisse. <b>La différence entre les deux taux est le gain du groupe</b> : si le groupe prête à 10 % par mois et emprunte à 2,5 %, il gagne 7,5 points, à condition que les membres remboursent à temps.</p>
+    <h4>Effet sur la valeur des parts</h4>
+    <p>Tant que la dette n'est pas remboursée, Akiba la <b>retire</b> de la valeur d'une part : personne ne partage de l'argent emprunté. L'écran <b>Comment l'argent circule</b> montre, en chiffres réels, ce qui est entré, ce qui est sorti et ce qui reste dû.</p>
+    <div class="tip">N'empruntez que ce que les membres demandent vraiment : un crédit extérieur qui dort dans la caisse coûte des intérêts sans rien rapporter.</div>` },
   { id: 'social', icon: 'shield', t: 'La caisse sociale', b: `
     <p>C'est une caisse de solidarité, séparée de la caisse de crédit. Chaque membre présent verse une petite somme à chaque réunion.</p>
     <ul>
@@ -165,8 +200,11 @@ const GUIDE = [
   { id: 'partage', icon: 'split', t: 'Fin de cycle et partage', b: `
     <p>Un cycle dure en général 12 mois. Akiba prévient <b>4 semaines avant la fin</b>. Avant le partage, les membres doivent rembourser leurs crédits.</p>
     <h4>Le calcul</h4>
-    <div class="formula">Total = caisse de crédit + crédits à récupérer + amendes dues<br>Valeur d'une part = Total ÷ nombre de parts<br>Chaque membre reçoit = ses parts × valeur − ce qu'il doit encore</div>
-    <div class="formula">Exemple : 1 180 000 FC ÷ 1 000 parts = 1 180 FC la part<br>Kavira a 60 parts → 70 800 FC, moins 5 000 FC de crédit → reçoit 65 800 FC</div>
+    <div class="formula">Total à partager = caisse de crédit + crédits à récupérer + amendes dues − crédit extérieur à rendre<br>Bénéfice du cycle = Total − épargne de tous les membres<br>Chaque membre reçoit = son épargne + sa part du bénéfice − ce qu'il doit encore</div>
+    <h4>Le temps compte, pour que personne ne mange la part des autres</h4>
+    <p>Chaque membre <b>reprend d'abord toute son épargne</b>. Le bénéfice (intérêts et amendes gagnés pendant le cycle) est ensuite partagé selon l'épargne <b>et le temps</b> qu'elle a passé dans la caisse, compté en « francs × jours ». Un membre entré en cours de cycle garde donc tout son argent, mais ne touche pas le bénéfice gagné avant son arrivée.</p>
+    <div class="formula">Exemple : bénéfice 180 000 FC<br>Kavira, 60 000 FC épargnés depuis 12 mois → poids fort<br>Sifa, 60 000 FC épargnés depuis 2 mois → poids six fois plus faible<br>Chacune reprend ses 60 000 FC, mais Kavira reçoit six fois plus de bénéfice</div>
+    <p>Le tableau du partage montre, pour chaque membre : ses parts, son épargne, son bénéfice, ce qui est retenu (crédit ou amende) et ce qu'il reçoit. Si le groupe a un crédit extérieur, le prêteur est remboursé avant tout partage.</p>
     <h4>La séance de partage</h4>
     <ol>
       <li><b>Plus › Partage de fin de cycle</b> : vérifiez le tableau avec l'assemblée.</li>
@@ -199,7 +237,9 @@ const GUIDE = [
       <li>Le tableau des AVEC indique le cycle, la dernière réunion et la date du dernier envoi. Touchez une ligne pour voir le détail.</li>
       <li>Créez une AVEC et confiez-la à un animateur avec <b>Nouvelle AVEC</b>.</li>
       <li><b>Formation</b> : consultez les 7 modules et suivez l'avancement de chaque AVEC (colonne « Formation » et fiche de l'AVEC).</li>
-      <li><b>Excel</b> : un fichier .xlsx avec 7 onglets (synthèse, AVEC, membres, réunions, crédits, formation, alertes) pour vos rapports. Touchez « Excel », puis Télécharger ou Partager. Choisissez d'abord un animateur pour n'exporter que ses AVEC.</li>
+      <li><b>Excel</b> : un fichier .xlsx avec 8 onglets (synthèse, AVEC, membres, réunions, crédits, crédits extérieurs, formation, alertes) pour vos rapports. Touchez « Excel », puis Télécharger ou Partager. Choisissez d'abord un animateur pour n'exporter que ses AVEC.</li>
+      <li><b>Code oublié</b> : l'organisation garde une <b>carte de secours</b> de 6 codes, donnée une seule fois à la création du compte. Touchez « J'ai oublié mon code » sur l'écran de connexion, puis tapez un code de la carte : il sert une seule fois. Pour un animateur, c'est l'organisation qui redonne un code depuis sa fiche.</li>
+      <li>Chaque organisation ne voit que ses propres AVEC : les données restent séparées d'une organisation à l'autre.</li>
       <li>Les AVEC autonomes n'apparaissent jamais dans votre tableau.</li>
     </ul>` },
   { id: 'mots', icon: 'clip', t: 'Mots à connaître', b: `
@@ -224,6 +264,7 @@ const GUIDE = [
 /* parties du guide réservées à certains rôles (les autres sont pour tout le monde) */
 const GUIDE_WHO = {
   animateur: ['anim', 'org', 'none'], organisation: ['org', 'none'], lancer: ['org', 'none'],
+  externe: ['bureau', 'anim', 'org', 'none'],
   validation: ['org', 'anim', 'bureau', 'none'], installer: ['org', 'anim', 'bureau', 'none'], debut: ['org', 'anim', 'bureau', 'none']
 };
 SCREENS.guide = p => {

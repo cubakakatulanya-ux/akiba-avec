@@ -67,6 +67,24 @@ function meetingLi(avec, m) {
   return `<div class="li"><span class="av" style="border-radius:12px;font-family:var(--f-display)">${m.n}</span>
     <div class="grow"><b>${fdate(m.date)}</b><span class="small muted">${here}/${Object.keys(m.presence || {}).length} présents${m.synced || m.status === 'open' ? '' : ' · pas encore envoyée'}</span></div>${chip}</div>`;
 }
+/* bande de l'accueil : ce qui n'est pas déjà affiché en grand, mais qu'il faut avoir en tête */
+function homeBand(avec, st, open, next) {
+  const late = st.activeLoans.filter(l => l.status === 'retard');
+  const days = Math.ceil((cycleEnd(avec) - Date.now()) / DAY);
+  const nm = typeof nextModule === 'function' ? nextModule(avec) : null;
+  const toSend = pending(avec);
+  return ticker([
+    { icon: 'calendar', label: open ? `Réunion n°${open.n} en cours` : `Prochaine réunion : n°${next}` },
+    { icon: 'users', label: 'Membres', value: `${st.activeCount}${st.activeCount ? ' · ' + pct(st.women / st.activeCount) + ' de femmes' : ''}` },
+    late.length ? { icon: 'alert', label: 'Crédits en retard', value: `${late.length} · ${fc(st.lateAmt)}` } : { icon: 'check', label: 'Aucun crédit en retard' },
+    { icon: 'split', label: 'Fin du cycle', value: days > 0 ? `dans ${days < 14 ? days + ' jours' : Math.ceil(days / 7) + ' semaines'}` : 'le partage est à faire' },
+    st.extDebt ? { icon: 'building', label: 'Crédit extérieur à rembourser', value: fc(st.extDebt) } : null,
+    typeof trainingCount === 'function' ? { icon: 'clip', label: 'Formation', value: `${trainingCount(avec)}/7 modules${nm ? ' · suite : ' + nm.t : ' · terminée'}` } : null,
+    (avec.waitlist || []).length ? { icon: 'clip', label: 'Demandes de crédit en attente', value: `${avec.waitlist.length} · prioritaires` } : null,
+    { icon: 'shield', label: 'Journal', value: `${avec.tx.length} écritures scellées` },
+    toSend ? { icon: 'sync', label: "À envoyer à l'animateur", value: `${toSend} écritures` } : { icon: 'sync', label: "Tout est envoyé à l'animateur" }
+  ], { aria: "Repères de l'AVEC" });
+}
 SCREENS['a.home'] = () => {
   const { avec, me, st } = cur();
   if (!isActive(avec)) return SCREENS['a.pending']();
@@ -77,7 +95,7 @@ SCREENS['a.home'] = () => {
   const h = health(avec, st, chainOf(avec));
   const ch = chainOf(avec);
   return `<div class="shell">${aTop(avec)}<main class="main">
-    <p class="muted">Bonjour ${esc(me.name.split(' ')[0])} · ${roleLabel(me)}</p>
+    <div class="greet">${avatar(me)}<span class="grow"><b>Bonjour ${esc(me.name.split(' ')[0])}</b><span class="small muted">${roleLabel(me)} · ${fdate(Date.now())}</span></span>${open ? '<span class="chip warn">Réunion ouverte</span>' : ''}</div>
     <section class="caisse" aria-label="Caisse">
       <div class="locks" aria-hidden="true">${[1, 2, 3].map(() => `<span style="width:18px;height:18px;display:block">${ic('lock')}</span>`).join('')}</div>
       <div class="label" style="color:inherit;opacity:.8">Argent dans la caisse</div>
@@ -86,6 +104,7 @@ SCREENS['a.home'] = () => {
     </section>
     ${open ? `<button class="btn primary block xl" data-act="go" data-to="a.meet">${ic('calendar')} Continuer la réunion n°${open.n}</button>`
       : `<button class="btn primary block xl" data-act="startMeeting">${ic('unlock')} Ouvrir la réunion n°${next}</button>`}
+    ${homeBand(avec, st, open, next)}
     <div class="grid2">
       <div class="kpi"><span>Épargne du cycle</span><b class="num">${fck(st.sum.EPARGNE)}</b><span class="num">${grp(st.parts)} parts</span></div>
       <div class="kpi"><span>Crédits à rembourser</span><b class="num">${fck(st.outstanding)}</b><span>${st.activeLoans.length} crédits</span></div>
@@ -253,10 +272,10 @@ const STEP = {
     const dueToday = l => m.presence[l.memberId] !== 'A' && loanDueNow(l, m.date);
     const preTotal = loans.reduce((a, l) => a + (dueToday(l) ? installment(l) : 0), 0);
     if (!loans.length) return `<div><h2>Remboursements</h2></div><div class="card muted">Aucun crédit en cours dans le groupe.</div>${nextBtn(4, 'Suivant')}`;
-    return `<div><h2>Remboursements</h2><p class="muted">Les échéances du jour sont déjà écrites. Corrigez si un membre paie moins ou plus. Le bouton « Échéance » remet le montant prévu.</p></div>
+    return `<div><h2>Remboursements</h2><p class="muted">Les échéances du jour sont déjà écrites. Corrigez si un membre paie moins ou plus. Le bouton « Échéance » remet le montant prévu ; « Solder » écrit tout ce qui reste, même avant la fin du crédit.</p></div>
       <div class="list">${loans.map(l => { const x = memberOf(avec, l.memberId); const abs = m.presence[x.id] === 'A'; const inst = Math.min(l.remaining, Math.ceil(l.due / l.months / 100) * 100);
-        return `<div class="mrow" style="flex-wrap:wrap">${avatar(x)}<div class="grow"><b>${esc(x.name)}</b><span class="small muted num">Reste ${fc(l.remaining)} · fin ${fdate(l.dueDate)}</span> ${l.status === 'retard' ? `<span class="chip bad">${l.daysLate} j de retard</span>` : ''}${abs ? ' <span class="chip">absent</span>' : ''}</div>
-        <div class="row" style="gap:6px"><input id="rb-${l.id}" class="input num" style="width:112px;text-align:right" inputmode="numeric" placeholder="0" data-in="rembTotal" data-max="${l.remaining}" value="${dueToday(l) ? inst : ''}" aria-label="Montant remboursé par ${esc(x.name)}"><button class="btn sm" data-act="fillInst" data-id="${l.id}" data-v="${inst}">Échéance</button></div></div>`; }).join('')}</div>
+        return `<div class="mrow" style="flex-wrap:wrap">${avatar(x)}<div class="grow"><b>${esc(x.name)}</b><span class="small muted num">Reste ${fc(l.remaining)} · fin ${fdate(l.dueDate)}</span> ${l.status === 'retard' ? `<span class="chip bad">${l.daysLate} j de retard${l.penalty ? ` · pénalité ${fc(l.penalty)}` : ''}</span>` : ''}${abs ? ' <span class="chip">absent</span>' : ''}</div>
+        <div class="row" style="gap:6px"><input id="rb-${l.id}" class="input num" style="width:112px;text-align:right" inputmode="numeric" placeholder="0" data-in="rembTotal" data-max="${l.remaining}" value="${dueToday(l) ? inst : ''}" aria-label="Montant remboursé par ${esc(x.name)}"><button class="btn sm" data-act="fillInst" data-id="${l.id}" data-v="${inst}">Échéance</button>${l.remaining > inst ? `<button class="btn sm ghost" data-act="fillInst" data-id="${l.id}" data-v="${l.remaining}">Solder</button>` : ''}</div></div>`; }).join('')}</div>
       <div class="totals"><span>Total reçu</span><b class="num" id="rbTot">${fc(preTotal)}</b></div>
       ${nextBtn(4, { act: 'saveRemb', text: 'Enregistrer les remboursements' })}`;
   },
@@ -265,6 +284,7 @@ const STEP = {
     return `<div><h2>Nouveaux crédits</h2><p class="muted">Un membre peut emprunter jusqu'à ${avec.settings.maxMult} fois son épargne, pour ${avec.settings.maxMonths} mois au plus, à ${avec.settings.rate} % par mois. L'assemblée écoute chaque demande.</p></div>
       <div class="card row between"><span class="label">Disponible pour prêter</span><b class="num" style="font-family:var(--f-display);font-size:1.4rem">${fc(st.loanFund)}</b></div>
       <div class="list">${txRows(avec, list, 'Aucun crédit accordé à cette réunion')}</div>
+      ${waitBlock(avec, m, st)}
       <button class="btn brand block xl" data-act="creditSheet">${ic('plus')} Accorder un crédit</button>
       ${extMeetingBlock(avec, m, st)}
       ${nextBtn(5, m.stepDone >= 5 ? 'Suivant' : 'Terminer les crédits')}`;
@@ -275,12 +295,18 @@ const STEP = {
     if (m.stepDone >= 6) return `${doneBanner('Amendes enregistrées.')}<div class="list">${txRows(avec, meetTx(avec, m, ['AMENDE', 'DETTE']), 'Aucune amende')}</div>${extra}${nextBtn(6, 'Suivant')}`;
     const late = activeM(avec).filter(x => m.presence[x.id] && m.presence[x.id] !== 'P');
     const debtors = presentMembers(avec, m).filter(x => st.mem[x.id].fineDebt > 0);
-    const dr = draft(m.id + ':fine', () => { const o = {}, p = {}; late.forEach(x => o[x.id] = true); debtors.forEach(x => p[x.id] = true); return { on: o, pay: p }; });
+    const lateLoans = st.activeLoans.filter(l => l.penalty > 0 && m.presence[l.memberId] && m.presence[l.memberId] !== 'A' && !meetTx(avec, m, ['AMENDE']).some(t => t.ref === 'PENAL:' + l.id));
+    const dr = draft(m.id + ':fine', () => { const o = {}, p = {}, pe = {}; late.forEach(x => o[x.id] = true); debtors.forEach(x => p[x.id] = true); lateLoans.forEach(l => pe[l.id] = true); return { on: o, pay: p, pen: pe }; });
+    if (!dr.pen) dr.pen = {};
+    const penRows = lateLoans.map(l => { const x = memberOf(avec, l.memberId);
+      return `<div class="mrow">${avatar(x)}<div class="grow"><b>${esc(x.name)}</b><span class="small muted">Crédit en retard de ${l.daysLate} j · pénalité ${fc(l.penalty)} (${avec.settings.rate} % × ${l.monthsLate} mois sur ${fc(l.remaining)})</span></div>
+        <button class="toggle ${dr.pen[l.id] ? 'on' : ''}" data-act="dToggle" data-k="pen" data-id="${l.id}" aria-label="Appliquer la pénalité" aria-pressed="${!!dr.pen[l.id]}"></button></div>`; }).join('');
     const others = meetTx(avec, m, ['AMENDE']);
-    const tot = late.reduce((a, x) => a + (dr.on[x.id] && m.presence[x.id] === 'R' ? s.fineLate : 0), 0) + debtors.reduce((a, x) => a + (dr.pay[x.id] ? st.mem[x.id].fineDebt : 0), 0);
+    const tot = late.reduce((a, x) => a + (dr.on[x.id] && m.presence[x.id] === 'R' ? s.fineLate : 0), 0) + debtors.reduce((a, x) => a + (dr.pay[x.id] ? st.mem[x.id].fineDebt : 0), 0) + lateLoans.reduce((a, l) => a + (dr.pen[l.id] ? l.penalty : 0), 0);
     return `<div><h2>Amendes</h2><p class="muted">Proposées selon les présences : absence ${fc(s.fineAbsent)}, retard ${fc(s.fineLate)}. Un absent ne paie pas aujourd'hui : son amende est notée comme dette et payée à son retour.</p></div>
       <div class="list">${late.length ? late.map(x => { const a = m.presence[x.id] === 'A'; return `<div class="mrow">${avatar(x)}<div class="grow"><b>${esc(x.name)}</b><span class="small muted">${a ? 'Absence · dette de ' + fc(s.fineAbsent) : 'Retard · payé maintenant ' + fc(s.fineLate)}</span></div><button class="toggle ${dr.on[x.id] ? 'on' : ''}" data-act="dToggle" data-k="on" data-id="${x.id}" aria-label="Appliquer l'amende" aria-pressed="${!!dr.on[x.id]}"></button></div>`; }).join('') : '<div class="li muted">Tout le monde était à l\'heure</div>'}</div>
       ${others.length ? `<div class="list">${txRows(avec, others, '')}</div>` : ''}
+      ${penRows ? `<h3>Pénalités de retard sur les crédits</h3><p class="small muted">Un crédit en retard continue de coûter l'intérêt du groupe (${s.rate} % par mois commencé) sur ce qui reste à rembourser.</p><div class="list">${penRows}</div>` : ''}
       ${debtors.length ? `<h3>Amendes dues des réunions passées</h3><div class="list">${debtors.map(x => `<div class="mrow">${avatar(x)}<div class="grow"><b>${esc(x.name)}</b><span class="small muted">Doit ${fc(st.mem[x.id].fineDebt)}</span></div><button class="toggle ${dr.pay[x.id] ? 'on' : ''}" data-act="dToggle" data-k="pay" data-id="${x.id}" aria-label="Paie sa dette" aria-pressed="${!!dr.pay[x.id]}"></button></div>`).join('')}</div>` : ''}
       <div class="totals"><span>Argent reçu maintenant</span><b class="num">${fc(tot)}</b></div>${extra}
       ${nextBtn(6, { act: 'saveFines', text: 'Enregistrer les amendes' })}`;
@@ -368,6 +394,9 @@ ACT.saveFines = () => {
     const a = m.presence[x.id] === 'A';
     appendTx(avec, { meetingId: m.id, type: a ? 'DETTE' : 'AMENDE', memberId: x.id, amount: a ? s.fineAbsent : s.fineLate, note: a ? 'Absence' : 'Retard', by: me.id });
   });
+  // pénalités de retard : une amende par crédit en retard, tracée par la référence du crédit
+  st.activeLoans.filter(l => l.penalty > 0 && (App.draft.pen || {})[l.id] && m.presence[l.memberId] && m.presence[l.memberId] !== 'A').forEach(l =>
+    appendTx(avec, { meetingId: m.id, type: 'AMENDE', ref: 'PENAL:' + l.id, memberId: l.memberId, amount: l.penalty, note: `Retard de crédit · ${l.monthsLate} mois`, by: me.id }));
   finishStep(avec, m, 6, 'Amendes enregistrées');
 };
 ACT.lockPin = d => {
@@ -421,7 +450,48 @@ ACT.saveAide = () => {
   appendTx(avec, { meetingId: m.id, type: 'AIDE', memberId: mid, amount, note: `${note} · validé par ${ap.name}`, by: me.id });
   DB.save(); App.closeSheet(); App.toast('Aide enregistrée');
 };
-ACT.creditSheet = () => {
+/* demandes non servies : elles passent avant tout le monde à la réunion suivante, dans l'ordre d'arrivée */
+const waitQueue = avec => (avec.waitlist || []).slice().sort((a, b) => a.ts - b.ts);
+function waitBlock(avec, m, st) {
+  const q = waitQueue(avec);
+  const rows = q.map((w, i) => {
+    const x = memberOf(avec, w.memberId);
+    if (!x || x.left) return '';
+    const absent = m.presence[x.id] === 'A';
+    const lim = loanLimit(avec, st, x.id);
+    return `<div class="mrow">${avatar(x)}<div class="grow"><b>${i + 1}. ${esc(x.name)}</b><span class="small muted">Demande ${fc(w.amount)} · notée le ${fdate(w.ts)}${absent ? ' · absent aujourd\'hui' : lim.max ? '' : ' · ' + esc(lim.why.toLowerCase())}</span></div>
+      <div class="row" style="gap:6px"><button class="btn sm brand" data-act="creditSheet" data-mid="${x.id}" data-amount="${w.amount}" ${absent || !lim.max ? 'disabled' : ''}>Servir</button>
+      <button class="iconbtn" style="color:var(--bad)" data-act="waitDrop" data-id="${w.id}" aria-label="Retirer la demande de ${esc(x.name)}">${ic('x')}</button></div></div>`;
+  }).join('');
+  return `<section class="section"><h3>Demandes en attente ${q.length ? `<span class="chip warn">${q.length}</span>` : ''}</h3>
+    <p class="small muted">Les membres qui n'ont pas été servis aux réunions passées sont prioritaires, dans l'ordre où ils se sont inscrits.</p>
+    <div class="list">${rows || '<div class="li muted">Aucune demande en attente</div>'}</div>
+    <button class="btn ghost block" data-act="waitSheet">${ic('clip')} Noter une demande non servie</button></section>`;
+}
+ACT.waitSheet = () => {
+  const { avec, me } = cur(); const m = openMeeting(avec);
+  if (!isBureau(me)) return App.toast('Seul le bureau peut noter une demande');
+  const here = presentMembers(avec, m).filter(x => !(avec.waitlist || []).some(w => w.memberId === x.id));
+  if (!here.length) return App.toast('Toutes les personnes présentes sont déjà inscrites');
+  App.openSheet(`<h2>Demande non servie</h2><p class="muted">La caisse n'a pas assez d'argent aujourd'hui ? Notez la demande : ce membre passera en premier à la prochaine réunion.</p>
+    <div class="field"><label for="wtM">Membre</label><select id="wtM" class="input">${memberOptions(here)}</select></div>
+    <div class="field"><label for="wtA">Montant demandé (FC)</label><input id="wtA" class="input num" inputmode="numeric" placeholder="0"></div>
+    <button class="btn primary block xl" data-act="saveWait">${ic('check')} Inscrire la demande</button>`);
+};
+ACT.saveWait = () => {
+  const { avec, me } = cur();
+  const mid = document.getElementById('wtM').value, amount = parseAmt(document.getElementById('wtA').value);
+  if (!amount) return App.toast('Écrivez le montant demandé');
+  avec.waitlist.push({ id: uid(), memberId: mid, amount, ts: Date.now(), by: me.id });
+  DB.save(); App.closeSheet(); App.toast(`Demande de ${memberOf(avec, mid).name} inscrite`);
+};
+ACT.waitDrop = d => {
+  const { avec } = cur();
+  avec.waitlist = (avec.waitlist || []).filter(w => w.id !== d.id);
+  DB.save(); render(); App.toast('Demande retirée');
+};
+const waitServed = (avec, memberId) => { const n = (avec.waitlist || []).length; avec.waitlist = (avec.waitlist || []).filter(w => w.memberId !== memberId); return n !== avec.waitlist.length; };
+ACT.creditSheet = (d = {}) => {
   const { avec, me, st } = cur(); const m = openMeeting(avec);
   const here = presentMembers(avec, m);
   App.openSheet(`<h2>Accorder un crédit</h2>
@@ -432,6 +502,8 @@ ACT.creditSheet = () => {
     <div id="crOut" class="receipt" aria-live="polite"></div>
     ${approverFields(avec, me, 'cr')}
     <button class="btn primary block xl" data-act="saveCredit">Accorder le crédit</button>`);
+  if (d.mid) { const sel = document.getElementById('crM'); if ([...sel.options].some(o => o.value === d.mid)) sel.value = d.mid; }
+  if (d.amount) document.getElementById('crA').value = d.amount;
   INP.crCalc();
 };
 INP.crCalc = () => {
@@ -460,7 +532,8 @@ ACT.saveCredit = () => {
   if (Date.now() + mo * 28 * DAY > avec.cycle.end) return App.toast(`Le crédit doit être remboursé avant la fin du cycle (${fdate(avec.cycle.end)}). Choisissez une durée plus courte.`);
   const ap = checkApprover(avec, 'cr', mid); if (!ap) return;
   appendTx(avec, { meetingId: m.id, type: 'CREDIT', memberId: mid, amount: a, months: mo, rate: avec.settings.rate, note: `${purpose} · 2e validation ${ap.name}`, by: me.id });
-  DB.save(); App.closeSheet(); App.toast(`Crédit de ${fc(a)} accordé à ${memberOf(avec, mid).name}`);
+  const wasWaiting = waitServed(avec, mid);
+  DB.save(); App.closeSheet(); App.toast(`Crédit de ${fc(a)} accordé à ${memberOf(avec, mid).name}${wasWaiting ? ' (demande en attente servie)' : ''}`);
 };
 ACT.fineSheet = () => {
   const { avec } = cur();
@@ -526,8 +599,8 @@ SCREENS['a.members'] = () => {
     <div class="row between"><h1>Membres</h1><span class="chip brand">${st.activeCount} · ${st.women} femmes</span></div>
     <button class="btn ghost block" data-act="addMemberSheet">${ic('plus')} Ajouter un membre</button>
     <div class="list">${rows.map(x => { const d = st.mem[x.id]; const l = d.loans.find(y => y.status !== 'solde');
-      return `<button class="li" data-act="go" data-to="a.member" data-id="${x.id}">${avatar(x)}<span class="grow"><b>${esc(x.name)}</b><span class="small muted">${x.left ? 'A quitté le groupe' : roleLabel(x)} · ${d.parts} parts</span></span>
-      <span class="end"><span class="num">${fc(d.savings)}</span><br>${l ? `<span class="chip ${l.status === 'retard' ? 'bad' : 'warn'}">crédit ${fck(l.remaining)}</span>` : ''}</span></button>`; }).join('')}</div>
+      return `<button class="li" data-act="go" data-to="a.member" data-id="${x.id}">${avatar(x)}<span class="grow"><b>${esc(x.name)}</b><span class="small muted">${x.left ? 'A quitté le groupe' : roleLabel(x)} · ${d.parts} parts${l ? ` · <b style="color:var(--${l.status === 'retard' ? 'bad' : 'warn'})">crédit ${fck(l.remaining)}</b>` : ''}</span></span>
+      <span class="end"><span class="num">${fc(d.savings)}</span><span class="small muted">épargne</span></span></button>`; }).join('')}</div>
   </main>${tabbar(A_TABS, 'a.members')}</div>`;
 };
 SCREENS['a.member'] = p => {
@@ -545,7 +618,7 @@ SCREENS['a.member'] = p => {
   return `<div class="shell">${topbar(self ? 'Mon carnet' : 'Carnet de membre', esc(avec.name), left, right)}<main class="main">
     <div class="row">${avatar(x)}<div><h1 style="font-size:1.5rem">${esc(x.name)}</h1><span class="muted small">${roleLabel(x)}${ageOf(x) ? ' · ' + ageOf(x) + ' ans' : ''}${x.activity ? ' · ' + esc(x.activity) : ''}</span></div></div>
     <section class="caisse"><div class="label" style="color:inherit;opacity:.8">Mon épargne</div><div class="big num">${grp(d.savings)}<small>FC</small></div>
-      <div class="split"><div><span>Parts achetées</span><b class="num">${d.parts}</b></div><div><span>Valeur si partage</span><b class="num">${fc(d.parts * st.shareValue)}</b></div></div></section>
+      <div class="split"><div><span>Parts achetées</span><b class="num">${d.parts}</b></div><div><span>Valeur estimée si partage</span><b class="num">${fc(d.parts * st.shareValue)}</b></div></div></section>
     <div class="row">${speakBtn('carnet', '.main h1, .caisse .label, .caisse .big, .caisse .split span, .caisse .split b', 'Écouter mon carnet', I18N.cur())}</div>
     <section class="section"><h2>Timbres d'épargne</h2><div class="card" style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px">
       ${closed.map(m => { const n = byMeet[m.id] || 0; return `<div style="text-align:center"><div class="small muted">R${m.n}</div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:2px;justify-items:center;margin-top:3px">${Array.from({ length: 5 }, (_, i) => `<span style="width:9px;height:9px;border-radius:50%;${i < n ? 'background:var(--maize)' : 'border:1.5px solid var(--line)'}"></span>`).join('')}</div></div>`; }).join('') || '<span class="muted">Pas encore de réunion</span>'}

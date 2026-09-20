@@ -122,6 +122,18 @@ const ICONS = {
 };
 const ic = (n, cls = '') => `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[n] || ''}</svg>`;
 
+/* bande défilante : { icon, label, value } ou simple texte ; le texte est toujours échappé */
+function ticker(items, opts = {}) {
+  const list = (items || []).filter(Boolean);
+  if (!list.length) return '';
+  const one = list.map(x => {
+    const o = typeof x === 'string' ? { label: x } : x;
+    return `<span>${o.icon ? ic(o.icon) : ''}${o.label ? esc(o.label) : ''}${o.value != null && o.value !== '' ? `${o.label ? ' ' : ''}<b>${esc(o.value)}</b>` : ''}</span>`;
+  }).join('');
+  const secs = opts.speed || Math.max(20, list.length * 5);
+  return `<div class="ticker${opts.cls ? ' ' + opts.cls : ''}" aria-label="${esc(opts.aria || 'Repères qui défilent')}"><div class="run" style="animation-duration:${secs}s">${one}${one}</div></div>`;
+}
+
 /* ---------- registre chaîné (append-only) ---------- */
 const payload = t => [t.seq, t.avecId, t.meetingId, t.type, t.memberId || '', t.amount, t.parts || 0, t.months || 0, t.rate || 0, t.ref || '', t.note || '', t.by || '', t.ts, t.cycle || 1, t.prev].join('|');
 
@@ -187,12 +199,16 @@ function stats(avec, opt = {}) {
     l.remaining = Math.max(0, l.due - l.paid);
     l.status = l.remaining === 0 ? 'solde' : now > l.dueDate ? 'retard' : 'cours';
     l.daysLate = l.status === 'retard' ? Math.floor((now - l.dueDate) / DAY) : 0;
+    // un crédit en retard continue de coûter l'intérêt du groupe, par mois commencé
+    l.monthsLate = l.status === 'retard' ? Math.ceil(l.daysLate / 30) : 0;
+    l.penalty = l.monthsLate ? Math.round(l.remaining * s.rate / 100 * l.monthsLate / 100) * 100 : 0;
     if (mem[l.memberId]) mem[l.memberId].loans.push(l);
     return l;
   }).sort((a, b) => b.ts - a.ts);
   const activeLoans = loanList.filter(l => l.status !== 'solde');
   const outstanding = activeLoans.reduce((a, l) => a + l.remaining, 0);
   const lateAmt = activeLoans.filter(l => l.status === 'retard').reduce((a, l) => a + l.remaining, 0);
+  const penaltyTot = activeLoans.reduce((a, l) => a + (l.penalty || 0), 0);
   const interest = loanList.reduce((a, l) => a + Math.max(0, l.paid - l.principal), 0);
   const socialFund = sum.SOCIAL + rep.REPORT_IN.social - sum.AIDE - rep.REPORT_OUT.social;
   const extList = Object.values(exts).map(e => {
@@ -212,7 +228,7 @@ function stats(avec, opt = {}) {
   meetings.forEach(m => Object.values(m.presence || {}).forEach(p => { slots++; if (p !== 'A') pres++; }));
   const ecarts = meetings.filter(m => m.closeCount !== m.closeExpected);
   return {
-    sum, rep, mem, parts: activeParts, fineDebt, cycleN: cyc, loanList, activeLoans, outstanding, lateAmt, interest, socialFund, loanFund,
+    sum, rep, mem, parts: activeParts, fineDebt, cycleN: cyc, loanList, activeLoans, outstanding, lateAmt, penaltyTot, interest, socialFund, loanFund,
     extList, extDebt, extActive: extList.filter(e => e.status !== 'solde'),
     cash: socialFund + loanFund, par: outstanding ? lateAmt / outstanding : 0,
     meetings, last: meetings[meetings.length - 1], attendance: slots ? pres / slots : 0, ecarts,
@@ -272,7 +288,7 @@ function migrate(d) {
   d.net = d.net || { online: true };
   d.orgs = d.orgs || []; d.users = d.users || []; d.avecs = d.avecs || [];
   d.avecs.forEach(a => {
-    ['meetings', 'tx', 'visits', 'cycles', 'security', 'rescue', 'members'].forEach(k => { if (!Array.isArray(a[k])) a[k] = []; });
+    ['meetings', 'tx', 'visits', 'cycles', 'security', 'rescue', 'members', 'waitlist', 'extReqs'].forEach(k => { if (!Array.isArray(a[k])) a[k] = []; });
     if (!a.trainings || typeof a.trainings !== 'object') a.trainings = {};
     a.status = a.status || 'active';
     a.settings = Object.assign({ partValue: 1000, maxParts: 5, socialFee: 500, rate: 10, maxMult: 3, maxMonths: 3, fineAbsent: 500, fineLate: 200, cycleMonths: 12, frequency: 7 }, a.settings || {});
@@ -572,6 +588,8 @@ document.addEventListener('click', e => {
   App.lastAct = Date.now();
   const el = e.target.closest('[data-act]');
   if (!el || el.disabled) return;
+  // le voile d'une feuille ne doit pas avaler les clics à l'intérieur : sinon les cases et les boutons « Homme / Femme » ne cochent plus
+  if (el.dataset.act === 'scrim' && e.target !== el) return;
   const f = ACT[el.dataset.act];
   if (f) { e.preventDefault(); f(el.dataset, el, e); }
 });

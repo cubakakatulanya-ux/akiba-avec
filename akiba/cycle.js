@@ -24,19 +24,36 @@ function cycleInfo(avec, st) {
 }
 
 /* ---------- partage ---------- */
+/* Chaque épargne compte selon le temps qu'elle a passé dans la caisse (francs x jours).
+   Un membre entré en cours de cycle garde toute son épargne, mais ne prend pas le bénéfice gagné avant son arrivée. */
+function savingsWeights(avec, cyc, end) {
+  const annulled = new Set(avec.tx.filter(t => t.type === 'ANNUL').map(t => t.ref));
+  const w = {};
+  avec.tx.forEach(t => {
+    if (t.type !== 'EPARGNE' || (t.cycle || 1) !== cyc || annulled.has(t.id)) return;
+    w[t.memberId] = (w[t.memberId] || 0) + t.amount * Math.max(0, end - t.ts) / DAY;
+  });
+  return w;
+}
 function sharePlan(avec, st) {
+  const end = Math.max(Date.now(), avec.cycle.start + DAY);
+  const wts = savingsWeights(avec, avec.cycle.n, end);
   const rows = activeM(avec).map(x => {
     const d = st.mem[x.id];
     const loanRem = d.loans.filter(l => l.status !== 'solde').reduce((a, l) => a + l.remaining, 0);
     const debt = Math.max(0, d.fineDebt);
-    return { x, d, loanRem, debt, ded: loanRem + debt };
+    return { x, d, loanRem, debt, ded: loanRem + debt, w: wts[x.id] || 0 };
   });
   const parts = rows.reduce((a, r) => a + r.d.parts, 0);
   const ded = rows.reduce((a, r) => a + r.ded, 0);
   const pool = st.loanFund + ded - (st.extDebt || 0);              // l'argent emprunté dehors n'appartient pas aux membres
   const value = parts ? pool / parts : 0;
+  const savTot = rows.reduce((a, r) => a + r.d.savings, 0);
+  const wTot = rows.reduce((a, r) => a + r.w, 0);
+  const profit = pool - savTot;                                    // intérêts et amendes gagnés pendant le cycle
   rows.forEach(r => {
-    r.gross = r.d.parts * value;
+    r.bonus = wTot ? profit * r.w / wTot : (parts ? r.d.parts * value - r.d.savings : 0);
+    r.gross = r.d.savings + r.bonus;
     r.blocked = r.gross < r.ded;
     r.net = r.blocked ? 0 : Math.floor((r.gross - r.ded) / 50) * 50;   // arrondi à 50 FC (billets)
     r.grossR = r.blocked ? 0 : r.net + r.ded;                          // part inscrite = argent reçu + dettes retenues
@@ -44,7 +61,7 @@ function sharePlan(avec, st) {
   const paid = rows.reduce((a, r) => a + r.net, 0);
   const extDebt = st.extDebt || 0;
   // le prêteur extérieur est remboursé en premier, avec la caisse de crédit
-  return { rows: rows.sort((a, b) => b.d.parts - a.d.parts), parts, ded, pool, value, paid, extDebt, extShort: extDebt > st.loanFund, remainder: st.loanFund - extDebt - paid, blocked: rows.filter(r => r.blocked) };
+  return { rows: rows.sort((a, b) => b.gross - a.gross), parts, ded, pool, value, savTot, profit, paid, extDebt, extShort: extDebt > st.loanFund, remainder: st.loanFund - extDebt - paid, blocked: rows.filter(r => r.blocked) };
 }
 
 SCREENS['a.share'] = () => {
@@ -63,16 +80,18 @@ SCREENS['a.share'] = () => {
       ${line('+ Amendes encore dues', fc(st.fineDebt))}
       ${st.extDebt ? line('− Crédit extérieur à rembourser au prêteur', fc(st.extDebt)) : ''}
       ${line('= Total à partager', fc(plan.pool), true)}
+      ${line('− Épargne rendue aux membres', fc(plan.savTot))}
+      ${line('= Bénéfice du cycle à partager', fc(plan.profit), true)}
       ${line('÷ Parts des membres', grp(plan.parts))}
-      <div class="row between" style="border-top:1px solid var(--line);padding-top:10px"><span class="label">Une part vaut</span><b class="num" style="font-family:var(--f-display);font-size:1.6rem">${fc(plan.value)}</b></div>
-      <p class="hint">Achetée ${fc(pv)}, une part vaut ${fc(plan.value)}, soit ${plan.value >= pv ? '+' : ''}${pct(plan.value / pv - 1)}. Ce qu'un membre doit encore (crédit, amendes) est retiré de sa part. La caisse sociale (${fc(st.socialFund)}) n'est pas partagée : elle reste au groupe pour le cycle suivant.</p>
+      <div class="row between" style="border-top:1px solid var(--line);padding-top:10px"><span class="label">Une part vaut en moyenne</span><b class="num" style="font-family:var(--f-display);font-size:1.6rem">${fc(plan.value)}</b></div>
+      <p class="hint">Chaque membre reprend d'abord toute son épargne. Le bénéfice (${fc(plan.profit)}) est ensuite partagé selon l'épargne <b>et le temps</b> qu'elle a passé dans la caisse : un membre entré en cours de cycle ne prend pas le bénéfice gagné avant son arrivée. Achetée ${fc(pv)}, une part vaut en moyenne ${fc(plan.value)}, soit ${plan.value >= pv ? '+' : ''}${pct(plan.value / pv - 1)}. Ce qu'un membre doit encore (crédit, amendes) est retiré de sa part. La caisse sociale (${fc(st.socialFund)}) n'est pas partagée : elle reste au groupe pour le cycle suivant.</p>
     </div>
     ${st.extDebt ? (plan.extShort ? `<div class="alert bad"><span style="width:22px;flex:none">${ic('alert')}</span><div><b>La caisse ne suffit pas pour rembourser le prêteur</b><span class="small">Il reste ${fc(st.extDebt)} à rendre, la caisse de crédit a ${fc(st.loanFund)}. Récupérez d'abord les crédits des membres.</span></div></div>`
       : `<div class="alert warn"><span style="width:22px;flex:none">${ic('building')}</span><div><b>Le prêteur est remboursé avant le partage</b><span class="small">${fc(st.extDebt)} sortent de la caisse de crédit pour solder le crédit extérieur, puis le reste est partagé.</span></div></div>`) : ''}
     ${plan.blocked.length ? `<div class="alert bad"><span style="width:22px;flex:none">${ic('alert')}</span><div><b>${plan.blocked.length} membre${plan.blocked.length > 1 ? 's doivent plus que leur' : ' doit plus que sa'} part</b><span class="small">${plan.blocked.map(r => esc(r.x.name)).join(', ')} : rembourser la différence avant le partage.</span></div></div>` : ''}
     ${left > 28 ? `<div class="alert warn"><span style="width:22px;flex:none">${ic('calendar')}</span><div><b>Le cycle n'est pas fini</b><span class="small">Fin prévue le ${fdate(cycleEnd(avec))}. Ce tableau est une simulation ; faites le partage seulement si l'assemblée l'a décidé.</span></div></div>` : ''}
-    <div class="tablewrap"><table><thead><tr><th>Membre</th><th class="r">Parts</th><th class="r">Valeur</th><th class="r">Retenu</th><th class="r">Reçoit</th></tr></thead><tbody>
-      ${plan.rows.map(r => `<tr style="${r.blocked ? 'background:var(--bad-soft)' : ''}"><td>${esc(r.x.name)}</td><td class="r num">${r.d.parts}</td><td class="r num">${fc(r.gross)}</td><td class="r num">${r.ded ? '− ' + fc(r.ded) : '—'}</td><td class="r num"><b>${r.blocked ? 'doit ' + fc(r.ded - r.gross) : fc(r.net)}</b></td></tr>`).join('')}
+    <div class="tablewrap"><table><thead><tr><th>Membre</th><th class="r">Parts</th><th class="r">Épargne</th><th class="r">Bénéfice</th><th class="r">Retenu</th><th class="r">Reçoit</th></tr></thead><tbody>
+      ${plan.rows.map(r => `<tr style="${r.blocked ? 'background:var(--bad-soft)' : ''}"><td>${esc(r.x.name)}</td><td class="r num">${r.d.parts}</td><td class="r num">${fc(r.d.savings)}</td><td class="r num">${fc(r.bonus)}</td><td class="r num">${r.ded ? '− ' + fc(r.ded) : '—'}</td><td class="r num"><b>${r.blocked ? 'doit ' + fc(r.ded - r.gross) : fc(r.net)}</b></td></tr>`).join('')}
     </tbody></table></div>
     <div class="receipt stack">
       ${plan.extDebt ? line('Remboursé d\'abord au prêteur', fc(plan.extDebt)) : ''}${line('Argent donné aux membres', fc(plan.paid))}${line('Reste des arrondis (cycle suivant)', fc(plan.remainder))}${line('Caisse sociale (cycle suivant)', fc(st.socialFund))}
@@ -381,6 +400,7 @@ SCREENS['a.more'] = () => {
     <h1>Plus</h1>
     <div class="list">
       ${li('a.share', 'split', 'Partage de fin de cycle', `Cycle ${avec.cycle.n} · fin le ${fdate(cycleEnd(avec))}`)}
+      ${li('a.ext', 'building', 'Crédit extérieur (IMF)', 'De la demande au remboursement')}
       ${li('a.imf', 'chart', 'Dossier pour une IMF', 'Partager les chiffres du groupe pour un crédit extérieur')}
       ${li('a.cycles', 'calendar', 'Historique des cycles', `${avec.cycles.length} cycle${avec.cycles.length > 1 ? 's' : ''} terminé${avec.cycles.length > 1 ? 's' : ''}`)}
       ${li('a.roles', 'users', 'Bureau et porte-clés', 'Changer un responsable')}

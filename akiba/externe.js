@@ -18,6 +18,7 @@ function extMeetingBlock(avec, m, st) {
     ${list.length ? `<div class="list">${list.map(t => `<div class="li" style="${t.annulled ? 'opacity:.5;text-decoration:line-through' : ''}"><span class="grow"><b>${TX[t.type].l}</b><span class="small muted">${esc(t.note || '')}</span></span><span class="end num" style="color:${t.type === 'EXT_IN' ? 'var(--good)' : 'var(--bad)'}">${t.type === 'EXT_IN' ? '+' : '−'} ${fc(t.amount)}</span></div>`).join('')}</div>` : ''}
     <div class="grid2">
       <button class="btn ghost" data-act="extSheet">${ic('building')} Recevoir un crédit</button>
+      <button class="btn ghost" data-act="go" data-to="a.ext">${ic('chev')} Suivi de la demande</button>
       ${st.extActive.length ? `<button class="btn ghost" data-act="extRepaySheet">${ic('coins')} Rembourser le prêteur</button>` : ''}
       ${st.extList.length ? `<button class="btn ghost" data-act="extFeeSheet">${ic('clip')} Payer des frais</button>` : ''}
     </div></section>`;
@@ -44,11 +45,11 @@ ACT.extSheet = () => {
   const { avec, me } = cur();
   if (!openMeeting(avec)) return App.toast('Le crédit extérieur s\'enregistre pendant une réunion (argent compté)');
   App.openSheet(`<h2>Recevoir un crédit extérieur</h2>
-    <p class="muted">Seulement après la décision de l'assemblée générale. L'argent entre dans la caisse de crédit.</p>
+    <p class="muted">Seulement après la décision de l'assemblée générale. L'argent entre dans la caisse de crédit. Le crédit doit être entièrement remboursé <b>avant la fin du cycle</b> (${fdate(cycleEnd(avec))}) et son intérêt ne peut pas dépasser <b>5 % par mois</b>.</p>
     <div class="field"><label for="exL">Prêteur</label><input id="exL" class="input" placeholder="Ex. IMF Tujenge Mikopo, COOPEC, ONG…"></div>
     <div class="grid2"><div class="field"><label for="exA">Montant accordé (FC)</label><input id="exA" class="input num" inputmode="numeric" placeholder="0" data-in="extCalc"></div>
       <div class="field"><label for="exD">Durée (mois)</label><input id="exD" class="input num" inputmode="numeric" value="6" data-in="extCalc"></div></div>
-    <div class="field"><label for="exR">Intérêt par mois (%)</label><input id="exR" class="input num" inputmode="decimal" placeholder="Ex. 2 ou 2,5" data-in="extCalc"></div>
+    <div class="field"><label for="exR">Intérêt par mois (%) — 5 % au maximum</label><input id="exR" class="input num" inputmode="decimal" placeholder="Ex. 2 ou 2,5" data-in="extCalc"></div>
     <h3>Frais liés au crédit</h3>
     <p class="hint">S'ils sont retenus par le prêteur, écrivez-les quand même : Akiba compte le montant accordé, puis les frais qui sortent.</p>
     <div class="grid2">${EXT_FEES.map((f, i) => `<div class="field"><label for="exF${i}">${f}</label><input id="exF${i}" class="input num" inputmode="numeric" placeholder="0" data-in="extCalc"></div>`).join('')}</div>
@@ -89,7 +90,7 @@ ACT.saveExt = () => {
   if (lender.length < 2) return App.toast('Écrivez le nom du prêteur');
   if (x.a < 10000) return App.toast('Écrivez le montant accordé');
   if (x.months < 1 || x.months > 36) return App.toast('Durée : entre 1 et 36 mois');
-  if (x.rate < 0 || x.rate > 15) return App.toast('Intérêt par mois : entre 0 et 15 %');
+  if (x.rate < 0 || x.rate > 5) return App.toast('Intérêt du prêteur : 5 % par mois au maximum');
   if (x.feeTot >= x.a) return App.toast('Les frais ne peuvent pas dépasser le montant');
   if (Date.now() + x.months * 30 * DAY > cycleEnd(avec)) return App.toast(`Le crédit doit être remboursé avant la fin du cycle (${fdate(cycleEnd(avec))}) : le partage se fait après`);
   if (!/^\d{4}-\d{2}-\d{2}$/.test(ag || '') || ag > isoDay(Date.now())) return App.toast('Écrivez la date de l\'assemblée générale (aujourd\'hui ou avant)');
@@ -98,6 +99,7 @@ ACT.saveExt = () => {
   const ap = checkApprover(avec, 'ex', null); if (!ap) return;
   const t = appendTx(avec, { meetingId: m.id, type: 'EXT_IN', amount: x.a, rate: x.rate, months: x.months, note: lender, ref: `AG du ${ag} : ${pour} pour, ${contre} contre · 2e validation ${ap.name}`, by: me.id });
   x.fees.forEach(f => appendTx(avec, { meetingId: m.id, type: 'EXT_FEE', ref: t.id, amount: f.v, note: f.l, by: me.id }));
+  extReqReceived(avec, lender);
   DB.save(); App.closeSheet(); App.toast(`Crédit extérieur de ${fc(x.a)} enregistré (${fc(x.net)} dans la caisse)`);
 };
 
@@ -251,3 +253,116 @@ ACT.imfShare = async () => {
   try { await navigator.share({ files: [new File([f.blob], f.name, { type: XL_MIME })], title: 'Dossier Akiba pour ' + f.imf }); }
   catch (e) { if (e && e.name !== 'AbortError') App.toast('Partage impossible : utilisez « Télécharger »'); }
 };
+
+/* ---------- suivi d'un crédit extérieur : de la demande au remboursement ---------- */
+const EXT_STEPS = [
+  { t: 'Décider en assemblée générale', d: 'Le groupe vote : montant, prêteur, durée. La date et les votes sont notés au moment de recevoir l\'argent.' },
+  { t: 'Préparer le dossier', d: 'Akiba écrit un fichier Excel à partir du cahier scellé : ancienneté, présence, épargne, remboursements.' },
+  { t: 'Déposer la demande', d: 'Le bureau porte le dossier à l\'IMF et note ici la demande : prêteur, montant, durée.' },
+  { t: 'Réponse de l\'IMF', d: 'Accordée ou refusée : marquez la réponse pour garder la trace de la démarche.' },
+  { t: 'Recevoir l\'argent en réunion', d: 'Pendant une réunion, étape « Crédits » › « Recevoir un crédit » : l\'argent entre dans la caisse de crédit, devant tous.' },
+  { t: 'Payer les frais', d: 'Adhésion, dossier, assurance : ils sortent de la caisse et sont comptés dans le coût du crédit.' },
+  { t: 'Rembourser chaque mois', d: 'Étape « Crédits » › « Rembourser le prêteur ». Akiba suit ce qui reste et prévient en cas de retard.' },
+  { t: 'Solder avant le partage', d: 'Au partage de fin de cycle, le prêteur est remboursé en premier : les membres ne partagent que ce qui reste.' }
+];
+const extReqChip = r => r.status === 'accorde' ? '<span class="chip good">Accordée</span>' : r.status === 'refuse' ? '<span class="chip bad">Refusée</span>' : r.status === 'recu' ? '<span class="chip brand">Argent reçu</span>' : '<span class="chip warn">Déposée</span>';
+const extReqs = avec => (avec.extReqs || []).slice().sort((a, b) => b.ts - a.ts);
+function extStepDone(avec, st, i) {
+  const reqs = extReqs(avec);
+  if (i === 0 || i === 1) return !!(reqs.length || st.extList.length);
+  if (i === 2) return !!reqs.length;
+  if (i === 3) return reqs.some(r => r.status !== 'depose');
+  if (i === 4) return !!st.extList.length;
+  if (i === 5) return st.sum.EXT_FEE > 0;
+  if (i === 6) return st.sum.EXT_REPAY > 0;
+  return !!st.extList.length && !st.extDebt;
+}
+/* comment l'argent de l'IMF entre dans la caisse de crédit, et comment il en ressort */
+function extFlowCard(avec, st) {
+  const received = st.sum.EXT_IN, fees = st.sum.EXT_FEE, repaid = st.sum.EXT_REPAY;
+  const owed = st.extDebt, rate = avec.settings.rate;
+  const extRate = st.extActive.length ? st.extActive[0].rate : (st.extList[0] || {}).rate;
+  const nextDue = st.extActive.map(e => extInstallment(e)).reduce((a, b) => a + b, 0);
+  const line = (l, v, color) => `<div class="row between small"><span>${l}</span><b class="num" ${color ? `style="color:var(--${color})"` : ''}>${v}</b></div>`;
+  return `<section class="card stack"><h2>Comment l'argent circule</h2>
+    <div class="stack" style="gap:6px">
+      ${line('1. L\'IMF verse l\'argent, compté en réunion', (received ? '+ ' : '') + fc(received), received ? 'good' : '')}
+      ${line('2. Il entre dans la <b>caisse de crédit</b> du groupe', fc(st.loanFund) + ' aujourd\'hui')}
+      ${line('3. Les frais sortent de cette même caisse', (fees ? '− ' : '') + fc(fees), fees ? 'bad' : '')}
+      ${line('4. Le groupe prête aux membres à ' + rate + ' % par mois', fck(st.outstanding) + ' dehors')}
+      ${line('5. Les membres remboursent : la caisse se remplit', fck(st.sum.REMB) + ' ce cycle', 'good')}
+      ${line('6. Le groupe rembourse le prêteur en réunion', (repaid ? '− ' : '') + fc(repaid), repaid ? 'bad' : '')}
+      ${line('7. Reste dû au prêteur', fc(owed), owed ? 'warn' : 'good')}
+    </div>
+    ${st.extActive.length ? `<div class="totals"><span>Prochaine échéance conseillée</span><b class="num">${fc(nextDue)}</b></div>` : ''}
+    <p class="hint">L'argent emprunté <b>ne se partage pas</b> : il est retiré de la valeur des parts tant qu'il n'est pas rendu (valeur d'une part aujourd'hui : ${fc(st.shareValue)}). Au partage de fin de cycle, Akiba rembourse d'abord le prêteur avec la caisse de crédit, puis partage le reste entre les membres.</p>
+    ${extRate != null ? `<div class="${rate > extRate ? 'tip' : 'alert warn'}">${icSpan(rate > extRate ? 'check' : 'alert')}<div><b>${rate > extRate ? 'Le groupe gagne sur la différence' : 'Attention au coût du crédit'}</b><span class="small">Le groupe prête à ${rate} % par mois et emprunte à ${String(extRate).replace('.', ',')} % par mois${rate > extRate ? ` : la différence (${(rate - extRate).toFixed(2).replace('.', ',')} points) reste au groupe, à condition que les membres remboursent à temps.` : ' : le crédit extérieur coûte presque autant que ce que le groupe gagne. Empruntez seulement ce que les membres demandent vraiment.'}</span></div></div>` : ''}
+  </section>`;
+}
+SCREENS['a.ext'] = () => {
+  const { avec, me, st } = cur();
+  const bureau = isBureau(me), open = openMeeting(avec), reqs = extReqs(avec);
+  const steps = EXT_STEPS.map((s, i) => {
+    const done = extStepDone(avec, st, i);
+    return `<div class="li"><span class="av" style="border-radius:12px;${done ? 'background:var(--brand);color:var(--brand-ink)' : ''}">${done ? '✓' : i + 1}</span>
+      <span class="grow"><b>${s.t}</b><span class="small muted">${s.d}</span></span></div>`;
+  }).join('');
+  const reqRows = reqs.map(r => `<div class="li"><span class="grow"><b>${esc(r.lender)}</b><span class="small muted">${fc(r.amount)} · ${r.months} mois · déposée le ${fdate(r.ts)}${r.note ? ' · ' + esc(r.note) : ''}</span></span>${extReqChip(r)}</div>
+    ${bureau && r.status === 'depose' ? `<div class="li" style="gap:8px"><button class="btn sm brand" data-act="extReqStatus" data-id="${r.id}" data-v="accorde">Accordée</button>
+      <button class="btn sm ghost" data-act="extReqStatus" data-id="${r.id}" data-v="refuse">Refusée</button>
+      <span class="grow"></span><button class="btn sm danger" data-act="extReqDrop" data-id="${r.id}">Retirer</button></div>` : ''}`).join('');
+  return `<div class="shell">${topbar('Crédit extérieur (IMF)', esc(avec.name), backBtn('a.more'), syncPill(avec))}<main class="main">
+    <div><h1>De la demande au remboursement</h1><p class="muted">Le groupe peut emprunter auprès d'une IMF, d'une banque ou d'une ONG pour renforcer sa caisse de crédit. C'est une dette du groupe : elle est retirée de la valeur des parts jusqu'au dernier franc remboursé.</p></div>
+    ${st.extList.length ? `<div class="grid2"><div class="kpi"><span>Reste à rembourser</span><b class="num" style="color:${st.extDebt ? 'var(--warn)' : 'var(--good)'}">${fck(st.extDebt)}</b><span>${st.extActive.length} crédit(s) en cours</span></div>
+      <div class="kpi"><span>Coût payé</span><b class="num">${fck(st.sum.EXT_FEE)}</b><span>frais d'adhésion, dossier…</span></div></div>` : ''}
+    ${st.extList.length ? extFlowCard(avec, st) : ''}
+    <section class="section"><h2>Le chemin</h2><div class="list">${steps}</div></section>
+    <section class="section"><h2>Demandes</h2>
+      <div class="list">${reqRows || '<div class="li muted">Aucune demande notée pour le moment</div>'}</div>
+      ${bureau ? `<div class="grid2"><button class="btn ghost" data-act="extReqSheet">${ic('clip')} Noter une demande</button>
+        <button class="btn ghost" data-act="go" data-to="a.imf">${ic('chart')} Préparer le dossier</button></div>` : ''}</section>
+    ${extLoansSection(avec, st)}
+    ${bureau ? (open ? `<section class="section"><h2>Pendant la réunion n°${open.n}</h2><div class="grid2">
+        <button class="btn ghost" data-act="extSheet">${ic('building')} Recevoir un crédit</button>
+        ${st.extActive.length ? `<button class="btn ghost" data-act="extRepaySheet">${ic('coins')} Rembourser</button>` : ''}
+        ${st.extList.length ? `<button class="btn ghost" data-act="extFeeSheet">${ic('clip')} Payer des frais</button>` : ''}</div></section>`
+      : `<div class="tip row" style="align-items:flex-start">${icSpan('calendar')}<div><b>L'argent se compte en réunion</b><span class="small">Recevoir le crédit, payer les frais et rembourser le prêteur se font pendant une réunion, à l'étape « Crédits », devant tout le groupe.</span></div></div>`) : ''}
+  </main></div>`;
+};
+ACT.extReqSheet = () => {
+  const { avec, me } = cur();
+  if (!isBureau(me)) return App.toast('Seul le bureau peut noter une demande');
+  App.openSheet(`<h2>Noter une demande</h2><p class="muted">Le dossier a été déposé à l'IMF : gardez-en la trace ici. L'argent, lui, s'enregistre en réunion quand il arrive.</p>
+    <div class="field"><label for="erL">Prêteur (IMF, banque, ONG)</label><input id="erL" class="input" placeholder="Ex. COOPEC Imara"></div>
+    <div class="grid2"><div class="field"><label for="erA">Montant demandé (FC)</label><input id="erA" class="input num" inputmode="numeric" placeholder="0"></div>
+    <div class="field"><label for="erM">Durée (mois)</label><input id="erM" class="input num" inputmode="numeric" placeholder="6"></div></div>
+    <div class="field"><label for="erN">Remarque</label><input id="erN" class="input" placeholder="Ex. dossier déposé le 12, réponse promise dans 15 jours"></div>
+    <button class="btn primary block xl" data-act="saveExtReq">${ic('check')} Enregistrer la demande</button>`);
+};
+ACT.saveExtReq = () => {
+  const { avec, me } = cur();
+  const lender = document.getElementById('erL').value.trim();
+  const amount = parseAmt(document.getElementById('erA').value);
+  const months = Math.max(1, parseInt(document.getElementById('erM').value, 10) || 0);
+  if (!lender) return App.toast('Écrivez le nom du prêteur');
+  if (!amount) return App.toast('Écrivez le montant demandé');
+  avec.extReqs.push({ id: uid(), lender, amount, months, note: document.getElementById('erN').value.trim(), status: 'depose', ts: Date.now(), by: me.id });
+  DB.save(); App.closeSheet(); App.toast('Demande notée');
+};
+ACT.extReqStatus = d => {
+  const { avec } = cur();
+  const r = (avec.extReqs || []).find(x => x.id === d.id); if (!r) return;
+  r.status = d.v; r.answerTs = Date.now();
+  DB.save(); render(); App.toast(d.v === 'accorde' ? 'Demande accordée : recevez l\'argent pendant une réunion' : 'Demande refusée');
+};
+ACT.extReqDrop = d => {
+  const { avec } = cur();
+  avec.extReqs = (avec.extReqs || []).filter(x => x.id !== d.id);
+  DB.save(); render(); App.toast('Demande retirée');
+};
+/* l'argent reçu ferme la demande correspondante */
+function extReqReceived(avec, lender) {
+  const r = (avec.extReqs || []).filter(x => x.status !== 'recu' && x.status !== 'refuse')
+    .sort((a, b) => b.ts - a.ts).find(x => x.lender.toLowerCase() === String(lender || '').toLowerCase());
+  if (r) { r.status = 'recu'; r.receivedTs = Date.now(); }
+}
