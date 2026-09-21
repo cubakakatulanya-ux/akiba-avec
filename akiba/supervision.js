@@ -21,12 +21,24 @@ const rememberAvec = id => { try { localStorage.setItem(LAST_AVEC, id); } catch 
 function avecCard() {
   const list = K.data.avecs;
   const inner = (name, sub) => `<span class="ic">${ic('users')}</span><span class="t"><b>AVEC</b><span class="nm">${name}</span><span class="sub">${sub}</span></span>${ic('chev')}`;
-  if (!list.length) return `<div class="avec-main empty"><span class="ic">${ic('users')}</span><span class="t"><b>AVEC</b><span class="sub">Aucune AVEC sur ce téléphone. Touchez « Créer une AVEC ». Si l'animateur vous a envoyé un fichier, passez par « Autres accès » › « Recevoir une AVEC ».</span></span></div>`;
+  if (!list.length) return `<button class="avec-main" data-act="avecStart">${inner('Entrer mon AVEC', 'Touchez pour recevoir ou créer votre AVEC')}</button>`;
   const pick = list.length === 1 ? list[0] : list.find(a => a.id === lastAvecId());
   if (pick) return `<button class="avec-main" data-act="go" data-to="l.member" data-id="${pick.id}">${inner(esc(pick.name), esc(pick.village) + ' · touchez pour entrer')}</button>
     ${list.length > 1 ? `<button class="linkbtn" data-act="go" data-to="l.avec">Autre AVEC sur ce téléphone (${list.length})</button>` : ''}`;
   return `<button class="avec-main" data-act="go" data-to="l.avec">${inner('Choisir mon AVEC', list.length + ' AVEC sur ce téléphone')}</button>`;
 }
+/* téléphone encore vide : le bouton AVEC propose de recevoir l'AVEC (fichier de l'animateur) ou de la créer */
+ACT.avecStart = () => {
+  const canCreate = !(K.data.mode === 'prod' && K.data.orgs.length);
+  const row = (act, icon, title, sub) => `<button class="li" data-act="${act}"><span class="xl-ic">${ic(icon)}</span><span class="grow"><b>${title}</b><span class="small muted">${sub}</span></span>${ic('chev')}</button>`;
+  App.openSheet(`<h2>Mon AVEC</h2><p class="muted">Ce téléphone ne contient encore aucune AVEC.</p>
+    <div class="list">
+      ${row('receiveSheet', 'sync', 'Recevoir mon AVEC', 'L\'animateur ou l\'ancien téléphone du groupe vous a envoyé un fichier et un code')}
+      ${canCreate ? row('createAvec', 'plus', 'Créer une nouvelle AVEC', 'Avec l\'assemblée réunie : groupe, règlement, membres, bureau') : ''}
+    </div>
+    ${canCreate ? '' : '<p class="hint">Votre organisation crée les AVEC : demandez à l\'animateur de vous envoyer le fichier.</p>'}
+    <button class="btn ghost block" data-act="closeSheet">Fermer</button>`);
+};
 INP.findName = el => {
   const q = el.value.trim().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
   document.querySelectorAll('.li[data-name]').forEach(li => { li.hidden = !!q && !li.dataset.name.includes(q); });

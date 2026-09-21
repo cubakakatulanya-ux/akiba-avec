@@ -84,7 +84,7 @@ SCREENS['a.share'] = () => {
       ${line('= Bénéfice du cycle à partager', fc(plan.profit), true)}
       ${line('÷ Parts des membres', grp(plan.parts))}
       <div class="row between" style="border-top:1px solid var(--line);padding-top:10px"><span class="label">Une part vaut en moyenne</span><b class="num" style="font-family:var(--f-display);font-size:1.6rem">${fc(plan.value)}</b></div>
-      <p class="hint">Chaque membre reprend d'abord toute son épargne. Le bénéfice (${fc(plan.profit)}) est ensuite partagé selon l'épargne <b>et le temps</b> qu'elle a passé dans la caisse : un membre entré en cours de cycle ne prend pas le bénéfice gagné avant son arrivée. Achetée ${fc(pv)}, une part vaut en moyenne ${fc(plan.value)}, soit ${plan.value >= pv ? '+' : ''}${pct(plan.value / pv - 1)}. Ce qu'un membre doit encore (crédit, amendes) est retiré de sa part. La caisse sociale (${fc(st.socialFund)}) n'est pas partagée : elle reste au groupe pour le cycle suivant.</p>
+      <p class="hint">Chaque membre reprend d'abord toute son épargne. Le bénéfice (${fc(plan.profit)}) est ensuite partagé selon l'épargne <b>et le temps</b> qu'elle a passé dans la caisse : un membre entré en cours de cycle ne prend pas le bénéfice gagné avant son arrivée. Achetée ${fc(pv)}, une part vaut en moyenne ${fc(plan.value)}, soit ${plan.value >= pv ? '+' : ''}${pct(plan.value / pv - 1)}. Ce qu'un membre doit encore (crédit, amendes) est retiré de sa part. La caisse sociale (${fc(st.socialFund)}) n'est pas partagée : elle reste au groupe pour le cycle suivant. Un membre parti en cours de cycle a déjà repris son épargne ; le bénéfice gagné avec son argent reste au groupe.</p>
     </div>
     ${st.extDebt ? (plan.extShort ? `<div class="alert bad"><span style="width:22px;flex:none">${ic('alert')}</span><div><b>La caisse ne suffit pas pour rembourser le prêteur</b><span class="small">Il reste ${fc(st.extDebt)} à rendre, la caisse de crédit a ${fc(st.loanFund)}. Récupérez d'abord les crédits des membres.</span></div></div>`
       : `<div class="alert warn"><span style="width:22px;flex:none">${ic('building')}</span><div><b>Le prêteur est remboursé avant le partage</b><span class="small">${fc(st.extDebt)} sortent de la caisse de crédit pour solder le crédit extérieur, puis le reste est partagé.</span></div></div>`) : ''}
@@ -214,6 +214,7 @@ SCREENS['a.newCycle'] = () => {
       ${pickSel('ncC', 'Durée du cycle', [[6, '6 mois'], [9, '9 mois'], [12, '12 mois']], s.cycleMonths || 12)}
       ${pickSel('ncF', 'Amende d\'absence', [[200, '200 FC'], [500, '500 FC'], [1000, '1 000 FC']], s.fineAbsent)}
       ${pickSel('ncL', 'Amende de retard', [[100, '100 FC'], [200, '200 FC'], [500, '500 FC']], s.fineLate)}
+      ${pickSel('ncPn', 'Pénalité si un crédit est en retard', [[0, 'Aucune pénalité'], [2, '2 % par mois'], [5, '5 % par mois'], [10, '10 % par mois']], penRate(s))}
       ${pickSel('ncX', 'Crédit maximum', [[2, '2 × l\'épargne'], [3, '3 × l\'épargne'], [4, '4 × l\'épargne']], s.maxMult)}
       ${pickSel('ncM', 'Parts par réunion', [[3, '1 à 3 parts'], [5, '1 à 5 parts'], [10, '1 à 10 parts']], s.maxParts)}
       ${pickSel('ncQ', 'Rythme des réunions', [[7, 'Chaque semaine'], [14, 'Toutes les 2 semaines']], s.frequency || 7)}
@@ -228,7 +229,7 @@ ACT.saveNewCycle = () => {
   const g = id => +document.getElementById(id).value;
   const r = readRoles('nr'); if (!r) return;
   const ap = checkApprover(avec, 'nc', null); if (!ap) return;
-  Object.assign(avec.settings, { partValue: g('ncP'), socialFee: g('ncS'), rate: g('ncR'), maxMonths: g('ncD'), cycleMonths: g('ncC'), fineAbsent: g('ncF'), fineLate: g('ncL'), maxMult: g('ncX'), maxParts: g('ncM'), frequency: g('ncQ') });
+  Object.assign(avec.settings, { partValue: g('ncP'), socialFee: g('ncS'), rate: g('ncR'), maxMonths: g('ncD'), cycleMonths: g('ncC'), fineAbsent: g('ncF'), fineLate: g('ncL'), penaltyRate: g('ncPn'), maxMult: g('ncX'), maxParts: g('ncM'), frequency: g('ncQ') });
   avec.cycle.end = avec.cycle.start + avec.settings.cycleMonths * 30 * DAY;
   avec.cycle.rulesPending = false;
   applyRoles(avec, r);
@@ -415,7 +416,7 @@ SCREENS['a.more'] = () => {
       ${li('', 'cloud', 'Synchronisation', `${pending(avec)} écriture(s) à envoyer`, 'syncSheet')}
     </div>
     <section class="section"><h2>Règlement intérieur · cycle ${avec.cycle.n}</h2><div class="list">
-      ${[['Valeur d\'une part', fc(s.partValue)], ['Parts par réunion', '1 à ' + s.maxParts], ['Caisse sociale', fc(s.socialFee) + ' par réunion'], ['Intérêt du crédit', s.rate + ' % par mois'], ['Crédit maximum', s.maxMult + ' × l\'épargne'], ['Durée maximum du crédit', s.maxMonths + ' mois'], ['Amende absence / retard', fc(s.fineAbsent) + ' / ' + fc(s.fineLate)], ['Durée du cycle', (s.cycleMonths || 12) + ' mois'], ['Réunions', (s.meetingDay ? s.meetingDay + ', ' : '') + ((s.frequency || 7) === 14 ? 'toutes les 2 semaines' : 'chaque semaine')]]
+      ${[['Valeur d\'une part', fc(s.partValue)], ['Parts par réunion', '1 à ' + s.maxParts], ['Caisse sociale', fc(s.socialFee) + ' par réunion'], ['Intérêt du crédit', s.rate + ' % par mois'], ['Crédit maximum', s.maxMult + ' × l\'épargne'], ['Durée maximum du crédit', s.maxMonths + ' mois'], ['Amende absence / retard', fc(s.fineAbsent) + ' / ' + fc(s.fineLate)], ['Pénalité de retard de crédit', penRate(s) ? penRate(s) + ' % par mois' : 'aucune'], ['Durée du cycle', (s.cycleMonths || 12) + ' mois'], ['Réunions', (s.meetingDay ? s.meetingDay + ', ' : '') + ((s.frequency || 7) === 14 ? 'toutes les 2 semaines' : 'chaque semaine')]]
         .map(([k, v]) => `<div class="li"><span class="grow">${k}</span><b class="num">${v}</b></div>`).join('')}
     </div><p class="hint">Les règles sont votées par l'assemblée au début de chaque cycle et ne changent pas en cours de cycle.</p></section>
     <section class="section"><h2>Accompagnement</h2>

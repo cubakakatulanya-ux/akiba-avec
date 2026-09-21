@@ -330,6 +330,7 @@ SCREENS['a.ext'] = () => {
     <section class="section"><h2>Le chemin</h2><div class="list">${steps}</div></section>
     <section class="section"><h2>Demandes</h2>
       <div class="list">${reqRows || '<div class="li muted">Aucune demande notée pour le moment</div>'}</div>
+      <p class="hint">Les demandes sont des notes de suivi : elles ne déplacent pas d'argent. L'argent reçu, les frais, la garantie et les remboursements, eux, sont écrits dans le journal scellé.</p>
       ${bureau ? `<div class="grid2"><button class="btn ghost" data-act="extReqSheet">${ic('clip')} Noter une demande</button>
         <button class="btn ghost" data-act="go" data-to="a.imf">${ic('chart')} Préparer le dossier</button></div>` : ''}</section>
     ${extLoansSection(avec, st)}

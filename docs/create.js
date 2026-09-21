@@ -13,7 +13,7 @@ function cDraft(p) {
     App.cdraft = {
       from, step: 1, mode: 'new', names: '', members: [], roles: {}, nextId: 0, editing: null,
       g: { name: '', province: '', territoire: '', entite: '', secteur: '', groupement: '', village: '', animId: '', meetingDay: 'Samedi', frequency: 7, createdOn: isoDay(Date.now()) },
-      r: { partValue: 1000, maxParts: 5, socialFee: 500, rate: 10, maxMult: 3, maxMonths: 3, fineAbsent: 500, fineLate: 200, cycleMonths: 12, cycleStart: isoDay(Date.now()) },
+      r: { partValue: 1000, maxParts: 5, socialFee: 500, rate: 10, maxMult: 3, maxMonths: 3, fineAbsent: 500, fineLate: 200, penaltyRate: 10, cycleMonths: 12, cycleStart: isoDay(Date.now()) },
       rep: { social: '', credit: '', rows: {} }
     };
   }
@@ -71,6 +71,7 @@ const C_RENDER = {
         <div class="field"><label for="crB">Début du cycle</label><input id="crB" type="date" class="input" value="${r.cycleStart}"></div>
         ${pickSel('crF', 'Amende d\'absence', [[200, '200 FC'], [500, '500 FC'], [1000, '1 000 FC']], r.fineAbsent)}
         ${pickSel('crL', 'Amende de retard', [[100, '100 FC'], [200, '200 FC'], [500, '500 FC']], r.fineLate)}
+        ${pickSel('crPn', 'Pénalité si un crédit est en retard', [[0, 'Aucune pénalité'], [2, '2 % par mois'], [5, '5 % par mois'], [10, '10 % par mois']], r.penaltyRate != null ? r.penaltyRate : r.rate)}
       </div>
       <div class="tip" id="crEx">${exampleHtml(r)}</div>
     </section>`;
@@ -155,7 +156,7 @@ function repriseForm(d) {
 
 function readStep(step, d) {
   if (step === 1 && fval('cgN') !== null) Object.assign(d.g, { name: fval('cgN').trim(), ...readGeo('cg'),animId: fval('cgA') || '', meetingDay: fval('cgJ'), frequency: +fval('cgQ'), createdOn: fval('cgO') || d.g.createdOn });
-  if (step === 2 && fval('crP') !== null) Object.assign(d.r, { partValue: +fval('crP'), maxParts: +fval('crX'), socialFee: +fval('crS'), cycleMonths: +fval('crC'), rate: +fval('crR'), maxMult: +fval('crM'), maxMonths: +fval('crD'), cycleStart: fval('crB') || d.r.cycleStart, fineAbsent: +fval('crF'), fineLate: +fval('crL') });
+  if (step === 2 && fval('crP') !== null) Object.assign(d.r, { partValue: +fval('crP'), maxParts: +fval('crX'), socialFee: +fval('crS'), cycleMonths: +fval('crC'), rate: +fval('crR'), maxMult: +fval('crM'), maxMonths: +fval('crD'), cycleStart: fval('crB') || d.r.cycleStart, fineAbsent: +fval('crF'), fineLate: +fval('crL'), penaltyRate: +fval('crPn') });
   if (step === 4 && fval('cbP') !== null) d.roles = { P: fval('cbP'), S: fval('cbS'), T: fval('cbT'), C1: fval('cbC1'), C2: fval('cbC2'), K1: fval('cbK1'), K2: fval('cbK2'), K3: fval('cbK3') };
   if (step === 5 && fval('rsS') !== null) {
     d.rep.social = fval('rsS'); d.rep.credit = fval('rsC');
@@ -302,7 +303,7 @@ ACT.cCreate = () => {
     province: g.province, entite: g.entite, secteur: g.secteur, groupement: g.groupement,
     orgId: d.from === 'login' ? null : u.orgId, animId: d.from === 'org' ? g.animId : d.from === 'anim' ? u.id : null,
     createdAt: fromIso(g.createdOn), cycle: { n: 1, start, end: start + r.cycleMonths * 30 * DAY }, cycles: [],
-    settings: { partValue: r.partValue, maxParts: r.maxParts, socialFee: r.socialFee, rate: r.rate, maxMult: r.maxMult, maxMonths: r.maxMonths, fineAbsent: r.fineAbsent, fineLate: r.fineLate, cycleMonths: r.cycleMonths, meetingDay: g.meetingDay, frequency: g.frequency },
+    settings: { partValue: r.partValue, maxParts: r.maxParts, socialFee: r.socialFee, rate: r.rate, maxMult: r.maxMult, maxMonths: r.maxMonths, fineAbsent: r.fineAbsent, fineLate: r.fineLate, penaltyRate: r.penaltyRate != null ? r.penaltyRate : r.rate, cycleMonths: r.cycleMonths, meetingDay: g.meetingDay, frequency: g.frequency },
     members, meetings: [], tx: [], visits: [], lastSync: 0
   };
   const rescue = Array.from({ length: 6 }, rescueCode);

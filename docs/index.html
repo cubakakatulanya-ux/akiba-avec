@@ -72,8 +72,6 @@ button{cursor:pointer}
 .avec-main .nm{font-weight:800;font-size:1.08rem;margin-top:4px;overflow-wrap:anywhere}
 .avec-main .sub{font-size:.86rem;opacity:.8;line-height:1.35}
 .avec-main>svg{width:28px;height:28px;flex:none}
-.avec-main.empty{background:var(--surface);color:var(--ink);border:1.5px dashed var(--line);box-shadow:none}
-.avec-main.empty .ic{background:var(--maize-soft);color:var(--warn)}
 .trainrow{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
 .tstep{height:40px;border-radius:10px;border:1.5px solid var(--line);background:var(--surface);font-family:var(--f-display);font-weight:800;color:var(--ink-2)}
 .tstep.done{background:var(--brand);border-color:var(--brand);color:var(--brand-ink)}
@@ -506,11 +504,34 @@ button.li:active{background:var(--surface-2)}
 .main.login .quick{min-height:72px;font-size:.8rem}
 .main.login .demo{padding:12px 14px;gap:6px}
 .loginfoot{padding:6px 0 2px;text-align:center;line-height:1.4}
+/* accueil ajusté à la hauteur du téléphone : tout tient sur un écran, du petit Android au grand */
+.hero.tight{padding:clamp(50px,7.6vh,56px) 18px clamp(16px,3vh,24px)}
+.hero.tight .langbtn{top:10px;right:12px;padding:5px 11px}
+.hero.tight h1{font-size:clamp(2.1rem,6.2vh,2.9rem)}
+.hero.tight .label{font-size:.66rem}
+.main.login{padding-top:clamp(10px,2vh,16px)}
+.main.login .avec-main{padding:clamp(12px,2.2vh,20px) clamp(14px,2.4vh,20px)}
+.main.login .avec-main .ic{width:clamp(44px,7vh,60px);height:clamp(44px,7vh,60px);border-radius:16px}
+.main.login .avec-main .ic svg{width:clamp(26px,4vh,34px);height:clamp(26px,4vh,34px)}
+.main.login .avec-main .t b{font-size:clamp(1.55rem,4.3vh,2rem)}
+.main.login .quick{min-height:clamp(54px,9vh,72px);padding:8px 6px}
+@media (max-height:720px){
+  .hero.tight p{font-size:.88rem}
+  .loginfoot{display:none}
+  .main.login{gap:9px}
+  .main.login .ticker{padding:6px 0}
+  .main.login .demo .hint{display:none}
+  .appfoot{padding:8px 16px 10px}
+}
+@media (max-height:620px){
+  .hero.tight .label{display:none}
+  .hero.tight p{display:none}
+}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 <style>html,body{margin:0}</style>
 </head><body>
-<script>window.KITABU_PWA = true; window.KITABU_VERSION = 'akiba-202609201747';</script>
+<script>window.KITABU_PWA = true; window.KITABU_VERSION = 'akiba-202609211053';</script>
 
 <div id="app"></div>
 <script src="core.js"></script>

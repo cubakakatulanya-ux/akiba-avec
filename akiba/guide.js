@@ -27,7 +27,7 @@ const GUIDE = [
     <p>Choisissez « Groupe déjà en cours » et recopiez le cahier : parts achetées par chaque membre, reste à payer sur chaque crédit, caisse sociale, puis l'argent compté dans la caisse de crédit. Akiba enregistre tout dans une séance « Reprise du cahier », scellée. S'il manque de l'argent par rapport au cahier, l'écart est signalé.</p>
     <div class="tip">À la fin, Akiba affiche <b>un code secret différent pour chaque membre</b>, une seule fois. Recopiez-les sur de petits papiers et donnez-les en main propre.</div>` },
   { id: 'connexion', icon: 'users', t: 'Comment une AVEC se connecte', b: `
-    <p>L'écran d'accueil est fait pour le groupe : le grand bouton jaune <b>AVEC</b> mène directement aux noms des membres. Les accès de l'animateur, de l'organisation et de l'administrateur, ainsi que « Recevoir une AVEC », sont rangés sous le lien <b>« Animateur, organisation, administrateur… »</b>, en bas de l'écran.</p>
+    <p>L'écran d'accueil est fait pour le groupe et tient sur un seul écran, quel que soit le téléphone. Le grand bouton jaune <b>AVEC</b> mène directement aux noms des membres. Sur un téléphone encore vide, il devient <b>Entrer mon AVEC</b> et propose de <b>recevoir</b> l'AVEC (fichier et code envoyés par l'animateur) ou de la <b>créer</b>. Les accès de l'animateur, de l'organisation et de l'administrateur, ainsi que « Recevoir une AVEC », sont rangés sous le lien <b>« Animateur, organisation, administrateur… »</b>, en bas de l'écran.</p>
     <h4>L'AVEC a été créée sur son propre téléphone</h4>
     <ol>
       <li>Ouvrir Akiba et toucher le grand bouton jaune <b>AVEC</b>. S'il n'y a qu'une AVEC sur le téléphone (ou si c'est la dernière utilisée), son nom est déjà affiché.</li>
@@ -74,8 +74,9 @@ const GUIDE = [
     <div class="formula">Crédit 50 000 FC · 10 % par mois · 3 mois<br>Intérêt = 50 000 × 10 % × 3 = 15 000 FC<br>À rembourser = 65 000 FC, soit environ 21 700 FC par mois</div>
     <h4>Demandes non servies : chacun son tour</h4>
     <p>Quand la caisse n'a pas assez d'argent pour servir tout le monde, le bureau touche <b>Noter une demande non servie</b> à l'étape « Crédits ». Ces membres apparaissent en haut de l'étape à la réunion suivante, <b>dans l'ordre où ils se sont inscrits</b> : le premier inscrit est servi le premier. Le bouton <b>Servir</b> ouvre la demande avec le montant déjà écrit ; dès que le crédit est accordé, le nom sort de la liste.</p>
+    <p><b>Agent chargé de la demande</b> : en notant la demande, le bureau choisit le membre du bureau qui la suit. Quand elle est servie, c'est <b>son code</b> qui valide le crédit (sauf s'il tient lui-même le téléphone ; un autre membre du bureau valide alors). La liste d'attente repart à zéro au partage de fin de cycle.</p>
     <h4>Pénalité de retard</h4>
-    <p>Un crédit qui dépasse sa date de fin <b>continue de coûter l'intérêt du groupe</b>. Akiba calcule la pénalité toute seule : <b>reste à rembourser × taux du groupe × nombre de mois commencés de retard</b>, arrondie à 100 FC. Elle est proposée à l'étape « Amendes », cochée par défaut, et le bureau peut la retirer si l'assemblée l'a décidé (maladie, deuil…). Une fois enregistrée, elle entre dans la caisse comme une amende et apparaît dans le carnet du membre.</p>
+    <p>Un crédit qui dépasse sa date de fin paie une <b>pénalité de retard</b>, dont le taux est voté dans le règlement (par défaut, le taux du crédit ; « aucune pénalité » est possible). Akiba la calcule toute seule : <b>reste à rembourser × taux de pénalité × mois commencés de retard</b>, arrondie à 100 FC. <b>Un mois déjà payé ne l'est jamais deux fois</b> : Akiba lit dans le journal scellé les mois déjà facturés. Elle est proposée à l'étape « Amendes », cochée par défaut, et le bureau peut la retirer si l'assemblée l'a décidé (maladie, deuil…). Une fois enregistrée, elle entre dans la caisse comme une amende et apparaît dans le carnet du membre.</p>
     <div class="formula">Exemple : reste 30 000 FC · 10 % par mois · 45 jours de retard (2 mois commencés)<br>Pénalité = 30 000 × 10 % × 2 = 6 000 FC</div>
     <h4>Solder un crédit avant la fin</h4>
     <p>Un membre peut rembourser tout ce qui reste avant l'échéance : à l'étape « Remboursements », touchez <b>Solder</b> à côté de son nom. Akiba écrit le reste dû en entier ; le crédit passe aussitôt en « soldé » et le membre peut redemander un crédit.</p>
@@ -95,7 +96,7 @@ const GUIDE = [
       <li><b>Décider en assemblée générale</b> : montant, prêteur, durée. Akiba enregistre la date de l'AG et le nombre de voix pour et contre.</li>
       <li><b>Préparer le dossier</b> : <b>Plus › Dossier pour une IMF</b> écrit un fichier Excel à partir du cahier scellé (ancienneté, présence, épargne, remboursements à temps, PAR, écarts de caisse). Jamais de téléphone ni d'adresse ; les noms sont remplacés par « Membre 1, Membre 2… » si l'assemblée le préfère.</li>
       <li><b>Déposer la demande</b> : notez-la dans l'écran du crédit extérieur (prêteur, montant, durée). Elle reste « Déposée » jusqu'à la réponse.</li>
-      <li><b>Réponse de l'IMF</b> : marquez <b>Accordée</b> ou <b>Refusée</b> pour garder la trace de la démarche.</li>
+      <li><b>Réponse de l'IMF</b> : marquez <b>Accordée</b> ou <b>Refusée</b> pour garder la trace de la démarche. Ces demandes sont des notes de suivi, sans argent : seules les étapes qui déplacent de l'argent sont écrites dans le journal scellé.</li>
       <li><b>Recevoir l'argent en réunion</b> : étape « Crédits » › <b>Recevoir un crédit</b>. L'argent est compté devant tous, validé par un 2ᵉ membre du bureau, et entre dans la <b>caisse de crédit</b>.</li>
       <li><b>Payer les frais</b> : adhésion, dossier, assurance… Ils sortent de la caisse et sont comptés dans le coût du crédit.</li>
       <li><b>Rembourser chaque mois</b> : étape « Crédits » › <b>Rembourser le prêteur</b>. Akiba affiche l'échéance conseillée, ce qui reste, et prévient en cas de retard.</li>
@@ -207,6 +208,7 @@ const GUIDE = [
     <h4>Le temps compte, pour que personne ne mange la part des autres</h4>
     <p>Chaque membre <b>reprend d'abord toute son épargne</b>. Le bénéfice (intérêts et amendes gagnés pendant le cycle) est ensuite partagé selon l'épargne <b>et le temps</b> qu'elle a passé dans la caisse, compté en « francs × jours ». Un membre entré en cours de cycle garde donc tout son argent, mais ne touche pas le bénéfice gagné avant son arrivée.</p>
     <div class="formula">Exemple : bénéfice 180 000 FC<br>Kavira, 60 000 FC épargnés depuis 12 mois → poids fort<br>Sifa, 60 000 FC épargnés depuis 2 mois → poids six fois plus faible<br>Chacune reprend ses 60 000 FC, mais Kavira reçoit six fois plus de bénéfice</div>
+    <p>Un membre qui <b>quitte le groupe en cours de cycle</b> reprend son épargne ce jour-là, sans bénéfice : le bénéfice gagné avec son argent reste au groupe, et il ne figure plus dans le partage.</p>
     <p>Le tableau du partage montre, pour chaque membre : ses parts, son épargne, son bénéfice, ce qui est retenu (crédit ou amende) et ce qu'il reçoit. Si le groupe a un crédit extérieur, le prêteur est remboursé avant tout partage.</p>
     <h4>La séance de partage</h4>
     <ol>

@@ -121,6 +121,7 @@ const ICONS = {
   eye: '<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
   clip: '<rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3h6v1M9 10h6M9 14h6M9 18h3"/>'
 };
+const penRate = s => (s.penaltyRate != null ? s.penaltyRate : s.rate);   // taux de pénalité de retard, par mois
 const ic = (n, cls = '') => `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[n] || ''}</svg>`;
 
 /* bande défilante : { icon, label, value } ou simple texte ; le texte est toujours échappé */
@@ -203,7 +204,7 @@ function stats(avec, opt = {}) {
     l.daysLate = l.status === 'retard' ? Math.floor((now - l.dueDate) / DAY) : 0;
     // un crédit en retard continue de coûter l'intérêt du groupe, par mois commencé
     l.monthsLate = l.status === 'retard' ? Math.ceil(l.daysLate / 30) : 0;
-    l.penalty = l.monthsLate ? Math.round(l.remaining * s.rate / 100 * l.monthsLate / 100) * 100 : 0;
+    l.penalty = l.monthsLate ? Math.round(l.remaining * penRate(s) / 100 * l.monthsLate / 100) * 100 : 0;
     if (mem[l.memberId]) mem[l.memberId].loans.push(l);
     return l;
   }).sort((a, b) => b.ts - a.ts);
@@ -296,6 +297,7 @@ function migrate(d) {
     if (!a.trainings || typeof a.trainings !== 'object') a.trainings = {};
     a.status = a.status || 'active';
     a.settings = Object.assign({ partValue: 1000, maxParts: 5, socialFee: 500, rate: 10, maxMult: 3, maxMonths: 3, fineAbsent: 500, fineLate: 200, cycleMonths: 12, frequency: 7 }, a.settings || {});
+    if (a.settings.penaltyRate == null) a.settings.penaltyRate = a.settings.rate;   // pénalité de retard : par défaut, le taux du crédit
     a.cycle = a.cycle || { n: 1, start: a.createdAt || Date.now() };
     if (!a.cycle.end) a.cycle.end = a.cycle.start + a.settings.cycleMonths * 30 * DAY;
     if (!a.requestCode) a.requestCode = randCode(6);
