@@ -492,11 +492,13 @@ button.li:active{background:var(--surface-2)}
 .hero.tight h1{font-size:2.9rem;margin-top:2px}
 .hero.tight p{font-size:.95rem;max-width:30ch;margin-top:4px}
 .hero.tight .ledger{width:150px;right:-18px;top:-6px;opacity:.13}
-.main.login{gap:12px;padding-bottom:10px;justify-content:space-between}
+.main.login{gap:12px;padding-bottom:10px;flex:0 0 auto}
 .main.login .quicks{gap:10px}
 .main.login .quick{min-height:72px;font-size:.8rem}
 .main.login .demo{padding:12px 14px;gap:6px}
 .loginfoot{padding:6px 0 2px;text-align:center;line-height:1.4}
+/* accueil : le bandeau vert absorbe la hauteur en trop, jamais de blanc entre les blocs */
+.shell.home .hero.tight{flex:1 0 auto;max-height:52vh;display:flex;flex-direction:column;justify-content:center}
 /* accueil ajusté à la hauteur du téléphone : tout tient sur un écran, du petit Android au grand */
 .hero.tight{padding:clamp(50px,7.6vh,56px) 18px clamp(16px,3vh,24px)}
 .hero.tight .langbtn{top:10px;right:12px;padding:5px 11px}

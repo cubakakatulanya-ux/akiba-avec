@@ -467,12 +467,12 @@ function waitBlock(avec, m, st) {
     if (!x || x.left) return '';
     const absent = m.presence[x.id] === 'A';
     const lim = loanLimit(avec, st, x.id);
-    return `<div class="mrow">${avatar(x)}<div class="grow"><b>${i + 1}. ${esc(x.name)}</b><span class="small muted">Demande ${fc(w.amount)} · notée le ${fdate(w.ts)}${w.agentId ? ' · suivie par ' + esc((memberOf(avec, w.agentId) || {}).name || '—') : ''}${absent ? ' · absent aujourd\'hui' : lim.max ? '' : ' · ' + esc(lim.why.toLowerCase())}</span></div>
-      <div class="row" style="gap:6px"><button class="btn sm brand" data-act="creditSheet" data-mid="${x.id}" data-amount="${w.amount}" data-agent="${w.agentId || ''}" ${absent || !lim.max ? 'disabled' : ''}>Servir</button>
+    return `<div class="mrow">${avatar(x)}<div class="grow"><b>${i + 1}. ${esc(x.name)}</b><span class="small muted">Demande ${fc(w.amount)} · notée le ${fdate(w.ts)}${absent ? ' · absent aujourd\'hui' : lim.max ? '' : ' · ' + esc(lim.why.toLowerCase())}</span></div>
+      <div class="row" style="gap:6px"><button class="btn sm brand" data-act="creditSheet" data-mid="${x.id}" data-amount="${w.amount}" ${absent || !lim.max ? 'disabled' : ''}>Servir</button>
       <button class="iconbtn" style="color:var(--bad)" data-act="waitDrop" data-id="${w.id}" aria-label="Retirer la demande de ${esc(x.name)}">${ic('x')}</button></div></div>`;
   }).join('');
   return `<section class="section"><h3>Demandes en attente ${q.length ? `<span class="chip warn">${q.length}</span>` : ''}</h3>
-    <p class="small muted">Les membres qui n'ont pas été servis aux réunions passées sont prioritaires, dans l'ordre où ils se sont inscrits. Chaque demande est suivie par un membre du bureau, qui la valide avec son code. La liste repart à zéro au partage.</p>
+    <p class="small muted">Les membres qui n'ont pas été servis aux réunions passées sont prioritaires, dans l'ordre où ils se sont inscrits. La liste repart à zéro au partage.</p>
     <div class="list">${rows || '<div class="li muted">Aucune demande en attente</div>'}</div>
     <button class="btn ghost block" data-act="waitSheet">${ic('clip')} Noter une demande non servie</button></section>`;
 }
@@ -485,17 +485,13 @@ ACT.waitSheet = () => {
   App.openSheet(`<h2>Demande non servie</h2><p class="muted">La caisse n'a pas assez d'argent aujourd'hui ? Notez la demande : ce membre passera en premier à la prochaine réunion.</p>
     <div class="field"><label for="wtM">Membre</label><select id="wtM" class="input">${memberOptions(here)}</select></div>
     <div class="field"><label for="wtA">Montant demandé (FC)</label><input id="wtA" class="input num" inputmode="numeric" placeholder="0"></div>
-    <div class="field"><label for="wtAg">Agent chargé de la demande</label><select id="wtAg" class="input">${memberOptions(bureauOf(avec))}</select></div>
-    <p class="hint">Ce membre du bureau étudie la demande et devra la valider avec son code quand elle sera servie.</p>
     <button class="btn primary block xl" data-act="saveWait">${ic('check')} Inscrire la demande</button>`);
 };
 ACT.saveWait = () => {
   const { avec, me } = cur();
   const mid = document.getElementById('wtM').value, amount = parseAmt(document.getElementById('wtA').value);
   if (!amount) return App.toast('Écrivez le montant demandé');
-  const agentId = (document.getElementById('wtAg') || {}).value || me.id;
-  if (agentId === mid) return App.toast('Le demandeur ne peut pas suivre sa propre demande');
-  avec.waitlist.push({ id: uid(), memberId: mid, amount, agentId, ts: Date.now(), by: me.id });
+  avec.waitlist.push({ id: uid(), memberId: mid, amount, ts: Date.now(), by: me.id });
   DB.save(); App.closeSheet(); App.toast(`Demande de ${memberOf(avec, mid).name} inscrite`);
 };
 ACT.waitDrop = d => {
@@ -518,10 +514,6 @@ ACT.creditSheet = (d = {}) => {
     <button class="btn primary block xl" data-act="saveCredit">Accorder le crédit</button>`);
   if (d.mid) { const sel = document.getElementById('crM'); if ([...sel.options].some(o => o.value === d.mid)) sel.value = d.mid; }
   if (d.amount) document.getElementById('crA').value = d.amount;
-  if (d.agent && d.agent !== me.id) {                                  // demande en attente : c'est son agent qui valide
-    const ap = document.getElementById('crAp');
-    if (ap && [...ap.options].some(o => o.value === d.agent)) { ap.value = d.agent; ap.disabled = true; }
-  }
   INP.crCalc();
 };
 INP.crCalc = () => {
@@ -549,8 +541,6 @@ ACT.saveCredit = () => {
   if (!purpose) return App.toast('Écrivez à quoi servira le crédit');
   if (Date.now() + mo * 28 * DAY > avec.cycle.end) return App.toast(`Le crédit doit être remboursé avant la fin du cycle (${fdate(avec.cycle.end)}). Choisissez une durée plus courte.`);
   const ap = checkApprover(avec, 'cr', mid); if (!ap) return;
-  const wait = (avec.waitlist || []).find(w => w.memberId === mid);
-  if (wait && wait.agentId && wait.agentId !== me.id && ap.id !== wait.agentId) return App.toast(`Cette demande est suivie par ${(memberOf(avec, wait.agentId) || {}).name || 'son agent'} : c'est son code qui la valide`);
   appendTx(avec, { meetingId: m.id, type: 'CREDIT', memberId: mid, amount: a, months: mo, rate: avec.settings.rate, note: `${purpose} · 2e validation ${ap.name}`, by: me.id });
   const wasWaiting = waitServed(avec, mid);
   DB.save(); App.closeSheet(); App.toast(`Crédit de ${fc(a)} accordé à ${memberOf(avec, mid).name}${wasWaiting ? ' (demande en attente servie)' : ''}`);

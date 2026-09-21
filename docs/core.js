@@ -579,6 +579,8 @@ function goBack(d = {}) {
   while (App.hist.length) { const e = App.hist.pop(); if (backOk(e)) return App.go(e.screen, e.params, true); }
   const to = d.to && d.to !== App.screen ? d.to : homeScreen();
   if (to !== App.screen) App.go(to, clean(d), true);
+  else if (K.session) ACT.logout();                       // écran d'accueil d'un compte : retour = quitter vers l'accueil
+  else if (App.screen !== 'login') App.go('login', {}, true);
 }
 const canGoBack = () => App.screen !== homeScreen() || App.hist.some(backOk);
 ACT.back = d => goBack(d);
@@ -609,7 +611,9 @@ document.addEventListener('input', e => {
 const avatar = m => `<span class="av ${m.sex === 'F' ? 'f' : ''}">${esc(initials(m.name))}</span>`;
 const stampsHtml = (n, max = 5) => `<span class="stamps" aria-label="${n} parts">${Array.from({ length: max }, (_, i) => `<span class="${i < n ? 'on' : ''}"></span>`).join('')}</span>`;
 const topbar = (title, sub, left = '', right = '') => {
-  if (!left && canGoBack()) left = `<button class="iconbtn" data-act="back" aria-label="Retour">${ic('back')}</button>`;
+  // flèche retour et bouton de déconnexion sur tous les écrans à barre verte
+  if (!left) left = `<button class="iconbtn" data-act="back" aria-label="Retour">${ic('back')}</button>`;
+  if (K.session && !right.includes('data-act="logout"')) right += `<button class="iconbtn" data-act="logout" aria-label="Se déconnecter">${ic('logout')}</button>`;
   return `<header class="topbar">${left}<div class="t"><b>${esc(title)}</b><span>${sub}</span></div>${right}</header>`;
 };
 const backBtn = (to, extra = '') => `<button class="iconbtn" data-act="back" data-to="${to}" ${extra} aria-label="Retour">${ic('back')}</button>`;
