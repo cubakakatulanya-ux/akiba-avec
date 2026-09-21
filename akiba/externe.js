@@ -171,6 +171,7 @@ function imfIndicators(avec) {
 SCREENS['a.imf'] = () => {
   const { avec, me } = cur();
   const i = imfIndicators(avec), st = i.st, bureau = isBureau(me);
+  const qd = dataQuality(avec, st, chainOf(avec)), rd = imfReady(avec, st, chainOf(avec), qd);
   const kpi = (l, v, s) => `<div class="kpi"><span>${l}</span><b class="num">${v}</b><span>${s}</span></div>`;
   const shares = avec.imfShares || [];
   return `<div class="shell">${topbar('Dossier pour une IMF', esc(avec.name), backBtn('a.more'), syncPill(avec))}<main class="main">
@@ -185,6 +186,8 @@ SCREENS['a.imf'] = () => {
       ${kpi('Portefeuille à risque', pct(st.par), fck(st.lateAmt) + ' en retard')}
       ${kpi('Écarts de caisse', st.ecarts.length, i.chainOk ? 'journal intact' : 'journal altéré')}
     </div>
+    ${readyCard(rd)}
+    ${qualityCard(qd)}
     ${st.extList.length ? `<div class="alert ${st.extDebt ? 'warn' : 'good'}">${icSpan('building')}<div><b>Crédit extérieur</b><span class="small">${st.extList.length} crédit(s) · reste ${fc(st.extDebt)} · frais payés ${fc(st.sum.EXT_FEE)}${st.sum.EXT_GUAR ? ` · garantie ${fc(st.sum.EXT_GUAR)}` : ''}</span></div></div>` : ''}
     ${bureau ? `<section class="card stack"><h2>Préparer le fichier</h2>
       <p class="small">Contenu : profil du groupe, indicateurs par cycle, réunions, crédits internes, crédits extérieurs, membres.

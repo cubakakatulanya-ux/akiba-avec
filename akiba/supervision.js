@@ -200,6 +200,7 @@ SCREENS['n.avec'] = p => {
       <div class="kpi"><span>Membres</span><b class="num">${st.activeCount}</b><span>${st.women} femmes</span></div>
     </div>
     <div class="alert ${ch.ok ? 'good' : 'bad'}"><span style="width:22px;flex:none">${ic('shield')}</span><div><b>${ch.ok ? 'Journal intact' : 'Journal altéré'}</b><span class="small">${ch.ok ? `${avec.tx.length} écritures vérifiées par empreinte` : esc(ch.reason)}</span></div></div>
+    ${(q => readyCard(imfReady(avec, st, ch, q)) + qualityCard(q))(dataQuality(avec, st, ch))}
     <section class="section"><h2>Réunions reçues</h2><div class="list">${st.meetings.slice(-6).reverse().map(m => meetingLi(avec, m)).join('') || '<div class="li muted">Aucune</div>'}</div></section>
     ${late.length ? `<section class="section"><h2>Crédits en retard</h2><div class="list">${late.map(l => loanLi(avec, l)).join('')}</div></section>` : ''}
     ${trainingBlock(avec)}
@@ -240,6 +241,7 @@ SCREENS['o.home'] = p => {
       <div class="row" style="flex-wrap:wrap;gap:6px">
         <button class="btn sm ${p.anim ? 'ghost' : 'brand'}" data-act="go" data-to="o.home">Toutes</button>
         ${anims.map(a => `<button class="btn sm ${p.anim === a.id ? 'brand' : 'ghost'}" data-act="go" data-to="o.home" data-anim="${a.id}">${esc(a.name)}</button>`).join('')}
+        <button class="btn sm brand" data-act="go" data-to="o.impact">${ic('chart')} Impact</button>
         <button class="btn sm ghost" data-act="go" data-to="t.home">${ic('clip')} Formation</button>
         <button class="btn sm ghost" data-act="exportSheet" data-anim="${esc(p.anim || '')}">${ic('chart')} Excel</button>
         <button class="btn sm ghost" data-act="go" data-to="guide">${ic('book')} Guide</button>
@@ -263,7 +265,7 @@ SCREENS['o.home'] = p => {
       <div class="stack">
         <h2>AVEC</h2>
         <div class="tablewrap"><table>
-          <thead><tr><th></th><th>AVEC</th><th>Animateur</th><th class="r">Membres</th><th class="r">Épargne</th><th class="r">Crédits</th><th class="r">PAR</th><th>Formation</th><th>Cycle</th><th>Dernière réunion</th><th>Reçu</th></tr></thead>
+          <thead><tr><th></th><th>AVEC</th><th>Animateur</th><th class="r">Membres</th><th class="r">Épargne</th><th class="r">Crédits</th><th class="r">PAR</th><th>Formation</th><th>Données</th><th>IMF</th><th>Cycle</th><th>Dernière réunion</th><th>Reçu</th></tr></thead>
           <tbody>${rows.sort((a, b) => LVL[a.h.level] - LVL[b.h.level]).map(r => `<tr class="click" data-act="go" data-to="n.avec" data-id="${r.avec.id}">
             <td><span class="health ${r.h.level}"></span></td>
             <td><b>${esc(r.avec.name)}</b><br><span class="small muted">${placeShort(r.avec)}</span></td>
@@ -273,6 +275,7 @@ SCREENS['o.home'] = p => {
             <td class="r num">${fc(r.st.outstanding)}</td>
             <td class="r num" style="color:${r.st.par > .1 ? 'var(--bad)' : 'inherit'}">${pct(r.st.par)}</td>
             <td>${trainingChip(r.avec)}</td>
+            ${(q => `<td>${qualityChip(q)}</td><td>${readyChip(imfReady(r.avec, r.st, r.ch, q))}</td>`)(dataQuality(r.avec, r.st, r.ch))}
             <td>n°${r.avec.cycle.n} · fin ${fdate(cycleEnd(r.avec))}</td>
             <td>${r.st.last ? ago(r.st.last.date) : '—'}</td>
             <td>${pending(r.avec) ? `<span class="chip warn">${ago(r.avec.lastSync)}</span>` : '<span class="chip good">à jour</span>'}</td></tr>`).join('')}</tbody>

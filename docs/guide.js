@@ -3,7 +3,13 @@
 
 const GUIDE = [
   { id: 'bref', icon: 'book', t: 'Akiba en bref', b: `
-    <p>Akiba remplace les cahiers de l'AVEC : le cahier de caisse, les carnets des membres, le registre des crédits et le procès-verbal des réunions. Tout est calculé par le téléphone, sans erreur de calcul, et <b>marche sans réseau</b>.</p>
+    <p>Akiba est une <b>infrastructure numérique hors ligne</b>, conçue autour des pratiques réelles des AVEC rurales. Elle remplace les cahiers du groupe (caisse, carnets des membres, registre des crédits, procès-verbal) et tient trois promesses :</p>
+    <ol>
+      <li><b>Des opérations quotidiennes transformées en données fiables et vérifiables.</b> La réunion suit l'ordre du cahier, sans réseau. Chaque franc est écrit au moment où il bouge, dans un journal scellé où toute modification se voit.</li>
+      <li><b>Une supervision moins coûteuse.</b> L'animateur et l'organisation reçoivent les chiffres à distance, voient les alertes et se déplacent là où il le faut.</li>
+      <li><b>Une passerelle vers le système financier formel.</b> L'historique vérifiable du groupe, l'indice de qualité des données et l'indicateur « prête pour une IMF » ouvrent la discussion avec une institution de microfinance.</li>
+    </ol>
+    <p>Tout est calculé par le téléphone, sans erreur de calcul, et <b>marche sans réseau</b>.</p>
     <h4>Qui utilise Akiba ?</h4>
     <ul>
       <li><b>Le bureau de l'AVEC</b> (président, secrétaire, trésorier) tient les réunions et enregistre l'argent.</li>
@@ -111,6 +117,30 @@ const GUIDE = [
     <h4>Effet sur la valeur des parts</h4>
     <p>Tant que la dette n'est pas remboursée, Akiba la <b>retire</b> de la valeur d'une part : personne ne partage de l'argent emprunté. L'écran <b>Comment l'argent circule</b> montre, en chiffres réels, ce qui est entré, ce qui est sorti et ce qui reste dû.</p>
     <div class="tip">N'empruntez que ce que les membres demandent vraiment : un crédit extérieur qui dort dans la caisse coûte des intérêts sans rien rapporter.</div>` },
+  { id: 'qualite', icon: 'chart', t: 'Qualité des données et « prête pour une IMF »', b: `
+    <p>Deux indicateurs résument ce qu'une IMF ou un bailleur regarde avant de faire confiance au groupe. On les trouve dans <b>Plus › Dossier pour une IMF</b> et, pour l'animateur et l'organisation, sur la fiche de chaque AVEC.</p>
+    <h4>Indice de qualité des données (sur 100)</h4>
+    <ul>
+      <li><b>Journal scellé intact</b> : 25 points.</li>
+      <li><b>Réunions régulières</b> (la dernière date de moins d'un rythme et demi) : 20 points.</li>
+      <li><b>Caisse juste à la clôture</b>, réunion après réunion : 20 points.</li>
+      <li><b>Données envoyées à l'organisation</b> depuis moins de 7 jours : 15 points (acquis d'office pour une AVEC autonome).</li>
+      <li><b>Caisse fermée avec les trois clés</b> : 10 points.</li>
+      <li><b>Fiches des membres complètes</b> (téléphone et activité) : 10 points.</li>
+    </ul>
+    <p>80 et plus : qualité <b>bonne</b> ; de 60 à 79 : <b>moyenne</b> ; en dessous : <b>faible</b>. Chaque ligne montre ce qui manque.</p>
+    <h4>« Prête pour une IMF »</h4>
+    <p>Le groupe est <b>prêt</b> quand les sept critères sont remplis, <b>presque prêt</b> s'il en manque un ou deux :</p>
+    <ol>
+      <li>au moins 6 mois d'activité ;</li>
+      <li>au moins 90 % des crédits remboursés à temps (sur 3 crédits soldés au moins) ;</li>
+      <li>portefeuille à risque de 5 % au plus ;</li>
+      <li>présence d'au moins 80 % ;</li>
+      <li>au plus un écart de caisse dans le cycle ;</li>
+      <li>qualité des données bonne (80 sur 100) ;</li>
+      <li>aucun crédit extérieur en retard.</li>
+    </ol>
+    <div class="tip">Ces indicateurs portent sur le <b>groupe</b>, jamais sur un membre : aucune donnée personnelle n'est utilisée ni partagée.</div>` },
   { id: 'social', icon: 'shield', t: 'La caisse sociale', b: `
     <p>C'est une caisse de solidarité, séparée de la caisse de crédit. Chaque membre présent verse une petite somme à chaque réunion.</p>
     <ul>
@@ -239,10 +269,12 @@ const GUIDE = [
     <ul>
       <li>Le tableau de bord additionne toutes les AVEC accompagnées : membres, part des femmes, épargne, crédits, PAR, caisses sociales.</li>
       <li>Filtrez par animateur avec les boutons en haut.</li>
+      <li><b>Impact</b> : un écran qui chiffre les trois promesses d'Akiba sur toutes vos AVEC. Hors ligne (AVEC, membres, réunions, écritures scellées) ; données fiables (journaux intacts, qualité moyenne, caisse à 3 clés, écarts) ; supervision allégée (données à jour, AVEC sans alerte, visites sur 90 jours, AVEC suivies à distance) ; passerelle vers la finance formelle (AVEC prêtes ou presque prêtes pour une IMF, épargne, remboursement à temps, crédits extérieurs, dossiers IMF). Utile pour les rapports et les bailleurs.</li>
+      <li>Le tableau des AVEC montre aussi la <b>qualité des données</b> et l'indicateur <b>« prête pour une IMF »</b> de chacune.</li>
       <li>Le tableau des AVEC indique le cycle, la dernière réunion et la date du dernier envoi. Touchez une ligne pour voir le détail.</li>
       <li>Créez une AVEC et confiez-la à un animateur avec <b>Nouvelle AVEC</b>.</li>
       <li><b>Formation</b> : consultez les 7 modules et suivez l'avancement de chaque AVEC (colonne « Formation » et fiche de l'AVEC).</li>
-      <li><b>Excel</b> : un fichier .xlsx avec 8 onglets (synthèse, AVEC, membres, réunions, crédits, crédits extérieurs, formation, alertes) pour vos rapports. Touchez « Excel », puis Télécharger ou Partager. Choisissez d'abord un animateur pour n'exporter que ses AVEC.</li>
+      <li><b>Excel</b> : un fichier .xlsx avec 8 onglets (synthèse, AVEC avec qualité des données et « prête pour une IMF », membres, réunions, crédits, crédits extérieurs, formation, alertes) pour vos rapports. Touchez « Excel », puis Télécharger ou Partager. Choisissez d'abord un animateur pour n'exporter que ses AVEC.</li>
       <li><b>Code oublié</b> : l'organisation garde une <b>carte de secours</b> de 6 codes, donnée une seule fois à la création du compte. Touchez « J'ai oublié mon code » sur l'écran de connexion, puis tapez un code de la carte : il sert une seule fois. Pour un animateur, c'est l'organisation qui redonne un code depuis sa fiche.</li>
       <li>Chaque organisation ne voit que ses propres AVEC : les données restent séparées d'une organisation à l'autre.</li>
       <li>Les AVEC autonomes n'apparaissent jamais dans votre tableau.</li>
@@ -269,7 +301,7 @@ const GUIDE = [
 /* parties du guide réservées à certains rôles (les autres sont pour tout le monde) */
 const GUIDE_WHO = {
   animateur: ['anim', 'org', 'none'], organisation: ['org', 'none'], lancer: ['org', 'none'],
-  externe: ['bureau', 'anim', 'org', 'none'],
+  externe: ['bureau', 'anim', 'org', 'none'], qualite: ['bureau', 'anim', 'org', 'none'],
   validation: ['org', 'anim', 'bureau', 'none'], installer: ['org', 'anim', 'bureau', 'none'], debut: ['org', 'anim', 'bureau', 'none']
 };
 SCREENS.guide = p => {

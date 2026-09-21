@@ -106,12 +106,13 @@ function exportSheets(avecs) {
       { h: 'Crédits en cours (nombre)', w: 10, t: 'n' }, { h: 'Crédits en cours (FC)', w: 13, t: 'n' }, { h: 'En retard (FC)', w: 12, t: 'n' }, { h: 'PAR', w: 8, t: 'p' },
       { h: 'Intérêts reçus (FC)', w: 12, t: 'n' }, { h: 'Amendes payées (FC)', w: 12, t: 'n' }, { h: 'Caisse sociale (FC)', w: 12, t: 'n' }, { h: 'Aides versées (FC)', w: 12, t: 'n' },
       { h: 'Argent en caisse (FC)', w: 13, t: 'n' }, { h: 'Écarts de caisse', w: 10, t: 'n' }, { h: 'Formation (modules sur 7)', w: 11, t: 'n' }, { h: 'Visites de l\'animateur', w: 10, t: 'n' },
-      { h: 'Crédit extérieur restant (FC)', w: 13, t: 'n' }, { h: 'Frais du crédit extérieur (FC)', w: 13, t: 'n' }
+      { h: 'Crédit extérieur restant (FC)', w: 13, t: 'n' }, { h: 'Frais du crédit extérieur (FC)', w: 13, t: 'n' },
+      { h: 'Qualité des données (sur 100)', w: 12, t: 'n' }, { h: 'Prête pour une IMF', w: 16 }
     ],
     rows: rows.map(({ a, st }) => [a.name, STATUS_TXT[a.status || 'active'] || a.status, animName(a), a.province, a.territoire, a.village,
       a.settings.meetingDay, a.cycle.n, a.cycle.start, cycleEnd(a), st.activeCount, st.women, st.meetings.length, st.last ? st.last.date : null, st.attendance,
       a.settings.partValue, st.parts, st.sum.EPARGNE, Math.round(st.shareValue), st.activeLoans.length, st.outstanding, st.lateAmt, st.par,
-      st.interest, st.sum.AMENDE, st.socialFund, st.sum.AIDE, st.cash, st.ecarts.length, trainingCount(a), (a.visits || []).length, st.extDebt, st.sum.EXT_FEE])
+      st.interest, st.sum.AMENDE, st.socialFund, st.sum.AIDE, st.cash, st.ecarts.length, trainingCount(a), (a.visits || []).length, st.extDebt, st.sum.EXT_FEE, dataQuality(a, st, chainOf(a)).score, imfReady(a, st, chainOf(a)).label])
   };
   const extSheet = {
     name: 'Crédits extérieurs', cols: [{ h: 'AVEC', w: 24 }, { h: 'Prêteur', w: 24 }, { h: 'Décision de l\'AG', w: 40 }, { h: 'Date', w: 12, t: 'd' }, { h: 'Montant (FC)', w: 12, t: 'n' }, { h: 'Intérêt par mois', w: 9, t: 'p' }, { h: 'Durée (mois)', w: 9, t: 'n' },
