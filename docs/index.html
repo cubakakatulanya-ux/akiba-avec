@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#0F4D3A">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito+Sans:opsz,wght@6..12,400;6..12,600;6..12,700;6..12,800&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;500;700&family=Poppins:wght@500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
 <style>
 :root{
   --ground:#EEF2EC; --surface:#FFFFFF; --surface-2:#E2E9E1; --ink:#10261F; --ink-2:#4B6058; --line:#CCD8CE;
@@ -530,10 +530,70 @@ button.li:active{background:var(--surface-2)}
   .hero.tight p{display:none}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+/* ---------- style sobre : Ubuntu pour le texte, Poppins pour les titres et les boutons,
+     cartes blanches à fin contour gris, sections alternées en gris très clair ---------- */
+:root{
+  --f-display:"Poppins","Trebuchet MS",system-ui,sans-serif;
+  --f-body:"Ubuntu",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --ground:#FFFFFF; --surface:#FFFFFF; --surface-2:#F2F4F2; --line:#E2E5E2;
+  --ink:#1B2A24; --ink-2:#5C6B64;
+  --band:#F7F8F7;
+  --sh-1:none; --sh-2:0 1px 2px rgba(27,42,36,.06); --sh-3:0 2px 8px rgba(27,42,36,.08);
+  --shadow:0 1px 2px rgba(27,42,36,.06);
+  --r:12px; --r-sm:8px;
+}
+body{letter-spacing:0}
+h1,h2,h3,.label,.btn,.tab,.chip,.stp,.quick{font-family:var(--f-display)}
+h1{font-weight:700;letter-spacing:-.015em}
+h2,h3{font-weight:600;letter-spacing:-.005em}
+.label{font-weight:600;letter-spacing:.08em}
+.num{font-family:var(--f-body);font-weight:700}
+/* surfaces : blanc, fin contour gris, pas d'ombre portée */
+.card,.list,.kpi,.tablewrap,.quick,.who,.demo,details.g,.ticker,.receipt{background:var(--surface);border:1px solid var(--line);box-shadow:none;border-radius:var(--r)}
+.kpi b,.caisse .big{font-family:var(--f-display);font-weight:600}
+.av{box-shadow:none;border:1px solid var(--line)}
+/* en-têtes et blocs de marque : vert plat, sans dégradé ni lignes de cahier */
+.topbar{background:var(--brand);box-shadow:none}
+.hero,.hero.tight{background:var(--brand);box-shadow:none;border-radius:0 0 var(--r) var(--r)}
+.hero::before,.caisse::before,.caisse::after,.avec-main::after{display:none}
+.caisse{background:var(--brand);box-shadow:none;border-radius:var(--r);padding:16px}
+.caisse .split div{background:rgba(255,255,255,.12);box-shadow:none;border-radius:8px}
+.avec-main{background:var(--maize);box-shadow:none;border-radius:var(--r);padding:16px}
+.avec-main .ic{background:rgba(255,255,255,.55);box-shadow:none;border-radius:10px}
+/* boutons : Poppins, à plat */
+.btn{font-weight:600;border-radius:10px;box-shadow:none}
+.btn.primary,.btn.primary:not(:disabled){background:var(--maize);color:var(--maize-ink);box-shadow:none}
+.btn.brand{background:var(--brand);box-shadow:none}
+.btn.ghost{background:var(--surface);border:1px solid var(--line);box-shadow:none}
+.btn.xl{border-radius:12px}
+.pm button,.keypad button,.seg button.on,.stp i{box-shadow:none}
+.keypad button{border-radius:12px}
+/* sections alternées en gris très clair */
+.main>.section:nth-of-type(even){background:var(--band);border:1px solid var(--line);border-radius:var(--r);padding:14px}
+.main>.section:nth-of-type(even)>h2{margin-top:2px}
+.main>.section:nth-of-type(even) .card,.main>.section:nth-of-type(even) .list{background:var(--surface)}
+/* barres, puces et onglets */
+.chip{border-radius:6px;font-weight:600}
+.tabbar{background:var(--surface);border-top:1px solid var(--line);box-shadow:none;backdrop-filter:none}
+.tab.on svg{background:var(--brand-soft)}
+.alert,.tip{box-shadow:none;border:1px solid var(--line);border-radius:var(--r)}
+.alert.bad{border-color:color-mix(in srgb,var(--bad) 30%,transparent)}
+.alert.warn{border-color:color-mix(in srgb,var(--warn) 30%,transparent)}
+.alert.good{border-color:color-mix(in srgb,var(--good) 30%,transparent)}
+.sheet{border-radius:14px 14px 0 0;box-shadow:0 -2px 12px rgba(27,42,36,.12)}
+.toast,.updbar{border-radius:10px;box-shadow:var(--sh-3)}
+/* mode sombre : mêmes règles, teintes sombres */
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){--band:#16241E;--sh-1:none}
+  :root:not([data-theme="light"]) .topbar,:root:not([data-theme="light"]) .hero,:root:not([data-theme="light"]) .caisse{background:#123A2C}
+}
+:root[data-theme="dark"]{--band:#16241E;--sh-1:none}
+:root[data-theme="dark"] .topbar,:root[data-theme="dark"] .hero,:root[data-theme="dark"] .caisse{background:#123A2C}
 </style>
 <style>html,body{margin:0}</style>
 </head><body>
-<script>window.KITABU_PWA = true; window.KITABU_VERSION = 'akiba-202609211913';</script>
+<script>window.KITABU_PWA = true; window.KITABU_VERSION = 'akiba-202609291609';</script>
 
 <div id="app"></div>
 <script src="core.js"></script>
