@@ -4,7 +4,7 @@ Application développée par l'**Entreprise Sociale Ubora**.
 Assistance : appel ou WhatsApp **0998 275 144** · contact@uborahub.com
 
 ## 1. L'adresse de l'application
-**https://cubakakatulanya-ux.github.io/akiba-avec/**
+**https://akiba.uborardc.com/**
 
 L'application est hébergée gratuitement sur GitHub Pages, en HTTPS. Les mises à jour se font en envoyant le code sur GitHub : les téléphones prennent la nouvelle version tout seuls, sans désinstaller.
 

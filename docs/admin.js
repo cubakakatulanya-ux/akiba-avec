@@ -5,7 +5,7 @@
 'use strict';
 
 const ADM_KEY_STORE = 'kitabu.adminkey', ADM_REG_STORE = 'kitabu.adminreg', ADM_ACT_STORE = 'kitabu.adminacts';
-const APP_URL = 'https://cubakakatulanya-ux.github.io/akiba-avec/';
+const APP_URL = 'https://akiba.uborardc.com/';
 const b64uEnc = bytes => b64enc(bytes).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 const admGet = k => { try { return localStorage.getItem(k); } catch (e) { return null; } };
 const admSet = (k, v) => { try { if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) { /* rien */ } };

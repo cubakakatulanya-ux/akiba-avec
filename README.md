@@ -8,7 +8,7 @@ Le cahier des **Associations Villageoises d'Épargne et de Crédit (AVEC)** dans
 **Ubora**, entreprise sociale : appel ou WhatsApp **0998 275 144** · contact@uborahub.com
 
 ## Ouvrir et installer
-**https://cubakakatulanya-ux.github.io/akiba-avec/**
+**https://akiba.uborardc.com/**
 
 - **Libre à installer et à découvrir** : tout le monde peut ouvrir le lien, installer l'icône et essayer la démonstration.
 - **Code de validation pour les vraies opérations** : pour créer le compte d'une organisation ou une AVEC réelle, Akiba demande un code délivré par l'Entreprise Sociale Ubora. Le code est signé numériquement et vérifié sur le téléphone, même sans internet.
