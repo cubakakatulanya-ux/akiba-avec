@@ -590,10 +590,12 @@ h2,h3{font-weight:600;letter-spacing:-.005em}
 }
 :root[data-theme="dark"]{--band:#16241E;--sh-1:none}
 :root[data-theme="dark"] .topbar,:root[data-theme="dark"] .hero,:root[data-theme="dark"] .caisse{background:#123A2C}
+.ticket{font-family:var(--f-mono);font-size:.74rem;line-height:1.35;white-space:pre;overflow-x:auto;background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r);padding:10px;margin:0}
+@media print{.topbar,.tabbar,.tabspace,.appfoot,.btn,.linkbtn,.scrim{display:none!important}.ticket{border:0;background:#fff;font-size:11pt}}
 </style>
 <style>html,body{margin:0}</style>
 </head><body>
-<script>window.KITABU_PWA = true; window.KITABU_VERSION = 'akiba-202609291647';</script>
+<script>window.KITABU_PWA = true; window.KITABU_VERSION = 'akiba-202609291755';</script>
 
 <div id="app"></div>
 <script src="core.js"></script>
@@ -617,6 +619,7 @@ h2,h3{font-weight:600;letter-spacing:-.005em}
 <script src="export.js"></script>
 <script src="externe.js"></script>
 <script src="impact.js"></script>
+<script src="recu.js"></script>
 <script src="boot.js"></script>
 
 </body></html>

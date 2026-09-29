@@ -597,6 +597,7 @@ SCREENS['a.receipt'] = p => {
       <div class="small muted">Clés : ${m.validators.map(id => esc(memberOf(avec, id).name)).join(', ')}</div>
       <div><span class="label">Sceau</span><div class="mono" style="word-break:break-all">${m.seal.slice(0, 32).replace(/(.{4})/g, '$1 ')}</div></div>
     </div>
+    <button class="btn brand block xl" data-act="go" data-to="a.receipts" data-id="${m.id}">${ic('clip')} Reçus des membres</button>
     <button class="btn primary block xl" data-act="go" data-to="a.home">Retour à l'accueil</button>
   </main></div>`;
 };

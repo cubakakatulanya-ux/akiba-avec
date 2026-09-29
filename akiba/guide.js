@@ -141,6 +141,26 @@ const GUIDE = [
       <li>aucun crédit extérieur en retard.</li>
     </ol>
     <div class="tip">Ces indicateurs portent sur le <b>groupe</b>, jamais sur un membre : aucune donnée personnelle n'est utilisée ni partagée.</div>` },
+  { id: 'recus', icon: 'clip', t: 'Reçus des membres, imprimés ou partagés', b: `
+    <p>Après la clôture d'une réunion, l'écran du reçu propose <b>Reçus des membres</b> : un ticket par personne présente.</p>
+    <h4>Ce que contient le ticket</h4>
+    <ul>
+      <li>le nom du groupe, le numéro et la date de la réunion ;</li>
+      <li>le membre, son rôle et sa présence ;</li>
+      <li>l'<b>épargne du jour</b> (parts et montant) et le <b>cumul du cycle</b> ;</li>
+      <li>la caisse sociale, les <b>amendes</b> payées ou dues ;</li>
+      <li>le <b>crédit</b> : accordé, remboursé, reste à rembourser et échéance ;</li>
+      <li>la valeur estimée de ses parts ;</li>
+      <li>le <b>sceau de la réunion</b> : il permet de vérifier que le reçu correspond bien au journal scellé.</li>
+    </ul>
+    <h4>Imprimer</h4>
+    <ul>
+      <li><b>Terminal POS Android</b> (imprimante intégrée) : ouvrez Akiba depuis l'application Android et touchez <b>Imprimer</b>. Le bouton <b>Imprimer les reçus</b> les sort tous à la suite.</li>
+      <li><b>Imprimante Bluetooth</b> : installez l'application gratuite <b>RawBT</b>, associez l'imprimante, puis touchez Imprimer. Un ticket à la fois.</li>
+      <li><b>Sans imprimante</b> : touchez <b>Partager</b> pour envoyer le reçu par WhatsApp ou SMS, ou le copier.</li>
+    </ul>
+    <p>Le ticket est écrit sans accent, sur 32 signes de large : c'est ce que lisent les imprimantes thermiques de 58 mm. Tout marche <b>sans réseau</b>.</p>
+    <div class="tip">Le papier coûte : imprimez pour tout le monde en fin de cycle, et à la demande le reste du temps.</div>` },
   { id: 'social', icon: 'shield', t: 'La caisse sociale', b: `
     <p>C'est une caisse de solidarité, séparée de la caisse de crédit. Chaque membre présent verse une petite somme à chaque réunion.</p>
     <ul>
@@ -301,7 +321,7 @@ const GUIDE = [
 /* parties du guide réservées à certains rôles (les autres sont pour tout le monde) */
 const GUIDE_WHO = {
   animateur: ['anim', 'org', 'none'], organisation: ['org', 'none'], lancer: ['org', 'none'],
-  externe: ['bureau', 'anim', 'org', 'none'], qualite: ['bureau', 'anim', 'org', 'none'],
+  externe: ['bureau', 'anim', 'org', 'none'], qualite: ['bureau', 'anim', 'org', 'none'], recus: ['bureau', 'anim', 'org', 'none'],
   validation: ['org', 'anim', 'bureau', 'none'], installer: ['org', 'anim', 'bureau', 'none'], debut: ['org', 'anim', 'bureau', 'none']
 };
 SCREENS.guide = p => {
