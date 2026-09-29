@@ -161,3 +161,113 @@ ACT.recuShare = async d => {
     else { await navigator.clipboard.writeText(text); App.toast('Reçu copié : collez-le dans WhatsApp'); }
   } catch (e) { /* partage annulé */ }
 };
+
+/* ---------- journal d'une période, imprimé sur le même papier ---------- */
+const jDay = ts => new Date(ts).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' });
+const J_SHORT = { EPARGNE: 'Epargne', SOCIAL: 'Sociale', REMB: 'Rembours.', AMENDE: 'Amende', DETTE: 'Amende due', CREDIT: 'Credit', AIDE: 'Aide', PARTAGE: 'Partage', DEPART: 'Depart', ANNUL: 'Annulation', REPORT_IN: 'Report entree', REPORT_OUT: 'Report sortie', EXT_IN: 'Credit exterieur', EXT_FEE: 'Frais exterieur', EXT_GUAR: 'Garantie', EXT_REPAY: 'Remb. preteur' };
+function journalRows(avec, from, to) {
+  const an = annulledSet(avec);
+  return avec.tx.filter(t => t.ts >= from && t.ts <= to).map(t => Object.assign({ annulled: an.has(t.id) }, t));
+}
+function journalText(avec, from, to) {
+  const rows = journalRows(avec, from, to), ch = chainOf(avec);
+  const L = [];
+  L.push(rCenter('AKIBA - JOURNAL'));
+  L.push(rCenter(avec.name));
+  L.push(rCenter(`Du ${jDay(from)} au ${jDay(to)}`));
+  L.push(rRule('='));
+  if (!rows.length) L.push('Aucune ecriture sur cette periode.');
+  let day = '';
+  rows.forEach(t => {
+    const d = jDay(t.ts);
+    if (d !== day) { if (day) L.push(rRule()); day = d; L.push(noAcc(new Date(t.ts).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })).toUpperCase().slice(0, RECU_W)); }
+    const inFlow = TX[t.type] && TX[t.type].in;
+    const money = (t.type === 'ANNUL' || t.type === 'DETTE' ? '  ' : inFlow ? '+ ' : '- ') + grp(t.amount);
+    L.push(rLine(`#${t.seq} ${J_SHORT[t.type] || t.type}`, money));
+    const who = t.memberId ? (memberOf(avec, t.memberId) || {}).name : (t.note || '');
+    if (who) L.push('   ' + noAcc(who).slice(0, RECU_W - 3));
+    if (t.annulled) L.push('   (annulee)');
+  });
+  const sum = k => rows.filter(t => t.type === k && !t.annulled).reduce((a, t) => a + t.amount, 0);
+  const kinds = [...new Set(rows.filter(t => !t.annulled && t.type !== 'ANNUL').map(t => t.type))];
+  L.push(rRule('='));
+  L.push('TOTAUX DE LA PERIODE');
+  kinds.forEach(k => L.push(rLine(' ' + (J_SHORT[k] || k), fc(sum(k)))));
+  const entre = kinds.filter(k => TX[k] && TX[k].in).reduce((a, k) => a + sum(k), 0);
+  const sorti = kinds.filter(k => TX[k] && !TX[k].in).reduce((a, k) => a + sum(k), 0);
+  L.push(rRule());
+  L.push(rLine('Entre dans la caisse', fc(entre)));
+  L.push(rLine('Sorti de la caisse', fc(sorti)));
+  L.push(rLine('Mouvement net', fc(entre - sorti)));
+  const st = stats(avec);
+  L.push(rLine('Caisse aujourd hui', fc(st.cash)));
+  L.push(rRule());
+  L.push(rLine('Ecritures', String(rows.length)));
+  L.push('Journal : ' + (ch.ok ? 'intact (' + ch.n + ' ecritures)' : 'ALTERE'));
+  const last = rows[rows.length - 1];
+  if (last && last.hash) { L.push('Derniere empreinte :'); L.push(noAcc(last.hash.slice(0, 16).replace(/(.{4})/g, '$1 ').trim())); }
+  L.push(rRule());
+  L.push(rCenter('Akiba - Ubora - ' + UBORA.telShow));
+  return L.join('\n');
+}
+/* choisir la période, voir la longueur de papier, imprimer ou partager */
+const jFrom = () => { const v = fval('jrA'); return v ? new Date(v + 'T00:00:00').getTime() : 0; };
+const jTo = () => { const v = fval('jrB'); return v ? new Date(v + 'T23:59:59').getTime() : Date.now(); };
+ACT.journalSheet = () => {
+  const { avec } = cur();
+  const d0 = isoDay(avec.cycle.start), d1 = isoDay(Date.now());
+  App.openSheet(`<h2>Imprimer le journal</h2><p class="muted">Choisissez la période. Le ticket reprend chaque écriture, les totaux et l'empreinte de la dernière écriture.</p>
+    <div class="grid2"><div class="field"><label for="jrA">Du</label><input id="jrA" class="input" type="date" value="${d0}" data-in="jrCalc"></div>
+      <div class="field"><label for="jrB">Au</label><input id="jrB" class="input" type="date" value="${d1}" data-in="jrCalc"></div></div>
+    <div class="row" style="flex-wrap:wrap;gap:6px">
+      <button class="btn sm ghost" data-act="jrPeriod" data-v="7">7 jours</button>
+      <button class="btn sm ghost" data-act="jrPeriod" data-v="30">30 jours</button>
+      <button class="btn sm ghost" data-act="jrPeriod" data-v="cycle">Ce cycle</button>
+      <button class="btn sm ghost" data-act="jrPeriod" data-v="tout">Tout</button></div>
+    <div id="jrOut" class="receipt" aria-live="polite"></div>
+    <div class="grid2"><button class="btn brand" data-act="journalPrint">${ic('clip')} Imprimer</button>
+      <button class="btn ghost" data-act="journalShare">${ic('chat')} Partager</button></div>
+    <button class="btn ghost block" data-act="journalPreview">Voir le ticket</button>`);
+  INP.jrCalc();
+};
+INP.jrCalc = () => {
+  const o = document.getElementById('jrOut'); if (!o) return;
+  const { avec } = cur();
+  const rows = journalRows(avec, jFrom(), jTo());
+  const lines = journalText(avec, jFrom(), jTo()).split('\n').length;
+  o.innerHTML = `<div class="row between small"><span>Écritures</span><b class="num">${rows.length}</b></div>
+    <div class="row between small"><span>Longueur de papier</span><b class="num">environ ${Math.max(1, Math.round(lines * 0.4))} cm</b></div>
+    ${lines > 250 ? '<div class="chip warn">Période longue : beaucoup de papier</div>' : ''}`;
+};
+ACT.jrPeriod = d => {
+  const { avec } = cur();
+  const a = document.getElementById('jrA'), b = document.getElementById('jrB');
+  if (!a || !b) return;
+  b.value = isoDay(Date.now());
+  a.value = d.v === 'tout' ? isoDay(avec.createdAt || avec.tx[0] && avec.tx[0].ts || Date.now())
+    : d.v === 'cycle' ? isoDay(avec.cycle.start) : isoDay(Date.now() - (+d.v) * DAY);
+  INP.jrCalc();
+};
+let jSel = [0, 0];
+const jRange = () => { if (document.getElementById('jrA')) jSel = [jFrom(), jTo()]; return jSel; };
+ACT.journalPreview = () => {
+  const { avec } = cur(); const [a, b] = jRange();
+  const text = journalText(avec, a, b);
+  App.openSheet(`<h2>Journal</h2><pre class="ticket">${esc(text)}</pre>
+    <div class="grid2"><button class="btn brand" data-act="journalPrint" data-a="${fval('jrA') || ''}" data-b="${fval('jrB') || ''}">${ic('clip')} Imprimer</button>
+      <button class="btn ghost" data-act="journalShare">${ic('chat')} Partager</button></div>
+    <button class="btn ghost block" data-act="closeSheet">Fermer</button>`);
+};
+ACT.journalPrint = async () => {
+  const { avec } = cur(); const [a, b] = jRange();
+  const how = await printReceipt(journalText(avec, a, b));
+  App.toast(how === 'pos' ? 'Journal envoyé à l\'imprimante' : how === 'rawbt' ? 'Journal envoyé à l\'application d\'impression' : 'Aucune imprimante trouvée');
+};
+ACT.journalShare = async () => {
+  const { avec } = cur(); const [a, b] = jRange();
+  const text = journalText(avec, a, b);
+  try {
+    if (navigator.share) await navigator.share({ title: `Journal ${avec.name}`, text });
+    else { await navigator.clipboard.writeText(text); App.toast('Journal copié : collez-le où vous voulez'); }
+  } catch (e) { /* partage annulé */ }
+};

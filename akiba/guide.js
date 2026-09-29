@@ -153,6 +153,9 @@ const GUIDE = [
       <li>la valeur estimée de ses parts ;</li>
       <li>le <b>sceau de la réunion</b> : il permet de vérifier que le reçu correspond bien au journal scellé.</li>
     </ul>
+    <h4>Imprimer le journal d'une période</h4>
+    <p>Dans l'onglet <b>Journal</b>, le bouton <b>Imprimer le journal</b> demande la période (7 jours, 30 jours, ce cycle, tout, ou deux dates au choix). Akiba annonce le nombre d'écritures et la <b>longueur de papier</b> avant d'imprimer.</p>
+    <p>Le ticket reprend chaque écriture jour par jour (numéro, nature, membre, montant), puis les <b>totaux de la période</b>, ce qui est entré et sorti de la caisse, le mouvement net, la caisse du jour et l'<b>empreinte de la dernière écriture</b>. C'est ce document qu'on remet à un contrôleur, à l'animateur ou à une IMF.</p>
     <h4>Imprimer</h4>
     <ul>
       <li><b>Terminal POS Android</b> (imprimante intégrée) : ouvrez Akiba depuis l'application Android et touchez <b>Imprimer</b>. Le bouton <b>Imprimer les reçus</b> les sort tous à la suite.</li>

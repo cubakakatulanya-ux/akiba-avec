@@ -682,6 +682,7 @@ SCREENS['a.journal'] = p => {
       <span class="small">${ch.ok ? 'Chaque écriture porte l\'empreinte de la précédente. Changer un seul chiffre casse la chaîne.' : esc(ch.reason) + '. L\'animateur et l\'organisation voient cette alerte.'}</span></div></div>
     <div class="row" style="flex-wrap:wrap">
       <button class="btn sm" data-act="verifyNow">${ic('shield')} Vérifier maintenant</button>
+      <button class="btn sm brand" data-act="journalSheet">${ic('clip')} Imprimer le journal</button>
       ${K.data.mode === 'prod' ? '' : K.data.tamper ? `<button class="btn sm brand" data-act="untamper">Annuler la fraude simulée</button>` : `<button class="btn sm danger" data-act="tamper">Simuler une fraude</button>`}
     </div>
     <div class="list">${rows.map(t => { const mm = memberOf(avec, t.memberId); const canAnnul = open && t.meetingId === open.id && t.type !== 'ANNUL' && !an.has(t.id) && isBureau(me);
