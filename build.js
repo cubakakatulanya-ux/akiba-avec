@@ -18,8 +18,12 @@ const version = 'akiba-' + new Date().toISOString().slice(0, 16).replace(/\D/g, 
 fs.writeFileSync(path.join(out, 'index.html'), `<!doctype html>
 <html lang="fr"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Akiba AVEC</title>
-<meta name="description" content="Gestion des associations villageoises d'épargne et de crédit, même sans réseau. Développée par l'Entreprise Sociale Ubora."><meta name="author" content="Entreprise Sociale Ubora">
+<title>AKIBA : l'application des groupes d'épargne (AVEC) en RDC · Ubora</title>
+<meta name="description" content="AKIBA remplace le cahier des associations villageoises d'épargne et de crédit (AVEC) : cotisations, prêts, remboursements, reçus et partage de fin de cycle, même sans réseau. Une application de l'Entreprise Sociale Ubora, à Lubumbashi.">
+<link rel="canonical" href="https://akiba.uborardc.com/"><meta name="robots" content="index, follow, max-image-preview:large">
+<meta property="og:type" content="website"><meta property="og:site_name" content="AKIBA · Ubora"><meta property="og:locale" content="fr_CD"><meta property="og:url" content="https://akiba.uborardc.com/">
+<meta property="og:title" content="AKIBA : l'application des groupes d'épargne (AVEC) en RDC · Ubora"><meta property="og:description" content="AKIBA remplace le cahier des associations villageoises d'épargne et de crédit (AVEC) : cotisations, prêts, remboursements, reçus et partage de fin de cycle, même sans réseau. Une application de l'Entreprise Sociale Ubora, à Lubumbashi."><meta property="og:image" content="https://akiba.uborardc.com/icon-512.png">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"AKIBA","alternateName":["Akiba AVEC","AKIBA Ubora"],"applicationCategory":"FinanceApplication","operatingSystem":"Android, iOS, Windows (navigateur)","inLanguage":"fr","url":"https://akiba.uborardc.com/","description":"AKIBA remplace le cahier des associations villageoises d'épargne et de crédit (AVEC) : cotisations, prêts, remboursements, reçus et partage de fin de cycle, même sans réseau. Une application de l'Entreprise Sociale Ubora, à Lubumbashi.","publisher":{"@type":"Organization","name":"Entreprise Sociale Ubora","url":"https://uborardc.com/"}}</script><meta name="author" content="Entreprise Sociale Ubora">
 <link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="icon-192.png">
 <meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Akiba">
 ${head}
@@ -127,4 +131,8 @@ self.addEventListener('fetch', e => {
 
 fs.copyFileSync(path.join(__dirname, 'LANCER.md'), path.join(out, 'LANCER.md'));
 fs.writeFileSync(path.join(out, '.nojekyll'), '');
+
+// Référencement : les moteurs de recherche lisent ces deux fichiers à la racine du site.
+fs.writeFileSync(path.join(out, 'robots.txt'), 'User-agent: *\nAllow: /\n\nSitemap: https://akiba.uborardc.com/sitemap.xml\n');
+fs.writeFileSync(path.join(out, 'sitemap.xml'), '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <url><loc>https://akiba.uborardc.com/</loc><lastmod>' + new Date().toISOString().slice(0, 10) + '</lastmod></url>\n</urlset>\n');
 console.log('dist/ prêt :', fs.readdirSync(out).join(', '), '· cache', version);
