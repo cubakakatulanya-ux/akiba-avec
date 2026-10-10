@@ -74,6 +74,19 @@ function paintQr(link) {
 const _goAdmin = App.go.bind(App);
 App.go = function (screen, ...rest) { if (!/^adm\./.test(screen)) { App.adminKey = null; App.admLast = null; App.admForce = null; } return _goAdmin(screen, ...rest); };
 
+/* ce que contient ce téléphone : réservé à l'administrateur */
+function admStats() {
+  const avecs = K.data.avecs.filter(x => x.status !== 'refused');
+  let membres = 0, epargne = 0, reunions = 0, credits = 0;
+  for (const x of avecs) {
+    try {
+      const st = stats(x);
+      membres += st.activeCount; epargne += st.sum.EPARGNE; reunions += st.meetings.length; credits += st.outstanding;
+    } catch (e) { /* une AVEC illisible ne doit pas vider l'écran */ }
+  }
+  const k = (v, l) => `<div class="kpi"><span>${l}</span><b>${v}</b></div>`;
+  return `<div class="kpis">${k(avecs.length, 'AVEC sur ce téléphone')}${k(membres, 'Membres')}${k(fck(epargne), 'Épargne du cycle')}${k(fck(credits), 'Crédits à rembourser')}${k(reunions, 'Réunions tenues')}</div>`;
+}
 SCREENS['adm.home'] = () => {
   const hasKey = !!admGet(ADM_KEY_STORE);
   const head = topbar('Espace administrateur', 'Codes de validation · Entreprise Sociale Ubora', backBtn(K.session ? 'dev.backup' : 'login'));
@@ -103,6 +116,7 @@ SCREENS['adm.home'] = () => {
   const used = id => acts.filter(a => a.lic === id).length;
   return `<div class="shell">${head}<main class="main">
     <div class="alert good">${icSpan('unlock')}<div><b>Espace ouvert</b><span class="small">Il se referme tout seul en quittant cet écran ou après 10 minutes. Fonctionne sans réseau.</span></div></div>
+    <section class="card stack"><h2 class="surtitre">Ce que contient ce téléphone</h2>${admStats()}</section>
     ${last ? `<section class="card stack"><h2>Code de validation prêt</h2>
       ${row('Partenaire', esc(last.name))}${row('Type', LIC_KINDS[last.kind])}${row('Téléphone', `<span class="mono">${esc(last.dev)}</span>`)}${row('Valable jusqu\'au', fdateY(new Date(last.exp + 'T12:00').getTime()))}
       <div class="formula mono" style="word-break:break-all;max-height:88px;overflow:auto">${esc(last.code)}</div>

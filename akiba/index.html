@@ -412,6 +412,7 @@ button.li:active{background:var(--surface-2)}
 .sheet{border-radius:28px 28px 0 0;box-shadow:0 -20px 50px -20px rgba(0,0,0,.45);padding-top:14px}
 .toast,.updbar{border-radius:16px;box-shadow:var(--sh-3)}
 .appfoot{border-top:0;opacity:.95}
+.shell.home .appfoot{padding:9px 16px 10px}
 .xl-ic{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;flex:none;background:var(--brand-soft);color:var(--brand)}
 .xl-ic svg{width:20px;height:20px}
 .devcode{display:flex;flex-direction:column;align-items:center;gap:4px;padding:14px;border-radius:16px;background:var(--brand-soft);color:var(--brand)}
@@ -489,10 +490,12 @@ button.li:active{background:var(--surface-2)}
 }
 /* accueil : dense, centré, sans blanc perdu */
 .hero.tight{padding:38px 20px 24px;border-radius:0 0 28px 28px}
+/* la maison qui édite Akiba, en tête de l accueil */
+.hero .hubmark{display:block;width:46px;height:46px;margin:0 auto 6px;border-radius:50%;background:#fff;box-shadow:0 0 0 1px rgba(255,255,255,.4)}
 .hero.tight h1{font-size:2.9rem;margin-top:2px}
 .hero.tight p{font-size:.95rem;max-width:30ch;margin-top:4px}
 .hero.tight .ledger{width:150px;right:-18px;top:-6px;opacity:.13}
-.main.login{gap:12px;padding-bottom:10px;flex:0 0 auto}
+.main.login{gap:10px;padding-bottom:2px;flex:0 0 auto}
 .main.login .quicks{gap:10px}
 .main.login .quick{min-height:72px;font-size:.8rem}
 .main.login .demo{padding:12px 14px;gap:6px}
@@ -500,7 +503,7 @@ button.li:active{background:var(--surface-2)}
 /* accueil : le bandeau vert absorbe la hauteur en trop, jamais de blanc entre les blocs */
 .shell.home .hero.tight{flex:1 0 auto;max-height:52vh;display:flex;flex-direction:column;justify-content:center}
 /* accueil ajusté à la hauteur du téléphone : tout tient sur un écran, du petit Android au grand */
-.hero.tight{padding:clamp(50px,7.6vh,56px) 18px clamp(16px,3vh,24px)}
+.hero.tight{padding:clamp(24px,3.8vh,38px) 18px clamp(12px,2vh,18px)}
 .hero.tight .langbtn{top:10px;right:12px;padding:5px 11px}
 .hero.tight h1{font-size:clamp(2.1rem,6.2vh,2.9rem)}
 .hero.tight .label{font-size:.66rem}
@@ -585,6 +588,31 @@ h2,h3{font-weight:600;letter-spacing:-.005em}
 :root[data-theme="dark"] .topbar,:root[data-theme="dark"] .hero,:root[data-theme="dark"] .caisse{background:#123A2C}
 .ticket{font-family:var(--f-mono);font-size:.74rem;line-height:1.35;white-space:pre;overflow-x:auto;background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r);padding:10px;margin:0}
 @media print{.topbar,.tabbar,.tabspace,.appfoot,.btn,.linkbtn,.scrim{display:none!important}.ticket{border:0;background:#fff;font-size:11pt}}
+/* ---------- structure de lecture, inspirée des sites de formation (Académie FAO, Ubora Académie) :
+     un surtitre, un titre, une phrase d'introduction, puis des blocs nettement séparés ---------- */
+.hero .figures{display:flex;flex-wrap:wrap;justify-content:center;align-items:baseline;gap:4px 14px;margin:9px auto 0;max-width:430px}
+.hero .figures div{display:inline-flex;align-items:baseline;gap:5px}
+.hero .figures b{font-family:var(--f-display);font-size:1rem;font-weight:700}
+.hero .figures span{font-size:.72rem;opacity:.85}
+.hero .figures div+div::before{content:"";width:4px;height:4px;border-radius:50%;background:currentColor;opacity:.45;margin-right:10px;align-self:center}
+.docintro{margin-bottom:4px}
+.docintro .sur{font-family:var(--f-display);font-size:.72rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--brand);margin:0 0 5px}
+.docintro h1{margin:0 0 7px}
+.docintro .lead{color:var(--ink-2);margin:0}
+.surtitre{font-family:var(--f-display);margin:0 0 12px;font-size:1.06rem}
+.docbloc{margin:20px 0}
+.etapes{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.etapes li{display:flex;gap:13px;align-items:flex-start;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:13px 14px}
+.etapes i{flex:none;width:34px;height:34px;border-radius:50%;background:var(--brand);color:var(--brand-ink);font-style:normal;font-family:var(--f-display);font-weight:700;display:grid;place-items:center}
+.etapes b{display:block;font-family:var(--f-display);font-size:.97rem}
+.etapes span{display:block;color:var(--ink-2);font-size:.85rem;margin-top:2px;line-height:1.35}
+.gtiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:9px}
+.gtile{display:flex;flex-direction:row;align-items:center;gap:9px;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:10px 11px;font:inherit;color:inherit;cursor:pointer;min-height:58px}
+.gtile b{font-family:var(--f-display);font-size:.84rem;font-weight:600;line-height:1.22}
+.gtile .gi{width:28px;height:28px;border-radius:8px;background:var(--brand-soft);color:var(--brand);display:grid;place-items:center;flex:none}
+.gtile .gi svg{width:16px;height:16px}
+.gtile:active{transform:translateY(1px)}
+@media (max-width:360px){.hero .figures{grid-template-columns:repeat(2,1fr)}}
 </style>
 <div id="app"></div>
 <script src="core.js"></script>

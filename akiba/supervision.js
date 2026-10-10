@@ -57,6 +57,7 @@ SCREENS.login = () => {
   <header class="hero tight">
     <button class="langbtn" data-act="langSheet" aria-label="Choisir la langue">${ic('globe')}<span class="no-tr">${esc(I18N.name())}</span></button>
     <svg class="ledger" viewBox="0 0 200 200" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><rect x="30" y="20" width="140" height="170" rx="10"/>${[55, 80, 105, 130, 155].map(y => `<path d="M50 ${y}h100"/>`).join('')}<path d="M80 20v170"/></svg>
+    <img class="hubmark no-tr" src="ubora-hub.png" width="512" height="512" alt="Logo Ubora" decoding="async">
     <div class="label" style="color:inherit;opacity:.85">Épargne et crédit villageois</div>
     <h1>Akiba</h1>
     <p>Le cahier de l'AVEC dans le téléphone, même sans réseau.</p>
@@ -71,9 +72,6 @@ SCREENS.login = () => {
       ${quick('otherAccess', '', 'more', 'Autres accès')}
     </div>
     ${demo}
-    <div class="loginfoot">
-      <span class="small muted">Animateur, organisation et administrateur : touchez <b>Autres accès</b>.</span>
-    </div>
   </main></div>`;
 };
 /* animateurs, organisations et administrateur : des utilisateurs secondaires, rangés sous un lien */

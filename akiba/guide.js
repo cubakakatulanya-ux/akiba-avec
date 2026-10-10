@@ -327,6 +327,10 @@ const GUIDE_WHO = {
   externe: ['bureau', 'anim', 'org', 'none'], qualite: ['bureau', 'anim', 'org', 'none'], recus: ['bureau', 'anim', 'org', 'none'],
   validation: ['org', 'anim', 'bureau', 'none'], installer: ['org', 'anim', 'bureau', 'none'], debut: ['org', 'anim', 'bureau', 'none']
 };
+ACT.guideTo = p => {
+  App.go('guide', { s: p.s });
+  setTimeout(() => { const el = document.getElementById('g-' + p.s); if (el) el.scrollIntoView({ block: 'start', behavior: 'smooth' }); }, 60);
+};
 SCREENS.guide = p => {
   const s = K.session;
   let back = 'login', me = null;
@@ -337,7 +341,22 @@ SCREENS.guide = p => {
   const isAnim = s && s.kind === 'anim';
   const open = p.s || (isAnim ? 'animateur' : s && s.kind === 'org' ? 'organisation' : 'bref');
   return `<div class="shell">${topbar('Guide d\'utilisation', 'Akiba AVEC', isAnim ? '' : backBtn(back))}<main class="main">
-    <div><h1>Comment utiliser Akiba</h1><p class="muted">Touchez un titre pour l'ouvrir. Les mots en gras sont ceux que vous voyez à l'écran. Touchez « Écouter » pour que le téléphone lise à voix haute, même sans réseau.</p></div>
+    <header class="docintro">
+      <p class="sur">Guide d'utilisation</p>
+      <h1>Comment utiliser Akiba</h1>
+      <p class="lead">Touchez un titre pour l'ouvrir. Les mots en gras sont ceux que vous voyez à l'écran. Touchez « Écouter » pour que le téléphone lise à voix haute, même sans réseau.</p>
+    </header>
+    <section class="docbloc"><h2 class="surtitre">Akiba en quatre étapes</h2>
+      <ol class="etapes">
+        <li><i>1</i><div><b>Créer ou recevoir l'AVEC</b><span>Le groupe, le règlement, les membres et le bureau, une fois pour toutes.</span></div></li>
+        <li><i>2</i><div><b>Tenir la réunion</b><span>Huit étapes dans l'ordre du cahier : présences, comptage, épargne, remboursements, crédits, amendes, clôture.</span></div></li>
+        <li><i>3</i><div><b>Remettre les reçus</b><span>Imprimés sur le terminal, ou partagés par WhatsApp. Le journal s'imprime aussi.</span></div></li>
+        <li><i>4</i><div><b>Envoyer et préparer la suite</b><span>L'animateur et l'organisation reçoivent les chiffres ; le dossier IMF se prépare tout seul.</span></div></li>
+      </ol>
+    </section>
+    <section class="docbloc"><h2 class="surtitre">Tout le guide</h2>
+      <div class="gtiles">${sections.map(x => `<button class="gtile" data-act="guideTo" data-s="${x.id}"><span class="gi">${ic(x.icon)}</span><b>${x.t}</b></button>`).join('')}</div>
+    </section>
     <div class="row">${speakBtn('all', '.g summary, .g .gb p, .g .gb li, .g .gb h4, .g .gb .formula, .g .gb .tip', 'Écouter tout le guide')}</div>
     ${sections.map(g => `<details class="g" id="g-${g.id}" ${g.id === open ? 'open' : ''}><summary><span class="gi">${ic(g.icon)}</span>${g.t}</summary><div class="gb">
       <div>${speakBtn(g.id, `#g-${g.id} summary, #g-${g.id} .gb p, #g-${g.id} .gb li, #g-${g.id} .gb h4, #g-${g.id} .gb .formula, #g-${g.id} .gb .tip`, 'Écouter cette partie')}</div>${g.b}</div></details>`).join('')}
