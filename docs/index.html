@@ -620,64 +620,86 @@ h2,h3{font-weight:600;letter-spacing:-.005em}
 .gtile .gi svg{width:16px;height:16px}
 .gtile:active{transform:translateY(1px)}
 @media (max-width:360px){.hero .figures{grid-template-columns:repeat(2,1fr)}}
-/* ---------- version ordinateur : la même application, disposée pour un grand écran et une souris ----------
+/* ---------- version ordinateur : l'application occupe tout l'écran, sans marges perdues ----------
    Rien ne change sur le téléphone : tout est enfermé dans la requête de largeur. */
 @media (min-width:1100px){
-  /* accueil : le bandeau vert à gauche, les actions à droite, dans une seule carte */
-  .shell.home{max-width:1060px;margin:34px auto 0;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:stretch;
-    background:var(--surface);border:1px solid var(--line);border-radius:28px;overflow:hidden;box-shadow:0 44px 100px -64px rgba(9,51,37,.55)}
-  .shell.home .hero.tight{max-height:none;border-radius:0;text-align:left;align-items:flex-start;padding:52px 44px;flex:1 1 auto}
-  .shell.home .hero.tight .hubmark{margin:0 0 20px}
-  .shell.home .hero.tight h1{font-size:3.5rem}
-  .shell.home .hero.tight p{max-width:32ch;margin:10px 0 0;font-size:1.04rem}
-  .shell.home .hero.tight .label{font-size:.72rem}
-  .shell.home .hero.tight .langbtn{left:auto;right:26px;top:24px;bottom:auto}
-  .shell.home .hero.tight .ledger{width:230px;right:-40px;top:auto;bottom:-30px;opacity:.12}
-  .shell.home .main.login{padding:40px 40px 34px;gap:14px;justify-content:center;background:var(--surface)}
-  .shell.home .main.login .avec-main{padding:22px 24px}
-  .shell.home .main.login .quick{min-height:86px;font-size:.9rem}
-  .shell.home .main.login .demo{padding:14px 16px}
-  .shell.home~.appfoot{max-width:1060px;padding-top:18px}
+  html,body{background:var(--ground)}
+  .shell,.shell:not(.wide),.shell.wide{max-width:none;width:100%;margin:0;border-radius:0}
 
-  /* écrans à onglets : la barre du bas devient une colonne de navigation à gauche */
-  .shell:has(.tabbar){display:grid;grid-template-columns:232px minmax(0,1fr);grid-template-areas:"nav tete" "nav corps";max-width:1140px;
-    background:var(--surface);border:1px solid var(--line);border-radius:26px;overflow:hidden;margin-top:26px;box-shadow:0 44px 100px -64px rgba(9,51,37,.5)}
-  .shell:has(.tabbar)>.topbar{grid-area:tete;position:static}
-  .shell:has(.tabbar)>.main{grid-area:corps;padding:26px 30px 34px}
-  .shell:has(.tabbar)>.tabbar{grid-area:nav;position:static;width:auto;border-top:0;border-right:1px solid var(--line);background:var(--ground);padding:16px 12px;align-items:flex-start;justify-content:flex-start}
-  .shell:has(.tabbar)>.tabbar .in{flex-direction:column;max-width:none;gap:5px;width:100%;align-self:flex-start;position:sticky;top:18px}
+  /* accueil : l'écran coupé en deux, de bord à bord */
+  .shell.home{display:grid;grid-template-columns:minmax(0,1.04fr) minmax(0,.96fr);align-items:stretch;min-height:calc(100vh - 66px)}
+  .shell.home .hero.tight{max-height:none;border-radius:0;text-align:left;align-items:flex-start;justify-content:center;padding:0 clamp(44px,5vw,96px);flex:1 1 auto}
+  .shell.home .hero.tight .hubmark{margin:0 0 22px}
+  .shell.home .hero.tight h1{font-size:clamp(3rem,4.6vw,4.4rem)}
+  .shell.home .hero.tight p{max-width:30ch;margin:12px 0 0;font-size:clamp(1rem,1.15vw,1.2rem)}
+  .shell.home .hero.tight .label{font-size:.74rem}
+  .shell.home .hero.tight .langbtn{left:auto;right:clamp(28px,2.4vw,44px);top:26px;bottom:auto}
+  .shell.home .hero.tight .ledger{width:clamp(240px,22vw,380px);right:-60px;top:auto;bottom:-40px;opacity:.12}
+  .shell.home .main.login{padding:clamp(28px,3vh,48px) clamp(36px,4vw,80px);gap:16px;justify-content:center;background:var(--surface)}
+  .shell.home .main.login>*{width:100%;max-width:560px;margin-left:auto;margin-right:auto}
+  .shell.home .main.login .avec-main{padding:24px 26px}
+  .shell.home .main.login .quick{min-height:88px;font-size:.92rem}
+  .shell.home~.appfoot{max-width:none;border-top:1px solid var(--line);padding:13px 16px;min-height:66px}
+
+  /* écrans à onglets : colonne de navigation à gauche, contenu sur deux colonnes */
+  .shell:has(.tabbar){display:grid;grid-template-columns:clamp(228px,17vw,280px) minmax(0,1fr);grid-template-areas:"nav tete" "nav corps";min-height:100vh}
+  .shell:has(.tabbar)>.topbar{grid-area:tete;position:sticky;top:0}
+  .shell:has(.tabbar)>.main{grid-area:corps;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-content:start;
+    gap:18px clamp(20px,2vw,32px);padding:clamp(20px,2.4vh,30px) clamp(24px,2.6vw,46px) 40px}
+  .shell:has(.tabbar)>.main>*{min-width:0}
+  /* ce qui se lit sur toute la largeur */
+  .shell:has(.tabbar)>.main>.greet,.shell:has(.tabbar)>.main>.ticker,.shell:has(.tabbar)>.main>.grid2,
+  .shell:has(.tabbar)>.main>.kpis,.shell:has(.tabbar)>.main>.tablewrap,.shell:has(.tabbar)>.main>.stepper,
+  .shell:has(.tabbar)>.main>.alert,.shell:has(.tabbar)>.main>.steps,.shell:has(.tabbar)>.main>h1{grid-column:1/-1}
+  .shell:has(.tabbar)>.main>.grid2:has(>.kpi),.shell:has(.tabbar)>.main>.kpis{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .shell:has(.tabbar)>.tabbar{grid-area:nav;position:sticky;top:0;align-self:start;height:100vh;width:auto;border-top:0;
+    border-right:1px solid var(--line);background:var(--surface);padding:18px 14px;align-items:flex-start;justify-content:flex-start}
+  .shell:has(.tabbar)>.tabbar .in{flex-direction:column;max-width:none;gap:5px;width:100%}
   .shell:has(.tabbar) .tab{flex:0 0 auto;flex-direction:row;justify-content:flex-start;gap:12px;padding:12px 14px;border-radius:13px;font-size:.95rem;min-height:0}
   .shell:has(.tabbar) .tabbar .tab svg{width:22px;min-width:22px;height:22px;padding:0;flex:none;background:none}
-  /* les chiffres clés profitent de la largeur : quatre par ligne */
-  .shell:has(.tabbar) .grid2:has(>.kpi){grid-template-columns:repeat(4,minmax(0,1fr))}
   .shell:has(.tabbar) .tab.on{background:var(--brand-soft);color:var(--brand)}
-  .shell:has(.tabbar) .tab::after{display:none}
-  .shell:has(.tabbar) .sticky-foot{bottom:0}
-  .shell:has(.tabbar)~.appfoot{max-width:1140px}
+  .shell:has(.tabbar) .sticky-foot,.shell:not(.home):not(:has(.tabbar)) .sticky-foot{bottom:0;grid-column:1/-1;background:linear-gradient(transparent,var(--ground) 38%);padding-top:14px}
+  .shell:has(.tabbar)~.appfoot{max-width:none;border-top:1px solid var(--line)}
 
-  /* écrans sans onglets (guide, formulaires, assistant) : une colonne de lecture plus large */
-  .shell:not(.wide):not(.home):not(:has(.tabbar)){max-width:900px;margin-top:26px;border-radius:26px;overflow:hidden;border:1px solid var(--line);background:var(--surface);box-shadow:0 44px 100px -64px rgba(9,51,37,.5)}
-  .shell:not(.wide):not(.home):not(:has(.tabbar))>.topbar{position:static}
-  .shell:not(.wide):not(.home):not(:has(.tabbar))~.appfoot{max-width:900px}
+  /* écrans sans onglets (guide, reçus, formulaires) : pleine largeur, texte sur deux colonnes */
+  .shell:not(.home):not(:has(.tabbar))>.main{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-content:start;
+    gap:16px clamp(20px,2vw,32px);padding:clamp(20px,2.4vh,30px) clamp(24px,2.6vw,46px) 40px}
+  .shell:not(.home):not(:has(.tabbar))>.main>*{min-width:0}
+  .shell:not(.home):not(:has(.tabbar))>.main>.steps,.shell:not(.home):not(:has(.tabbar))>.main>.totals,
+  .shell:not(.home):not(:has(.tabbar))>.main>.sticky-foot,.shell:not(.home):not(:has(.tabbar))>.main>.alert,
+  .shell:not(.home):not(:has(.tabbar))>.main>.docintro,.shell:not(.home):not(:has(.tabbar))>.main>.docbloc,
+  .shell:not(.home):not(:has(.tabbar))>.main>.tablewrap,.shell:not(.home):not(:has(.tabbar))>.main>.stepper,
+  .shell:not(.home):not(:has(.tabbar))>.main>h1,.shell:not(.home):not(:has(.tabbar))>.main>.row{grid-column:1/-1}
+  .shell:not(.home):not(:has(.tabbar))>.main>.etapes{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .shell:not(.wide)>.topbar{position:sticky;top:0}
 
+  /* une liste occupe toute la largeur et se lit sur deux colonnes : pas de demi-écran vide */
+  .shell:has(.tabbar)>.main>.list,.shell:not(.home):not(:has(.tabbar))>.main>.list,
+  .shell:has(.tabbar)>.main>.row,.shell:not(.home):not(:has(.tabbar))>.main>.row{grid-column:1/-1}
+  .shell:has(.tabbar)>.main>.list,.shell:not(.home):not(:has(.tabbar))>.main>.list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+  .shell:has(.tabbar)>.main>.list>*:not(:nth-child(2n+1)),
+  .shell:not(.home):not(:has(.tabbar))>.main>.list>*:not(:nth-child(2n+1)){border-left:1px solid var(--line)}
   /* les fenêtres de saisie se posent au milieu de l'écran, pas en bas */
   .scrim{align-items:center;padding:24px}
-  .sheet{max-width:660px;border-radius:24px;max-height:86vh;box-shadow:0 50px 110px -50px rgba(5,15,11,.7)}
+  .sheet{max-width:680px;border-radius:24px;max-height:86vh;box-shadow:0 50px 110px -50px rgba(5,15,11,.7)}
   .sheet .grab{display:none}
 
   /* la souris : on voit ce qu'on survole */
   .li:hover,.quick:hover,.gtile:hover,.kpi:hover{border-color:color-mix(in srgb,var(--brand) 45%,var(--line))}
   .btn:hover{filter:brightness(1.04)}
 }
-@media (min-width:1500px){
-  .shell.home{max-width:1180px}
-  .shell:has(.tabbar){max-width:1280px;grid-template-columns:252px minmax(0,1fr)}
-  .shell:has(.tabbar)~.appfoot,.shell.home~.appfoot{max-width:1280px}
+@media (min-width:1700px){
+  /* très grand écran : trois colonnes plutôt que deux très larges */
+  .shell:has(.tabbar)>.main,.shell:not(.home):not(:has(.tabbar))>.main{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .shell:has(.tabbar)>.main>.grid2:has(>.kpi),.shell:has(.tabbar)>.main>.kpis{grid-template-columns:repeat(6,minmax(0,1fr))}
+  .shell:has(.tabbar)>.main>.list,.shell:not(.home):not(:has(.tabbar))>.main>.list{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .shell:has(.tabbar)>.main>.list>*,.shell:not(.home):not(:has(.tabbar))>.main>.list>*{border-left:0}
+  .shell:has(.tabbar)>.main>.list>*:not(:nth-child(3n+1)),.shell:not(.home):not(:has(.tabbar))>.main>.list>*:not(:nth-child(3n+1)){border-left:1px solid var(--line)}
 }
 </style>
 <style>html,body{margin:0}</style>
 </head><body>
-<script>window.KITABU_PWA = true; window.KITABU_VERSION = 'akiba-202610100851';</script>
+<script>window.KITABU_PWA = true; window.KITABU_VERSION = 'akiba-202610100908';</script>
 
 <div id="app"></div>
 <script src="core.js"></script>
