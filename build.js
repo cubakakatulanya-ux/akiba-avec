@@ -10,9 +10,15 @@ const CIBLE = process.argv[3] || 'avec';
 const PROFILS = {
   avec: { nom: 'Akiba AVEC', court: 'Akiba', titre: 'Akiba AVEC', domaine: 'akiba.uborardc.com', prefixe: 'akiba',
     description: "Le cahier de l'AVEC dans le téléphone, même sans réseau. Développée par l'Entreprise Sociale Ubora.",
+    titreSeo: "AKIBA : l'application des groupes d'épargne (AVEC) en RDC · Ubora",
+    descSeo: "AKIBA remplace le cahier des associations villageoises d'épargne et de crédit (AVEC) : cotisations, prêts, remboursements, reçus et partage de fin de cycle, même sans réseau. Une application de l'Entreprise Sociale Ubora.",
+    nomSeo: 'AKIBA · Ubora', autresNoms: ['Akiba AVEC', 'AKIBA Ubora'], robots: 'index, follow, max-image-preview:large',
     teinte: { fond: '#0F4D3A', fondClair: '#1B6E52', gens: '#7CC49A' }, sansFichiers: ['admin.js'] },
   suivi: { nom: 'Akiba Suivi', court: 'Akiba Suivi', titre: 'Akiba Suivi', domaine: 'akibas.uborardc.com', prefixe: 'akiba-suivi',
     description: "Suivi des AVEC pour les animateurs, les organisations et Ubora : tableau de bord, qualité des données, export Excel.",
+    titreSeo: 'Akiba Suivi : suivi des AVEC pour les animateurs et les organisations · Ubora',
+    descSeo: "Akiba Suivi réunit les journaux scellés des AVEC : tableau de bord des animateurs et des organisations, qualité des données, dossier pour une institution de microfinance, export Excel. Une application de l'Entreprise Sociale Ubora.",
+    nomSeo: 'Akiba Suivi · Ubora', autresNoms: ['Akiba Suivi Ubora'], robots: 'noindex, follow',   // outil de travail : pas d'indexation
     teinte: { fond: '#0B3A52', fondClair: '#14566F', gens: '#8FC6DF' }, sansFichiers: [] }
 };
 const P = PROFILS[CIBLE];
@@ -35,8 +41,12 @@ const version = 'akiba-' + new Date().toISOString().slice(0, 16).replace(/\D/g, 
 fs.writeFileSync(path.join(out, 'index.html'), `<!doctype html>
 <html lang="fr"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>${P.titre}</title>
-<meta name="description" content="${P.description}"><meta name="author" content="Entreprise Sociale Ubora">
+<title>${P.titreSeo}</title>
+<meta name="description" content="${P.descSeo}">
+<link rel="canonical" href="https://${P.domaine}/"><meta name="robots" content="${P.robots}">
+<meta property="og:type" content="website"><meta property="og:site_name" content="${P.nomSeo}"><meta property="og:locale" content="fr_CD"><meta property="og:url" content="https://${P.domaine}/">
+<meta property="og:title" content="${P.titreSeo}"><meta property="og:description" content="${P.descSeo}"><meta property="og:image" content="https://${P.domaine}/icon-512.png">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"${P.nom}","alternateName":${JSON.stringify(P.autresNoms)},"applicationCategory":"FinanceApplication","operatingSystem":"Android, iOS, Windows (navigateur)","inLanguage":"fr","url":"https://${P.domaine}/","description":"${P.descSeo}","publisher":{"@type":"Organization","name":"Entreprise Sociale Ubora","url":"https://uborardc.com/"}}</script><meta name="author" content="Entreprise Sociale Ubora">
 <link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="icon-192.png">
 <meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="${P.court}">
 ${head}
@@ -145,4 +155,11 @@ self.addEventListener('fetch', e => {
 
 fs.copyFileSync(path.join(__dirname, 'LANCER.md'), path.join(out, 'LANCER.md'));
 fs.writeFileSync(path.join(out, '.nojekyll'), '');
+
+// Référencement : les moteurs de recherche lisent ces deux fichiers à la racine du site.
+const indexable = P.robots.startsWith('index');   // Akiba Suivi est un outil de travail : il ne s'indexe pas
+fs.writeFileSync(path.join(out, 'robots.txt'), indexable
+  ? 'User-agent: *\nAllow: /\n\nSitemap: https://' + P.domaine + '/sitemap.xml\n'
+  : 'User-agent: *\nDisallow: /\n');
+if (indexable) fs.writeFileSync(path.join(out, 'sitemap.xml'), '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <url><loc>https://' + P.domaine + '/</loc><lastmod>' + new Date().toISOString().slice(0, 10) + '</lastmod></url>\n</urlset>\n');
 console.log('dist/ prêt :', fs.readdirSync(out).join(', '), '· cache', version);
