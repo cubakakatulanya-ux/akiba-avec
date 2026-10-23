@@ -708,10 +708,38 @@ h2,h3{font-weight:600;letter-spacing:-.005em}
   .shell.home:has(.main.login>.alert.warn) .hero.tight h1{font-size:clamp(1.9rem,5.4vh,2.5rem)}
   .shell.home:has(.main.login>.alert.warn) .hero.tight .hubmark{width:38px;height:38px;margin-bottom:5px}
 }
+
+/* ---------- finitions : la bande défilante et les tableaux de bord sur grand écran ---------- */
+/* La bande s'efface sur ses bords : un mot coupé net fait négligé. */
+.ticker::before,.ticker::after{width:48px}
+.ticker::before{background:linear-gradient(90deg,var(--surface) 45%,transparent)}
+.ticker::after{background:linear-gradient(270deg,var(--surface) 45%,transparent)}
+
+@media (min-width:1100px){
+  /* Ces blocs se lisent sur toute la largeur : en colonne, la bande s'étirait en une grande boîte vide
+     et les chiffres se serraient dans un demi-écran. */
+  .shell:not(.home):not(:has(.tabbar))>.main>.ticker,
+  .shell:not(.home):not(:has(.tabbar))>.main>.kpis,
+  .shell:not(.home):not(:has(.tabbar))>.main>.dash,
+  .shell:not(.home):not(:has(.tabbar))>.main>.quicks,
+  .shell:has(.tabbar)>.main>.ticker,.shell:has(.tabbar)>.main>.dash,.shell:has(.tabbar)>.main>.quicks{grid-column:1/-1}
+  .shell>.main>.ticker{align-self:start}
+  /* le tableau des AVEC a onze colonnes : il prend toute la largeur, le reste se range dessous */
+  .shell>.main>.dash{grid-template-columns:minmax(0,1fr)}
+  .shell>.main>.dash>.stack:last-child{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px clamp(20px,2vw,32px);align-items:start}
+  .shell>.main>.dash>.stack:last-child>h2{grid-column:1/-1}
+  /* un libellé de bouton ne se casse pas en trois lignes */
+  .quicks .quick{min-height:0;padding:10px 16px;white-space:nowrap}
+  .choice .btn,.grid2 .btn{white-space:nowrap}
+  /* les chiffres ne se coupent jamais ; les noms, eux, peuvent passer à la ligne
+     plutôt que de pousser les dernières colonnes hors de'écran */
+  .tablewrap table{table-layout:auto}
+  .tablewrap td.r,.tablewrap th.r,.tablewrap td .chip{white-space:nowrap}
+}
 </style>
 <style>html,body{margin:0}</style>
 </head><body>
-<script>window.KITABU_PWA = true; window.KITABU_VERSION = 'akiba-202610231125'; window.AKIBA_CIBLE = 'suivi';</script>
+<script>window.KITABU_PWA = true; window.KITABU_VERSION = 'akiba-202610231731'; window.AKIBA_CIBLE = 'suivi';</script>
 
 <div id="app"></div>
 <script src="core.js"></script>
