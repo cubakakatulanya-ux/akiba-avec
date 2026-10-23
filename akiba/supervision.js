@@ -113,21 +113,6 @@ SCREENS.login = () => {
     ${demo}
   </main></div>`;
 };
-/* animateurs, organisations et administrateur : des utilisateurs secondaires, rangés sous un lien */
-ACT.otherAccess = () => {
-  const hasAnim = K.data.users.some(u => u.role === 'anim' && !u.remote);
-  const hasOrg = K.data.users.some(u => u.role === 'org' && !u.remote);
-  const row = (act, to, role, icon, title, sub) => `<button class="li" data-act="${act}" ${to ? `data-to="${to}"` : ''} ${role ? `data-role="${role}"` : ''}><span class="xl-ic">${ic(icon)}</span><span class="grow"><b>${title}</b><span class="small muted">${sub}</span></span>${ic('chev')}</button>`;
-  App.openSheet(`<h2>Autres accès</h2><p class="muted">Ces espaces servent aux animateurs, aux organisations et à Ubora. Le groupe, lui, entre par le grand bouton AVEC.</p>
-    <div class="list">
-      ${hasAnim ? row('go', 'l.users', 'anim', 'map', 'Animateur de terrain', 'Je suis plusieurs AVEC') : ''}
-      ${hasOrg ? row('go', 'l.users', 'org', 'building', 'Organisation', 'Tableau de bord de nos AVEC') : ''}
-      ${K.data.avecs.length ? '' : row('receiveSheet', '', '', 'sync', 'Recevoir une AVEC', 'Fichier envoyé par l\'animateur')}
-      ${row('go', 'adm.home', '', 'key', 'Espace administrateur Ubora', 'Codes de validation et blocages')}
-      ${K.data.avecs.length ? row('receiveSheet', '', '', 'sync', 'Recevoir une AVEC', 'Fichier envoyé par l\'animateur') : ''}
-    </div>
-    <button class="btn ghost block" data-act="closeSheet">Fermer</button>`);
-};
 ACT.resetDemo = () => App.openSheet(`<h2>Remettre la démo à zéro ?</h2><p class="muted">Toutes les réunions ajoutées sur ce téléphone seront effacées et les données fictives rechargées.</p>
   <button class="btn danger block xl" data-act="resetDemoOk">Effacer et recharger</button><button class="btn ghost block" data-act="closeSheet">Garder mes données</button>`);
 ACT.resetDemoOk = () => { DB.reset(); Object.keys(_chain).forEach(k => delete _chain[k]); App.go('login'); App.toast('Démo rechargée'); };
