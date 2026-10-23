@@ -5,7 +5,7 @@ Akiba se construit en deux applications distinctes à partir du même code.
 | | **Akiba** | **Akiba Suivi** |
 |---|---|---|
 | pour qui | le bureau et les membres d'une AVEC | animateurs, organisations, administration d'Ubora |
-| adresse | `akiba.uborardc.com` | `avec.uborardc.com` |
+| adresse | `akiba.uborardc.com` | `akibas.uborardc.com` |
 | dossier construit | `docs/` | `docs-suivi/` |
 | commande | `node build.js docs` | `node build.js docs-suivi suivi` |
 | accueil | le grand bouton AVEC, Créer une AVEC, Guide, Recevoir une AVEC | Animateur, Organisation, Recevoir une AVEC, Espace administrateur, Guide, Formation |
@@ -35,14 +35,14 @@ l'argent d'un groupe ne se rattrape pas.
 ## Mettre en ligne la deuxième application
 
 1. Créer un dépôt GitHub `akiba-suivi` (public, vide).
-2. Y copier le contenu de `docs-suivi/` (qui contient déjà son `CNAME` : `avec.uborardc.com`).
+2. Y copier le contenu de `docs-suivi/` (qui contient déjà son `CNAME` : `akibas.uborardc.com`).
 3. Dans *Settings › Pages* du nouveau dépôt : source « Deploy from a branch », branche `main`, dossier `/`
    (ou `/docs` si vous préférez garder la même disposition).
 4. Chez le fournisseur du domaine `uborardc.com`, ajouter un enregistrement **CNAME** :
-   `avec` → `cubakakatulanya-ux.github.io`.
+   `akibas` → `cubakakatulanya-ux.github.io`.
 5. Attendre le certificat HTTPS (quelques minutes), puis cocher *Enforce HTTPS*.
 
-Tant que l'étape 4 n'est pas faite, `avec.uborardc.com` ne répond pas ; `docs/` et
+Tant que l'étape 4 n'est pas faite, `akibas.uborardc.com` ne répond pas ; `docs/` et
 `akiba.uborardc.com` continuent de fonctionner comme avant.
 
 ## Essais

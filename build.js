@@ -5,13 +5,13 @@ const src = path.join(__dirname, 'akiba'), out = path.join(__dirname, process.ar
 
 /* Deux applications depuis la même source :
      node build.js docs           → Akiba, pour les groupes          (akiba.uborardc.com)
-     node build.js docs-suivi suivi → Akiba Suivi, pour les animateurs, les ONG et Ubora (avec.uborardc.com) */
+     node build.js docs-suivi suivi → Akiba Suivi, pour les animateurs, les ONG et Ubora (akibas.uborardc.com) */
 const CIBLE = process.argv[3] || 'avec';
 const PROFILS = {
   avec: { nom: 'Akiba AVEC', court: 'Akiba', titre: 'Akiba AVEC', domaine: 'akiba.uborardc.com', prefixe: 'akiba',
     description: "Le cahier de l'AVEC dans le téléphone, même sans réseau. Développée par l'Entreprise Sociale Ubora.",
     teinte: { fond: '#0F4D3A', fondClair: '#1B6E52', gens: '#7CC49A' }, sansFichiers: ['admin.js'] },
-  suivi: { nom: 'Akiba Suivi', court: 'Akiba Suivi', titre: 'Akiba Suivi', domaine: 'avec.uborardc.com', prefixe: 'akiba-suivi',
+  suivi: { nom: 'Akiba Suivi', court: 'Akiba Suivi', titre: 'Akiba Suivi', domaine: 'akibas.uborardc.com', prefixe: 'akiba-suivi',
     description: "Suivi des AVEC pour les animateurs, les organisations et Ubora : tableau de bord, qualité des données, export Excel.",
     teinte: { fond: '#0B3A52', fondClair: '#14566F', gens: '#8FC6DF' }, sansFichiers: [] }
 };
@@ -27,7 +27,7 @@ const assets = ['ubora-logo.png', 'ubora-hub.png', 'qrcode.min.js', 'blocage.txt
 assets.forEach(f => fs.copyFileSync(path.join(src, f), path.join(out, f)));
 fs.writeFileSync(path.join(out, 'CNAME'), P.domaine + '\n');
 const cut = html.indexOf('</style>') + '</style>'.length;
-const head = html.slice(0, cut).replace('<title>${P.titre}</title>', '');
+const head = html.slice(0, cut).replace(/<title>[^<]*<\/title>/, '');   // le titre du profil remplace celui de la source
 /* les fichiers retirés de cette cible disparaissent aussi de la page */
 const body = P.sansFichiers.reduce((h, f) => h.split(`<script src="${f}"></script>\n`).join('').split(`<script src="${f}"></script>`).join(''), html.slice(cut));
 const version = 'akiba-' + new Date().toISOString().slice(0, 16).replace(/\D/g, '');
