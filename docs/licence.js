@@ -173,7 +173,7 @@ SCREENS['lic.gate'] = () => `<div class="shell">
         <button class="btn ghost block" data-act="receiveSheet">${ic('sync')} Recevoir une AVEC</button>
       </section>`}
       ${supportCard()}
-      <button class="btn ghost block" data-act="go" data-to="adm.home">${ic('key')} Espace administrateur Ubora</button>
+      ${estSuivi() ? `<button class="btn ghost block" data-act="go" data-to="adm.home">${ic('key')} Espace administrateur Ubora</button>` : ''}
     </main></div>`;
 
 function requireLicence(then) {

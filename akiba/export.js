@@ -99,7 +99,7 @@ function exportSheets(avecs) {
 
   const avecSheet = {
     name: 'AVEC', cols: [
-      { h: 'AVEC', w: 26 }, { h: 'Statut', w: 11 }, { h: 'Animateur', w: 22 }, { h: 'Province', w: 14 }, { h: 'Territoire / ville', w: 18 }, { h: 'Village / quartier', w: 18 },
+      { h: 'AVEC', w: 26 }, { h: 'Statut', w: 11 }, { h: 'Animateur', w: 22 }, { h: 'Province', w: 14 }, { h: 'Territoire / ville', w: 18 }, { h: 'Village / quartier', w: 18 }, { h: 'Latitude', w: 12, t: 'n' }, { h: 'Longitude', w: 12, t: 'n' }, { h: 'Précision GPS (m)', w: 11, t: 'n' },
       { h: 'Jour de réunion', w: 14 }, { h: 'Cycle n°', w: 9, t: 'n' }, { h: 'Début du cycle', w: 13, t: 'd' }, { h: 'Fin prévue', w: 13, t: 'd' },
       { h: 'Membres actifs', w: 10, t: 'n' }, { h: 'Femmes', w: 9, t: 'n' }, { h: 'Réunions reçues', w: 10, t: 'n' }, { h: 'Dernière réunion', w: 13, t: 'd' }, { h: 'Présence', w: 10, t: 'p' },
       { h: 'Valeur de la part achetée (FC)', w: 14, t: 'n' }, { h: 'Parts', w: 9, t: 'n' }, { h: 'Épargne (FC)', w: 13, t: 'n' }, { h: 'Valeur actuelle d\'une part (FC)', w: 14, t: 'n' },
@@ -109,7 +109,7 @@ function exportSheets(avecs) {
       { h: 'Crédit extérieur restant (FC)', w: 13, t: 'n' }, { h: 'Frais du crédit extérieur (FC)', w: 13, t: 'n' },
       { h: 'Qualité des données (sur 100)', w: 12, t: 'n' }, { h: 'Prête pour une IMF', w: 16 }
     ],
-    rows: rows.map(({ a, st }) => [a.name, STATUS_TXT[a.status || 'active'] || a.status, animName(a), a.province, a.territoire, a.village,
+    rows: rows.map(({ a, st }) => [a.name, STATUS_TXT[a.status || 'active'] || a.status, animName(a), a.province, a.territoire, a.village, a.gps ? a.gps.lat : null, a.gps ? a.gps.lon : null, a.gps ? a.gps.acc : null,
       a.settings.meetingDay, a.cycle.n, a.cycle.start, cycleEnd(a), st.activeCount, st.women, st.meetings.length, st.last ? st.last.date : null, st.attendance,
       a.settings.partValue, st.parts, st.sum.EPARGNE, Math.round(st.shareValue), st.activeLoans.length, st.outstanding, st.lateAmt, st.par,
       st.interest, st.sum.AMENDE, st.socialFund, st.sum.AIDE, st.cash, st.ecarts.length, trainingCount(a), (a.visits || []).length, st.extDebt, st.sum.EXT_FEE, dataQuality(a, st, chainOf(a)).score, imfReady(a, st, chainOf(a)).label])

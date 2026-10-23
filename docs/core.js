@@ -86,6 +86,7 @@ const TX = {
   EXT_FEE: { l: 'Frais du crédit extérieur', in: false },
   EXT_REPAY: { l: 'Remboursement au prêteur', in: false },
   EXT_GUAR: { l: 'Garantie retenue par le prêteur', in: false },
+  GEO: { l: 'Point GPS du groupe', in: null },
   ANNUL: { l: 'Annulation', in: null }
 };
 
@@ -512,10 +513,41 @@ function seed() {
 
 /* ---------- moteur d'écran ---------- */
 const SCREENS = {}, ACT = {}, INP = {};
+
+/* Deux applications depuis la même source : « avec » dans les villages, « suivi » pour les animateurs,
+   les organisations et Ubora. La cible est posée par la construction (build.js) ; sans elle, on est côté village. */
+const CIBLE = (typeof window !== 'undefined' && window.AKIBA_CIBLE) || 'avec';
+const estSuivi = () => CIBLE === 'suivi';
+const ECRANS_SUIVI = /^(n[.]|o[.]|adm[.]|s[.]org)/;                 // animateur, organisation, administrateur
+const ecranDisponible = s => estSuivi() || !ECRANS_SUIVI.test(s);
+const APP_NOM = () => estSuivi() ? 'Akiba Suivi' : 'Akiba';
+/* la feuille de style s'appuie dessus pour la mise en page ordinateur du suivi */
+try { document.documentElement.dataset.cible = CIBLE; } catch (e) { /* hors navigateur */ }
+
+/* Fond clair ou fond sombre : au choix de l'utilisateur, ou comme le réglage du téléphone.
+   Le choix est gardé sur l'appareil ; il ne voyage pas avec les données du groupe. */
+const THEME_STORE = 'kitabu.theme';
+const THEMES = { auto: 'Comme le téléphone', light: 'Fond clair', dark: 'Fond sombre' };
+const themeChoisi = () => { try { return THEMES[localStorage.getItem(THEME_STORE)] ? localStorage.getItem(THEME_STORE) : 'auto'; } catch (e) { return 'auto'; } };
+function appliquerTheme(v = themeChoisi()) {
+  try {
+    const r = document.documentElement;
+    if (v === 'auto') delete r.dataset.theme; else r.dataset.theme = v;
+    const sombre = v === 'dark' || (v === 'auto' && window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches);
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute('content', sombre ? '#0A1411' : '#0F4D3A');
+  } catch (e) { /* hors navigateur */ }
+}
+appliquerTheme();
+
 const App = {
   screen: 'login', params: {}, sheet: null,
   hist: [],
   go(screen, params = {}, isBack = false) {
+    if (!ecranDisponible(screen)) {                                 // espace réservé à Akiba Suivi : on reste à l'accueil
+      screen = 'login'; params = {};
+      setTimeout(() => this.toast('Cet espace se trouve dans l’application Akiba Suivi'), 0);
+    }
     const same = this.screen === screen && JSON.stringify(clean(this.params)) === JSON.stringify(clean(params));
     if (!isBack && this.screen && !same) {
       this.hist.push({ screen: this.screen, params: this.params });

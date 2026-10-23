@@ -183,6 +183,25 @@ const I18N = {
 };
 
 /* ---------- choix de la langue ---------- */
+/* Fond clair ou sombre : le même écran se lit mieux au soleil en clair, et le soir en sombre. */
+ACT.themeSheet = () => {
+  const cur = themeChoisi();
+  const ligne = (id, titre, sous) => `<button class="li" data-act="setTheme" data-v="${id}"><span class="xl-ic">${ic(id === 'light' ? 'eye' : id === 'dark' ? 'cloud' : 'settings')}</span>
+    <span class="grow"><b>${titre}</b><span class="small muted">${sous}</span></span>${cur === id ? `<span class="chip brand">Choisi</span>` : ic('chev')}</button>`;
+  App.openSheet(`<h2>Apparence</h2><p class="muted">Le fond clair se lit mieux en plein soleil ; le fond sombre fatigue moins les yeux le soir et économise un peu de batterie.</p>
+    <div class="list">
+      ${ligne('light', 'Fond clair', 'Toujours clair, quel que soit le téléphone')}
+      ${ligne('dark', 'Fond sombre', 'Toujours sombre')}
+      ${ligne('auto', 'Comme le téléphone', 'Suit le réglage d\'Android ou d\'iPhone')}
+    </div>
+    <button class="btn ghost block" data-act="closeSheet">Fermer</button>`);
+};
+ACT.setTheme = p => {
+  try { localStorage.setItem(THEME_STORE, p.v); } catch (e) { /* stockage indisponible : le choix vaut pour cette session */ }
+  appliquerTheme(p.v);
+  App.sheet = null; render(); App.toast(THEMES[p.v]);
+};
+
 ACT.langSheet = () => {
   const cur = I18N.cur();
   App.openSheet(`<h2>Langue · Monoko · Lugha</h2>

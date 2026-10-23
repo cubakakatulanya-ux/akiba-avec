@@ -2,43 +2,61 @@
 // Usage : node build.js
 const fs = require('fs'), path = require('path');
 const src = path.join(__dirname, 'akiba'), out = path.join(__dirname, process.argv[2] || 'dist');
+
+/* Deux applications depuis la même source :
+     node build.js docs           → Akiba, pour les groupes          (akiba.uborardc.com)
+     node build.js docs-suivi suivi → Akiba Suivi, pour les animateurs, les ONG et Ubora (avec.uborardc.com) */
+const CIBLE = process.argv[3] || 'avec';
+const PROFILS = {
+  avec: { nom: 'Akiba AVEC', court: 'Akiba', titre: 'Akiba AVEC', domaine: 'akiba.uborardc.com', prefixe: 'akiba',
+    description: "Le cahier de l'AVEC dans le téléphone, même sans réseau. Développée par l'Entreprise Sociale Ubora.",
+    teinte: { fond: '#0F4D3A', fondClair: '#1B6E52', gens: '#7CC49A' }, sansFichiers: ['admin.js'] },
+  suivi: { nom: 'Akiba Suivi', court: 'Akiba Suivi', titre: 'Akiba Suivi', domaine: 'avec.uborardc.com', prefixe: 'akiba-suivi',
+    description: "Suivi des AVEC pour les animateurs, les organisations et Ubora : tableau de bord, qualité des données, export Excel.",
+    teinte: { fond: '#0B3A52', fondClair: '#14566F', gens: '#8FC6DF' }, sansFichiers: [] }
+};
+const P = PROFILS[CIBLE];
+if (!P) throw new Error('cible inconnue : ' + CIBLE + " (avec ou suivi)");
 fs.rmSync(out, { recursive: true, force: true });
 fs.mkdirSync(out, { recursive: true });
 
 const html = fs.readFileSync(path.join(src, 'index.html'), 'utf8');
-const scripts = [...html.matchAll(/<script src="([^"]+)"><\/script>/g)].map(m => m[1]);
+const scripts = [...html.matchAll(/<script src="([^"]+)"><\/script>/g)].map(m => m[1]).filter(f => !P.sansFichiers.includes(f));
 scripts.forEach(f => fs.copyFileSync(path.join(src, f), path.join(out, f)));
-const assets = ['ubora-logo.png', 'ubora-hub.png', 'qrcode.min.js', 'blocage.txt', 'CNAME'];                                   // images de l'application (gardées hors ligne)
+const assets = ['ubora-logo.png', 'ubora-hub.png', 'qrcode.min.js', 'blocage.txt'];                                   // images de l'application (gardées hors ligne)
 assets.forEach(f => fs.copyFileSync(path.join(src, f), path.join(out, f)));
+fs.writeFileSync(path.join(out, 'CNAME'), P.domaine + '\n');
 const cut = html.indexOf('</style>') + '</style>'.length;
-const head = html.slice(0, cut).replace('<title>Akiba AVEC</title>', '');
-const body = html.slice(cut);
+const head = html.slice(0, cut).replace('<title>${P.titre}</title>', '');
+/* les fichiers retirés de cette cible disparaissent aussi de la page */
+const body = P.sansFichiers.reduce((h, f) => h.split(`<script src="${f}"></script>\n`).join('').split(`<script src="${f}"></script>`).join(''), html.slice(cut));
 const version = 'akiba-' + new Date().toISOString().slice(0, 16).replace(/\D/g, '');
 
 fs.writeFileSync(path.join(out, 'index.html'), `<!doctype html>
 <html lang="fr"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Akiba AVEC</title>
-<meta name="description" content="Gestion des associations villageoises d'épargne et de crédit, même sans réseau. Développée par l'Entreprise Sociale Ubora."><meta name="author" content="Entreprise Sociale Ubora">
+<title>${P.titre}</title>
+<meta name="description" content="${P.description}"><meta name="author" content="Entreprise Sociale Ubora">
 <link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="icon-192.png">
-<meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Akiba">
+<meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="${P.court}">
 ${head}
 <style>html,body{margin:0}</style>
 </head><body>
-<script>window.KITABU_PWA = true; window.KITABU_VERSION = '${version}';</script>
+<script>window.KITABU_PWA = true; window.KITABU_VERSION = '${version}'; window.AKIBA_CIBLE = '${CIBLE}';</script>
 ${body}
 </body></html>
 `);
 
+const hex = s => [1, 3, 5].map(i => parseInt(s.slice(i, i + 2), 16));
 // Icône Akiba : le groupe (trois membres), la pièce d'épargne qui entre dans la caisse, et la caisse aux trois cadenas.
 const ICON = {
-  bg: [15, 77, 58], bgLight: [27, 110, 82], people: [124, 196, 154], box: [255, 255, 255], lid: [226, 236, 229],
+  bg: hex(P.teinte.fond), bgLight: hex(P.teinte.fondClair), people: hex(P.teinte.gens), box: [255, 255, 255], lid: [226, 236, 229],
   gold: [242, 183, 5], goldDark: [201, 146, 0], ink: [15, 77, 58],
   heads: [[176, 150, 34], [256, 126, 38], [336, 150, 34]], shoulders: [[176, 238, 64, 56], [256, 226, 72, 62], [336, 238, 64, 56]],
   box0: [128, 262, 384, 408], lidY: 296, slot: [222, 274, 290, 284], coin: [256, 246, 32], locks: [176, 256, 336], lockY: 332
 };
 const svgLock = x => `<path d="M${x - 16} ${ICON.lockY}v-10a16 16 0 0 1 32 0v10" fill="none" stroke="#F2B705" stroke-width="7"/><rect x="${x - 22}" y="${ICON.lockY}" width="44" height="38" rx="7" fill="#F2B705"/><circle cx="${x}" cy="${ICON.lockY + 16}" r="5" fill="#0F4D3A"/><rect x="${x - 2.5}" y="${ICON.lockY + 17}" width="5" height="12" fill="#0F4D3A"/>`;
-fs.writeFileSync(path.join(out, 'icon.svg'), `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><defs><radialGradient id="g" cx="50%" cy="40%" r="70%"><stop offset="0" stop-color="#1B6E52"/><stop offset="1" stop-color="#0F4D3A"/></radialGradient></defs><rect width="512" height="512" rx="112" fill="url(#g)"/>${ICON.shoulders.map(([x, y, rx, ry]) => `<path d="M${x - rx} ${y + 30}v-${30}a${rx} ${ry} 0 0 1 ${rx * 2} 0v30z" fill="#7CC49A"/>`).join('')}${ICON.heads.map(([x, y, r]) => `<circle cx="${x}" cy="${y}" r="${r}" fill="#7CC49A"/>`).join('')}<circle cx="256" cy="246" r="32" fill="#F2B705"/><circle cx="256" cy="246" r="21" fill="none" stroke="#C99200" stroke-width="5"/><rect x="128" y="262" width="256" height="146" rx="20" fill="#fff"/><rect x="128" y="262" width="256" height="34" rx="16" fill="#E2ECE5"/><rect x="222" y="274" width="68" height="10" rx="5" fill="#0F4D3A"/>${ICON.locks.map(svgLock).join('')}</svg>`);
+fs.writeFileSync(path.join(out, 'icon.svg'), `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><defs><radialGradient id="g" cx="50%" cy="40%" r="70%"><stop offset="0" stop-color="${P.teinte.fondClair}"/><stop offset="1" stop-color="${P.teinte.fond}"/></radialGradient></defs><rect width="512" height="512" rx="112" fill="url(#g)"/>${ICON.shoulders.map(([x, y, rx, ry]) => `<path d="M${x - rx} ${y + 30}v-${30}a${rx} ${ry} 0 0 1 ${rx * 2} 0v30z" fill="${P.teinte.gens}"/>`).join('')}${ICON.heads.map(([x, y, r]) => `<circle cx="${x}" cy="${y}" r="${r}" fill="${P.teinte.gens}"/>`).join('')}<circle cx="256" cy="246" r="32" fill="#F2B705"/><circle cx="256" cy="246" r="21" fill="none" stroke="#C99200" stroke-width="5"/><rect x="128" y="262" width="256" height="146" rx="20" fill="#fff"/><rect x="128" y="262" width="256" height="34" rx="16" fill="#E2ECE5"/><rect x="222" y="274" width="68" height="10" rx="5" fill="#0F4D3A"/>${ICON.locks.map(svgLock).join('')}</svg>`);
 
 // Icônes PNG (obligatoires pour l'installation sur Android et iPhone), dessinées sans bibliothèque.
 const zlib = require('zlib');
@@ -96,9 +114,9 @@ fs.writeFileSync(path.join(out, 'icon-192.png'), iconPng(192));
 fs.writeFileSync(path.join(out, 'icon-512.png'), iconPng(512));
 
 fs.writeFileSync(path.join(out, 'manifest.webmanifest'), JSON.stringify({
-  id: './', name: 'Akiba AVEC', short_name: 'Akiba', lang: 'fr', start_url: './', scope: './', display: 'standalone', orientation: 'portrait',
-  background_color: '#0F4D3A', theme_color: '#0F4D3A', categories: ['finance', 'productivity'],
-  description: "Le cahier de l'AVEC dans le téléphone, même sans réseau. Développée par l'Entreprise Sociale Ubora.",
+  id: './', name: P.nom, short_name: P.court, lang: 'fr', start_url: './', scope: './', display: 'standalone', orientation: 'portrait',
+  background_color: P.teinte.fond, theme_color: P.teinte.fond, categories: ['finance', 'productivity'],
+  description: P.description,
   icons: [
     { src: 'icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
     { src: 'icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },

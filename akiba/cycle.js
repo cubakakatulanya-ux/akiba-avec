@@ -273,6 +273,7 @@ function memberActions(avec, me, x, d) {
   if (self) items.push(`<button class="li" data-act="pinChangeSheet">${rowIc('key')}<span class="grow"><b>Changer mon code secret</b><span class="small muted">4 chiffres, à ne donner à personne</span></span>${ic('chev')}</button>`);
   if (b && !self && !x.left) items.push(`<button class="li" data-act="pinResetSheet" data-id="${x.id}">${rowIc('lock')}<span class="grow"><b>Code oublié</b><span class="small muted">Donner un nouveau code à ce membre</span></span>${ic('chev')}</button>`);
   if (b && !x.left) items.push(`<button class="li" data-act="departSheet" data-id="${x.id}">${rowIc('logout')}<span class="grow"><b>Départ du groupe</b><span class="small muted">${open ? 'Rendre son épargne et fermer son carnet' : 'Se fait pendant une réunion ouverte'}</span></span>${ic('chev')}</button>`);
+  if (self && !b) items.push(`<button class="li" data-act="themeSheet">${rowIc('eye')}<span class="grow"><b>Apparence</b><span class="small muted">${THEMES[themeChoisi()]}</span></span>${ic('chev')}</button>`);
   if (self && !b) items.push(`<button class="li" data-act="langSheet">${rowIc('globe')}<span class="grow"><b>Langue</b><span class="small muted">${esc(I18N.name())}</span></span>${ic('chev')}</button>`);
   if (self && !b) items.push(`<button class="li" data-act="go" data-to="guide">${rowIc('book')}<span class="grow"><b>Guide d'utilisation</b><span class="small muted">Comment marche l'AVEC et l'application</span></span>${ic('chev')}</button>`);
   return `${d.fineDebt > 0 ? `<div class="alert warn"><span style="width:22px;flex:none">${ic('gavel')}</span><div><b>Amendes dues : ${fc(d.fineDebt)}</b><span class="small">À payer à la prochaine réunion. Sinon, retenues au partage.</span></div></div>` : ''}
@@ -378,6 +379,7 @@ ACT.placeSheet = () => {
   App.openSheet(`<h2>Lieu du groupe</h2>
     <p class="muted">Province et territoire ou ville : liste officielle de la RDC. Le reste s'écrit ; les noms déjà utilisés sont proposés.</p>
     ${geoFields('pl', avec)}
+    ${gpsBloc(avec)}
     <button class="btn primary block xl" data-act="savePlace">${ic('check')} Enregistrer le lieu</button>`);
 };
 ACT.savePlace = () => {
@@ -413,6 +415,7 @@ SCREENS['a.more'] = () => {
       ${li('dev.backup', 'home', 'Installer et sauvegarder', K.data.lastBackup ? 'Dernière sauvegarde ' + ago(K.data.lastBackup) : 'Aucune sauvegarde pour le moment')}
       ${li('guide', 'book', 'Guide d\'utilisation', 'Tout sur l\'AVEC et l\'application')}
       ${li('', 'globe', 'Langue', I18N.name(), 'langSheet')}
+      ${li('', 'eye', 'Apparence', THEMES[themeChoisi()], 'themeSheet')}
       ${li('', 'cloud', 'Synchronisation', `${pending(avec)} écriture(s) à envoyer`, 'syncSheet')}
     </div>
     <section class="section"><h2>Règlement intérieur · cycle ${avec.cycle.n}</h2><div class="list">

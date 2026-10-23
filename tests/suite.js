@@ -340,8 +340,24 @@ window.__akibaTests = async function () {
     return codes.length + ' langues';
   });
 
-  /* ---------- L. console administrateur ---------- */
+  /* ---------- K bis. point GPS du groupe ---------- */
+  await t("Le point GPS s'écrit dans le journal scellé et ne casse pas la chaîne", () => {
+    const a = avecById(A);
+    const avant = a.tx.length;
+    const g = gpsEnregistrer(a, { latitude: -0.4772, longitude: 29.2048, accuracy: 8.4 }, null);
+    eq(a.tx.length, avant + 1, "une écriture ajoutée");
+    const der = a.tx[a.tx.length - 1];
+    eq(der.type, "GEO", "type de l écriture".replace(" l ", " l'"));
+    eq(der.amount, 0, "le point ne touche pas l argent".replace(" l ", " l'"));
+    near(g.lat, -0.4772, 0.00001, "latitude"); near(g.lon, 29.2048, 0.00001, "longitude");
+    eq(a.gps.acc, 8, "précision arrondie au mètre");
+    must(verifyChain(a).ok !== false, "la chaîne reste vérifiable");
+    must(/-?\d+\.\d{5}, -?\d+\.\d{5}/.test(gpsTexte(a.gps)), "coordonnées lisibles");
+    return gpsTexte(a.gps);
+  });
+  /* ---------- L. console administrateur (seulement dans Akiba Suivi) ---------- */
   await t("La console administrateur compte le contenu du téléphone", () => {
+    if (typeof admStats !== 'function') return 'sans objet : console administrateur réservée à Akiba Suivi';
     const h = admStats();
     must(/AVEC sur ce t/.test(h) && /Membres/.test(h), 'bloc incomplet');
     must(/<b>\d/.test(h), 'aucun chiffre');

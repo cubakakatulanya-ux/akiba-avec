@@ -19,7 +19,7 @@ protectStorage();
 function installBanner() {
   if (!window.KITABU_PWA || isInstalled()) return '';
   return `<button class="alert warn" style="border-top:0;border-right:0;border-bottom:0;width:100%;text-align:left" data-act="go" data-to="dev.backup">
-    ${icSpan('home')}<span style="flex:1"><b>Installer Akiba sur l'écran d'accueil</b><span class="small">Une icône, et l'application s'ouvre sans réseau.</span></span>${ic('chev')}</button>`;
+    ${icSpan('home')}<span style="flex:1"><b>Installer ${APP_NOM()} sur l'écran d'accueil</b><span class="small">Une icône, et l'application s'ouvre sans réseau.</span></span>${ic('chev')}</button>`;
 }
 ACT.install = () => {
   const ev = App.installEvt;
@@ -49,13 +49,13 @@ SCREENS['dev.backup'] = () => {
   const last = K.data.lastBackup;
   const back = K.session ? trBack() : 'login';
   const step = (n, t) => `<li>${t}</li>`;
-  return `<div class="shell">${topbar('Installer et protéger', 'Akiba sur ce téléphone', backBtn(back))}<main class="main">
+  return `<div class="shell">${topbar('Installer et protéger', APP_NOM() + ' sur ce téléphone', backBtn(back))}<main class="main">
     <section class="card stack"><h2>Icône sur l'écran d'accueil</h2>
-      ${installed ? `<div class="alert good">${icSpan('check')}<div><b>Akiba est installé</b><span class="small">Ouvrez-le toujours depuis l'icône verte, même sans réseau.</span></div></div>`
-        : !window.KITABU_PWA ? `<p class="small muted">Cette page est une version de démonstration. Pour installer Akiba, ouvrez l'adresse officielle de l'application dans Chrome.</p>`
-        : App.installEvt ? `<button class="btn primary block xl" data-act="install">${ic('home')} Installer Akiba</button><p class="hint">Une icône verte apparaît sur l'écran d'accueil.</p>`
-        : isIOS() ? `<ol class="small" style="margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:6px">${step(1, 'Ouvrez Akiba dans Safari.')}${step(2, 'Touchez le bouton Partager (carré avec une flèche).')}${step(3, 'Choisissez « Sur l\'écran d\'accueil », puis « Ajouter ».')}</ol>`
-        : `<ol class="small" style="margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:6px">${step(1, 'Ouvrez Akiba dans Chrome.')}${step(2, 'Touchez le menu ⋮ en haut à droite.')}${step(3, 'Choisissez « Installer l\'application » ou « Ajouter à l\'écran d\'accueil ».')}</ol>`}
+      ${installed ? `<div class="alert good">${icSpan('check')}<div><b>${APP_NOM()} est installé</b><span class="small">Ouvrez-le toujours depuis l'icône verte, même sans réseau.</span></div></div>`
+        : !window.KITABU_PWA ? `<p class="small muted">Cette page est une version de démonstration. Pour installer ${APP_NOM()}, ouvrez l'adresse officielle de l'application dans Chrome.</p>`
+        : App.installEvt ? `<button class="btn primary block xl" data-act="install">${ic('home')} Installer ${APP_NOM()}</button><p class="hint">Une icône verte apparaît sur l'écran d'accueil.</p>`
+        : isIOS() ? `<ol class="small" style="margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:6px">${step(1, 'Ouvrez ' + APP_NOM() + ' dans Safari.')}${step(2, 'Touchez le bouton Partager (carré avec une flèche).')}${step(3, 'Choisissez « Sur l\'écran d\'accueil », puis « Ajouter ».')}</ol>`
+        : `<ol class="small" style="margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:6px">${step(1, 'Ouvrez ' + APP_NOM() + ' dans Chrome.')}${step(2, 'Touchez le menu ⋮ en haut à droite.')}${step(3, 'Choisissez « Installer l\'application » ou « Ajouter à l\'écran d\'accueil ».')}</ol>`}
     </section>
 
     ${licenceCard()}

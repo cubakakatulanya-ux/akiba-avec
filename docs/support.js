@@ -23,7 +23,7 @@ function supportCard() {
 function appFooter(screenHtml) {
   const tabs = screenHtml.includes('class="tabbar"');
   return `<footer class="appfoot no-tr"><img class="ubora-logo" src="ubora-logo.png" width="256" height="256" alt="" aria-hidden="true">
-    <span>Akiba · Développée par l'Entreprise Sociale Ubora<br><a href="tel:${UBORA.tel}">${UBORA.telShow}</a> · <a href="${waLink()}" target="_blank" rel="noopener">WhatsApp</a></span></footer>${tabs ? '<div class="tabspace" aria-hidden="true"></div>' : ''}`;
+    <span>${APP_NOM()} · Développée par l'Entreprise Sociale Ubora<br><a href="tel:${UBORA.tel}">${UBORA.telShow}</a> · <a href="${waLink()}" target="_blank" rel="noopener">WhatsApp</a></span></footer>${tabs ? '<div class="tabspace" aria-hidden="true"></div>' : ''}`;
 }
 ICONS.chat = '<path d="M20 12a8 8 0 0 1-11.8 7L4 20l1.1-4A8 8 0 1 1 20 12z"/><path d="M9 10h6M9 13h4"/>';
 ICONS.mail = '<rect x="3.5" y="5.5" width="17" height="13" rx="2"/><path d="M4 7l8 6 8-6"/>';
