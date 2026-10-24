@@ -250,6 +250,7 @@ const GUIDE = [
     </ul>
     <p>Dès que le réseau revient (au marché, en ville), touchez le badge puis <b>Envoyer maintenant</b>. L'animateur et l'organisation ne voient que les données envoyées.</p>` },
   { id: 'membres', icon: 'users', t: 'Gérer les membres', b: `
+    <p><b>Cartes des membres.</b> Dans <b>Membres › Cartes des membres</b>, l'application prépare une carte par membre, au format carte bancaire : nom du groupe, nom et rôle du membre, numéro, date d'entrée, et un QR code. Imprimez sur une feuille A4 ordinaire — dix cartes par page — puis découpez en suivant les traits. Le QR ne contient ni code secret ni montant : il porte l'identité et une empreinte tirée du journal scellé, que l'animateur compare avec l'application pour vérifier qu'une carte est authentique.</p>
     <h4>Nouveau membre</h4><p><b>Membres › Ajouter un membre</b>, avec l'accord d'un 2ᵉ membre du bureau. On remplit la fiche : nom et sexe obligatoires ; âge, téléphone (ex. 099 123 4567), activité et adresse facultatifs. Akiba donne un code secret provisoire à remettre en main propre.</p>
     <h4>Compléter ou corriger une fiche</h4><p>Ouvrez le carnet du membre puis <b>Modifier les informations</b>. Le bureau ou le membre lui-même peut le faire ; chaque changement est noté dans le journal de sécurité.</p>
     <h4>Départ d'un membre</h4><p>Pendant une réunion ouverte, ouvrez son carnet puis <b>Départ du groupe</b>. Il récupère son épargne, moins son crédit et ses amendes dues. Les bénéfices restent au groupe.</p>

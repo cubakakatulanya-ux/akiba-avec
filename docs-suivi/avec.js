@@ -608,7 +608,8 @@ SCREENS['a.members'] = () => {
   const rows = avec.members.slice().sort((a, b) => (!!a.left - !!b.left) || st.mem[b.id].parts - st.mem[a.id].parts);
   return `<div class="shell">${aTop(avec)}<main class="main">
     <div class="row between"><h1>Membres</h1><span class="chip brand">${st.activeCount} · ${st.women} femmes</span></div>
-    <button class="btn ghost block" data-act="addMemberSheet">${ic('plus')} Ajouter un membre</button>
+    <div class="grid2"><button class="btn ghost" data-act="addMemberSheet">${ic('plus')} Ajouter un membre</button>
+      <button class="btn ghost" data-act="go" data-to="a.cards">${ic('clip')} Cartes des membres</button></div>
     <div class="list">${rows.map(x => { const d = st.mem[x.id]; const l = d.loans.find(y => y.status !== 'solde');
       return `<button class="li" data-act="go" data-to="a.member" data-id="${x.id}">${avatar(x)}<span class="grow"><b>${esc(x.name)}</b><span class="small muted">${x.left ? 'A quitté le groupe' : roleLabel(x)} · ${d.parts} parts${l ? ` · <b style="color:var(--${l.status === 'retard' ? 'bad' : 'warn'})">crédit ${fck(l.remaining)}</b>` : ''}</span></span>
       <span class="end"><span class="num">${fc(d.savings)}</span><span class="small muted">épargne</span></span></button>`; }).join('')}</div>

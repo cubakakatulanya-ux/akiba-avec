@@ -759,6 +759,37 @@ h2,h3{font-weight:600;letter-spacing:-.005em}
 .discret{text-align:center;margin:4px 0 0}
 .discret .linkbtn{font-size:.78rem;color:var(--ink-2);opacity:.6;text-decoration:none}
 .discret .linkbtn:hover{opacity:1;text-decoration:underline}
+
+/* ---------- cartes de membre, format carte bancaire, imprimées sur A4 ---------- */
+.cartes{display:grid;grid-template-columns:repeat(auto-fill,minmax(236px,1fr));gap:10px}
+.carte-m{display:flex;flex-direction:column;justify-content:space-between;aspect-ratio:85/54;padding:9px 11px;
+  border:1px dashed var(--line);border-radius:10px;background:#fff;color:#102017;overflow:hidden}
+.carte-m header{display:flex;flex-direction:column;line-height:1.15}
+.carte-m header b{font-family:var(--f-display);font-size:.84rem}
+.carte-m header span{font-size:.62rem;color:#51635a}
+.carte-m .qui{display:flex;align-items:flex-end;justify-content:space-between;gap:8px;min-width:0}
+.carte-m .qui>div{min-width:0}
+.carte-m .num{display:block;font-size:.6rem;letter-spacing:.1em;color:#51635a}
+.carte-m .nom{display:block;font-family:var(--f-display);font-size:1rem;line-height:1.1;overflow:hidden;text-overflow:ellipsis}
+.carte-m .role{display:block;font-size:.66rem;color:#51635a}
+.carte-m .qr{width:52px;height:52px;flex:none}
+.carte-m footer{display:flex;justify-content:space-between;align-items:baseline;font-size:.58rem;color:#51635a;border-top:1px solid #e3e9e5;padding-top:5px}
+.carte-m .emp{font-family:var(--f-mono);letter-spacing:.08em;color:#102017}
+
+@media print{
+  /* seules les cartes s'impriment : huit par feuille A4, aux vraies dimensions */
+  @page{size:A4 portrait;margin:10mm}
+  body{background:#fff}
+  .shell>.topbar,.shell>.main>*:not(.cartes){display:none!important}
+  .cartes{display:grid;grid-template-columns:repeat(2,85mm);grid-auto-rows:54mm;gap:4mm 6mm;justify-content:center}
+  .carte-m{aspect-ratio:auto;width:85mm;height:54mm;border:1px dashed #9aa8a1;border-radius:0;break-inside:avoid;
+    padding:4mm 5mm;background:#fff;color:#000}
+  .carte-m .qr{width:17mm;height:17mm}
+  .carte-m .nom{font-size:12pt}
+  .carte-m header b{font-size:10pt}
+  .carte-m header span,.carte-m .role{font-size:7pt}
+  .carte-m footer{font-size:6.5pt}
+}
 </style>
 <div id="app"></div>
 <script src="core.js"></script>
@@ -784,4 +815,5 @@ h2,h3{font-weight:600;letter-spacing:-.005em}
 <script src="externe.js"></script>
 <script src="impact.js"></script>
 <script src="recu.js"></script>
+<script src="cartes.js"></script>
 <script src="boot.js"></script>
