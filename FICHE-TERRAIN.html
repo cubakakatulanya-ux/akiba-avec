@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="fr"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Akiba — fiche de terrain</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;500;700&family=Ubuntu+Mono:wght@700&display=swap" rel="stylesheet">
+<style>
+  /* Fiche à imprimer avant de partir : une page A4, lisible en plein soleil,
+     et qui ne dépend d'aucun réseau une fois sur papier. */
+  :root{ --encre:#12221c; --gris:#5b6b64; --trait:#c9d4ce; --vert:#0F4D3A; --or:#B07A00; }
+  *{box-sizing:border-box}
+  body{margin:0;padding:18px;background:#eef1ef;color:var(--encre);
+       font-family:Ubuntu,"Segoe UI",system-ui,sans-serif;font-size:10.5pt;line-height:1.42}
+  .page{max-width:200mm;margin:0 auto;background:#fff;padding:14mm 15mm;border-radius:6px;box-shadow:0 2px 14px rgba(0,0,0,.12)}
+  header{border-bottom:2px solid var(--vert);padding-bottom:7px;margin-bottom:12px}
+  h1{font-size:17pt;margin:0;letter-spacing:-.2px}
+  header p{margin:3px 0 0;color:var(--gris);font-size:9pt}
+  h2{font-size:10.5pt;margin:13px 0 5px;color:var(--vert);text-transform:uppercase;letter-spacing:.07em}
+  p,li{margin:4px 0}
+  .mono{font-family:"Ubuntu Mono",ui-monospace,monospace;font-weight:700}
+  ul{margin:4px 0;padding-left:0;list-style:none}
+  li.c{position:relative;padding-left:21px;margin:5px 0}
+  li.c::before{content:"";position:absolute;left:0;top:2px;width:12px;height:12px;border:1.4px solid var(--gris);border-radius:2px}
+  .deux{display:grid;grid-template-columns:1fr 1fr;gap:0 18px}
+  .enc{border:1.4px solid var(--trait);border-radius:5px;padding:8px 11px;margin:8px 0}
+  .enc b{color:var(--vert)}
+  .attention{border-left:3px solid var(--or);background:#fdf8ec;border-radius:0 5px 5px 0}
+  .pt{font-weight:700}
+  .note{color:var(--gris);font-size:9pt}
+  footer{margin-top:14px;padding-top:7px;border-top:1px solid var(--trait);color:var(--gris);font-size:8.5pt;
+         display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+  .lignes{border:1.4px solid var(--trait);border-radius:5px;padding:7px 11px;margin-top:5px}
+  .lignes div{border-bottom:1px dotted var(--trait);height:17px}
+  .quatre{display:grid;grid-template-columns:1fr 1fr;gap:0 14px;align-items:start}
+  .deuxcol{columns:2;column-gap:18px}
+  .deuxcol li{break-inside:avoid}
+  @media (max-width:560px){ body{padding:8px;font-size:11pt} .page{padding:14px} .deux,.quatre{grid-template-columns:1fr} .deuxcol{columns:1} }
+  @page{ size:A4 portrait; margin:12mm }
+  @media print{
+    body{background:#fff;padding:0;font-size:8.6pt;line-height:1.3}
+    h1{font-size:14pt} h2{font-size:9pt;margin:8px 0 3px}
+    p,li{margin:2px 0} li.c{margin:3px 0} .enc{padding:6px 9px;margin:5px 0}
+    .lignes div{height:14px}
+    .page{box-shadow:none;border-radius:0;padding:0;max-width:none}
+    .noprint{display:none}
+  }
+</style>
+</head><body>
+<div class="page">
+
+<header>
+  <h1>Akiba — fiche de terrain</h1>
+  <p>Premier essai en conditions réelles · Entreprise Sociale Ubora · version du 24 oct. 2026</p>
+</header>
+
+<div class="deux">
+  <div>
+    <h2>Avant de partir</h2>
+    <ul>
+      <li class="c">Les deux applications installées, et ouvertes une fois <b>avec réseau</b></li>
+      <li class="c">La date en bas d'écran indique bien <b>24 oct. 2026</b></li>
+      <li class="c">La clé administrateur est sur mon téléphone, et je connais son mot de passe</li>
+      <li class="c">Le cahier papier du groupe est dans le sac</li>
+      <li class="c">Le terminal thermique est chargé, avec du papier</li>
+    </ul>
+    <p class="note">Groupes : <span class="mono">akiba.uborardc.com</span><br>
+      Animateurs, ONG, Ubora : <span class="mono">akibas.uborardc.com</span></p>
+  </div>
+  <div>
+    <h2>Pour découvrir sans rien abîmer</h2>
+    <p>La démonstration est ouverte sur l'application des groupes, sans aucun code.</p>
+    <p>Codes secrets des membres <span class="mono">1234</span><br>
+      Carte de secours <span class="mono">2468-1357</span></p>
+    <p class="note">Elle s'efface au moment où un téléphone passe aux vraies données. Gardez un téléphone en démonstration pour montrer, et un autre pour le vrai essai.</p>
+  </div>
+</div>
+
+<h2>Les quatre points à éprouver</h2>
+<p class="note" style="margin-top:0">Ce sont les seuls que personne n'a pu vérifier au bureau : ils dépendent de votre matériel et du terrain.</p>
+
+<div class="quatre">
+<div class="enc">
+  <p class="pt">1 · Le terminal thermique</p>
+  <ul>
+    <li class="c">Un reçu de réunion sort entièrement, lisible</li>
+    <li class="c">Les cartes de membre sortent sur la bande de 58 mm</li>
+    <li class="c">Les accents et les montants sont justes</li>
+  </ul>
+  <p class="note">Si rien ne sort : notez la <b>marque et le modèle exacts</b> du terminal.</p>
+</div>
+
+<div class="enc">
+  <p class="pt">2 · Les cartes et leur QR code</p>
+  <ul>
+    <li class="c">Dix cartes sortent sur une feuille A4 et se découpent droit</li>
+    <li class="c">« Vérifier une carte » lit le QR depuis un <b>autre</b> téléphone du groupe</li>
+    <li class="c">Essayé avec le téléphone le plus bas de gamme du groupe</li>
+    <li class="c">Essayé en plein soleil, puis à l'ombre</li>
+    <li class="c">Une carte d'un autre groupe est bien <b>refusée</b></li>
+  </ul>
+</div>
+
+<div class="enc">
+  <p class="pt">3 · Le point GPS</p>
+  <ul>
+    <li class="c">Pris dehors, à ciel ouvert — compter jusqu'à une minute et demie</li>
+    <li class="c">Essayé sous les arbres : noter si le point vient, et en combien de temps</li>
+    <li class="c">Essayé dans une salle : noter le message affiché</li>
+  </ul>
+  <p class="note">Le réseau n'est pas nécessaire : le téléphone lit les satellites.</p>
+</div>
+
+<div class="enc">
+  <p class="pt">4 · Ouvrir un compte d'organisation</p>
+  <ul>
+    <li class="c">L'ONG remplit ses renseignements et prépare sa demande</li>
+    <li class="c">La demande arrive par WhatsApp <b>ou</b> par QR scanné dans l'espace admin</li>
+    <li class="c">Je crée le partenaire et le code dans l'espace administrateur</li>
+    <li class="c">Je <b>dicte le code court de huit signes</b> au téléphone — il est accepté</li>
+    <li class="c">Le même code dicté à un autre téléphone est bien <b>refusé</b></li>
+    <li class="c">L'ONG choisit son code secret, le compte existe, elle ajoute un animateur</li>
+  </ul>
+</div>
+</div>
+
+<h2>Puis une vraie réunion, du début à la fin</h2>
+<ul class="deuxcol">
+  <li class="c">Créer le groupe avec l'assemblée réunie, règlement et bureau compris</li>
+  <li class="c">Tenir la réunion en entier : présences, comptage, épargne, remboursements, crédits, amendes, clôture à trois clés</li>
+  <li class="c">Remettre les reçus aux membres</li>
+  <li class="c">Envoyer les données à l'animateur, et vérifier qu'elles arrivent</li>
+  <li class="c">Comparer avec le cahier papier, franc pour franc</li>
+</ul>
+
+<div class="enc attention">
+  <p class="pt" style="margin:0 0 3px">Si quelque chose casse, notez trois choses</p>
+  <p style="margin:0">L'écran où vous étiez · ce que vous veniez de toucher · la <b>date de version</b> en bas d'écran.</p>
+  <p class="note" style="margin:3px 0 0">Avec ces trois choses, le défaut se retrouve sans deviner. Une capture d'écran vaut mieux qu'une description.</p>
+</div>
+
+<h2>Ce que j'ai observé</h2>
+<div class="lignes">
+  <div></div><div></div><div></div><div></div>
+</div>
+
+<footer>
+  <span>Akiba · Entreprise Sociale Ubora · 0998 275 144 · contact@uborahub.com</span>
+  <span>Gardez le cahier papier pendant tout ce premier cycle.</span>
+</footer>
+
+</div>
+</body></html>
