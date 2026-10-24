@@ -55,7 +55,7 @@ SCREENS['s.org'] = () => {
     </section>
     ${K.data.mode !== 'prod' ? `<div class="alert warn">${icSpan('alert')}<div><b>Les données de démonstration seront effacées</b><span class="small">Sur ce téléphone seulement, au moment où le compte est créé.</span></div></div>` : ''}
     <button class="btn primary block xl" data-act="${ok ? 'orgPinStep' : 'orgDemande'}">${ic(ok ? 'check' : 'chat')} ${ok ? 'Continuer : choisir mon code' : 'Préparer ma demande à Ubora'}</button>
-    ${ok ? '' : `<p class="hint">Ubora renverra un code de validation pour ce téléphone (<b class="mono">${deviceId()}</b>). Vos renseignements restent ici en attendant la réponse.</p>`}
+    ${ok ? '' : `<p class="hint">Ubora renverra un code de validation pour ce téléphone (<b class="mono">${devNu(deviceId())}</b>). Vos renseignements restent ici en attendant la réponse.</p>`}
   </main></div>`;
 };
 

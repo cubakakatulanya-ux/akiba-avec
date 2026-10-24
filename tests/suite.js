@@ -364,5 +364,24 @@ window.__akibaTests = async function () {
     must(/<b>\d/.test(h), 'aucun chiffre');
   });
 
+  /* ---------- M. code court de validation, dicté au téléphone ---------- */
+  await t("Le code court de validation ne vaut que pour un seul téléphone", async () => {
+    if (typeof ccFaire !== 'function') return 'sans objet';
+    const moi = deviceId(), autre = (moi[0] === 'A' ? 'B' : 'A') + moi.slice(1);
+    const code = await ccFaire(moi, 'avec', 3);
+    must(/^[23456789ABCDEFGHJKLMNPQRSTUVWXYZ]{8}$/.test(code), 'le code doit faire 8 signes du même alphabet que le code du téléphone');
+    must((await ccLire(code)).ok, 'refusé sur son propre téléphone');
+    must((await ccLire(code)).data.kind === 'avec', 'le type de partenaire ne survit pas au code');
+    must(!(await ccLire(code.slice(0, 4) + '-' + code.slice(4))).ok === false, 'un tiret tapé par habitude doit passer');
+    must(!(await ccLire(code.slice(0, 7) + (code[7] === 'Z' ? '2' : 'Z'))).ok, 'un signe changé devrait être refusé');
+    must(!(await ccFaire(autre, 'avec', 3)) || (await ccFaire(autre, 'avec', 3)) !== code, 'deux téléphones ne doivent pas avoir le même code');
+    /* ce qui est gardé dans le téléphone doit se relire après redémarrage, avec la même date de fin */
+    const lu = await ccLire(code);
+    const relu = await verifyLicence(ccJeton(code, lu.data.exp));
+    must(relu.ok && relu.data.exp === lu.data.exp, 'la validation doit survivre au redémarrage, sans repousser sa date de fin');
+    must(relu.data.dev === deviceId(), 'la validation gardée doit rester liée à ce téléphone');
+    return code + ' pour ' + devNu(moi) + ', jusqu\'au ' + lu.data.exp;
+  });
+
   return res;
 };

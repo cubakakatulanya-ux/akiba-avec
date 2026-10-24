@@ -15,8 +15,11 @@ const admActs = () => { try { return JSON.parse(admGet(ADM_ACT_STORE) || '[]'); 
 // (un message collé dans un champ perd ses retours à la ligne : on cherche d'abord après « téléphone : »)
 const devFrom = t => {
   const s = String(t || '').toUpperCase();
-  const m = s.match(/T[ÉE]L[ÉE]PHONE\s*:\s*([A-Z0-9]{4}-[A-Z0-9]{4})/) || s.match(/(?:^|[^A-Z0-9])([A-Z0-9]{4}-[A-Z0-9]{4})(?![A-Z0-9])/) || s.replace(/[\s-]+/g, '').match(/^([A-Z0-9]{8})$/);
-  return m ? m[1].replace(/^(.{4})-?/, '$1-') : '';
+  const m = s.match(/T[ÉE]L[ÉE]PHONE\s*:\s*([A-Z0-9]{4}-?[A-Z0-9]{4})/)        // le message reçu du partenaire
+    || s.match(/(?:^|[^A-Z0-9])([A-Z0-9]{4}-[A-Z0-9]{4})(?![A-Z0-9])/)          // avec tiret, n'importe où
+    || s.match(/(?:^|[^A-Z0-9])([A-Z0-9]{8})(?![A-Z0-9])/)                      // sans tiret, comme il s'affiche
+    || s.replace(/[\s-]+/g, '').match(/^([A-Z0-9]{8})$/);
+  return m ? m[1].replace(/-/g, '').replace(/^(.{4})/, '$1-') : '';
 };
 
 /* ---------- la demande d'un partenaire, lue dans l'espace admin ----------
@@ -163,11 +166,19 @@ SCREENS['adm.home'] = () => {
       ${admStats()}
     </section>
     ${last ? `<section class="card stack"><h2>Code de validation prêt</h2>
-      ${row('Partenaire', esc(last.name))}${row('Type', LIC_KINDS[last.kind])}${row('Téléphone', `<span class="mono">${esc(last.dev)}</span>`)}${row('Valable jusqu\'au', fdateY(new Date(last.exp + 'T12:00').getTime()))}
+      ${row('Partenaire', esc(last.name))}${row('Type', LIC_KINDS[last.kind])}${row('Téléphone', `<span class="mono">${esc(devNu(last.dev))}</span>`)}${row('Valable jusqu\'au', fdateY(new Date(last.exp + 'T12:00').getTime()))}
+      ${last.court ? `<!-- le code à dicter : huit signes, comme le code du téléphone -->
+      <div style="text-align:center;padding-top:4px"><span class="label">À dicter au téléphone</span>${bigCode(esc(last.court))}
+        <p class="hint" style="margin:6px 0 0">Huit signes, pour le téléphone <b class="mono">${esc(devNu(last.dev))}</b> seulement, valable ${last.courtAns} an${last.courtAns > 1 ? 's' : ''}.
+          Le partenaire le tape dans « Code de validation reçu ».</p>
+        <div class="grid2" style="margin-top:8px"><button class="btn brand" data-act="admCourtCopier">${ic('clip')} Copier</button><button class="btn ghost" data-act="admCourtDire">${ic('chat')} Envoyer par SMS</button></div></div>
+      <details class="g"><summary>Code long signé (QR, WhatsApp, collage)</summary>
+        <p class="small muted" style="margin:0">Plus sûr que le code court : il porte une signature qu'on ne peut pas imiter. À préférer dès qu'on peut envoyer un message ou montrer un QR.</p>` : ''}
       <div class="formula mono" style="word-break:break-all;max-height:88px;overflow:auto">${esc(last.code)}</div>
       <div style="text-align:center"><img id="admQr" alt="QR code de validation" hidden style="width:220px;max-width:100%;border-radius:12px;background:#fff;padding:6px"><p id="admQrNote" class="hint" hidden>QR code indisponible : partagez le code.</p></div>
       <div class="grid2"><button class="btn brand" data-act="admShare">${ic('chat')} Envoyer</button><button class="btn ghost" data-act="admCopy">Copier le code</button></div>
-      <p class="hint">Ce code ne fonctionne que sur le téléphone ${esc(last.dev)}. Collé ou ouvert sur un autre téléphone, il est refusé.</p>
+      ${last.court ? '</details>' : ''}
+      <p class="hint">Les deux codes ne fonctionnent que sur le téléphone <b class="mono">${esc(devNu(last.dev))}</b>. Sur un autre téléphone, ils sont refusés.</p>
     </section>` : ''}
     <!-- la demande arrive par WhatsApp, par SMS ou en QR : on la colle, Akiba en fait une fiche -->
     <section class="card stack"><h2>Demande d'un partenaire</h2>
@@ -192,7 +203,7 @@ SCREENS['adm.home'] = () => {
     </section>
     <section class="card stack"><h2>Créer un code de validation</h2>
       ${reg.length ? `
-      <div class="field"><label for="admT">Code du téléphone</label><input id="admT" class="input mono" autocomplete="off" autocapitalize="characters" placeholder="Ex. 7Q2M-9XKD, ou collez le message reçu" value="${esc(f ? f.dev : '')}"></div>
+      <div class="field"><label for="admT">Code du téléphone</label><input id="admT" class="input mono" autocomplete="off" autocapitalize="characters" placeholder="Ex. 7Q2M9XKD, ou collez le message reçu" value="${esc(f ? f.dev : '')}"></div>
       <div class="field"><label for="admL">Partenaire</label><select id="admL" class="input">${reg.map(p => `<option value="${esc(p.id)}" ${(f ? f.id : App.admPick) === p.id ? 'selected' : ''}>${esc(p.name)} · ${esc(p.id)} (${used(p.id)}${p.seats ? '/' + p.seats : ''} tél.)</option>`).join('')}</select></div>
       ${f ? `<div class="alert bad">${icSpan('alert')}<div><b>Nombre de téléphones autorisés atteint</b><span class="small">« ${esc(f.name)} » a déjà ${f.count} téléphone${f.count > 1 ? 's' : ''} validé${f.count > 1 ? 's' : ''} sur ${f.seats}. Vérifiez auprès du partenaire : le code circule peut-être.</span></div></div>` : ''}
       <button class="btn primary block xl" data-act="admCode">${ic('key')} ${f ? 'Créer quand même' : 'Créer le code'}</button>`
@@ -308,7 +319,7 @@ ACT.admCreate = () => {
 ACT.admCode = async () => {
   if (!App.adminKey) { render(); return App.toast('Espace refermé : déverrouillez de nouveau'); }
   const dev = devFrom(fval('admT')), p = admReg().find(x => x.id === fval('admL'));
-  if (!/^[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(dev)) return App.toast('Tapez le code du téléphone (8 signes, ex. 7Q2M-9XKD)');
+  if (!/^[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(dev)) return App.toast('Tapez le code du téléphone (8 signes, ex. 7Q2M9XKD)');
   if (!p) return App.toast('Choisissez le partenaire');
   if (new Date(p.exp + 'T23:59:59') <= new Date()) return App.toast('La validité de ce partenaire est finie : créez-le de nouveau avec une nouvelle date');
   const devs = admActs().filter(a => a.lic === p.id), already = devs.some(a => a.dev === dev);
@@ -317,10 +328,24 @@ ACT.admCode = async () => {
     App.admForce = { id: p.id, dev, name: p.name, count: devs.length, seats: p.seats }; render(); return;
   }
   const c = await admSignCode(App.adminKey, p, dev);
+  /* le code court, à dicter : il vaut jusqu'à la fin de validité du partenaire, arrondie en années */
+  const ans = Math.max(1, Math.min(8, Math.ceil((new Date(p.exp + 'T23:59:59') - Date.now()) / (365.25 * 24 * 3600e3))));
+  c.court = await ccFaire(dev, p.kind, ans);
+  c.courtAns = ans;
   if (!already) admSet(ADM_ACT_STORE, JSON.stringify([{ lic: p.id, name: p.name, dev, date: c.date }].concat(admActs())));
   admKeep(App.adminKey);
   App.admForce = null; App.admPick = p.id; App.admLast = c; render(); paintQr(c.link);
-  App.toast(`Code créé pour le téléphone ${dev}`);
+  App.toast(`Code créé pour le téléphone ${devNu(dev)}`);
+};
+ACT.admCourtCopier = async () => {
+  const l = App.admLast; if (!l || !l.court) return;
+  try { await navigator.clipboard.writeText(l.court); App.toast('Code court copié : ' + l.court); }
+  catch (e) { App.toast('Copie impossible : dictez le code ' + l.court); }
+};
+ACT.admCourtDire = () => {
+  const l = App.admLast; if (!l || !l.court) return;
+  const t = `Akiba — code de validation pour « ${l.name} » : ${l.court}\nIl ne vaut que pour le téléphone ${devNu(l.dev)}.\nTapez-le dans Akiba, à « Code de validation reçu ».\nUbora ${UBORA.telShow}`;
+  window.open('sms:?body=' + encodeURIComponent(t), '_blank', 'noopener');
 };
 ACT.admShare = async () => {
   const l = App.admLast; if (!l) return;
