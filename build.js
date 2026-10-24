@@ -145,6 +145,7 @@ self.addEventListener('activate', e => e.waitUntil(caches.keys().then(keys => Pr
 self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
   if (e.request.url.includes('blocage.txt')) return;             // liste de blocage : toujours la version du réseau
+  if (e.request.url.includes('version.txt')) return;             // numéro de la version en ligne : jamais une copie
   e.respondWith(caches.match(e.request, { ignoreSearch: true }).then(hit => hit || fetch(e.request).then(res => {
     const url = e.request.url;
     if (res.ok && (url.startsWith(self.location.origin) || /fonts\\.(googleapis|gstatic)\\.com/.test(url))) { const copy = res.clone(); caches.open(CACHE).then(c => c.put(e.request, copy)); }
@@ -155,6 +156,10 @@ self.addEventListener('fetch', e => {
 
 fs.copyFileSync(path.join(__dirname, 'LANCER.md'), path.join(out, 'LANCER.md'));
 fs.writeFileSync(path.join(out, '.nojekyll'), '');
+/* Le numéro de la version en ligne, dans un fichier minuscule jamais mis en cache par
+   le service worker : c'est lui qui permet à un téléphone de dire « je suis à jour »
+   ou « il existe plus récent », au lieu de le deviner. */
+fs.writeFileSync(path.join(out, 'version.txt'), version + '\n');
 
 // Référencement : les moteurs de recherche lisent ces deux fichiers à la racine du site.
 const indexable = P.robots.startsWith('index');   // Akiba Suivi est un outil de travail : il ne s'indexe pas

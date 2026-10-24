@@ -583,6 +583,7 @@ ACT.saveAnnul = d => {
 SCREENS['a.receipt'] = p => {
   const { avec } = cur();
   const m = avec.meetings.find(x => x.id === p.id);
+  if (!m) return SCREENS['a.home']();            // lien périmé : on revient à l'accueil plutôt qu'un écran blanc
   const gap = m.closeCount - m.closeExpected;
   const an = annulledSet(avec);
   const list = avec.tx.filter(t => t.meetingId === m.id && t.type !== 'ANNUL' && !an.has(t.id));

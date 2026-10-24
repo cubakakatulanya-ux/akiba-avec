@@ -78,8 +78,9 @@ SCREENS['dev.backup'] = () => {
     <section class="card stack"><h2>Mises à jour</h2>
       <p class="small muted">Akiba se met à jour tout seul, <b>sans désinstaller</b> et <b>sans perdre les données</b>. Il suffit de l'ouvrir de temps en temps avec du réseau. Si une saisie est en cours, un bandeau « Mettre à jour » apparaît.</p>
       <div class="row between small"><span>Développée par</span><b>Entreprise Sociale Ubora</b></div>
-      <div class="row between small"><span>Version sur ce téléphone</span><b class="mono">${esc(window.KITABU_VERSION || 'démonstration')}</b></div>
+      <div class="row between small"><span>Version sur ce téléphone</span><b style="text-align:right">${esc(versionLisible(window.KITABU_VERSION) || 'démonstration')}</b></div>
       <button class="btn ghost block" data-act="majChercher">${ic('sync')} Chercher une mise à jour maintenant</button>
+      ${App.majTexte ? `<p class="small" style="margin:0;color:var(--brand);font-weight:700">${esc(App.majTexte)}</p>` : ''}
     </section>
 
     <section class="card stack"><h2>Éviter une désinstallation par erreur</h2>
@@ -163,19 +164,36 @@ ACT.restoreRun = async () => {
   } catch (e) { App.toast('Restauration impossible : ' + e.message); }
 };
 
-/* Chercher une mise à jour sans attendre : l'application interroge le serveur, et se recharge
-   d'elle-même si une nouvelle version existe. Sans réseau, on le dit plutôt que de faire semblant. */
+/* La version, en clair. « akiba-202610240907 » ne dit rien à personne ; « 24 oct. 2026, 09:07 »
+   se compare d'un coup d'œil avec ce qu'annonce Ubora. */
+const MOIS_C = ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.'];
+function versionLisible(v) {
+  const n = String(v || '').match(/(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})/);
+  if (!n) return '';
+  return `${+n[3]} ${MOIS_C[+n[2] - 1]} ${n[1]}, ${n[4]}:${n[5]}`;
+}
+const versionCourte = () => versionLisible(window.KITABU_VERSION).replace(/, \d{2}:\d{2}$/, '');
+
+/* Chercher une mise à jour sans attendre. On demande au serveur le numéro de la version en
+   ligne — un fichier de vingt octets, jamais mis en cache — et on le compare à celui de ce
+   téléphone. Le résultat est une phrase vérifiable, pas une promesse. */
 ACT.majChercher = async () => {
-  if (!('serviceWorker' in navigator)) return App.toast('Mise à jour automatique indisponible sur ce navigateur');
   if (navigator.onLine === false) return App.toast('Pas de réseau : rouvrez l’application quand vous en aurez');
   App.toast('Recherche en cours…');
+  const ici = window.KITABU_VERSION || '';
+  let enLigne = '';
+  try {
+    const r = await fetch('version.txt?t=' + Date.now(), { cache: 'no-store' });
+    if (r.ok) enLigne = (await r.text()).trim();
+  } catch (e) { /* le service worker dira peut-être mieux */ }
+  const dire = t => { App.majTexte = t; App.toast(t); render(); };
+  if (!('serviceWorker' in navigator)) return dire(enLigne && enLigne !== ici ? 'Version en ligne : ' + versionLisible(enLigne) + '. Rechargez la page.' : 'Vous avez la dernière version');
   try {
     const reg = await navigator.serviceWorker.getRegistration();
-    if (!reg) return App.toast('Application non installée : ouvrez-la depuis son adresse');
+    if (!reg) return dire('Application non installée : ouvrez-la depuis son adresse');
     await reg.update();
-    setTimeout(() => {
-      if (reg.installing || reg.waiting) App.toast('Nouvelle version trouvée : elle s’installe');
-      else App.toast('Vous avez déjà la dernière version');
-    }, 1500);
-  } catch (e) { App.toast('Recherche impossible pour le moment'); }
+    if (enLigne && ici && enLigne === ici) return dire('Vous avez la dernière version : ' + versionLisible(ici));
+    if (enLigne && ici && enLigne !== ici) return dire('Nouvelle version du ' + versionLisible(enLigne) + ' : elle s’installe');
+    setTimeout(() => dire(reg.installing || reg.waiting ? 'Nouvelle version trouvée : elle s’installe' : 'Vous avez déjà la dernière version'), 1500);
+  } catch (e) { dire('Recherche impossible pour le moment'); }
 };

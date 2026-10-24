@@ -55,6 +55,7 @@ const C_RENDER = {
       <div class="grid2">${pickSel('cgJ', 'Jour de réunion', DAYS.map(x => [x, x]), g.meetingDay)}${pickSel('cgQ', 'Rythme', [[7, 'Chaque semaine'], [14, 'Toutes les 2 semaines']], g.frequency)}</div>
       <div class="field"><label for="cgO">Date de création du groupe</label><input id="cgO" type="date" class="input" value="${g.createdOn}"></div>
     </section>
+    ${cGpsBloc(g)}
     <p class="hint">Un groupe AVEC réunit en général 15 à 25 personnes du même village qui se font confiance et habitent près les unes des autres.</p>`;
   },
   2: d => {
@@ -125,6 +126,7 @@ function summaryNew(d) {
   return `<div class="receipt stack"><span class="label">Récapitulatif</span>
     ${line('Groupe', esc(g.name))}
     ${line('Lieu', [g.village, g.groupement && 'groupement ' + g.groupement, g.secteur, entiteLabel(g), g.province].filter(Boolean).map(esc).join(', '))}
+    ${line('Point GPS', g.gps ? `<span class="mono">${gpsTexte(g.gps)}</span>` : '<span class="muted">non pris</span>')}
     ${line('Membres', `${d.members.length} (${d.members.filter(m => m.sex === 'F').length} femmes)`)}
     ${line('Réunions', `${g.meetingDay}, ${+g.frequency === 14 ? 'toutes les 2 semaines' : 'chaque semaine'}`)}
     ${line('Présidence', nm(R.P))}${line('Trésorerie', nm(R.T))}${line('Porte-clés', [R.K1, R.K2, R.K3].map(nm).join(', '))}
@@ -153,6 +155,32 @@ function repriseForm(d) {
         <td class="r"><select id="rm-${m.id}" class="input" style="width:70px;min-height:40px;padding:6px" aria-label="Mois restants">${[1, 2, 3, 4, 5, 6].filter(n => n <= Math.max(r.maxMonths, 1)).map(n => `<option value="${n}" ${String(x.months || 1) === String(n) ? 'selected' : ''}>${n}</option>`).join('')}</select></td></tr>`; }).join('')}
       </tbody></table></div></div>`;
 }
+
+/* Le point GPS, pris pendant la création : l'assemblée est réunie, on est sur place, c'est le
+   bon moment. Il part avec le groupe et devient la première écriture GEO de son journal.
+   Facultatif : sous les arbres ou dans une salle, le point ne vient pas, et la création continue. */
+function cGpsBloc(g) {
+  if (typeof gpsDispo !== 'function' || !gpsDispo()) return '';
+  const p = g.gps;
+  return `<section class="card stack"><div class="row between">
+      <div><b>Point GPS du groupe</b><p class="hint" style="margin:2px 0 0">${p ? 'Pris ici même' + (p.acc ? ' · ' + gpsPrecision(p) : '') : 'Facultatif. Dehors, sans réseau, en une minute.'}</p></div>
+      ${p ? `<span class="chip good">${ic('check')} Pris</span>` : '<span class="chip">Facultatif</span>'}</div>
+    ${p ? `<p class="mono" style="font-size:1.05rem;margin:4px 0 0">${gpsTexte(p)}</p>` : ''}
+    <button class="btn ${p ? 'ghost' : 'brand'} block" data-act="cGps">${ic('map')} ${p ? 'Reprendre le point' : 'Prendre le point maintenant'}</button>
+  </section>`;
+}
+ACT.cGps = async () => {
+  if (!gpsDispo()) return App.toast("Ce téléphone ne donne pas sa position");
+  readStep(App.cdraft.step || 1, App.cdraft);           // ne pas perdre ce qui est déjà tapé
+  App.toast('Recherche des satellites… restez dehors');
+  const btn = document.querySelector('[data-act="cGps"]');
+  if (btn) { btn.disabled = true; btn.textContent = 'Recherche en cours…'; }
+  try {
+    const c = await gpsMesurer();
+    App.cdraft.g.gps = { lat: +(+c.latitude).toFixed(6), lon: +(+c.longitude).toFixed(6), acc: c.accuracy == null ? null : Math.round(c.accuracy), ts: Date.now() };
+    render(); App.toast('Point enregistré : ' + gpsTexte(App.cdraft.g.gps));
+  } catch (e) { render(); App.toast(e.message); }
+};
 
 function readStep(step, d) {
   if (step === 1 && fval('cgN') !== null) Object.assign(d.g, { name: fval('cgN').trim(), ...readGeo('cg'),animId: fval('cgA') || '', meetingDay: fval('cgJ'), frequency: +fval('cgQ'), createdOn: fval('cgO') || d.g.createdOn });
@@ -312,6 +340,11 @@ ACT.cCreate = () => {
     rescue: rescue.map(c => ({ h: hashCode(c), used: false })), security: []
   });
   secLog(avec, 'AVEC créée', null, d.from === 'anim' ? 'par l\'animateur, à valider' : d.from === 'org' ? 'par l\'organisation' : 'groupe autonome');
+  /* le point pris pendant la création part avec le groupe : première écriture GEO de son journal */
+  if (g.gps && typeof appendTx === 'function') {
+    avec.gps = g.gps;
+    appendTx(avec, { type: 'GEO', amount: 0, lat: g.gps.lat, lon: g.gps.lon, acc: g.gps.acc, by: null, note: 'Point GPS à la création ' + gpsTexte(g.gps) + (g.gps.acc ? ' (' + gpsPrecision(g.gps) + ')' : '') });
+  }
   if (d.mode === 'reprise') importCahier(avec, d);
   K.data.avecs.push(avec);
   if (d.from === 'login') K.session = { kind: 'avec', avecId: id, memberId: members.find(m => m.role === 'president').id };

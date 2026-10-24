@@ -55,46 +55,78 @@ const js = async (expr, attendre = true) => {
   await cdp('Emulation.setDeviceMetricsOverride', { width: 375, height: 812, deviceScaleFactor: 2, mobile: true });
   await dors(300);
 
-  /* mise en page : téléphone */
-  const pose = [];
-  const mesure = async (ecran, avant = '') => {
-    await js(avant + ";App.go('" + ecran + "');1", false);
-    await dors(120);
-    return js("({h:document.documentElement.scrollHeight,vh:innerHeight,w:document.documentElement.scrollWidth,vw:innerWidth})", false);
-  };
   await js('if (!K.data.avecs.length) DB.reset();1');   // Akiba Suivi démarre vide : on recharge la démonstration pour les essais
-  const SESSION_AVEC = "K.session={kind:'avec',avecId:'avec1',memberId:avecById('avec1').members[0].id}";
-  for (const [ecran, avant] of [['login', 'K.session=null'], ['a.home', SESSION_AVEC], ['a.members', SESSION_AVEC], ['a.loans', SESSION_AVEC], ['a.journal', SESSION_AVEC], ['guide', SESSION_AVEC], ['a.more', SESSION_AVEC]]) {
-    const m = await mesure(ecran, avant);
-    pose.push({ ecran, ...m, deborde: m.w > m.vw });
-  }
+
+  /* Revue de mise en page : tous les écrans de la cible, ouverts un par un.
+     On attrape trois choses d'un coup — un écran qui lève une erreur, un écran qui
+     déborde de la largeur du téléphone, et un écran vide. */
+  await js('window.__ECRANS = ' + require('./tests/ecrans.js') + ';1', false);
+  await js(`window.__akibaOuvre = i => {
+    const [id, cible, sess, par] = window.__ECRANS[i];
+    try {
+      sess();
+      App.go(id, typeof par === 'function' ? par() : par);
+    } catch (e) { return { erreur: String(e && e.message || e).slice(0, 120) }; }
+    const vw = innerWidth, dehors = [];
+    for (const e of document.querySelectorAll('.shell *')) {
+      const r = e.getBoundingClientRect();
+      if (r.width === 0 || r.right <= vw + 1) continue;
+      const cs = getComputedStyle(e);
+      if (cs.position === 'fixed' || cs.position === 'absolute') continue;
+      let coupe = false;                                   // un parent qui fait défiler n'est pas un débordement
+      for (let p = e.parentElement; p && !coupe; p = p.parentElement) {
+        const ox = getComputedStyle(p).overflowX;
+        if (ox === 'auto' || ox === 'scroll' || ox === 'hidden') coupe = true;
+      }
+      if (!coupe) dehors.push((e.tagName.toLowerCase() + '.' + String(e.className || '').split(' ')[0]).slice(0, 36));
+    }
+    const m = document.querySelector('.main');
+    return { arrive: App.screen, vide: !m || m.innerHTML.trim().length < 60, dehors: [...new Set(dehors)].slice(0, 3) };
+  };1`, false);
+  const CIBLE = await js('window.AKIBA_CIBLE || "avec"', false);
+  const nbEcrans = await js('window.__ECRANS.length', false);
+  const revue = async () => {
+    const out = [];
+    for (let i = 0; i < nbEcrans; i++) {
+      const [id, cible] = await js('(([a,b]) => [a,b])(window.__ECRANS[' + i + '])', false);
+      if (cible && cible !== CIBLE) continue;
+      const r = await js('window.__akibaOuvre(' + i + ')', false);
+      await dors(90);
+      const r2 = await js('window.__akibaOuvre(' + i + ')', false);   // après peinture : mesures stables
+      out.push({ ecran: id, ...(r.erreur ? r : r2) });
+    }
+    return out;
+  };
+  const pose = await revue();
 
   /* la batterie, dans la page */
   const suite = fs.readFileSync(path.join(__dirname, 'tests', 'suite.js'), 'utf8');
   await js(suite + ';1', false);
   const resultats = await js('__akibaTests()');
 
-  /* mise en page : ordinateur */
+  /* les mêmes écrans, sur un ordinateur */
   await cdp('Emulation.setDeviceMetricsOverride', { width: 1440, height: 900, deviceScaleFactor: 1, mobile: false });
   await dors(300);
-  const poseOrdi = [];
-  for (const [ecran, avant] of [['login', 'K.session=null'], ['a.home', SESSION_AVEC], ['a.members', SESSION_AVEC], ['guide', SESSION_AVEC]]) {
-    const m = await mesure(ecran, avant);
-    poseOrdi.push({ ecran, ...m, deborde: m.w > m.vw });
-  }
+  const poseOrdi = await revue();
 
   /* rapport */
   const reussis = resultats.filter(r => r.ok).length;
   console.log('\n=== Essais fonctionnels ===');
   for (const r of resultats) console.log((r.ok ? '  OK   ' : '  ÉCHEC') + ' ' + r.nom + (r.detail ? '  — ' + r.detail : ''));
-  console.log('\n=== Mise en page téléphone (375 x 812) ===');
-  for (const p of pose) console.log('  ' + (p.deborde ? 'ÉCHEC' : 'OK   ') + ' ' + p.ecran.padEnd(11) + ' hauteur ' + p.h + '/' + p.vh + ' · largeur ' + p.w + '/' + p.vw + (p.deborde ? ' — DÉBORDEMENT' : ''));
-  console.log('\n=== Mise en page ordinateur (1440 x 900) ===');
-  for (const p of poseOrdi) console.log('  ' + (p.deborde ? 'ÉCHEC' : 'OK   ') + ' ' + p.ecran.padEnd(11) + ' hauteur ' + p.h + '/' + p.vh + (p.deborde ? ' — débordement horizontal ' + p.w + '/' + p.vw : ''));
+  const mauvais = p => !!(p.erreur || p.vide || (p.dehors && p.dehors.length));
+  const ligne = p => '  ' + (mauvais(p) ? 'ÉCHEC' : 'OK   ') + ' ' + p.ecran.padEnd(12)
+    + (p.erreur ? ' — erreur : ' + p.erreur
+      : p.vide ? ' — écran vide'
+        : (p.dehors && p.dehors.length) ? ' — déborde à droite : ' + p.dehors.join(', ')
+          : (p.arrive && p.arrive !== p.ecran) ? ' (renvoyé vers ' + p.arrive + ')' : '');
+  console.log('\n=== Revue des écrans, téléphone (375 x 812) ===');
+  for (const p of pose) console.log(ligne(p));
+  console.log('\n=== Revue des écrans, ordinateur (1440 x 900) ===');
+  for (const p of poseOrdi) console.log(ligne(p));
   console.log('\n=== Erreurs de console ===');
   console.log(erreursConsole.length ? erreursConsole.map(e => '  ' + e).join('\n') : '  aucune');
 
-  const echecs = resultats.length - reussis + pose.filter(p => p.deborde).length + poseOrdi.filter(p => p.deborde).length + erreursConsole.length;
+  const echecs = resultats.length - reussis + pose.filter(mauvais).length + poseOrdi.filter(mauvais).length + erreursConsole.length;
   console.log('\nRésultat : ' + reussis + '/' + resultats.length + ' essais fonctionnels réussis, ' + echecs + ' problème(s) au total.');
 
   ws.close(); chrome.kill(); serveur.close();

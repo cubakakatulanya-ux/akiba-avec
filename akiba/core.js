@@ -307,6 +307,15 @@ function migrate(d) {
   d.schema = 5;
   return d;
 }
+/* Reconnaît la démonstration livrée d'origine, et rien d'autre : les identifiants de la graine,
+   le mode découverte, et l'organisation fictive. Au moindre doute — mode réel, un seul groupe
+   inconnu, une organisation qui n'est pas celle de la graine — on ne touche à rien. */
+const DEMO_IDS = ['avec1', 'avec2', 'avec3', 'avec4', 'avec5', 'avec6'];
+function estDemoSemee(d) {
+  if (!d || d.mode === 'prod' || !Array.isArray(d.avecs) || !d.avecs.length) return false;
+  if (!d.avecs.every(a => DEMO_IDS.includes(a.id))) return false;
+  return (d.orgs || []).every(o => o.id === 'org1') && (d.users || []).every(u => /^u-(org|a\d)$/.test(u.id));
+}
 const DB = {
   load() {
     try { const raw = localStorage.getItem(STORE); if (raw) K.data = JSON.parse(raw); } catch (e) { K.data = null; }
@@ -320,6 +329,14 @@ const DB = {
        des groupes. Seule l'application du village est livrée avec une démonstration.
        La démonstration reste accessible par « Remettre la démo » dans le village. */
     if (!K.data || !K.data.avecs) K.data = (typeof estSuivi === 'function' && estSuivi() && typeof emptyData === 'function') ? Object.assign(emptyData(), { mode: 'demo' }) : seed();
+    /* Un téléphone de suivi semé par une ancienne version garde ses groupes fictifs à vie :
+       on les retire. Seulement la démonstration d'origine — identifiants de la graine, mode
+       découverte, aucune écriture ajoutée par un vrai animateur — jamais de vraies données. */
+    if (typeof estSuivi === 'function' && estSuivi() && typeof emptyData === 'function' && estDemoSemee(K.data)) {
+      K.data = Object.assign(emptyData(), { mode: 'demo', i18n: K.data.i18n || {}, i18nV: K.data.i18nV || 0, langs: K.data.langs || [] });
+      K.session = null;
+      try { localStorage.setItem(STORE, JSON.stringify(K.data)); } catch (e) { /* rien */ }
+    }
     migrate(K.data);
     try { K.session = JSON.parse(localStorage.getItem(STORE + '.s') || 'null'); } catch (e) { K.session = null; }
   },

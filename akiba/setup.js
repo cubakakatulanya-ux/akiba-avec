@@ -84,7 +84,29 @@ ACT.orgDemande = () => {
       <div class="row between small"><span class="muted">Téléphone</span><b style="text-align:right">${esc(d.phone)}</b></div>
     </div>
     ${validationPanel({ intro: false, demande: d })}
+    <!-- en face à face, Ubora scanne ce QR : la demande passe sans réseau et sans recopie -->
+    <details class="g"><summary>Autres façons d'envoyer la demande</summary>
+      <p class="small muted">Si vous êtes devant un responsable d'Ubora, montrez-lui ce QR code : il lit la demande directement dans son espace. Sinon, copiez le texte et envoyez-le par SMS.</p>
+      <div style="text-align:center"><img id="demQrImg" data-qr="${esc(demandText(d))}" alt="QR code de la demande" hidden style="width:220px;max-width:100%;border-radius:12px;background:#fff;padding:8px"></div>
+      <button class="btn ghost block" data-act="orgCopier">${ic('clip')} Copier le texte de la demande</button>
+    </details>
     <button class="btn ghost block" data-act="closeSheet">Je reviendrai avec le code</button>`);
+  setTimeout(demQrDessiner, 60);
+};
+/* le QR de la demande, dessiné après coup comme celui des cartes de membre */
+function demQrDessiner() {
+  const img = document.getElementById('demQrImg');
+  if (!img || !img.dataset.qr || typeof carteChargerQr !== 'function') return;
+  carteChargerQr()
+    .then(Q => Q.toDataURL(img.dataset.qr, { width: 260, margin: 1, errorCorrectionLevel: 'M', color: { dark: '#000000', light: '#ffffff' } }))
+    .then(u => { img.src = u; img.hidden = false; })
+    .catch(() => { /* sans QR, il reste WhatsApp et le texte */ });
+}
+ACT.orgCopier = async () => {
+  const d = orgDraftGet();
+  if (!d) return App.toast('Renseignements perdus : reprenez le formulaire');
+  try { await navigator.clipboard.writeText(demandText(d)); App.toast('Demande copiée : collez-la dans un SMS'); }
+  catch (e) { App.toast('Copie impossible sur ce téléphone : utilisez WhatsApp'); }
 };
 
 /* le téléphone est validé : dernière étape, le code du responsable */

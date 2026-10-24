@@ -19,6 +19,36 @@ const devFrom = t => {
   return m ? m[1].replace(/^(.{4})-?/, '$1-') : '';
 };
 
+/* ---------- la demande d'un partenaire, lue dans l'espace admin ----------
+   Akiba n'a pas de serveur : une demande voyage par WhatsApp, par SMS ou par QR code.
+   Plutôt que de laisser l'administrateur recopier six lignes à la main — et se tromper
+   sur le code du téléphone —, il colle le message reçu et Akiba en tire la fiche.
+   Les demandes lues restent sur l'appareil : on ne perd pas une demande traitée plus tard. */
+const ADM_DEM_STORE = 'kitabu.admindemandes';
+const admDems = () => { try { return JSON.parse(admGet(ADM_DEM_STORE) || '[]'); } catch (e) { return []; } };
+function demandeLire(texte) {
+  const t = String(texte || '').replace(/\r/g, '\n').trim();
+  if (!t) return null;
+  const apres = (motif, interdit) => {
+    const re = new RegExp((interdit ? '(?<!' + interdit + ')' : '') + motif + '\\s*:\\s*([^\\n]*)', 'i');
+    let m = null;
+    try { m = t.match(re); } catch (e) { m = t.match(new RegExp(motif + '\\s*:\\s*([^\\n]*)', 'i')); }
+    if (!m) return '';
+    /* un message collé dans un champ d'une seule ligne perd ses retours : on s'arrête à l'étiquette suivante */
+    return m[1].split(/\s(?=(?:Organisation|Zone|Responsable|T[ée]l[ée]phone|Courriel|Code du t[ée]l[ée]phone)\s*:)/i)[0].trim().replace(/[·;,]+$/, '').trim();
+  };
+  const d = {
+    name: apres('Organisation'),
+    zoneTexte: apres('Zone'),
+    boss: apres('Responsable'),
+    phone: apres('T[ée]l[ée]phone', 'Code du '),
+    mail: apres('Courriel'),
+    dev: devFrom(t),
+    lu: Date.now(),
+  };
+  return (d.name || d.dev) ? d : null;
+}
+
 async function admSignData(key, obj) {
   const payload = b64uEnc(new TextEncoder().encode(JSON.stringify(obj)));
   const sig = new Uint8Array(await crypto.subtle.sign({ name: 'ECDSA', hash: 'SHA-256' }, key, new TextEncoder().encode(payload)));
@@ -139,6 +169,27 @@ SCREENS['adm.home'] = () => {
       <div class="grid2"><button class="btn brand" data-act="admShare">${ic('chat')} Envoyer</button><button class="btn ghost" data-act="admCopy">Copier le code</button></div>
       <p class="hint">Ce code ne fonctionne que sur le téléphone ${esc(last.dev)}. Collé ou ouvert sur un autre téléphone, il est refusé.</p>
     </section>` : ''}
+    <!-- la demande arrive par WhatsApp, par SMS ou en QR : on la colle, Akiba en fait une fiche -->
+    <section class="card stack"><h2>Demande d'un partenaire</h2>
+      <p class="small muted">Collez le message reçu du partenaire. Akiba en tire le nom, la zone, le responsable et le code du téléphone, et remplit les formulaires ci-dessous.</p>
+      <div class="field"><label for="admD">Message reçu</label><textarea id="admD" class="input" rows="3" autocomplete="off" spellcheck="false" placeholder="Collez ici le message WhatsApp du partenaire"></textarea></div>
+      <div class="${carteScanDispo() ? 'grid2' : ''}"><button class="btn brand block" data-act="admDemLire">${ic('clip')} Lire la demande</button>
+        ${carteScanDispo() ? `<button class="btn ghost block" data-act="admDemScan">${ic('eye')} Scanner le QR</button>` : ''}</div>
+      ${App.admDem ? (d => `<div class="receipt stack" style="gap:4px">
+        <div class="row between"><span class="label">Demande lue</span><span class="small muted">${fdt(d.lu)}</span></div>
+        ${row('Organisation', esc(d.name) || '<span class="muted">—</span>')}
+        ${d.zoneTexte ? row('Zone', esc(d.zoneTexte)) : ''}
+        ${d.boss ? row('Responsable', esc(d.boss)) : ''}
+        ${d.phone ? row('Téléphone', `<a href="tel:${esc(d.phone.replace(/\s/g, ''))}">${esc(d.phone)}</a>`) : ''}
+        ${d.mail ? row('Courriel', esc(d.mail)) : ''}
+        ${row('Code du téléphone', d.dev ? `<span class="mono">${esc(d.dev)}</span>` : '<span class="chip bad">introuvable</span>')}
+      </div>
+      ${d.dev ? '' : `<div class="alert warn">${icSpan('alert')}<div><b>Pas de code de téléphone dans ce message</b><span class="small">Demandez-le au partenaire : il le lit en haut de l'écran « Ouvrir le compte de mon organisation ».</span></div></div>`}
+      <button class="btn primary block xl" data-act="admDemRemplir">${ic('check')} Remplir avec cette demande</button>`)(App.admDem) : ''}
+      ${admDems().length ? `<details class="g"><summary>Demandes déjà lues sur cet appareil (${admDems().length})</summary>
+        <div class="list">${admDems().slice(0, 12).map((d, i) => `<button class="li" data-act="admDemReprendre" data-i="${i}"><span class="grow"><b>${esc(d.name || '(sans nom)')}</b><span class="small muted">${esc(d.boss || '')}${d.dev ? ' · ' : ''}<span class="mono">${esc(d.dev || '')}</span> · ${ago(d.lu)}</span></span>${ic('chev')}</button>`).join('')}</div>
+      </details>` : ''}
+    </section>
     <section class="card stack"><h2>Créer un code de validation</h2>
       ${reg.length ? `
       <div class="field"><label for="admT">Code du téléphone</label><input id="admT" class="input mono" autocomplete="off" autocapitalize="characters" placeholder="Ex. 7Q2M-9XKD, ou collez le message reçu" value="${esc(f ? f.dev : '')}"></div>
@@ -179,6 +230,66 @@ ACT.admUnlock = async () => {
   if ((App.admLockUntil || 0) > Date.now()) return App.toast('Trop d\'essais. Attendez quelques minutes.');
   try { admKeep(await admUnwrap(box, p)); App.admFails = 0; render(); }
   catch (e) { App.admFails = (App.admFails || 0) + 1; if (App.admFails >= 5) { App.admLockUntil = Date.now() + 10 * 60e3; App.admFails = 0; } App.toast(e.message); }
+};
+/* lire une demande : à la main, ou avec l'appareil photo si le partenaire montre son QR */
+ACT.admDemLire = () => {
+  const d = demandeLire(fval('admD'));
+  if (!d) return App.toast('Ce message ne ressemble pas à une demande Akiba');
+  admDemGarder(d);
+};
+function admDemGarder(d) {
+  App.admDem = d;
+  const liste = admDems().filter(x => !(x.dev && x.dev === d.dev) && !(x.name && x.name === d.name));
+  admSet(ADM_DEM_STORE, JSON.stringify([d].concat(liste).slice(0, 30)));
+  render();
+  App.toast('Demande lue : ' + (d.name || d.dev));
+}
+ACT.admDemReprendre = x => { App.admDem = admDems()[+x.i]; render(); };
+ACT.admDemScan = async () => {
+  if (!carteScanDispo()) return App.toast('Cet appareil ne lit pas les QR codes');
+  App.openSheet(`<h2>Scanner la demande</h2>
+    <p class="muted">Le partenaire montre le QR de sa demande, à l'écran de son téléphone. Tout se lit ici, sans réseau.</p>
+    <div class="scanbox"><video id="demVid" playsinline muted></video></div>
+    <button class="btn ghost block" data-act="admDemScanStop">Fermer</button>`);
+  setTimeout(async () => {
+    const v = document.getElementById('demVid');
+    if (!v) return;
+    try {
+      App.demFlux = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+      v.srcObject = App.demFlux; await v.play();
+      const det = new window.BarcodeDetector({ formats: ['qr_code'] });
+      App.demBoucle = setInterval(async () => {
+        try {
+          const codes = await det.detect(v);
+          if (!codes || !codes.length) return;
+          const d = demandeLire(codes[0].rawValue);
+          ACT.admDemScanStop();
+          if (!d) return App.toast('Ce QR ne contient pas une demande Akiba');
+          admDemGarder(d);
+        } catch (e) { /* une image illisible n'arrête pas la lecture */ }
+      }, 350);
+    } catch (e) {
+      const b = document.querySelector('.scanbox');
+      if (b) b.innerHTML = '<p class="hint" style="padding:12px">Appareil photo indisponible : collez le message à la place.</p>';
+    }
+  }, 60);
+};
+ACT.admDemScanStop = () => {
+  clearInterval(App.demBoucle); App.demBoucle = null;
+  if (App.demFlux) { App.demFlux.getTracks().forEach(t => t.stop()); App.demFlux = null; }
+  App.closeSheet();
+};
+/* la fiche remplit les deux formulaires : le nom pour le partenaire, le code pour la validation */
+ACT.admDemRemplir = () => {
+  const d = App.admDem;
+  if (!d) return;
+  const met = (id, v) => { const e = document.getElementById(id); if (e && v) e.value = v; };
+  met('admN', d.name);
+  met('admT', d.dev);
+  const k = document.getElementById('admK'); if (k) k.value = 'org';
+  const cible = document.getElementById(admReg().length ? 'admT' : 'admN');
+  if (cible) { cible.scrollIntoView({ behavior: 'smooth', block: 'center' }); cible.focus({ preventScroll: true }); }
+  App.toast(admReg().length ? 'Formulaires remplis : vérifiez, puis créez' : 'Nom rempli : ajoutez le partenaire, puis créez son code');
 };
 ACT.admCreate = () => {
   if (!App.adminKey) { render(); return App.toast('Espace refermé : déverrouillez de nouveau'); }

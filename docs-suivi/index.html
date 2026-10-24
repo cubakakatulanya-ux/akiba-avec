@@ -740,6 +740,8 @@ h2,h3{font-weight:600;letter-spacing:-.005em}
 /* ---------- accueil d'Akiba Suivi : entrée claire, preuves à gauche ---------- */
 .hero h1 em{font-style:normal;color:var(--maize)}
 .preuves{list-style:none;margin:26px 0 0;padding:0;display:flex;flex-direction:column;gap:12px;max-width:34ch}
+/* sur un téléphone, la promesse ne doit pas repousser la porte sous la ligne de flottaison */
+@media (max-width:520px){.preuves{margin-top:18px;gap:9px;font-size:.92rem}}
 .preuves li{display:flex;align-items:flex-start;gap:11px;font-size:.95rem;line-height:1.4;opacity:.92}
 .preuves li svg{width:19px;height:19px;flex:none;margin-top:1px;color:var(--maize)}
 .preuves li b{font-weight:700}
@@ -829,11 +831,19 @@ h2,h3{font-weight:600;letter-spacing:-.005em}
 .liens button svg{width:16px;height:16px;flex:none;opacity:.75}
 .liens button:hover,.liens button:focus-visible{color:var(--brand);background:var(--brand-soft)}
 .liens button:hover svg,.liens button:focus-visible svg{opacity:1}
+/* le numéro de version, dans le pied de page : discret, mais toujours là */
+.appfoot .vsn{opacity:.6;font-size:.78em}
+/* la démonstration, repliée : une ligne sur la page de connexion, le détail au toucher */
+details.g.demo{background:none;box-shadow:none;border:1.5px dashed var(--line);padding:0}
+details.g.demo summary{font-size:.9rem;font-weight:600;padding:11px 14px}
+details.g.demo[open]{padding-bottom:12px}
+details.g.demo>:not(summary){margin:0 14px}
+details.g.demo>:not(summary)+*{margin-top:8px}
 @media (min-width:700px){.liens{gap:2px 14px}.liens button{font-size:.88rem;padding:9px 12px}}
 </style>
 <style>html,body{margin:0}</style>
 </head><body>
-<script>window.KITABU_PWA = true; window.KITABU_VERSION = 'akiba-202610240907'; window.AKIBA_CIBLE = 'suivi';</script>
+<script>window.KITABU_PWA = true; window.KITABU_VERSION = 'akiba-202610241054'; window.AKIBA_CIBLE = 'suivi';</script>
 
 <div id="app"></div>
 <script src="core.js"></script>

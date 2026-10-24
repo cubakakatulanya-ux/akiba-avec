@@ -90,7 +90,7 @@ function accueilSuivi() {
       <div class="list">
         ${hasAnim || hasOrg
           ? row('go', 'l.users', '', 'users', 'Entrer dans mon espace', 'Animateur ou organisation : choisissez votre nom')
-          : '<div class="li muted">Aucun compte sur ce téléphone. Recevez-en un de votre organisation, ou créez son compte ci-dessous.</div>'}
+          : '<div class="li muted">Aucun compte sur ce téléphone.</div>'}
       </div>
       ${org}
     </section>
@@ -111,14 +111,14 @@ function accueilSuivi() {
 SCREENS.login = () => {
   if (estSuivi()) return accueilSuivi();
   const canCreate = !(K.data.mode === 'prod' && K.data.orgs.length);
-  const quick = (act, to, icon, label, extra = '') => `<button class="quick" data-act="${act}" ${to ? `data-to="${to}"` : ''} ${extra}>${ic(icon)}<span>${label}</span></button>`;
-  const demo = K.data.mode === 'prod'
-    ? (K.data.orgs.length || !estSuivi() ? '' : `<button class="btn ghost block" data-act="go" data-to="s.org">${ic('building')} Créer le compte de mon organisation</button>`)
-    : `<div class="demo">
-        <p class="small"><b>Démonstration</b> · codes secrets <b class="mono">1234</b> · carte de secours <b class="mono">2468-1357</b></p>
-        ${licKind() === 'demo' ? '<p class="hint">Licence de démonstration : les vraies données ne sont pas disponibles.</p>' : `<button class="btn primary block" data-act="goLive">${ic('check')} Commencer avec mes vraies données</button>`}
+  /* La démonstration est un détail de découverte, pas le sujet de l'écran : une ligne repliée,
+     qui ne vient pas disputer la place au seul bouton qui compte. */
+  const demo = K.data.mode === 'prod' ? ''
+    : `<details class="g demo"><summary><b>Démonstration</b> · codes secrets <b class="mono">1234</b></summary>
+        <p class="small muted" style="margin:0">Groupes, membres et montants fictifs, livrés pour apprendre. Carte de secours <b class="mono">2468-1357</b>.</p>
+        ${licKind() === 'demo' ? '<p class="hint" style="margin:0">Licence de démonstration : les vraies données ne sont pas disponibles.</p>' : `<button class="btn primary block" data-act="goLive">${ic('check')} Commencer avec mes vraies données</button>`}
         <button class="linkbtn" data-act="resetDemo">Remettre la démo à zéro</button>
-      </div>`;
+      </details>`;
   return `<div class="shell home">
   <header class="hero tight">
     <button class="langbtn pastille2" data-act="themeSheet" aria-label="Choisir l’apparence">${ic("eye")}</button><button class="langbtn" data-act="langSheet" aria-label="Choisir la langue">${ic('globe')}<span class="no-tr">${esc(I18N.name())}</span></button>
@@ -132,11 +132,12 @@ SCREENS.login = () => {
     ${licenceBanner()}
     ${avecCard()}
     ${ticker([{ icon: 'shield', label: "Journal scellé, impossible à modifier" }, { icon: 'sync', label: "Tout fonctionne sans réseau" }, { icon: 'calendar', label: "La réunion guidée en 8 étapes" }, { icon: 'coins', label: "Épargne, crédits, amendes, partage" }, { icon: 'users', label: "Le carnet de chaque membre" }, { icon: 'globe', label: "Français, lingala, swahili, tshiluba, kikongo" }, { icon: 'chart', label: "Export Excel pour l'organisation" }], { aria: "Ce que fait Akiba" })}
-    <div class="quicks">
-      ${canCreate ? quick('createAvec', '', 'plus', 'Créer une AVEC') : ''}
-      ${quick('go', 'guide', 'book', 'Guide')}
-      ${quick('receiveSheet', '', 'sync', 'Recevoir une AVEC')}
-    </div>
+    <!-- les gestes secondaires : des liens sobres, comme sur Akiba Suivi. Une seule porte visible. -->
+    <nav class="liens" aria-label="Autres gestes">
+      ${canCreate ? `<button data-act="createAvec">${ic('plus')}<span>Créer une AVEC</span></button>` : ''}
+      <button data-act="receiveSheet">${ic('sync')}<span>Recevoir une AVEC</span></button>
+      <button data-act="go" data-to="guide">${ic('book')}<span>Guide</span></button>
+    </nav>
     ${installCarte()}
     ${demo}
   </main></div>`;
