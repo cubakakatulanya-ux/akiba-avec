@@ -790,6 +790,11 @@ h2,h3{font-weight:600;letter-spacing:-.005em}
   .carte-m header span,.carte-m .role{font-size:7pt}
   .carte-m footer{font-size:6.5pt}
 }
+
+/* la fenêtre de lecture du QR, dans la feuille « Vérifier une carte » */
+.scanbox{position:relative;border-radius:14px;overflow:hidden;background:#000;aspect-ratio:4/3}
+.scanbox video{width:100%;height:100%;object-fit:cover;display:block}
+.scanbox::after{content:"";position:absolute;inset:18% 22%;border:3px solid var(--maize);border-radius:12px;box-shadow:0 0 0 2000px rgba(0,0,0,.35)}
 </style>
 <div id="app"></div>
 <script src="core.js"></script>
