@@ -1,13 +1,28 @@
 /* Akiba AVEC — icône sur l'écran d'accueil, stockage protégé et sauvegarde chiffrée (contre la perte ou la désinstallation) */
 'use strict';
 
+/* « display-mode: standalone » ne dit vrai que dans la fenêtre de l'application installée :
+   rouvert dans Chrome, le même téléphone se dirait non installé et reverrait la proposition.
+   On garde donc la trace de l'installation, et l'invitation ne revient plus. */
+const INSTALLE_STORE = 'kitabu.installe';
+const installeNote = () => { try { return localStorage.getItem(INSTALLE_STORE) === '1'; } catch (e) { return false; } };
 const isInstalled = () => {
-  try { return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true; } catch (e) { return false; }
+  try {
+    if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) {
+      try { localStorage.setItem(INSTALLE_STORE, '1'); } catch (e) { /* rien */ }
+      return true;
+    }
+  } catch (e) { /* rien */ }
+  return installeNote();
 };
 const isIOS = () => /iphone|ipad|ipod/i.test(navigator.userAgent || '');
 
 window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); App.installEvt = e; if (!App.sheet) render(); });
-window.addEventListener('appinstalled', () => { App.installEvt = null; protectStorage(); App.toast('Akiba est sur l\'écran d\'accueil'); render(); });
+window.addEventListener('appinstalled', () => {
+  App.installEvt = null;
+  try { localStorage.setItem(INSTALLE_STORE, '1'); } catch (e) { /* rien */ }
+  protectStorage(); App.toast(`${APP_NOM()} est sur l'écran d'accueil`); render();
+});
 
 /* Demande au navigateur de ne jamais effacer les données d\'Akiba pour libérer de la place. */
 function protectStorage() {
@@ -20,17 +35,11 @@ protectStorage();
    d'alerte qui, lui, volait la vedette à la vraie action de la page. */
 function installCarte() {
   if (!window.KITABU_PWA || isInstalled()) return '';
-  return `<section class="card stack instal">
-    <div class="row" style="gap:14px;align-items:flex-start">
-      <span class="xl-ic">${ic('home')}</span>
-      <div class="grow"><b>Installer ${APP_NOM()} sur cet appareil</b>
-        <p class="hint" style="margin:2px 0 0">Une icône sur l'écran d'accueil, et l'application s'ouvre ensuite sans réseau.</p></div>
-    </div>
-    <div class="row" style="gap:10px">
-      <button class="btn brand" data-act="go" data-to="dev.backup">${ic('home')} Installer</button>
-      <button class="linkbtn" data-act="go" data-to="guide">Comment ça marche</button>
-    </div>
-  </section>`;
+  /* une ligne sobre, pas une carte : l'invitation ne doit pas peser plus que la porte d'entrée.
+     Elle disparaît dès que l'application est installée, et ne revient pas. */
+  return `<button class="instal-ligne" data-act="go" data-to="dev.backup">
+    ${ic('home')}<span>Installer <b>${APP_NOM()}</b> sur cet appareil<span class="small">Une icône sur l'écran d'accueil, et tout s'ouvre sans réseau</span></span>${ic('chev')}
+  </button>`;
 }
 function installBanner() {
   if (!window.KITABU_PWA || isInstalled()) return '';

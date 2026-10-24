@@ -383,5 +383,17 @@ window.__akibaTests = async function () {
     return code + ' pour ' + devNu(moi) + ', jusqu\'au ' + lu.data.exp;
   });
 
+  /* ---------- N. l'invitation à installer ---------- */
+  await t("L'invitation à installer disparaît une fois l'application installée", () => {
+    if (typeof installCarte !== 'function') return 'sans objet';
+    const avant = localStorage.getItem('kitabu.installe');
+    try {
+      localStorage.removeItem('kitabu.installe');
+      must(/instal-ligne/.test(installCarte()), 'invitation absente alors que rien n\'est installé');
+      localStorage.setItem('kitabu.installe', '1');
+      must(installCarte() === '', 'l\'invitation revient après installation');
+    } finally { if (avant === null) localStorage.removeItem('kitabu.installe'); else localStorage.setItem('kitabu.installe', avant); }
+  });
+
   return res;
 };
