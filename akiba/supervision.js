@@ -65,7 +65,8 @@ function accueilSuivi() {
   const hasOrg = K.data.users.some(u => u.role === 'org' && !u.remote);
   const row = (act, to, role, icon, title, sub) => `<button class="li" data-act="${act}" ${to ? `data-to="${to}"` : ''} ${role ? `data-role="${role}"` : ''}><span class="xl-ic">${ic(icon)}</span><span class="grow"><b>${title}</b><span class="small muted">${sub}</span></span>${ic('chev')}</button>`;
   const org = !K.data.orgs.length
-    ? `<button class="btn primary block xl" data-act="go" data-to="s.org">${ic('building')} Créer le compte de mon organisation</button>`
+    ? `<button class="btn primary block xl" data-act="orgStart">${ic('building')} Ouvrir le compte de mon organisation</button>
+       <p class="hint" style="text-align:center;margin-top:-4px">Ubora valide la demande — une fois, avec du réseau.</p>`
     : '';
   return `<div class="shell home">
   <header class="hero tight">
@@ -93,15 +94,12 @@ function accueilSuivi() {
       </div>
       ${org}
     </section>
-    <!-- puis les gestes courants, en retrait -->
-    <section class="entree">
-      <h2 class="surtitre">Outils</h2>
-      <div class="quicks">
-        ${quickAccueil('receiveSheet', '', 'sync', 'Recevoir une AVEC')}
-        ${quickAccueil('go', 'guide', 'book', 'Guide')}
-        ${quickAccueil('go', 't.home', 'clip', 'Formation')}
-      </div>
-    </section>
+    <!-- les gestes secondaires : des liens sobres, pas des tuiles. L'écran garde une seule porte visible. -->
+    <nav class="liens" aria-label="Autres gestes">
+      <button data-act="receiveSheet">${ic('sync')}<span>Recevoir une AVEC</span></button>
+      <button data-act="go" data-to="guide">${ic('book')}<span>Guide</span></button>
+      <button data-act="go" data-to="t.home">${ic('clip')}<span>Formation</span></button>
+    </nav>
     ${installCarte()}
     ${K.data.mode === 'prod' || !K.data.avecs.length ? '' : `<div class="demo"><p class="small"><b>Démonstration</b> · codes secrets <b class="mono">1234</b></p>
       ${licKind() === 'demo' ? '<p class="hint">Licence de démonstration : les vraies données ne sont pas disponibles.</p>' : `<button class="btn ghost block" data-act="goLive">${ic('check')} Commencer avec mes vraies données</button>`}</div>`}
@@ -109,7 +107,6 @@ function accueilSuivi() {
     <p class="discret"><button class="linkbtn" data-act="go" data-to="adm.home">Administration Ubora</button></p>
   </main></div>`;
 }
-const quickAccueil = (act, to, icon, label, extra = '') => `<button class="quick" data-act="${act}" ${to ? `data-to="${to}"` : ''} ${extra}>${ic(icon)}<span>${label}</span></button>`;
 
 SCREENS.login = () => {
   if (estSuivi()) return accueilSuivi();
@@ -276,25 +273,82 @@ ACT.saveVisit = d => {
   DB.save(); App.closeSheet(); App.toast('Visite enregistrée');
 };
 
-/* ---------- organisation ---------- */
+/* ---------- organisation ----------
+   Le tableau de bord d'une ONG. Sur ordinateur : le tableau de toutes les AVEC, large.
+   Sur téléphone : les mêmes AVEC en fiches, lisibles d'un pouce — un tableau de treize
+   colonnes ne se lit pas sur un téléphone, même en le faisant glisser.
+   Tant qu'aucun groupe n'est rattaché, l'écran n'affiche pas des colonnes de zéros :
+   il dit quoi faire en premier. */
+const oPar = r => `<span class="chip ${r.st.par > .1 ? 'bad' : r.st.par > 0 ? 'warn' : 'good'}">PAR ${pct(r.st.par)}</span>`;
+const oNom = a => esc(noAcc(a.name + ' ' + (a.village || '') + ' ' + (a.territoire || '')).toLowerCase());
+/* la même AVEC, en fiche : ce qu'un responsable regarde d'abord */
+const oCarte = r => `<button class="li ocarte" data-act="go" data-to="n.avec" data-id="${r.avec.id}" data-name="${oNom(r.avec)}">
+  <span class="health ${r.h.level}" aria-label="${r.h.level}"></span>
+  <span class="grow"><b>${esc(r.avec.name)}</b>
+    <span class="small muted">${placeShort(r.avec)} · ${esc(userById(r.avec.animId)?.name || 'sans animateur')}</span>
+    <span class="small muted">${r.st.activeCount} membres · ${r.st.last ? 'réunion ' + ago(r.st.last.date) : 'aucune réunion'}${pending(r.avec) ? ' · <b style=\"color:var(--warn)\">à recevoir</b>' : ''}</span>
+    <span class="small sous">épargne <b class="num">${fck(r.st.sum.EPARGNE)}</b> · crédits <b class="num">${fck(r.st.outstanding)}</b></span></span>
+  ${oPar(r)}</button>`;
+/* chercher un groupe par son nom, son village ou son territoire : tableau et fiches à la fois */
+INP.findAvec = el => {
+  const q = noAcc(el.value.trim().toLowerCase());
+  document.querySelectorAll('.li[data-name],tr[data-name]').forEach(x => { x.hidden = !!q && !x.dataset.name.includes(q); });
+};
+INP.oAnim = el => App.go('o.home', el.value ? { anim: el.value } : {});
+const oAnimListe = (anims, all) => `<div class="list">${anims.map(a => {
+  const mine = all.filter(r => r.avec.animId === a.id);
+  const al = mine.reduce((s, r) => s + r.h.alerts.length, 0);
+  const sous = [esc(a.zone || ''), mine.length ? mine.length + ' AVEC · ' + mine.reduce((s, r) => s + r.st.activeCount, 0) + ' membres' : 'aucune AVEC'].filter(Boolean).join(' · ');
+  return `<button class="li" data-act="go" data-to="o.home" data-anim="${a.id}"><span class="av">${esc(initials(a.name))}</span><span class="grow"><b>${esc(a.name)}</b><span class="small muted">${sous}</span></span>${al ? `<span class="chip warn">${al} alerte${al > 1 ? 's' : ''}</span>` : mine.length ? '<span class="chip good">RAS</span>' : ''}</button>`;
+}).join('')}</div>`;
+const oAnimBoutons = anims => `<button class="btn ghost block" data-act="addAnimSheet">${ic('plus')} Ajouter un animateur</button>
+  ${anims.length ? `<button class="btn ghost block" data-act="animCodesSheet">${ic('key')} Code oublié d'un animateur</button>` : ''}`;
+
+/* première ouverture : rien à mesurer encore, tout à mettre en route */
+function oDemarrage(org, anims) {
+  const row = (act, to, icon, titre, sous, extra = '') => `<button class="li" data-act="${act}" ${to ? `data-to="${to}"` : ''} ${extra}><span class="xl-ic">${ic(icon)}</span><span class="grow"><b>${titre}</b><span class="small muted">${sous}</span></span>${ic('chev')}</button>`;
+  let n = 0;
+  const num = () => ++n + '. ';
+  return `<div class="shell">${topbar(esc(org.name), 'Mise en route' + demoTag(), '', logoutBtn)}<main class="main">
+    <div class="alert good">${icSpan('check')}<div><b>Le compte de votre organisation est en place</b>
+      <span class="small">Il reste à lui rattacher des animateurs et des AVEC. Le tableau de bord — épargne, crédits, alertes, qualité des données — s'affichera dès le premier groupe suivi.</span></div></div>
+    <h2>Pour commencer</h2>
+    <div class="list">
+      ${anims.length ? '' : row('addAnimSheet', '', 'plus', num() + 'Ajouter un animateur', 'Il reçoit son nom et son code, puis crée les AVEC de sa zone')}
+      ${row('go', 'c.avec', 'plus', num() + 'Créer une première AVEC', 'Avec l’assemblée réunie : règlement, membres, bureau', 'data-from="org"')}
+      ${row('receiveSheet', '', 'sync', num() + 'Recevoir une AVEC déjà suivie', 'Un animateur ou un groupe vous envoie son fichier et son code')}
+    </div>
+    ${anims.length ? `<h2>Animateurs</h2>${oAnimListe(anims, [])}` : ''}
+    ${oAnimBoutons(anims)}
+    <div class="grid2"><button class="btn ghost" data-act="go" data-to="guide">${ic('book')} Guide</button><button class="btn ghost" data-act="outilsSheet">${ic('more')} Outils</button></div>
+    <p class="hint">Les AVEC autonomes n'apparaissent jamais dans votre tableau de bord : leurs données restent à elles.</p>
+  </main></div>`;
+}
+
 SCREENS['o.home'] = p => {
   const u = K.session && K.session.userId ? me_user() : null;
   if (!u || u.role !== 'org') return SCREENS[homeScreen()]({});   // tableau de bord réservé à l'organisation
-  const org = orgOf(u.orgId);
+  const org = orgOf(u.orgId) || { id: u.orgId, name: 'Mon organisation' };
   const anims = K.data.users.filter(x => x.role === 'anim' && x.orgId === org.id);
+  if (!myAvecs(u).length) return oDemarrage(org, anims);
   const all = myAvecs(u).filter(isActive).map(sup);
-  const rows = p.anim ? all.filter(r => r.avec.animId === p.anim) : all;
+  const rows = (p.anim ? all.filter(r => r.avec.animId === p.anim) : all).sort((a, b) => LVL[a.h.level] - LVL[b.h.level]);
   const tot = k => rows.reduce((s, r) => s + k(r), 0);
   const members = tot(r => r.st.activeCount), women = tot(r => r.st.women);
   const outstanding = tot(r => r.st.outstanding), late = tot(r => r.st.lateAmt);
   const alerts = rows.flatMap(r => r.h.alerts).sort((a, b) => LVL[a.lvl] - LVL[b.lvl]);
   const maxSav = Math.max(1, ...rows.map(r => r.st.sum.EPARGNE));
-  return `<div class="shell wide">${topbar(org.name, liveTag() + demoTag(), '', logoutBtn)}<main class="main">
+  const recus = rows.filter(r => !pending(r.avec)).length;
+  /* jusqu'à trois animateurs : des boutons. Au-delà : une liste déroulante, sinon la barre déborde */
+  const filtre = anims.length > 3
+    ? `<select class="input sm" data-in="oAnim" aria-label="Filtrer par animateur" style="max-width:190px"><option value="">Tous les animateurs</option>${anims.map(a => `<option value="${a.id}"${p.anim === a.id ? ' selected' : ''}>${esc(a.name)}</option>`).join('')}</select>`
+    : `<button class="btn sm ${p.anim ? 'ghost' : 'brand'}" data-act="go" data-to="o.home">Toutes</button>
+       ${anims.map(a => `<button class="btn sm ${p.anim === a.id ? 'brand' : 'ghost'}" data-act="go" data-to="o.home" data-anim="${a.id}">${esc(a.name)}</button>`).join('')}`;
+  return `<div class="shell wide">${topbar(esc(org.name), liveTag() + demoTag(), '', logoutBtn)}<main class="main">
     <div class="row between" style="flex-wrap:wrap">
       <h1>Vue d'ensemble</h1>
       <div class="row" style="flex-wrap:wrap;gap:6px">
-        <button class="btn sm ${p.anim ? 'ghost' : 'brand'}" data-act="go" data-to="o.home">Toutes</button>
-        ${anims.map(a => `<button class="btn sm ${p.anim === a.id ? 'brand' : 'ghost'}" data-act="go" data-to="o.home" data-anim="${a.id}">${esc(a.name)}</button>`).join('')}
+        ${filtre}
         <span class="sep" aria-hidden="true"></span>
         <button class="btn sm brand" data-act="go" data-to="o.impact">${ic('chart')} Impact</button>
         <button class="btn sm ghost" data-act="exportSheet" data-anim="${esc(p.anim || '')}">${ic('chart')} Excel</button>
@@ -305,23 +359,25 @@ SCREENS['o.home'] = p => {
     ${supBand(rows, [{ icon: 'users', label: 'Membres', value: String(members) }, { icon: 'coins', label: 'Crédits en cours', value: fck(outstanding) }, { icon: 'chart', label: 'AVEC suivies', value: String(rows.length) }])}
     <div class="kpis">
       <div class="kpi"><span>AVEC suivies</span><b class="num">${rows.length}</b><span>${rows.filter(r => r.h.level === 'good').length} sans alerte</span></div>
-      <div class="kpi"><span>Membres</span><b class="num">${members}</b><span>${members ? pct(women / members) : '—'} de femmes</span></div>
+      <div class="kpi"><span>Membres</span><b class="num">${members}</b><span>${members ? pct(women / members) + ' de femmes' : '—'}</span></div>
       <div class="kpi"><span>Épargne cumulée</span><b class="num">${fck(tot(r => r.st.sum.EPARGNE))}</b><span>cycle en cours</span></div>
       <div class="kpi"><span>Crédits en cours</span><b class="num">${fck(outstanding)}</b><span>${tot(r => r.st.activeLoans.length)} crédits</span></div>
       <div class="kpi"><span>Portefeuille à risque</span><b class="num" style="color:${late / (outstanding || 1) > .1 ? 'var(--bad)' : 'inherit'}">${pct(outstanding ? late / outstanding : 0)}</b><span>${fck(late)} en retard</span></div>
-      <div class="kpi"><span>Formation</span><b class="num">${rows.length ? pct(tot(r => trainingCount(r.avec)) / (rows.length * 7)) : '—'}</b><span>des 7 modules réalisés</span></div>
-      <div class="kpi"><span>Caisses sociales</span><b class="num">${fck(tot(r => r.st.socialFund))}</b><span>${fck(tot(r => r.st.sum.AIDE))} d'aides versées</span></div>
+      <div class="kpi"><span>Données reçues</span><b class="num">${recus}/${rows.length}</b><span>${rows.length - recus ? (rows.length - recus) + ' envoi(s) en attente' : 'tout est à jour'}</span></div>
     </div>
     <div class="dash">
       <div class="stack">
-        <h2>AVEC</h2>
-        <div class="tablewrap"><table>
-          <thead><tr><th></th><th>AVEC</th><th>Animateur</th><th class="r">Membres</th><th class="r">Épargne</th><th class="r">Crédits</th><th class="r">PAR</th><th>Formation</th><th>Données</th><th>IMF</th><th>Cycle</th><th>Dernière réunion</th><th>Reçu</th></tr></thead>
-          <tbody>${rows.sort((a, b) => LVL[a.h.level] - LVL[b.h.level]).map(r => `<tr class="click" data-act="go" data-to="n.avec" data-id="${r.avec.id}">
+        <div class="row between" style="flex-wrap:wrap;gap:8px"><h2 style="margin:0">AVEC suivies</h2>
+          ${rows.length > 6 ? `<input class="input sm" data-in="findAvec" type="search" placeholder="Chercher un groupe, un village…" aria-label="Chercher une AVEC" style="max-width:260px">` : ''}</div>
+        <!-- téléphone : des fiches. Ordinateur : le tableau complet. Un seul jeu de données, deux lectures. -->
+        <div class="list ofiches">${rows.map(oCarte).join('')}</div>
+        <div class="tablewrap otable"><table>
+          <thead><tr><th></th><th>AVEC</th><th>Animateur</th><th class="r">Membres</th><th class="r">Épargne</th><th class="r">Crédits</th><th class="r" title="Portefeuille à risque : part des crédits en retard">PAR</th><th>Formation</th><th>Données</th><th>IMF</th><th>Cycle</th><th>Dernière réunion</th><th>Reçu</th></tr></thead>
+          <tbody>${rows.map(r => `<tr class="click" data-act="go" data-to="n.avec" data-id="${r.avec.id}" data-name="${oNom(r.avec)}">
             <td><span class="health ${r.h.level}"></span></td>
             <td><b>${esc(r.avec.name)}</b><br><span class="small muted">${placeShort(r.avec)}</span></td>
             <td>${esc(userById(r.avec.animId)?.name || '—')}</td>
-            <td class="r num">${r.avec.members.length}</td>
+            <td class="r num">${r.st.activeCount}</td>
             <td class="r num">${fc(r.st.sum.EPARGNE)}</td>
             <td class="r num">${fc(r.st.outstanding)}</td>
             <td class="r num" style="color:${r.st.par > .1 ? 'var(--bad)' : 'inherit'}">${pct(r.st.par)}</td>
@@ -331,23 +387,24 @@ SCREENS['o.home'] = p => {
             <td>${r.st.last ? ago(r.st.last.date) : '—'}</td>
             <td>${pending(r.avec) ? `<span class="chip warn">${ago(r.avec.lastSync)}</span>` : '<span class="chip good">à jour</span>'}</td></tr>`).join('')}</tbody>
         </table></div>
+        <p class="hint">PAR : portefeuille à risque, la part des crédits en retard. « Données » note ce qu'un prêteur
+          regarde — journal intact, caisse fermée à trois clés, écritures complètes. Touchez une AVEC pour ouvrir sa fiche.</p>
         <h2>Épargne et crédits par AVEC</h2>
         <div class="card stack">
           <div class="row small muted" style="gap:14px"><span class="row" style="gap:6px"><i style="width:12px;height:12px;border-radius:3px;background:var(--brand);display:inline-block"></i>Épargne</span><span class="row" style="gap:6px"><i style="width:12px;height:12px;border-radius:3px;background:var(--maize);display:inline-block"></i>Crédits dehors</span></div>
-          ${rows.map(r => `<div class="stack" style="gap:4px"><div class="row between small"><b>${esc(r.avec.name)}</b><span class="num muted">${fc(r.st.sum.EPARGNE)} · ${fc(r.st.outstanding)}</span></div>
+          ${rows.slice().sort((a, b) => b.st.sum.EPARGNE - a.st.sum.EPARGNE).slice(0, 12).map(r => `<div class="stack" style="gap:4px"><div class="row between small"><b>${esc(r.avec.name)}</b><span class="num muted">${fc(r.st.sum.EPARGNE)} · ${fc(r.st.outstanding)}</span></div>
             <div class="bar" style="height:10px"><i style="width:${(r.st.sum.EPARGNE / maxSav * 100).toFixed(1)}%"></i></div>
             <div class="bar" style="height:10px"><i style="width:${(r.st.outstanding / maxSav * 100).toFixed(1)}%;background:var(--maize)"></i></div></div>`).join('')}
+          ${rows.length > 12 ? '<p class="hint">Les douze premières AVEC par épargne. L’export Excel contient toutes les lignes.</p>' : ''}
         </div>
       </div>
       <div class="stack">
         ${pendingBlock(u)}
         <h2>Alertes</h2>
-        ${alerts.map(a => alertHtml(a, 'o')).join('') || '<div class="alert good"><div><b>Aucune alerte</b></div></div>'}
+        ${alerts.map(a => alertHtml(a, 'o')).join('') || `<div class="alert good">${icSpan('check')}<div><b>Aucune alerte</b><span class="small">Aucun écart de caisse, aucun retard, aucune réunion manquée.</span></div></div>`}
         <h2>Animateurs</h2>
-        <div class="list">${anims.map(a => { const mine = all.filter(r => r.avec.animId === a.id); const al = mine.reduce((s, r) => s + r.h.alerts.length, 0);
-          return `<button class="li" data-act="go" data-to="o.home" data-anim="${a.id}"><span class="av">${esc(initials(a.name))}</span><span class="grow"><b>${esc(a.name)}</b><span class="small muted">${mine.length} AVEC · ${mine.reduce((s, r) => s + r.avec.members.length, 0)} membres</span></span>${al ? `<span class="chip warn">${al} alertes</span>` : '<span class="chip good">RAS</span>'}</button>`; }).join('')}</div>
-        <button class="btn ghost block" data-act="addAnimSheet">${ic('plus')} Ajouter un animateur</button>
-        ${anims.length ? `<button class="btn ghost block" data-act="animCodesSheet">${ic('key')} Code oublié d'un animateur</button>` : ''}
+        ${anims.length ? oAnimListe(anims, all) : '<div class="card small muted" style="padding:14px">Aucun animateur : vous suivez les AVEC vous-même.</div>'}
+        ${oAnimBoutons(anims)}
         <p class="hint">Les AVEC autonomes n'apparaissent jamais ici : leurs données restent à elles.</p>
       </div>
     </div>

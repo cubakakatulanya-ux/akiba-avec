@@ -143,7 +143,13 @@ async function applyValidationCode(raw, allowDemo = true) {
 }
 
 /* écran de validation, le même partout */
-const demandText = () => `Bonjour Ubora, je demande un code de validation Akiba.\nCode du téléphone : ${deviceId()}\nOrganisation ou AVEC : `;
+/* la demande envoyée à Ubora : générique, ou portant les renseignements d'une organisation */
+const demandText = d => d
+  ? ['Bonjour Ubora, je demande l\'ouverture d\'un compte d\'organisation sur Akiba Suivi.', '',
+    'Organisation : ' + d.name, d.zoneTexte ? 'Zone : ' + d.zoneTexte : '',
+    'Responsable : ' + d.boss, 'Téléphone : ' + d.phone, d.mail ? 'Courriel : ' + d.mail : '', '',
+    'Code du téléphone : ' + deviceId()].filter(x => x !== '').join('\n')
+  : `Bonjour Ubora, je demande un code de validation Akiba.\nCode du téléphone : ${deviceId()}\nOrganisation ou AVEC : `;
 function validationPanel(opts = {}) {
   const r = App.licence || {};
   return `<section class="card stack">
@@ -152,7 +158,7 @@ function validationPanel(opts = {}) {
     ${r.limited ? `<div class="alert warn">${icSpan('key')}<div><b>Téléphone d'AVEC</b><span class="small">Ce téléphone tient les réunions de l'AVEC reçue. Pour le reste, il faut un code de validation.</span></div></div>` : ''}
     ${opts.intro === false ? '' : `<p class="muted">${APP_NOM()} est libre à installer et à découvrir. Pour les vraies opérations, Ubora donne un <b>code de validation</b> pour ce téléphone, une seule fois.</p>`}
     <div class="devcode"><span class="label">Code de ce téléphone</span><b class="mono">${deviceId()}</b></div>
-    <a class="btn wa block xl" href="https://wa.me/${UBORA.wa}?text=${encodeURIComponent(demandText())}" target="_blank" rel="noopener">${ic('chat')} Demander le code sur WhatsApp</a>
+    <a class="btn wa block xl" href="https://wa.me/${UBORA.wa}?text=${encodeURIComponent(demandText(opts.demande))}" target="_blank" rel="noopener">${ic('chat')} Demander le code sur WhatsApp</a>
     <p class="small muted" style="text-align:center;margin-top:-4px">ou appelez Ubora au <a href="tel:${UBORA.tel}" style="color:var(--brand);font-weight:700">${UBORA.telShow}</a> et donnez le code de ce téléphone</p>
     <div class="field"><label for="licS">Code de validation reçu</label><textarea id="licS" class="input mono" rows="3" autocomplete="off" spellcheck="false" autocapitalize="off" placeholder="Collez ici le code reçu"></textarea></div>
     <button class="btn primary block xl" data-act="licSheetOk">${ic('key')} Valider ce téléphone</button>

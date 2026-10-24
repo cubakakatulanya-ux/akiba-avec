@@ -795,6 +795,30 @@ h2,h3{font-weight:600;letter-spacing:-.005em}
 .scanbox{position:relative;border-radius:14px;overflow:hidden;background:#000;aspect-ratio:4/3}
 .scanbox video{width:100%;height:100%;object-fit:cover;display:block}
 .scanbox::after{content:"";position:absolute;inset:18% 22%;border:3px solid var(--maize);border-radius:12px;box-shadow:0 0 0 2000px rgba(0,0,0,.35)}
+
+/* ---------- tableau de bord de l'organisation ----------
+   Le même jeu d'AVEC se lit en fiches sur un téléphone et en tableau sur un ordinateur :
+   treize colonnes ne tiennent pas dans la main, et une liste de fiches gaspille un grand écran. */
+.otable{display:none}
+@media (min-width:900px){
+  .ofiches{display:none}
+  .otable{display:block}
+}
+/* un champ de barre d'outils : à la taille de son contenu, pas sur toute la largeur */
+.input.sm,select.input.sm{width:auto;min-height:38px;padding:7px 10px;border-radius:10px;font-size:.9rem}
+.ocarte .grow>.small{display:block;margin-top:2px}
+.ocarte .grow>.sous{color:var(--ink);font-weight:600}
+.ocarte .grow>.small b{display:inline}
+.ocarte>.chip{flex:none;align-self:center}
+
+/* ---------- accueil du suivi : les gestes secondaires ----------
+   Trois liens sobres au lieu de trois tuiles : l'oeil va d'abord à la seule porte d'entrée. */
+.liens{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:2px 6px;margin:2px 0 0}
+.liens button{display:inline-flex;align-items:center;gap:6px;background:none;border:0;padding:8px 8px;border-radius:10px;color:var(--ink-2);font-family:var(--f-display);font-weight:600;font-size:.8rem;line-height:1;white-space:nowrap;cursor:pointer;transition:color .15s ease,background .15s ease}
+.liens button svg{width:16px;height:16px;flex:none;opacity:.75}
+.liens button:hover,.liens button:focus-visible{color:var(--brand);background:var(--brand-soft)}
+.liens button:hover svg,.liens button:focus-visible svg{opacity:1}
+@media (min-width:700px){.liens{gap:2px 14px}.liens button{font-size:.88rem;padding:9px 12px}}
 </style>
 <div id="app"></div>
 <script src="core.js"></script>
