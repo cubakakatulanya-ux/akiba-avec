@@ -64,7 +64,7 @@ function accueilSuivi() {
   const hasAnim = K.data.users.some(u => u.role === 'anim' && !u.remote);
   const hasOrg = K.data.users.some(u => u.role === 'org' && !u.remote);
   const row = (act, to, role, icon, title, sub) => `<button class="li" data-act="${act}" ${to ? `data-to="${to}"` : ''} ${role ? `data-role="${role}"` : ''}><span class="xl-ic">${ic(icon)}</span><span class="grow"><b>${title}</b><span class="small muted">${sub}</span></span>${ic('chev')}</button>`;
-  const org = K.data.mode === 'prod' && !K.data.orgs.length
+  const org = !K.data.orgs.length
     ? `<button class="btn primary block xl" data-act="go" data-to="s.org">${ic('building')} Créer le compte de mon organisation</button>`
     : '';
   return `<div class="shell home">
@@ -103,7 +103,7 @@ function accueilSuivi() {
       </div>
     </section>
     ${installCarte()}
-    ${K.data.mode === 'prod' ? '' : `<div class="demo"><p class="small"><b>Démonstration</b> · codes secrets <b class="mono">1234</b></p>
+    ${K.data.mode === 'prod' || !K.data.avecs.length ? '' : `<div class="demo"><p class="small"><b>Démonstration</b> · codes secrets <b class="mono">1234</b></p>
       ${licKind() === 'demo' ? '<p class="hint">Licence de démonstration : les vraies données ne sont pas disponibles.</p>' : `<button class="btn ghost block" data-act="goLive">${ic('check')} Commencer avec mes vraies données</button>`}</div>`}
     <!-- l'administration ne concerne qu'Ubora : un lien effacé, en bas, plutôt qu'une porte dans la liste -->
     <p class="discret"><button class="linkbtn" data-act="go" data-to="adm.home">Administration Ubora</button></p>

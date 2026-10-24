@@ -319,7 +319,7 @@ const DB = {
     /* Akiba Suivi démarre vide : ses utilisateurs sont des professionnels, leurs données arrivent
        des groupes. Seule l'application du village est livrée avec une démonstration.
        La démonstration reste accessible par « Remettre la démo » dans le village. */
-    if (!K.data || !K.data.avecs) K.data = (typeof estSuivi === 'function' && estSuivi() && typeof emptyData === 'function') ? emptyData() : seed();
+    if (!K.data || !K.data.avecs) K.data = (typeof estSuivi === 'function' && estSuivi() && typeof emptyData === 'function') ? Object.assign(emptyData(), { mode: 'demo' }) : seed();
     migrate(K.data);
     try { K.session = JSON.parse(localStorage.getItem(STORE + '.s') || 'null'); } catch (e) { K.session = null; }
   },
