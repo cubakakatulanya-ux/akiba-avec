@@ -96,11 +96,11 @@ function accueilSuivi() {
       ${org}
     </section>
     <!-- les gestes secondaires : des liens sobres, pas des tuiles. L'écran garde une seule porte visible. -->
-    <!-- recevoir une AVEC est un geste de métier : il se fait dans l'espace de l'animateur
-         ou de l'organisation, pas sur la page d'accueil, devant n'importe qui. -->
+    <!-- recevoir une AVEC et suivre la formation sont des gestes de métier : ils se font dans
+         l'espace de l'animateur ou de l'organisation, pas sur la page d'accueil.
+         Seul le guide reste ici : il explique l'application à qui ne l'a pas encore ouverte. -->
     <nav class="liens" aria-label="Autres gestes">
-      <button data-act="go" data-to="guide">${ic('book')}<span>Guide</span></button>
-      <button data-act="go" data-to="t.home">${ic('clip')}<span>Formation</span></button>
+      <button data-act="go" data-to="guide">${ic('book')}<span>Guide d’utilisation</span></button>
     </nav>
     ${installCarte()}
     ${K.data.mode === 'prod' || !K.data.avecs.length ? '' : `<div class="demo"><p class="small"><b>Démonstration</b> · codes secrets <b class="mono">1234</b></p>
@@ -116,7 +116,7 @@ SCREENS.login = () => {
   /* La démonstration est un détail de découverte, pas le sujet de l'écran : une ligne repliée,
      qui ne vient pas disputer la place au seul bouton qui compte. */
   const demo = K.data.mode === 'prod' ? ''
-    : `<details class="g demo"><summary><b>Démonstration</b> · codes secrets <b class="mono">1234</b></summary>
+    : `<details class="g demo"><summary><span><b>Démonstration</b> · codes secrets <b class="mono">1234</b></span></summary>
         <p class="small muted" style="margin:0">Groupes, membres et montants fictifs, livrés pour apprendre. Carte de secours <b class="mono">2468-1357</b>.</p>
         ${licKind() === 'demo' ? '<p class="hint" style="margin:0">Licence de démonstration : les vraies données ne sont pas disponibles.</p>' : `<button class="btn primary block" data-act="goLive">${ic('check')} Commencer avec mes vraies données</button>`}
         <button class="linkbtn" data-act="resetDemo">Remettre la démo à zéro</button>

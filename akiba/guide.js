@@ -24,7 +24,7 @@ const GUIDE = [
     <p>Touchez <b>Créer une AVEC</b> sur l'écran d'accueil. La première fois, Akiba demande le <b>code de validation</b> délivré par l'Entreprise Sociale Ubora. Un animateur ou une organisation crée l'AVEC depuis son propre espace. Tout se prépare en 5 étapes, avec l'assemblée réunie.</p>
     <ol>
       <li><b>Groupe</b> : nom, puis le lieu. La <b>province</b> et le <b>territoire ou la ville</b> se choisissent dans la liste officielle de toute la RDC (26 provinces, 145 territoires, villes et communes de Kinshasa). Le secteur, le groupement et le village s'écrivent : les noms déjà utilisés sont proposés pour éviter les fautes. Puis le jour et le rythme des réunions. L'organisation choisit aussi l'animateur.</li>
-      <li><b>Point GPS</b> (facultatif) : dans <b>Plus › Lieu du groupe</b>, le bouton « Prendre le point GPS » enregistre où le groupe se réunit. Il faut être <b>dehors</b>, à ciel ouvert ; le premier point peut demander une minute. <b>Le réseau n'est pas nécessaire</b> : le téléphone lit les satellites. Le point est écrit dans le journal scellé et part avec les données ; l'organisation le retrouve dans l'export Excel.</li>
+      <li><b>Point GPS</b> (facultatif) : dès l'étape <b>Groupe</b>, le bouton « Prendre le point maintenant » enregistre où le groupe se réunit — c'est le bon moment, l'assemblée est là et on est sur place. On peut aussi le prendre plus tard dans <b>Plus › Lieu du groupe</b>. Il faut être <b>dehors</b>, à ciel ouvert ; le premier point peut demander une minute. <b>Le réseau n'est pas nécessaire</b> : le téléphone lit les satellites. Le point est écrit dans le journal scellé et part avec les données ; l'organisation le retrouve dans l'export Excel.</li>
       <li><b>Règlement</b> : valeur d'une part, nombre de parts par réunion, caisse sociale, durée et date de début du cycle, intérêt, crédit maximum, durée des crédits, amendes. Un exemple chiffré montre ce que les règles donnent.</li>
       <li><b>Membres</b> : une fiche par personne. <b>Obligatoire</b> : nom et sexe. <b>Facultatif</b> : âge, téléphone, activité, adresse. Pour aller plus vite, on peut aussi coller une liste de noms, puis compléter les fiches.</li>
       <li><b>Bureau</b> : président, secrétaire, trésorier, deux compteurs et <b>trois porte-clés</b>. Le trésorier garde la caisse, il ne peut donc pas garder une clé.</li>
@@ -35,6 +35,7 @@ const GUIDE = [
     <div class="tip">À la fin, Akiba affiche <b>un code secret différent pour chaque membre</b>, une seule fois. Recopiez-les sur de petits papiers et donnez-les en main propre.</div>` },
   { id: 'connexion', icon: 'users', t: 'Comment une AVEC se connecte', b: `
     <p>L'écran d'accueil est fait pour le groupe et tient sur un seul écran, quel que soit le téléphone. Le grand bouton jaune <b>AVEC</b> mène directement aux noms des membres. Sur un téléphone encore vide, il devient <b>Entrer mon AVEC</b> et propose de <b>recevoir</b> l'AVEC (fichier et code envoyés par l'animateur) ou de la <b>créer</b>. Le bouton <b>« Recevoir une AVEC »</b> est en bas de l'écran.</p>
+    ${!estSuivi() ? '' : `<div class="alert"><div><b>Sur Akiba Suivi, l'accueil ne montre que l'entrée</b><span class="small">Recevoir une AVEC et la Formation sont des gestes de métier : ils sont dans l'espace de l'animateur (bouton <b>Recevoir une AVEC</b> et onglet <b>Formation</b>) et dans les <b>Outils</b> de l'organisation. L'accueil ne garde que le guide.</span></div></div>`}
     ${estSuivi() ? '' : `<div class="alert"><div><b>Les autres espaces ont leur propre application</b><span class="small">L'animateur, l'organisation et l'administration d'Ubora travaillent sur <b>Akiba Suivi</b> (akibas.uborardc.com). Celle-ci est l'application du groupe : elle ne contient plus ces espaces.</span></div></div>`}
     <h4>L'AVEC a été créée sur son propre téléphone</h4>
     <ol>
@@ -166,6 +167,18 @@ const GUIDE = [
     </ul>
     <p>Le ticket est écrit sans accent, sur 32 signes de large : c'est ce que lisent les imprimantes thermiques de 58 mm. Tout marche <b>sans réseau</b>.</p>
     <div class="tip">Le papier coûte : imprimez pour tout le monde en fin de cycle, et à la demande le reste du temps.</div>` },
+  { id: 'cartes', icon: 'clip', t: 'Cartes de membre en papier', b: `
+    <p>Chaque membre peut avoir une <b>carte en papier</b> au format d'une carte bancaire. Dans l'espace du bureau : <b>Membres › Cartes des membres</b>.</p>
+    <h4>Imprimer</h4>
+    <ul>
+      <li><b>Sur une feuille A4</b> : dix cartes par page, à découper en suivant les traits. N'importe quelle imprimante, même en noir et blanc.</li>
+      <li><b>Sur le terminal</b> : la même carte sort sur la bande de 58 mm, là où il n'y a pas d'imprimante A4.</li>
+    </ul>
+    <h4>Ce qu'il y a sur la carte</h4>
+    <p>Le nom du groupe, le village, le nom du membre, son rôle, son numéro, sa date d'entrée — et une <b>référence</b> du genre <b class="mono">642-AF76CE</b> avec un QR code qui porte la même chose. <b>Aucun code secret, aucun montant</b> : une carte se perd, se prête ou se photographie sans conséquence.</p>
+    <h4>Vérifier une carte</h4>
+    <p><b>Cartes des membres › Vérifier une carte</b> : visez le QR avec l'appareil photo. Akiba refait le calcul <b>sans réseau</b> et répond « Carte authentique » ou dit pourquoi elle est refusée — carte recopiée, carte venue d'un autre groupe, membre inconnu. Si le téléphone ne lit pas les QR codes, recopiez la référence et le nom à la main.</p>
+    <div class="tip">La référence est ancrée sur le journal au moment de l'impression : <b>une carte imprimée aujourd'hui reste valable</b> après les réunions suivantes. Elle ne devient fausse que si on la recopie ou si on la fabrique ailleurs.</div>` },
   { id: 'social', icon: 'shield', t: 'La caisse sociale', b: `
     <p>C'est une caisse de solidarité, séparée de la caisse de crédit. Chaque membre présent verse une petite somme à chaque réunion.</p>
     <ul>
@@ -203,6 +216,17 @@ const GUIDE = [
       <li>L'organisation touche <b>Valider par téléphone</b>, tape le code et dicte en retour le <b>code d'activation</b> de 8 chiffres.</li>
       <li>Sur le téléphone du groupe : <b>Activer l'AVEC</b>. C'est fait, sans internet.</li></ol>
     <div class="tip">Le code d'activation ne marche que pour ce groupe. Après 5 codes faux, l'écran se bloque 10 minutes.</div>` },
+  { id: 'codes', icon: 'key', t: 'Les codes de validation d\'Ubora', b: `
+    <p>À ne pas confondre avec le code de validation d'une AVEC par son organisation (ci-dessus). Celui-ci dit qu'un <b>téléphone</b> a le droit de travailler sur de vraies données. Il vient d'Ubora, une seule fois par téléphone.</p>
+    <h4>Le code de ce téléphone</h4>
+    <p>Chaque téléphone a son propre code de <b>huit signes</b>, par exemple <b class="mono">B6WE766A</b>. Il s'affiche sur l'écran de validation et dans <b>Installer et sauvegarder</b>. C'est lui qu'on donne à Ubora.</p>
+    <h4>Ce qu'Ubora renvoie</h4>
+    <ul>
+      <li><b>Un code court de huit signes</b>, par exemple <b class="mono">CZQGA64P</b> : il se dicte au téléphone en vingt secondes. Tapez-le dans « Code de validation reçu ».</li>
+      <li><b>Un code long</b>, envoyé par WhatsApp, par QR code ou par lien : plus sûr, à préférer dès qu'on peut envoyer un message.</li>
+    </ul>
+    <p>Les deux ne valent que pour <b>le téléphone qui les a demandés</b>. Dictés ou collés sur un autre téléphone, ils sont refusés. Les partager ne sert à rien.</p>
+    <div class="tip">Vous travaillez sans vraies données tant que ce n'est pas fait : la démonstration et le guide restent ouverts à tout le monde, sans code.</div>` },
   { id: 'perdu', icon: 'key', t: 'Code secret perdu : le plan B', b: `
     <p>Touchez le bouton <b>AVEC</b>, puis en bas <b>J'ai oublié mon code secret</b>, puis votre nom. Trois solutions, toutes sans internet :</p>
     <ol>
@@ -216,7 +240,8 @@ const GUIDE = [
     <ol>
       <li>Tout le monde peut installer Akiba et essayer la démonstration. Sur l'écran d'accueil, touchez <b>Commencer avec mes vraies données</b> : Akiba affiche le <b>code de ce téléphone</b> : touchez « Demander le code sur WhatsApp » (ou appelez Ubora). Ubora renvoie un <b>code de validation</b> fait pour ce téléphone seulement : collez-le ou ouvrez le lien, une seule fois. La démonstration est ensuite effacée.</li>
       <li>Le code de validation ne marche sur aucun autre téléphone : ne le partagez pas, il ne servirait à rien. Un téléphone utilisé de façon frauduleuse peut être bloqué par Ubora ; ses données restent dans le téléphone.</li>
-      <li><b>Organisation</b> : créez le compte, puis <b>Ajouter un animateur</b> pour chaque animateur. Chacun reçoit un code et le change avec <b>Mon code</b>.</li>
+      <li><b>Organisation</b> : le compte s'ouvre sur <b>Akiba Suivi</b>, et c'est Ubora qui l'ouvre, en trois temps. <b>1.</b> Vous écrivez qui vous êtes : nom de l'organisation, province et territoire, responsable, téléphone. <b>2.</b> Akiba prépare la demande — envoyez-la par WhatsApp, ou montrez le QR code à un responsable d'Ubora ; elle porte vos renseignements et le code de ce téléphone. Ubora vérifie et renvoie un code de validation. <b>3.</b> Vous choisissez votre code secret, et le compte existe. Seule l'étape 2 demande du réseau.</li>
+      <li>Ensuite, <b>Ajouter un animateur</b> pour chaque animateur. Chacun reçoit un code et le change avec <b>Mon code</b>.</li>
       <li>Les animateurs créent les AVEC, et l'organisation les valide.</li>
       <li><b>AVEC autonome</b> : créez directement votre groupe.</li>
     </ol>
@@ -233,6 +258,7 @@ const GUIDE = [
     <ol><li>Ouvrez l'adresse d\'Akiba dans <b>Chrome</b>, avec du réseau.</li><li>Touchez <b>Installer Akiba</b> (ou menu ⋮ › « Ajouter à l'écran d'accueil »).</li><li>Une icône verte apparaît. Ensuite, Akiba s'ouvre <b>sans réseau</b>.</li></ol>
     <h4>Mises à jour</h4>
     <p>Akiba se met à jour <b>tout seul</b>, sans le désinstaller et <b>sans perdre les données</b>. Ouvrez-le de temps en temps avec du réseau : la nouvelle version s'installe en arrière-plan. Si vous êtes en train d'écrire, un bandeau <b>Mettre à jour</b> apparaît : touchez-le quand vous avez fini.</p>
+    <p><b>Savoir si on est à jour.</b> La version est écrite en bas de chaque écran, par exemple « Version 24 oct. 2026 ». Dans <b>Installer et sauvegarder</b>, le bouton <b>Chercher une mise à jour maintenant</b> compare avec ce qui est en ligne et répond clairement : « Vous avez la dernière version », ou « Nouvelle version du … : elle s'installe ».</p>
     <h4>Éviter une désinstallation par erreur</h4>
     <p>Aucune application ne peut interdire complètement sa désinstallation : c'est le téléphone qui décide. Mais on peut bien le protéger :</p>
     <ul><li>Rangez l'icône dans un dossier « AVEC » et verrouillez le téléphone par un code.</li>
@@ -328,7 +354,8 @@ const GUIDE = [
 const GUIDE_WHO = {
   animateur: ['anim', 'org', 'none'], organisation: ['org', 'none'], lancer: ['org', 'none'],
   externe: ['bureau', 'anim', 'org', 'none'], qualite: ['bureau', 'anim', 'org', 'none'], recus: ['bureau', 'anim', 'org', 'none'],
-  validation: ['org', 'anim', 'bureau', 'none'], installer: ['org', 'anim', 'bureau', 'none'], debut: ['org', 'anim', 'bureau', 'none']
+  validation: ['org', 'anim', 'bureau', 'none'], installer: ['org', 'anim', 'bureau', 'none'], debut: ['org', 'anim', 'bureau', 'none'],
+  cartes: ['bureau', 'anim', 'org', 'none'], codes: ['org', 'anim', 'bureau', 'none']
 };
 ACT.guideTo = p => {
   App.go('guide', { s: p.s });
@@ -343,7 +370,7 @@ SCREENS.guide = p => {
   const sections = GUIDE.filter(g => !GUIDE_WHO[g.id] || GUIDE_WHO[g.id].includes(role));
   const isAnim = s && s.kind === 'anim';
   const open = p.s || (isAnim ? 'animateur' : s && s.kind === 'org' ? 'organisation' : 'bref');
-  return `<div class="shell">${topbar('Guide d\'utilisation', 'Akiba AVEC', isAnim ? '' : backBtn(back))}<main class="main">
+  return `<div class="shell">${topbar('Guide d\'utilisation', APP_NOM(), isAnim ? '' : backBtn(back))}<main class="main">
     <header class="docintro">
       <p class="sur">Guide d'utilisation</p>
       <h1>Comment utiliser Akiba</h1>
