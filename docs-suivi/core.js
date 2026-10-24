@@ -518,7 +518,7 @@ const SCREENS = {}, ACT = {}, INP = {};
    les organisations et Ubora. La cible est posée par la construction (build.js) ; sans elle, on est côté village. */
 const CIBLE = (typeof window !== 'undefined' && window.AKIBA_CIBLE) || 'avec';
 const estSuivi = () => CIBLE === 'suivi';
-const ECRANS_SUIVI = /^(n[.]|o[.]|adm[.]|s[.]org)/;                 // animateur, organisation, administrateur
+const ECRANS_SUIVI = /^(n[.]|o[.]|adm[.]|s[.]org|l[.]users)/;   // l.users : la connexion du personnel                 // animateur, organisation, administrateur
 const ecranDisponible = s => estSuivi() || !ECRANS_SUIVI.test(s);
 const APP_NOM = () => estSuivi() ? 'Akiba Suivi' : 'Akiba';
 /* la feuille de style s'appuie dessus pour la mise en page ordinateur du suivi */

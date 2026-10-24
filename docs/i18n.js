@@ -276,4 +276,5 @@ ACT.saveLang = () => {
 };
 
 /* ---------- affichage en direct ---------- */
+const demoTag = () => K.data.mode === 'prod' ? '' : ' · <span class="chip warn">Démonstration</span>';
 const liveTag = () => `<span class="live"><i></i>En direct · ${new Date(App.liveAt || Date.now()).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>`;

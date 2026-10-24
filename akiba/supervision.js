@@ -83,13 +83,13 @@ function accueilSuivi() {
   </header>
   <main class="main login">
     ${licenceBanner()}
-    <!-- l'entrée d'abord : c'est la seule chose à faire en arrivant -->
+    <!-- une seule porte : animateurs et organisation prennent leur nom dans la même liste -->
     <section class="entree">
-      <h2 class="surtitre">Choisir votre entrée</h2>
+      <h2 class="surtitre">Entrer</h2>
       <div class="list">
-        ${hasAnim ? row('go', 'l.users', 'anim', 'map', 'Animateur de terrain', 'Je suis plusieurs AVEC') : ''}
-        ${hasOrg ? row('go', 'l.users', 'org', 'building', 'Organisation', 'Tableau de bord de nos AVEC') : ''}
-        ${row('go', 'adm.home', '', 'key', 'Administration Ubora', 'Licences, codes de validation, blocages')}
+        ${hasAnim || hasOrg
+          ? row('go', 'l.users', '', 'users', 'Entrer dans mon espace', 'Animateur ou organisation : choisissez votre nom')
+          : '<div class="li muted">Aucun compte sur ce téléphone. Recevez-en un de votre organisation, ou créez son compte ci-dessous.</div>'}
       </div>
       ${org}
     </section>
@@ -105,6 +105,8 @@ function accueilSuivi() {
     ${installCarte()}
     ${K.data.mode === 'prod' ? '' : `<div class="demo"><p class="small"><b>Démonstration</b> · codes secrets <b class="mono">1234</b></p>
       ${licKind() === 'demo' ? '<p class="hint">Licence de démonstration : les vraies données ne sont pas disponibles.</p>' : `<button class="btn ghost block" data-act="goLive">${ic('check')} Commencer avec mes vraies données</button>`}</div>`}
+    <!-- l'administration ne concerne qu'Ubora : un lien effacé, en bas, plutôt qu'une porte dans la liste -->
+    <p class="discret"><button class="linkbtn" data-act="go" data-to="adm.home">Administration Ubora</button></p>
   </main></div>`;
 }
 const quickAccueil = (act, to, icon, label, extra = '') => `<button class="quick" data-act="${act}" ${to ? `data-to="${to}"` : ''} ${extra}>${ic(icon)}<span>${label}</span></button>`;
@@ -130,7 +132,7 @@ SCREENS.login = () => {
     <p>Le cahier de l'AVEC dans le téléphone, même sans réseau.</p>
   </header>
   <main class="main login">
-    ${licenceBanner()}${installBanner()}
+    ${licenceBanner()}
     ${avecCard()}
     ${ticker([{ icon: 'shield', label: "Journal scellé, impossible à modifier" }, { icon: 'sync', label: "Tout fonctionne sans réseau" }, { icon: 'calendar', label: "La réunion guidée en 8 étapes" }, { icon: 'coins', label: "Épargne, crédits, amendes, partage" }, { icon: 'users', label: "Le carnet de chaque membre" }, { icon: 'globe', label: "Français, lingala, swahili, tshiluba, kikongo" }, { icon: 'chart', label: "Export Excel pour l'organisation" }], { aria: "Ce que fait Akiba" })}
     <div class="quicks">
@@ -138,6 +140,7 @@ SCREENS.login = () => {
       ${quick('go', 'guide', 'book', 'Guide')}
       ${quick('receiveSheet', '', 'sync', 'Recevoir une AVEC')}
     </div>
+    ${installCarte()}
     ${demo}
   </main></div>`;
 };
@@ -174,13 +177,14 @@ ACT.loginMember = d => {
   const a = avecById(d.avec), m = memberOf(a, d.id);
   askPin(m, 'Connexion', () => { K.session = { kind: 'avec', avecId: a.id, memberId: m.id }; rememberAvec(a.id); DB.save(); App.go('a.home'); });
 };
+/* Sans rôle demandé, la liste réunit animateurs et organisation : une seule porte, chacun prend son nom. */
 SCREENS['l.users'] = p => {
-  const list = K.data.users.filter(u => u.role === p.role && !u.remote);
-  return `<div class="shell">${topbar(p.role === 'org' ? 'Organisation' : 'Animateurs', 'Choisissez votre compte', backBtn('login'))}<main class="main">
-    <div class="list">${list.map(u => `<button class="li" data-act="loginUser" data-id="${u.id}"><span class="av">${esc(initials(u.name))}</span><span class="grow"><b>${esc(u.name)}</b><span class="small muted">${esc(orgOf(u.orgId).name)}${u.zone ? ' · ' + esc(u.zone) : ''}</span></span>${ic('chev')}</button>`).join('')}</div>
-    ${p.role === 'org'
-      ? `<button class="btn ghost block" data-act="orgLostSheet">${ic('key')} J'ai oublié mon code</button>`
-      : '<div class="card small muted">Code oublié ? Votre organisation vous en donne un nouveau : tableau de bord › « Code oublié d\'un animateur ».</div>'}
+  const list = K.data.users.filter(u => (!p.role || u.role === p.role) && !u.remote && (u.role === 'anim' || u.role === 'org'));
+  const titre = p.role === 'org' ? 'Organisation' : p.role === 'anim' ? 'Animateurs' : 'Entrer dans mon espace';
+  return `<div class="shell">${topbar(titre, 'Choisissez votre nom', backBtn('login'))}<main class="main">
+    <div class="list">${list.map(u => `<button class="li" data-act="loginUser" data-id="${u.id}"><span class="av">${esc(initials(u.name))}</span><span class="grow"><b>${esc(u.name)}</b><span class="small muted">${u.role === 'org' ? 'Organisation' : 'Animateur'} · ${esc(orgOf(u.orgId).name)}${u.zone ? ' · ' + esc(u.zone) : ''}</span></span>${ic('chev')}</button>`).join('') || '<div class="li muted">Aucun compte sur ce téléphone. L\'organisation en crée un depuis son tableau de bord.</div>'}</div>
+    ${list.some(u => u.role === 'org') ? `<button class="btn ghost block" data-act="orgLostSheet">${ic('key')} J'ai oublié mon code (organisation)</button>` : ''}
+    ${list.some(u => u.role === 'anim') ? '<div class="card small muted">Animateur, code oublié ? Votre organisation vous en donne un nouveau : tableau de bord › « Code oublié d\'un animateur ».</div>' : ''}
   </main></div>`;
 };
 ACT.loginUser = d => {
@@ -203,7 +207,7 @@ SCREENS['n.home'] = () => {
   const members = rows.reduce((s, r) => s + r.avec.members.length, 0);
   const savings = rows.reduce((s, r) => s + r.st.sum.EPARGNE, 0);
   const nAlerts = rows.reduce((s, r) => s + r.h.alerts.length, 0);
-  return `<div class="shell">${topbar(u.name, `${liveTag()} · ${esc(u.zone || '')}`, '', logoutBtn)}<main class="main">
+  return `<div class="shell">${topbar(u.name, `${liveTag()} · ${esc(u.zone || '')}${demoTag()}`, '', logoutBtn)}<main class="main">
     ${supBand(rows, [{ icon: 'users', label: 'Membres suivis', value: String(members) }, { icon: 'coins', label: 'Épargne cumulée', value: fck(savings) }])}
     <div class="grid2">
       <div class="kpi"><span>AVEC suivies</span><b class="num">${rows.length}</b><span>${members} membres</span></div>
@@ -285,7 +289,7 @@ SCREENS['o.home'] = p => {
   const outstanding = tot(r => r.st.outstanding), late = tot(r => r.st.lateAmt);
   const alerts = rows.flatMap(r => r.h.alerts).sort((a, b) => LVL[a.lvl] - LVL[b.lvl]);
   const maxSav = Math.max(1, ...rows.map(r => r.st.sum.EPARGNE));
-  return `<div class="shell wide">${topbar(org.name, liveTag(), '', logoutBtn)}<main class="main">
+  return `<div class="shell wide">${topbar(org.name, liveTag() + demoTag(), '', logoutBtn)}<main class="main">
     <div class="row between" style="flex-wrap:wrap">
       <h1>Vue d'ensemble</h1>
       <div class="row" style="flex-wrap:wrap;gap:6px">

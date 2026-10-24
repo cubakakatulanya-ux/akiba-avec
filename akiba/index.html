@@ -2,7 +2,7 @@
 <meta name="theme-color" content="#0F4D3A">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;500;700&family=Poppins:wght@500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;500;700&family=Ubuntu+Mono:wght@400;700&display=swap">
 <style>
 :root{
   --ground:#EEF2EC; --surface:#FFFFFF; --surface-2:#E2E9E1; --ink:#10261F; --ink-2:#4B6058; --line:#CCD8CE;
@@ -10,9 +10,9 @@
   --maize:#F2B705; --maize-ink:#2A1F00; --maize-soft:#FCEFC2;
   --good:#1E7F4A; --good-soft:#D8EEDF; --warn:#A86300; --warn-soft:#FBE7C6; --bad:#B8321F; --bad-soft:#F6D9D3;
   --shadow:0 1px 0 rgba(16,38,31,.06),0 6px 20px -12px rgba(16,38,31,.35);
-  --f-display:"Baloo 2","Trebuchet MS",system-ui,sans-serif;
-  --f-body:"Nunito Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
-  --f-mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+  --f-display:"Ubuntu",system-ui,sans-serif;
+  --f-body:"Ubuntu",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --f-mono:"Ubuntu Mono",ui-monospace,Consolas,monospace;
   --r:14px; --r-sm:10px;
 }
 @media (prefers-color-scheme: dark){
@@ -527,10 +527,10 @@ button.li:active{background:var(--surface-2)}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 
-/* ---------- style sobre : Ubuntu pour le texte, Poppins pour les titres et les boutons,
+/* ---------- style sobre : Ubuntu partout : texte, titres et boutons,
      cartes blanches à fin contour gris, sections alternées en gris très clair ---------- */
 :root{
-  --f-display:"Poppins","Trebuchet MS",system-ui,sans-serif;
+  --f-display:"Ubuntu",system-ui,sans-serif;
   --f-body:"Ubuntu",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
   --ground:#FFFFFF; --surface:#FFFFFF; --surface-2:#F2F4F2; --line:#E2E5E2;
   --ink:#1B2A24; --ink-2:#5C6B64;
@@ -557,7 +557,7 @@ h2,h3{font-weight:600;letter-spacing:-.005em}
 .caisse .split div{background:rgba(255,255,255,.12);box-shadow:none;border-radius:8px}
 .avec-main{background:var(--maize);box-shadow:none;border-radius:var(--r);padding:16px}
 .avec-main .ic{background:rgba(255,255,255,.55);box-shadow:none;border-radius:10px}
-/* boutons : Poppins, à plat */
+/* boutons : à plat, en Ubuntu gras */
 .btn{font-weight:600;border-radius:10px;box-shadow:none}
 .btn.primary,.btn.primary:not(:disabled){background:var(--maize);color:var(--maize-ink);box-shadow:none}
 .btn.brand{background:var(--brand);box-shadow:none}
@@ -754,6 +754,11 @@ h2,h3{font-weight:600;letter-spacing:-.005em}
 
 /* petit trait entre les filtres et les gestes, dans les barres'outils */
 .row>.sep{width:1px;align-self:stretch;margin:2px 4px;background:var(--line)}
+
+/* lien effacé : présent pour qui le cherche, invisible pour les autres */
+.discret{text-align:center;margin:4px 0 0}
+.discret .linkbtn{font-size:.78rem;color:var(--ink-2);opacity:.6;text-decoration:none}
+.discret .linkbtn:hover{opacity:1;text-decoration:underline}
 </style>
 <div id="app"></div>
 <script src="core.js"></script>

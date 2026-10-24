@@ -125,7 +125,13 @@ SCREENS['adm.home'] = () => {
       </ol>
       <p class="hint">Un code ne vaut que pour le téléphone qui l'a demandé : recopié ailleurs, il est refusé. Pour un deuxième téléphone du même groupe, refaites l'opération avec son code à lui.</p>
     </details>
-    <section class="card stack"><h2 class="surtitre">Ce que contient ce téléphone</h2>${admStats()}</section>
+    <!-- ces chiffres sont ceux des AVEC présentes sur l'appareil : en démonstration, ce sont des groupes fictifs -->
+    <section class="card stack">
+      <div class="row between"><h2 class="surtitre" style="margin:0">Ce que contient ce téléphone</h2>
+        ${K.data.mode === 'prod' ? '<span class="chip good">Vraies données</span>' : '<span class="chip warn">Démonstration</span>'}</div>
+      ${K.data.mode === 'prod' ? '' : '<p class="hint" style="margin:0">Groupes, membres et montants fictifs, livrés pour la formation. Les licences et les codes que vous créez ici, eux, sont bien réels.</p>'}
+      ${admStats()}
+    </section>
     ${last ? `<section class="card stack"><h2>Code de validation prêt</h2>
       ${row('Partenaire', esc(last.name))}${row('Type', LIC_KINDS[last.kind])}${row('Téléphone', `<span class="mono">${esc(last.dev)}</span>`)}${row('Valable jusqu\'au', fdateY(new Date(last.exp + 'T12:00').getTime()))}
       <div class="formula mono" style="word-break:break-all;max-height:88px;overflow:auto">${esc(last.code)}</div>
