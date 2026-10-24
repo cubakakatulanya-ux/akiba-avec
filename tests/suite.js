@@ -8,6 +8,7 @@ window.__akibaTests = async function () {
   const must = (cond, msg) => { if (!cond) throw new Error(msg || 'condition fausse'); };
   const eq = (a, b, msg) => must(a === b, (msg || '') + ' : attendu ' + b + ', obtenu ' + a);
   const near = (a, b, tol, msg) => must(Math.abs(a - b) <= tol, (msg || '') + ' : attendu environ ' + b + ', obtenu ' + a);
+  if (!K.data.avecs.length) DB.reset();        // Akiba Suivi démarre vide : les essais rechargent la démonstration
   const A = 'avec1';
   let dernierMessage = null;
   const toastVrai = App.toast;

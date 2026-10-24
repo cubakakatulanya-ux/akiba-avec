@@ -62,6 +62,7 @@ const js = async (expr, attendre = true) => {
     await dors(120);
     return js("({h:document.documentElement.scrollHeight,vh:innerHeight,w:document.documentElement.scrollWidth,vw:innerWidth})", false);
   };
+  await js('if (!K.data.avecs.length) DB.reset();1');   // Akiba Suivi démarre vide : on recharge la démonstration pour les essais
   const SESSION_AVEC = "K.session={kind:'avec',avecId:'avec1',memberId:avecById('avec1').members[0].id}";
   for (const [ecran, avant] of [['login', 'K.session=null'], ['a.home', SESSION_AVEC], ['a.members', SESSION_AVEC], ['a.loans', SESSION_AVEC], ['a.journal', SESSION_AVEC], ['guide', SESSION_AVEC], ['a.more', SESSION_AVEC]]) {
     const m = await mesure(ecran, avant);

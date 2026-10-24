@@ -150,7 +150,7 @@ function validationPanel(opts = {}) {
     ${r.blocked ? `<div class="alert bad">${icSpan('lock')}<div><b>Accès bloqué</b><span class="small">${esc(r.why)}. Les données restent sur ce téléphone. Contactez Ubora si c'est une erreur.</span></div></div>` : ''}
     ${r.expired ? `<div class="alert bad">${icSpan('alert')}<div><b>${esc(r.why)}</b><span class="small">Les données restent sur ce téléphone. Demandez un nouveau code à Ubora.</span></div></div>` : ''}
     ${r.limited ? `<div class="alert warn">${icSpan('key')}<div><b>Téléphone d'AVEC</b><span class="small">Ce téléphone tient les réunions de l'AVEC reçue. Pour le reste, il faut un code de validation.</span></div></div>` : ''}
-    ${opts.intro === false ? '' : `<p class="muted">Akiba est libre à installer et à découvrir. Pour les vraies opérations, Ubora donne un <b>code de validation</b> pour ce téléphone, une seule fois.</p>`}
+    ${opts.intro === false ? '' : `<p class="muted">${APP_NOM()} est libre à installer et à découvrir. Pour les vraies opérations, Ubora donne un <b>code de validation</b> pour ce téléphone, une seule fois.</p>`}
     <div class="devcode"><span class="label">Code de ce téléphone</span><b class="mono">${deviceId()}</b></div>
     <a class="btn wa block xl" href="https://wa.me/${UBORA.wa}?text=${encodeURIComponent(demandText())}" target="_blank" rel="noopener">${ic('chat')} Demander le code sur WhatsApp</a>
     <p class="small muted" style="text-align:center;margin-top:-4px">ou appelez Ubora au <a href="tel:${UBORA.tel}" style="color:var(--brand);font-weight:700">${UBORA.telShow}</a> et donnez le code de ce téléphone</p>
@@ -161,15 +161,17 @@ function validationPanel(opts = {}) {
 
 SCREENS['lic.gate'] = () => `<div class="shell">
     <header class="hero">
-      <div class="label" style="color:inherit;opacity:.8">Épargne et crédit villageois</div>
-      <h1>Akiba</h1>
+      <div class="label" style="color:inherit;opacity:.8">${estSuivi() ? 'Suivi des AVEC' : 'Épargne et crédit villageois'}</div>
+      <h1>${APP_NOM()}</h1>
       <p>Ce téléphone contient de vraies données : il doit être validé par l'administrateur d'Akiba pour continuer.</p>
       <p class="small" style="opacity:.85">Développée par l'Entreprise Sociale Ubora</p>
     </header>
     <main class="main">
       ${validationPanel({ intro: false })}
-      ${(App.licence || {}).blocked ? '' : `<section class="card stack"><h2>Téléphone d'une AVEC</h2>
-        <p class="small muted">Vous avez reçu un fichier <b>.akiba</b> et un code (de votre animateur, ou de l'ancien téléphone de votre groupe) : recevez votre AVEC directement.</p>
+      ${(App.licence || {}).blocked ? '' : `<section class="card stack"><h2>${estSuivi() ? 'Recevoir une AVEC' : 'Téléphone d\'une AVEC'}</h2>
+        <p class="small muted">${estSuivi()
+          ? 'Un groupe vous a envoyé son fichier <b>.akiba</b> et son code : vous pouvez le recevoir sans attendre la validation de ce téléphone.'
+          : 'Vous avez reçu un fichier <b>.akiba</b> et un code (de votre animateur, ou de l\'ancien téléphone de votre groupe) : recevez votre AVEC directement.'}</p>
         <button class="btn ghost block" data-act="receiveSheet">${ic('sync')} Recevoir une AVEC</button>
       </section>`}
       ${supportCard()}
