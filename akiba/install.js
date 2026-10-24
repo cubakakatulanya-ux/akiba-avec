@@ -79,6 +79,7 @@ SCREENS['dev.backup'] = () => {
       <p class="small muted">Akiba se met à jour tout seul, <b>sans désinstaller</b> et <b>sans perdre les données</b>. Il suffit de l'ouvrir de temps en temps avec du réseau. Si une saisie est en cours, un bandeau « Mettre à jour » apparaît.</p>
       <div class="row between small"><span>Développée par</span><b>Entreprise Sociale Ubora</b></div>
       <div class="row between small"><span>Version sur ce téléphone</span><b class="mono">${esc(window.KITABU_VERSION || 'démonstration')}</b></div>
+      <button class="btn ghost block" data-act="majChercher">${ic('sync')} Chercher une mise à jour maintenant</button>
     </section>
 
     <section class="card stack"><h2>Éviter une désinstallation par erreur</h2>
@@ -160,4 +161,21 @@ ACT.restoreRun = async () => {
     Object.keys(_chain).forEach(k => delete _chain[k]);
     DB.save(); App.go('login'); App.toast(`${data.avecs.length} AVEC restaurée${data.avecs.length > 1 ? 's' : ''}. Connectez-vous.`);
   } catch (e) { App.toast('Restauration impossible : ' + e.message); }
+};
+
+/* Chercher une mise à jour sans attendre : l'application interroge le serveur, et se recharge
+   d'elle-même si une nouvelle version existe. Sans réseau, on le dit plutôt que de faire semblant. */
+ACT.majChercher = async () => {
+  if (!('serviceWorker' in navigator)) return App.toast('Mise à jour automatique indisponible sur ce navigateur');
+  if (navigator.onLine === false) return App.toast('Pas de réseau : rouvrez l’application quand vous en aurez');
+  App.toast('Recherche en cours…');
+  try {
+    const reg = await navigator.serviceWorker.getRegistration();
+    if (!reg) return App.toast('Application non installée : ouvrez-la depuis son adresse');
+    await reg.update();
+    setTimeout(() => {
+      if (reg.installing || reg.waiting) App.toast('Nouvelle version trouvée : elle s’installe');
+      else App.toast('Vous avez déjà la dernière version');
+    }, 1500);
+  } catch (e) { App.toast('Recherche impossible pour le moment'); }
 };

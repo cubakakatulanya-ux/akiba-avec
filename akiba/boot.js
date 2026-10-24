@@ -23,8 +23,10 @@ if (window.KITABU_PWA && 'serviceWorker' in navigator) {
     let hadController = !!navigator.serviceWorker.controller;
     navigator.serviceWorker.register('sw.js').then(reg => {
       const check = () => { if (navigator.onLine !== false) reg.update().catch(() => {}); };
+      check();                                                        // tout de suite : ouvrir l'application suffit à la mettre à jour
       setInterval(check, 30 * 60e3);
       window.addEventListener('online', check);
+      document.addEventListener('visibilitychange', () => { if (!document.hidden) check(); });   // au retour sur l'application
     }).catch(() => {});
     navigator.serviceWorker.addEventListener('controllerchange', () => {
       if (!hadController) { hadController = true; return; }            // toute première installation : rien à recharger
