@@ -116,6 +116,15 @@ SCREENS['adm.home'] = () => {
   const used = id => acts.filter(a => a.lic === id).length;
   return `<div class="shell">${head}<main class="main">
     <div class="alert good">${icSpan('unlock')}<div><b>Espace ouvert</b><span class="small">Il se referme tout seul en quittant cet écran ou après 10 minutes. Fonctionne sans réseau.</span></div></div>
+    <!-- le circuit complet, qui n'était écrit nulle part : sans lui, on ne devine pas d'où vient le code du téléphone -->
+    <details class="g cartepas"${last ? '' : ' open'}><summary><b>Donner une licence à une AVEC autonome ou à une organisation</b></summary>
+      <ol class="pas3">
+        <li><b>Le groupe fait sa demande.</b> Sur son téléphone, Akiba affiche l'écran de validation avec le <b>code du téléphone</b> (quatre lettres, un tiret, quatre lettres). Le bouton <b>Demander par WhatsApp</b> vous envoie ce code tout prêt.</li>
+        <li><b>Vous créez le code ici.</b> Collez le message reçu dans « Code du téléphone » ci-dessous — le code s'y retrouve tout seul. Choisissez le partenaire, ou ajoutez-en un nouveau : type <b>AVEC autonome</b> pour un groupe qui se gère seul, <b>Organisation partenaire</b> pour une ONG qui suit plusieurs groupes.</li>
+        <li><b>Vous renvoyez le code.</b> « Envoyer » ouvre WhatsApp avec le lien ; « Copier le code » sert si vous préférez le SMS. En face à face, faites plutôt scanner le QR code. Le groupe touche le lien et l'application se valide.</li>
+      </ol>
+      <p class="hint">Un code ne vaut que pour le téléphone qui l'a demandé : recopié ailleurs, il est refusé. Pour un deuxième téléphone du même groupe, refaites l'opération avec son code à lui.</p>
+    </details>
     <section class="card stack"><h2 class="surtitre">Ce que contient ce téléphone</h2>${admStats()}</section>
     ${last ? `<section class="card stack"><h2>Code de validation prêt</h2>
       ${row('Partenaire', esc(last.name))}${row('Type', LIC_KINDS[last.kind])}${row('Téléphone', `<span class="mono">${esc(last.dev)}</span>`)}${row('Valable jusqu\'au', fdateY(new Date(last.exp + 'T12:00').getTime()))}

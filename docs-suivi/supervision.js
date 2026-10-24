@@ -45,6 +45,21 @@ INP.findName = el => {
 };
 /* Akiba Suivi : l'accueil de l'application des animateurs, des organisations et d'Ubora.
    Le grand bouton AVEC n'y figure pas : un groupe entre par l'application Akiba. */
+/* Les outils du quotidien, rangés derrière un bouton : la barre du haut ne garde que
+   les filtres et les trois gestes fréquents. */
+ACT.outilsSheet = () => {
+  const row = (act, to, icon, titre, sous, extra = '') => `<button class="li" data-act="${act}" ${to ? `data-to="${to}"` : ''} ${extra}><span class="xl-ic">${ic(icon)}</span><span class="grow"><b>${titre}</b><span class="small muted">${sous}</span></span>${ic('chev')}</button>`;
+  App.openSheet(`<h2>Outils</h2>
+    <div class="list">
+      ${row('go', 't.home', 'clip', 'Formation', 'Les modules de la méthode AVEC')}
+      ${row('go', 'guide', 'book', 'Guide d’utilisation', 'Tout sur l’AVEC et l’application')}
+      ${row('go', 'tr.edit', 'globe', 'Langues', 'Relire et corriger les traductions', 'data-lang="ln"')}
+      ${row('themeSheet', '', 'eye', 'Apparence', THEMES[themeChoisi()])}
+      ${row('userPinSheet', '', 'key', 'Mon code', 'Changer mon code secret')}
+      ${row('go', 'dev.backup', 'shield', 'Installer et sauvegarder', 'Icône sur l’écran d’accueil, sauvegarde chiffrée')}
+    </div>
+    <button class="btn ghost block" data-act="closeSheet">Fermer</button>`);
+};
 function accueilSuivi() {
   const hasAnim = K.data.users.some(u => u.role === 'anim' && !u.remote);
   const hasOrg = K.data.users.some(u => u.role === 'org' && !u.remote);
@@ -54,29 +69,42 @@ function accueilSuivi() {
     : '';
   return `<div class="shell home">
   <header class="hero tight">
-    <button class="langbtn" data-act="themeSheet" aria-label="Choisir l’apparence" style="right:auto;left:16px">${ic("eye")}</button><button class="langbtn" data-act="langSheet" aria-label="Choisir la langue">${ic('globe')}<span class="no-tr">${esc(I18N.name())}</span></button>
+    <button class="langbtn pastille2" data-act="themeSheet" aria-label="Choisir l’apparence">${ic("eye")}</button><button class="langbtn" data-act="langSheet" aria-label="Choisir la langue">${ic('globe')}<span class="no-tr">${esc(I18N.name())}</span></button>
     <svg class="ledger" viewBox="0 0 200 200" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><rect x="30" y="20" width="140" height="170" rx="10"/>${[55, 80, 105, 130, 155].map(y => `<path d="M50 ${y}h100"/>`).join('')}<path d="M80 20v170"/></svg>
     <img class="hubmark no-tr" src="ubora-hub.png" width="512" height="512" alt="Logo Ubora" decoding="async">
     <div class="label" style="color:inherit;opacity:.85">Suivi des AVEC</div>
-    <h1>Akiba Suivi</h1>
+    <h1>Akiba <em>Suivi</em></h1>
     <p>Pour les animateurs, les organisations et Ubora. Les groupes, eux, travaillent sur Akiba.</p>
+    <ul class="preuves">
+      <li>${ic('shield')}<span>Les journaux arrivent <b>scellés</b> et se vérifient à la réception</span></li>
+      <li>${ic('map')}<span>Tous vos groupes suivis, <b>même ceux que vous n'avez pas visités</b></span></li>
+      <li>${ic('chart')}<span>Qualité des données notée, <b>export Excel</b> pour le bailleur</span></li>
+    </ul>
   </header>
   <main class="main login">
-    ${licenceBanner()}${installBanner()}
-    <div class="list">
-      ${hasAnim ? row('go', 'l.users', 'anim', 'map', 'Animateur de terrain', 'Je suis plusieurs AVEC') : ''}
-      ${hasOrg ? row('go', 'l.users', 'org', 'building', 'Organisation', 'Tableau de bord de nos AVEC') : ''}
-      ${row('receiveSheet', '', '', 'sync', 'Recevoir une AVEC', 'Fichier envoyé par le groupe ou par un collègue')}
-      ${row('go', 'adm.home', '', 'key', 'Espace administrateur Ubora', 'Codes de validation et blocages')}
-    </div>
-    ${org}
-    ${ticker([{ icon: 'map', label: 'Tous vos groupes, même sans les visiter' }, { icon: 'shield', label: 'Journaux scellés, vérifiés à la réception' }, { icon: 'chart', label: 'Export Excel pour le bailleur' }, { icon: 'check', label: 'Indice de qualité des données' }], { aria: 'Ce que fait Akiba Suivi' })}
-    <div class="quicks">
-      ${quickAccueil('go', 'guide', 'book', 'Guide')}
-      ${quickAccueil('go', 't.home', 'clip', 'Formation')}
-    </div>
+    ${licenceBanner()}
+    <!-- l'entrée d'abord : c'est la seule chose à faire en arrivant -->
+    <section class="entree">
+      <h2 class="surtitre">Choisir votre entrée</h2>
+      <div class="list">
+        ${hasAnim ? row('go', 'l.users', 'anim', 'map', 'Animateur de terrain', 'Je suis plusieurs AVEC') : ''}
+        ${hasOrg ? row('go', 'l.users', 'org', 'building', 'Organisation', 'Tableau de bord de nos AVEC') : ''}
+        ${row('go', 'adm.home', '', 'key', 'Administration Ubora', 'Licences, codes de validation, blocages')}
+      </div>
+      ${org}
+    </section>
+    <!-- puis les gestes courants, en retrait -->
+    <section class="entree">
+      <h2 class="surtitre">Outils</h2>
+      <div class="quicks">
+        ${quickAccueil('receiveSheet', '', 'sync', 'Recevoir une AVEC')}
+        ${quickAccueil('go', 'guide', 'book', 'Guide')}
+        ${quickAccueil('go', 't.home', 'clip', 'Formation')}
+      </div>
+    </section>
+    ${installCarte()}
     ${K.data.mode === 'prod' ? '' : `<div class="demo"><p class="small"><b>Démonstration</b> · codes secrets <b class="mono">1234</b></p>
-      ${licKind() === 'demo' ? '<p class="hint">Licence de démonstration : les vraies données ne sont pas disponibles.</p>' : `<button class="btn primary block" data-act="goLive">${ic('check')} Commencer avec mes vraies données</button>`}</div>`}
+      ${licKind() === 'demo' ? '<p class="hint">Licence de démonstration : les vraies données ne sont pas disponibles.</p>' : `<button class="btn ghost block" data-act="goLive">${ic('check')} Commencer avec mes vraies données</button>`}</div>`}
   </main></div>`;
 }
 const quickAccueil = (act, to, icon, label, extra = '') => `<button class="quick" data-act="${act}" ${to ? `data-to="${to}"` : ''} ${extra}>${ic(icon)}<span>${label}</span></button>`;
@@ -94,7 +122,7 @@ SCREENS.login = () => {
       </div>`;
   return `<div class="shell home">
   <header class="hero tight">
-    <button class="langbtn" data-act="themeSheet" aria-label="Choisir l’apparence" style="right:auto;left:16px">${ic("eye")}</button><button class="langbtn" data-act="langSheet" aria-label="Choisir la langue">${ic('globe')}<span class="no-tr">${esc(I18N.name())}</span></button>
+    <button class="langbtn pastille2" data-act="themeSheet" aria-label="Choisir l’apparence">${ic("eye")}</button><button class="langbtn" data-act="langSheet" aria-label="Choisir la langue">${ic('globe')}<span class="no-tr">${esc(I18N.name())}</span></button>
     <svg class="ledger" viewBox="0 0 200 200" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><rect x="30" y="20" width="140" height="170" rx="10"/>${[55, 80, 105, 130, 155].map(y => `<path d="M50 ${y}h100"/>`).join('')}<path d="M80 20v170"/></svg>
     <img class="hubmark no-tr" src="ubora-hub.png" width="512" height="512" alt="Logo Ubora" decoding="async">
     <div class="label" style="color:inherit;opacity:.85">Épargne et crédit villageois</div>
@@ -263,15 +291,11 @@ SCREENS['o.home'] = p => {
       <div class="row" style="flex-wrap:wrap;gap:6px">
         <button class="btn sm ${p.anim ? 'ghost' : 'brand'}" data-act="go" data-to="o.home">Toutes</button>
         ${anims.map(a => `<button class="btn sm ${p.anim === a.id ? 'brand' : 'ghost'}" data-act="go" data-to="o.home" data-anim="${a.id}">${esc(a.name)}</button>`).join('')}
+        <span class="sep" aria-hidden="true"></span>
         <button class="btn sm brand" data-act="go" data-to="o.impact">${ic('chart')} Impact</button>
-        <button class="btn sm ghost" data-act="go" data-to="t.home">${ic('clip')} Formation</button>
         <button class="btn sm ghost" data-act="exportSheet" data-anim="${esc(p.anim || '')}">${ic('chart')} Excel</button>
-        <button class="btn sm ghost" data-act="go" data-to="guide">${ic('book')} Guide</button>
-        <button class="btn sm ghost" data-act="go" data-to="tr.edit" data-lang="ln">${ic('globe')} Langues</button>
-        <button class="btn sm ghost" data-act="themeSheet">${ic('eye')} Apparence</button>
-        <button class="btn sm ghost" data-act="userPinSheet">${ic('key')} Mon code</button>
-        <button class="btn sm ghost" data-act="go" data-to="dev.backup">${ic('shield')} Sauvegarde</button>
         <button class="btn sm primary" data-act="go" data-to="c.avec" data-from="org">${ic('plus')} Nouvelle AVEC</button>
+        <button class="btn sm ghost" data-act="outilsSheet" aria-label="Autres outils">${ic('more')}</button>
       </div>
     </div>
     ${supBand(rows, [{ icon: 'users', label: 'Membres', value: String(members) }, { icon: 'coins', label: 'Crédits en cours', value: fck(outstanding) }, { icon: 'chart', label: 'AVEC suivies', value: String(rows.length) }])}

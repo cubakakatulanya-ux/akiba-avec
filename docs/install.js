@@ -16,6 +16,22 @@ function protectStorage() {
 }
 protectStorage();
 
+/* Carte d'installation posée, en bas d'un accueil : elle propose sans crier, contrairement au bandeau
+   d'alerte qui, lui, volait la vedette à la vraie action de la page. */
+function installCarte() {
+  if (!window.KITABU_PWA || isInstalled()) return '';
+  return `<section class="card stack instal">
+    <div class="row" style="gap:14px;align-items:flex-start">
+      <span class="xl-ic">${ic('home')}</span>
+      <div class="grow"><b>Installer ${APP_NOM()} sur cet appareil</b>
+        <p class="hint" style="margin:2px 0 0">Une icône sur l'écran d'accueil, et l'application s'ouvre ensuite sans réseau.</p></div>
+    </div>
+    <div class="row" style="gap:10px">
+      <button class="btn brand" data-act="go" data-to="dev.backup">${ic('home')} Installer</button>
+      <button class="linkbtn" data-act="go" data-to="guide">Comment ça marche</button>
+    </div>
+  </section>`;
+}
 function installBanner() {
   if (!window.KITABU_PWA || isInstalled()) return '';
   return `<button class="alert warn" style="border-top:0;border-right:0;border-bottom:0;width:100%;text-align:left" data-act="go" data-to="dev.backup">

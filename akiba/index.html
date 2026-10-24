@@ -725,6 +725,35 @@ h2,h3{font-weight:600;letter-spacing:-.005em}
   .tablewrap table{table-layout:auto}
   .tablewrap td.r,.tablewrap th.r,.tablewrap td .chip{white-space:nowrap}
 }
+
+/* ---------- accueil d'Akiba Suivi : entrée claire, preuves à gauche ---------- */
+.hero h1 em{font-style:normal;color:var(--maize)}
+.preuves{list-style:none;margin:26px 0 0;padding:0;display:flex;flex-direction:column;gap:12px;max-width:34ch}
+.preuves li{display:flex;align-items:flex-start;gap:11px;font-size:.95rem;line-height:1.4;opacity:.92}
+.preuves li svg{width:19px;height:19px;flex:none;margin-top:1px;color:var(--maize)}
+.preuves li b{font-weight:700}
+.entree{display:flex;flex-direction:column;gap:10px}
+.entree .surtitre{margin:0;font-size:.78rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-2)}
+.instal{background:var(--band,var(--surface-2))}
+.hero .pastille2,.hero.tight .pastille2{right:auto;left:14px}
+@media (min-width:1100px){.shell.home .hero.tight .pastille2{left:auto;right:calc(clamp(28px,2.4vw,44px) + 118px);top:26px}}
+.instal .btn{flex:none}
+@media (min-width:1100px){
+  /* la colonne de droite se lit comme une feuille : entrée, outils, installation */
+  .shell.home .main.login{gap:22px}
+  .preuves{margin-top:30px}
+}
+
+/* le mode'emploi en trois pas, dans l'espace administrateur */
+.cartepas{background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
+.cartepas>summary{padding:14px 16px;cursor:pointer;font-family:var(--f-display)}
+.pas3{margin:0;padding:0 16px 4px 0;list-style:none;counter-reset:pas;display:flex;flex-direction:column;gap:12px}
+.pas3 li{position:relative;padding-left:52px;font-size:.92rem;line-height:1.5}
+.pas3 li::before{counter-increment:pas;content:counter(pas);position:absolute;left:16px;top:-1px;width:26px;height:26px;border-radius:50%;background:var(--brand-soft);color:var(--brand);font-weight:800;font-size:.85rem;display:grid;place-items:center}
+.cartepas .hint{padding:10px 16px 14px}
+
+/* petit trait entre les filtres et les gestes, dans les barres'outils */
+.row>.sep{width:1px;align-self:stretch;margin:2px 4px;background:var(--line)}
 </style>
 <div id="app"></div>
 <script src="core.js"></script>
