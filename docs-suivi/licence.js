@@ -234,10 +234,8 @@ SCREENS['lic.gate'] = () => `<div class="shell">
     </header>
     <main class="main">
       ${validationPanel({ intro: false })}
-      ${(App.licence || {}).blocked ? '' : `<section class="card stack"><h2>${estSuivi() ? 'Recevoir une AVEC' : 'Téléphone d\'une AVEC'}</h2>
-        <p class="small muted">${estSuivi()
-          ? 'Un groupe vous a envoyé son fichier <b>.akiba</b> et son code : vous pouvez le recevoir sans attendre la validation de ce téléphone.'
-          : 'Vous avez reçu un fichier <b>.akiba</b> et un code (de votre animateur, ou de l\'ancien téléphone de votre groupe) : recevez votre AVEC directement.'}</p>
+      ${estSuivi() || (App.licence || {}).blocked ? '' : `<section class="card stack"><h2>Téléphone d'une AVEC</h2>
+        <p class="small muted">Vous avez reçu un fichier <b>.akiba</b> et un code (de votre animateur, ou de l'ancien téléphone de votre groupe) : recevez votre AVEC directement.</p>
         <button class="btn ghost block" data-act="receiveSheet">${ic('sync')} Recevoir une AVEC</button>
       </section>`}
       ${supportCard()}

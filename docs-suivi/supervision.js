@@ -51,6 +51,7 @@ ACT.outilsSheet = () => {
   const row = (act, to, icon, titre, sous, extra = '') => `<button class="li" data-act="${act}" ${to ? `data-to="${to}"` : ''} ${extra}><span class="xl-ic">${ic(icon)}</span><span class="grow"><b>${titre}</b><span class="small muted">${sous}</span></span>${ic('chev')}</button>`;
   App.openSheet(`<h2>Outils</h2>
     <div class="list">
+      ${estSuivi() ? row('receiveSheet', '', 'sync', 'Recevoir une AVEC', 'Le groupe vous a envoyé son fichier et son code') : ''}
       ${row('go', 't.home', 'clip', 'Formation', 'Les modules de la méthode AVEC')}
       ${row('go', 'guide', 'book', 'Guide d’utilisation', 'Tout sur l’AVEC et l’application')}
       ${row('go', 'tr.edit', 'globe', 'Langues', 'Relire et corriger les traductions', 'data-lang="ln"')}
@@ -95,8 +96,9 @@ function accueilSuivi() {
       ${org}
     </section>
     <!-- les gestes secondaires : des liens sobres, pas des tuiles. L'écran garde une seule porte visible. -->
+    <!-- recevoir une AVEC est un geste de métier : il se fait dans l'espace de l'animateur
+         ou de l'organisation, pas sur la page d'accueil, devant n'importe qui. -->
     <nav class="liens" aria-label="Autres gestes">
-      <button data-act="receiveSheet">${ic('sync')}<span>Recevoir une AVEC</span></button>
       <button data-act="go" data-to="guide">${ic('book')}<span>Guide</span></button>
       <button data-act="go" data-to="t.home">${ic('clip')}<span>Formation</span></button>
     </nav>
@@ -216,6 +218,7 @@ SCREENS['n.home'] = () => {
     <div class="list">${rows.map(r => `<button class="li" data-act="go" data-to="n.avec" data-id="${r.avec.id}"><span class="health ${r.h.level}" aria-label="${r.h.level}"></span>
       <span class="grow"><b>${esc(r.avec.name)}</b><span class="small muted">${esc(r.avec.village)} · ${r.avec.members.length} membres · réunion ${r.st.last ? ago(r.st.last.date) : '—'}</span></span>
       <span class="end"><span class="num">${fck(r.st.sum.EPARGNE)}</span><br>${r.avec.status === 'pending' ? '<span class="chip warn">À valider</span>' : r.avec.status === 'refused' ? '<span class="chip bad">Refusée</span>' : r.h.alerts.length ? `<span class="chip ${r.h.level}">${r.h.alerts.length} alerte${r.h.alerts.length > 1 ? 's' : ''}</span>` : '<span class="chip good">RAS</span>'}</span></button>`).join('')}</div>
+    <button class="btn brand block" data-act="receiveSheet">${ic('sync')} Recevoir une AVEC</button>
     <button class="btn ghost block" data-act="unlockSheet">${ic('lock')} Débloquer un membre (code perdu)</button>
     <button class="btn ghost block" data-act="exportSheet">${ic('chart')} Exporter mes AVEC vers Excel</button>
     <button class="btn ghost block" data-act="go" data-to="dev.backup">${ic('shield')} Installer et sauvegarder</button>
