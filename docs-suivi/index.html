@@ -24,7 +24,6 @@
   --t-base: 1rem;
   --t-lg: 1.06rem;
   --t-xl: 1.18rem;
-
   --ground:#EEF2EC; --surface:#FFFFFF; --surface-2:#E2E9E1; --ink:#10261F; --ink-2:#4B6058; --line:#CCD8CE;
   --brand:#0F4D3A; --brand-ink:#FFFFFF; --brand-soft:#D5E7DD;
   --maize:#F2B705; --maize-ink:#2A1F00; --maize-soft:#FCEFC2;
@@ -68,7 +67,6 @@ button{cursor:pointer}
 .muted{color:var(--ink-2)}
 .small{font-size:var(--t-sm)}
 .label{font-size:var(--t-2xs);text-transform:uppercase;letter-spacing:.1em;font-weight:800;color:var(--ink-2)}
-
 /* shell */
 #app{min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;background:var(--ground)}
 .shell{width:100%;max-width:520px;margin:0 auto;flex:1 0 auto;display:flex;flex-direction:column}
@@ -90,10 +88,6 @@ button{cursor:pointer}
 .tstep.done{background:var(--brand);border-color:var(--brand);color:var(--brand-ink)}
 .tlist{margin:0;padding-left:1.25em;display:flex;flex-direction:column;gap:7px}
 .tlist li::marker{color:var(--brand);font-weight:800}
-.quicks{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:8px}
-.quick{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:78px;padding:10px 6px;border-radius:14px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-weight:700;font-size:var(--t-sm);line-height:1.2;text-align:center;touch-action:manipulation;transition:border-color .15s ease,transform .08s ease}
-.quick svg{color:var(--brand)}
-.quick:hover{border-color:var(--brand)} .quick:active{transform:scale(.97)}
 .demo{border:1.5px dashed var(--line);border-radius:var(--r);padding:12px 14px;display:flex;flex-direction:column;gap:8px}
 .linkbtn{background:none;border:0;color:var(--ink-2);font-size:var(--t-sm);text-decoration:underline;padding:4px;align-self:center}
 .shell.wide{max-width:1180px}
@@ -113,7 +107,6 @@ button{cursor:pointer}
 .tab svg{width:56px;height:30px;padding:3px 16px;border-radius:999px;box-sizing:border-box;transition:background .15s ease}
 .tab.on{color:var(--brand)}
 .tab.on svg{stroke-width:2.4;background:var(--brand-soft)}
-
 /* blocks */
 .card{background:var(--surface);border-radius:var(--r);border:1px solid var(--line);padding:16px}
 .section{display:flex;flex-direction:column;gap:10px}
@@ -128,7 +121,6 @@ button.li:hover{background:var(--surface-2)}
 .li .grow{flex:1;min-width:0}
 .li .grow b{display:block;font-weight:700;overflow-wrap:anywhere}
 .li .end{text-align:right;font-weight:800}
-
 /* the cash box hero */
 .caisse{background:var(--brand);color:var(--brand-ink);border-radius:18px;padding:18px 18px 18px 38px;position:relative;overflow:hidden;box-shadow:0 14px 30px -22px rgba(0,0,0,.7)}
 /* le cahier : lignes horizontales et marge jaune */
@@ -142,7 +134,6 @@ button.li:hover{background:var(--surface-2)}
 .caisse .split b{display:block;font-family:var(--f-display);font-size:var(--t-xl)}
 .caisse .split span{font-size:var(--t-xs);opacity:.85}
 .caisse .locks{position:absolute;right:14px;top:14px;display:flex;gap:4px;opacity:.9}
-
 /* buttons */
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:12px;padding:12px 16px;font-weight:800;min-height:48px;background:var(--surface-2);color:var(--ink);transition:transform .08s ease,filter .15s ease;touch-action:manipulation}
 .btn:hover:not(:disabled){filter:brightness(.97)}
@@ -156,19 +147,16 @@ button.li:hover{background:var(--surface-2)}
 .btn.block{width:100%}
 .btn.xl{min-height:64px;font-size:var(--t-xl);border-radius:16px;font-family:var(--f-display)}
 .btn:disabled{opacity:.45;cursor:not-allowed}
-.btn.sm{min-height:36px;padding:6px 12px;font-size:var(--t-sm);border-radius:10px}
-
+.btn.sm{min-height:40px;padding:6px 12px;font-size:var(--t-sm);border-radius:10px}
 /* chips */
 .chip{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:3px 9px;font-size:var(--t-xs);font-weight:800;background:var(--surface-2);color:var(--ink-2);white-space:nowrap}
 .chip.good{background:var(--good-soft);color:var(--good)}
 .chip.warn{background:var(--warn-soft);color:var(--warn)}
 .chip.bad{background:var(--bad-soft);color:var(--bad)}
 .chip.brand{background:var(--brand-soft);color:var(--brand)}
-
 /* avatars */
 .av{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:var(--t-md);flex:none;background:var(--brand-soft);color:var(--brand)}
 .av.f{background:var(--maize-soft);color:var(--warn)}
-
 /* forms */
 .field{display:flex;flex-direction:column;gap:6px}
 .field label{font-weight:700;font-size:var(--t-md)}
@@ -177,7 +165,6 @@ button.li:hover{background:var(--surface-2)}
 .input:focus{border-color:var(--brand);outline:none;box-shadow:0 0 0 3px var(--brand-soft)}
 .input.bignum{font-family:var(--f-display);font-size:1.6rem;font-weight:700;text-align:center}
 .hint{font-size:var(--t-sm);color:var(--ink-2)}
-
 /* stepper (meeting) */
 .steps{display:flex;gap:4px;overflow-x:auto;padding:2px 0 4px;scrollbar-width:none}
 .steps::-webkit-scrollbar{display:none}
@@ -188,7 +175,6 @@ button.li:hover{background:var(--surface-2)}
 .stp.done i{background:var(--brand);border-color:var(--brand);color:var(--brand-ink)}
 .stp.cur i{background:var(--maize);border-color:var(--maize);color:var(--maize-ink)}
 .stp.cur{color:var(--ink)}
-
 /* member grid rows in meeting */
 .mrow{display:flex;align-items:center;gap:10px;padding:10px 12px;border-top:1px solid var(--line)}
 .mrow:first-child{border-top:0}
@@ -211,13 +197,11 @@ button.li:hover{background:var(--surface-2)}
 .toggle::after{content:"";position:absolute;top:4px;left:4px;width:24px;height:24px;border-radius:50%;background:var(--surface);box-shadow:0 1px 3px rgba(0,0,0,.3);transition:left .15s}
 .toggle.on{background:var(--good)}
 .toggle.on::after{left:24px}
-
 /* totals strip */
 .totals{display:flex;justify-content:space-between;align-items:center;background:var(--brand-soft);color:var(--brand);border-radius:12px;padding:12px 14px;font-weight:800}
 .totals b{font-family:var(--f-display);font-size:1.3rem}
 .sticky-foot{position:sticky;bottom:12px;display:flex;gap:10px;padding-top:6px}
 .shell:has(.tabbar) .sticky-foot{bottom:84px}
-
 /* keypad / pin */
 .pin-dots{display:flex;gap:14px;justify-content:center;margin:8px 0 4px}
 .pin-dots span{width:16px;height:16px;border-radius:50%;border:2px solid var(--ink-2)}
@@ -225,7 +209,6 @@ button.li:hover{background:var(--surface-2)}
 .keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:320px;margin:0 auto;width:100%}
 .keypad button{height:62px;border-radius:16px;border:1px solid var(--line);background:var(--surface);font-family:var(--f-display);font-size:1.6rem;font-weight:700;transition:transform .08s ease;touch-action:manipulation}
 .keypad button.fn{background:transparent;box-shadow:none;font-size:var(--t-base);color:var(--ink-2)}
-
 /* locks at closure */
 .locks3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 .lock{border:2px dashed var(--line);border-radius:14px;padding:12px 6px;text-align:center;background:var(--surface);display:flex;flex-direction:column;align-items:center;gap:4px}
@@ -233,7 +216,6 @@ button.li:hover{background:var(--surface-2)}
 .lock.ok{border-style:solid;border-color:var(--good);background:var(--good-soft)}
 .lock.ok svg{color:var(--good)}
 .lock b{font-size:var(--t-sm)}
-
 /* alerts */
 .alert{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;border-radius:12px;background:var(--surface);border-left:5px solid var(--line);color:var(--ink)}
 .alert.bad{border-left-color:var(--bad);background:var(--bad-soft)}
@@ -242,7 +224,6 @@ button.li:hover{background:var(--surface-2)}
 .alert.bad>span:first-child{color:var(--bad)} .alert.warn>span:first-child{color:var(--warn)} .alert.good>span:first-child{color:var(--good)}
 .alert .small{display:block;margin-top:2px}
 .alert b{display:block}
-
 /* sheets & toast */
 .scrim{position:fixed;inset:0;background:rgba(5,15,11,.55);z-index:50;display:flex;align-items:flex-end;justify-content:center}
 .sheet{background:var(--ground);width:100%;max-width:520px;border-radius:22px 22px 0 0;padding:18px 16px 24px;max-height:92vh;overflow:auto;display:flex;flex-direction:column;gap:14px}
@@ -252,7 +233,6 @@ button.li:hover{background:var(--surface-2)}
 .sheethead .shut:hover{background:var(--line)}
 .toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);z-index:60;background:var(--ink);color:var(--ground);padding:12px 18px;border-radius:12px;font-weight:700;box-shadow:var(--shadow);max-width:calc(100% - 32px);animation:toastIn .22s ease both}
 @keyframes toastIn{from{opacity:0;transform:translate(-50%,10px)}to{opacity:1;transform:translate(-50%,0)}}
-
 /* dashboard */
 .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
 .kpi{background:var(--surface);border-radius:var(--r);padding:14px;border:1px solid var(--line)}
@@ -273,7 +253,6 @@ td.r,th.r{text-align:right}
 .bar i{display:block;height:100%;background:var(--brand);border-radius:4px}
 .health{width:10px;height:10px;border-radius:50%;display:inline-block}
 .health.good{background:var(--good)} .health.warn{background:var(--warn)} .health.bad{background:var(--bad)}
-
 /* login */
 .hero{background:var(--brand);color:var(--brand-ink);padding:56px 20px 28px;border-radius:0 0 26px 26px;position:relative;overflow:hidden;text-align:center}
 .hero h1{font-size:3rem;font-weight:800;letter-spacing:-.02em;line-height:1}
@@ -394,7 +373,6 @@ button.li:active{background:var(--surface-2)}
 .avec-main .ic{background:rgba(255,255,255,.55);box-shadow:0 1px 0 rgba(255,255,255,.7) inset,0 6px 14px -8px rgba(0,0,0,.35)}
 .who{border:1px solid var(--line);box-shadow:var(--sh-1);border-radius:18px;transition:border-color .2s var(--ease),box-shadow .2s var(--ease),transform .12s var(--ease)}
 .who:hover{box-shadow:var(--sh-2)}
-.quick{border-color:var(--line);box-shadow:var(--sh-1);border-radius:16px}
 /* formulaires */
 .input,select.input,textarea.input{border-width:1px;border-radius:14px;background:var(--surface);box-shadow:0 1px 2px rgba(16,38,31,.04) inset}
 .input:focus{box-shadow:0 0 0 4px var(--brand-soft)}
@@ -516,10 +494,7 @@ button.li:active{background:var(--surface-2)}
 .hero.tight p{font-size:var(--t-base);max-width:30ch;margin-top:4px}
 .hero.tight .ledger{width:150px;right:-18px;top:-6px;opacity:.13}
 .main.login{gap:10px;padding-bottom:2px;flex:0 0 auto}
-.main.login .quicks{gap:10px}
-.main.login .quick{min-height:72px;font-size:var(--t-sm)}
 .main.login .demo{padding:12px 14px;gap:6px}
-.loginfoot{padding:6px 0 2px;text-align:center;line-height:1.4}
 /* accueil : le bandeau vert absorbe la hauteur en trop, jamais de blanc entre les blocs */
 .shell.home .hero.tight{flex:1 0 auto;max-height:52vh;display:flex;flex-direction:column;justify-content:center}
 /* accueil ajusté à la hauteur du téléphone : tout tient sur un écran, du petit Android au grand */
@@ -532,10 +507,8 @@ button.li:active{background:var(--surface-2)}
 .main.login .avec-main .ic{width:clamp(44px,7vh,60px);height:clamp(44px,7vh,60px);border-radius:16px}
 .main.login .avec-main .ic svg{width:clamp(26px,4vh,34px);height:clamp(26px,4vh,34px)}
 .main.login .avec-main .t b{font-size:clamp(1.55rem,4.3vh,2rem)}
-.main.login .quick{min-height:clamp(54px,9vh,72px);padding:8px 6px}
 @media (max-height:720px){
   .hero.tight p{font-size:var(--t-md)}
-  .loginfoot{display:none}
   .main.login{gap:9px}
   .main.login .ticker{padding:6px 0}
   .main.login .demo .hint{display:none}
@@ -546,7 +519,6 @@ button.li:active{background:var(--surface-2)}
   .hero.tight p{display:none}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
-
 /* ---------- style sobre : Ubuntu partout : texte, titres et boutons,
      cartes blanches à fin contour gris, sections alternées en gris très clair ---------- */
 :root{
@@ -560,13 +532,13 @@ button.li:active{background:var(--surface-2)}
   --r:12px; --r-sm:8px;
 }
 body{letter-spacing:0}
-h1,h2,h3,.label,.btn,.tab,.chip,.stp,.quick{font-family:var(--f-display)}
+h1,h2,h3,.label,.btn,.tab,.chip,.stp{font-family:var(--f-display)}
 h1{font-weight:700;letter-spacing:-.015em}
 h2,h3{font-weight:600;letter-spacing:-.005em}
 .label{font-weight:600;letter-spacing:.08em}
 .num{font-family:var(--f-body);font-weight:700}
-/* surfaces : blanc, fin contour gris, pas d'ombre portée */
-.card,.list,.kpi,.tablewrap,.quick,.who,.demo,details.g,.ticker,.receipt{background:var(--surface);border:1px solid var(--line);box-shadow:none;border-radius:var(--r)}
+/* surfaces : blanc,fin contour gris,pas d'ombre portée */
+.card,.list,.kpi,.tablewrap,.who,.demo,details.g,.ticker,.receipt{background:var(--surface);border:1px solid var(--line);box-shadow:none;border-radius:var(--r)}
 .kpi b,.caisse .big{font-family:var(--f-display);font-weight:600}
 .av{box-shadow:none;border:1px solid var(--line)}
 /* en-têtes et blocs de marque : vert plat, sans dégradé ni lignes de cahier */
@@ -608,13 +580,8 @@ h2,h3{font-weight:600;letter-spacing:-.005em}
 :root[data-theme="dark"] .topbar,:root[data-theme="dark"] .hero,:root[data-theme="dark"] .caisse{background:#123A2C}
 .ticket{font-family:var(--f-mono);font-size:.74rem;line-height:1.35;white-space:pre;overflow-x:auto;background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r);padding:10px;margin:0}
 @media print{.topbar,.tabbar,.tabspace,.appfoot,.btn,.linkbtn,.scrim{display:none!important}.ticket{border:0;background:#fff;font-size:11pt}}
-/* ---------- structure de lecture, inspirée des sites de formation (Académie FAO, Ubora Académie) :
-     un surtitre, un titre, une phrase d'introduction, puis des blocs nettement séparés ---------- */
-.hero .figures{display:flex;flex-wrap:wrap;justify-content:center;align-items:baseline;gap:4px 14px;margin:9px auto 0;max-width:430px}
-.hero .figures div{display:inline-flex;align-items:baseline;gap:5px}
-.hero .figures b{font-family:var(--f-display);font-size:var(--t-base);font-weight:700}
-.hero .figures span{font-size:var(--t-2xs);opacity:.85}
-.hero .figures div+div::before{content:"";width:4px;height:4px;border-radius:50%;background:currentColor;opacity:.45;margin-right:10px;align-self:center}
+/* ---------- structure de lecture,inspirée des sites de formation (Académie FAO,Ubora Académie) :
+     un surtitre,un titre,une phrase d'introduction{display:flex;flex-wrap:wrap;justify-content:center;align-items:baseline;gap:4px 14px;margin:9px auto 0;max-width:430px}
 .docintro{margin-bottom:4px}
 .docintro .sur{font-family:var(--f-display);font-size:var(--t-2xs);font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--brand);margin:0 0 5px}
 .docintro h1{margin:0 0 7px}
@@ -632,13 +599,12 @@ h2,h3{font-weight:600;letter-spacing:-.005em}
 .gtile .gi{width:28px;height:28px;border-radius:8px;background:var(--brand-soft);color:var(--brand);display:grid;place-items:center;flex:none}
 .gtile .gi svg{width:16px;height:16px}
 .gtile:active{transform:translateY(1px)}
-@media (max-width:360px){.hero .figures{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:360px){}
 /* ---------- version ordinateur : l'application occupe tout l'écran, sans marges perdues ----------
    Rien ne change sur le téléphone : tout est enfermé dans la requête de largeur. */
 @media (min-width:1100px){
   html,body{background:var(--ground)}
   .shell,.shell:not(.wide),.shell.wide{max-width:none;width:100%;margin:0;border-radius:0}
-
   /* accueil : l'écran coupé en deux, de bord à bord */
   .shell.home{display:grid;grid-template-columns:minmax(0,1.04fr) minmax(0,.96fr);align-items:stretch;min-height:calc(100vh - 66px)}
   .shell.home .hero.tight{max-height:none;border-radius:0;text-align:left;align-items:flex-start;justify-content:center;padding:0 clamp(44px,5vw,96px);flex:1 1 auto}
@@ -651,9 +617,7 @@ h2,h3{font-weight:600;letter-spacing:-.005em}
   .shell.home .main.login{padding:clamp(28px,3vh,48px) clamp(36px,4vw,80px);gap:16px;justify-content:center;background:var(--surface)}
   .shell.home .main.login>*{width:100%;max-width:560px;margin-left:auto;margin-right:auto}
   .shell.home .main.login .avec-main{padding:24px 26px}
-  .shell.home .main.login .quick{min-height:88px;font-size:var(--t-md)}
   .shell.home~.appfoot{max-width:none;border-top:1px solid var(--line);padding:13px 16px;min-height:66px}
-
   /* écrans à onglets : colonne de navigation à gauche, contenu sur deux colonnes */
   .shell:has(.tabbar){display:grid;grid-template-columns:clamp(228px,17vw,280px) minmax(0,1fr);grid-template-areas:"nav tete" "nav corps";min-height:100vh}
   .shell:has(.tabbar)>.topbar{grid-area:tete;position:sticky;top:0}
@@ -661,9 +625,7 @@ h2,h3{font-weight:600;letter-spacing:-.005em}
     gap:18px clamp(20px,2vw,32px);padding:clamp(20px,2.4vh,30px) clamp(24px,2.6vw,46px) 40px}
   .shell:has(.tabbar)>.main>*{min-width:0}
   /* ce qui se lit sur toute la largeur */
-  .shell:has(.tabbar)>.main>.greet,.shell:has(.tabbar)>.main>.ticker,.shell:has(.tabbar)>.main>.grid2,
-  .shell:has(.tabbar)>.main>.kpis,.shell:has(.tabbar)>.main>.tablewrap,.shell:has(.tabbar)>.main>.stepper,
-  .shell:has(.tabbar)>.main>.alert,.shell:has(.tabbar)>.main>.steps,.shell:has(.tabbar)>.main>h1{grid-column:1/-1}
+  .shell:has(.tabbar)>.main>.greet,.shell:has(.tabbar)>.main>.ticker,.shell:has(.tabbar)>.main>.grid2,.shell:has(.tabbar)>.main>.kpis,.shell:has(.tabbar)>.main>.tablewrap,.shell:has(.tabbar)>.main>.alert,.shell:has(.tabbar)>.main>.steps,.shell:has(.tabbar)>.main>h1{grid-column:1/-1}
   .shell:has(.tabbar)>.main>.grid2:has(>.kpi),.shell:has(.tabbar)>.main>.kpis{grid-template-columns:repeat(4,minmax(0,1fr))}
   .shell:has(.tabbar)>.tabbar{grid-area:nav;position:sticky;top:0;align-self:start;height:100vh;width:auto;border-top:0;
     border-right:1px solid var(--line);background:var(--surface);padding:18px 14px;align-items:flex-start;justify-content:flex-start}
@@ -673,19 +635,13 @@ h2,h3{font-weight:600;letter-spacing:-.005em}
   .shell:has(.tabbar) .tab.on{background:var(--brand-soft);color:var(--brand)}
   .shell:has(.tabbar) .sticky-foot,.shell:not(.home):not(:has(.tabbar)) .sticky-foot{bottom:0;grid-column:1/-1;background:linear-gradient(transparent,var(--ground) 38%);padding-top:14px}
   .shell:has(.tabbar)~.appfoot{max-width:none;border-top:1px solid var(--line)}
-
   /* écrans sans onglets (guide, reçus, formulaires) : pleine largeur, texte sur deux colonnes */
   .shell:not(.home):not(:has(.tabbar))>.main{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-content:start;
     gap:16px clamp(20px,2vw,32px);padding:clamp(20px,2.4vh,30px) clamp(24px,2.6vw,46px) 40px}
   .shell:not(.home):not(:has(.tabbar))>.main>*{min-width:0}
-  .shell:not(.home):not(:has(.tabbar))>.main>.steps,.shell:not(.home):not(:has(.tabbar))>.main>.totals,
-  .shell:not(.home):not(:has(.tabbar))>.main>.sticky-foot,.shell:not(.home):not(:has(.tabbar))>.main>.alert,
-  .shell:not(.home):not(:has(.tabbar))>.main>.docintro,.shell:not(.home):not(:has(.tabbar))>.main>.docbloc,
-  .shell:not(.home):not(:has(.tabbar))>.main>.tablewrap,.shell:not(.home):not(:has(.tabbar))>.main>.stepper,
-  .shell:not(.home):not(:has(.tabbar))>.main>h1,.shell:not(.home):not(:has(.tabbar))>.main>.row{grid-column:1/-1}
+  .shell:not(.home):not(:has(.tabbar))>.main>.steps,.shell:not(.home):not(:has(.tabbar))>.main>.totals,.shell:not(.home):not(:has(.tabbar))>.main>.sticky-foot,.shell:not(.home):not(:has(.tabbar))>.main>.alert,.shell:not(.home):not(:has(.tabbar))>.main>.docintro,.shell:not(.home):not(:has(.tabbar))>.main>.docbloc,.shell:not(.home):not(:has(.tabbar))>.main>.tablewrap,.shell:not(.home):not(:has(.tabbar))>.main>h1,.shell:not(.home):not(:has(.tabbar))>.main>.row{grid-column:1/-1}
   .shell:not(.home):not(:has(.tabbar))>.main>.etapes{grid-template-columns:repeat(4,minmax(0,1fr))}
   .shell:not(.wide)>.topbar{position:sticky;top:0}
-
   /* une liste occupe toute la largeur et se lit sur deux colonnes : pas de demi-écran vide */
   .shell:has(.tabbar)>.main>.list,.shell:not(.home):not(:has(.tabbar))>.main>.list,
   .shell:has(.tabbar)>.main>.row,.shell:not(.home):not(:has(.tabbar))>.main>.row{grid-column:1/-1}
@@ -696,9 +652,8 @@ h2,h3{font-weight:600;letter-spacing:-.005em}
   .scrim{align-items:center;padding:24px}
   .sheet{max-width:680px;border-radius:24px;max-height:86vh;box-shadow:0 50px 110px -50px rgba(5,15,11,.7)}
   .sheet .grab{display:none}
-
   /* la souris : on voit ce qu'on survole */
-  .li:hover,.quick:hover,.gtile:hover,.kpi:hover{border-color:color-mix(in srgb,var(--brand) 45%,var(--line))}
+  .li:hover,.gtile:hover,.kpi:hover{border-color:color-mix(in srgb,var(--brand) 45%,var(--line))}
   .btn:hover{filter:brightness(1.04)}
 }
 @media (min-width:1700px){
@@ -717,35 +672,26 @@ h2,h3{font-weight:600;letter-spacing:-.005em}
   .shell.home:has(.main.login>.alert.warn) .hero.tight h1{font-size:clamp(1.9rem,5.4vh,2.5rem)}
   .shell.home:has(.main.login>.alert.warn) .hero.tight .hubmark{width:38px;height:38px;margin-bottom:5px}
 }
-
 /* ---------- finitions : la bande défilante et les tableaux de bord sur grand écran ---------- */
 /* La bande s'efface sur ses bords : un mot coupé net fait négligé. */
 .ticker::before,.ticker::after{width:48px}
 .ticker::before{background:linear-gradient(90deg,var(--surface) 45%,transparent)}
 .ticker::after{background:linear-gradient(270deg,var(--surface) 45%,transparent)}
-
 @media (min-width:1100px){
-  /* Ces blocs se lisent sur toute la largeur : en colonne, la bande s'étirait en une grande boîte vide
+  /* Ces blocs se lisent sur toute la largeur : en colonne,la bande s'étirait en une grande boîte vide
      et les chiffres se serraient dans un demi-écran. */
-  .shell:not(.home):not(:has(.tabbar))>.main>.ticker,
-  .shell:not(.home):not(:has(.tabbar))>.main>.kpis,
-  .shell:not(.home):not(:has(.tabbar))>.main>.dash,
-  .shell:not(.home):not(:has(.tabbar))>.main>.quicks,
-  .shell:has(.tabbar)>.main>.ticker,.shell:has(.tabbar)>.main>.dash,.shell:has(.tabbar)>.main>.quicks{grid-column:1/-1}
+  .shell:not(.home):not(:has(.tabbar))>.main>.ticker,.shell:not(.home):not(:has(.tabbar))>.main>.kpis,.shell:not(.home):not(:has(.tabbar))>.main>.dash,.shell:has(.tabbar)>.main>.ticker,.shell:has(.tabbar)>.main>.dash{grid-column:1/-1}
   .shell>.main>.ticker{align-self:start}
   /* le tableau des AVEC a onze colonnes : il prend toute la largeur, le reste se range dessous */
   .shell>.main>.dash{grid-template-columns:minmax(0,1fr)}
   .shell>.main>.dash>.stack:last-child{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px clamp(20px,2vw,32px);align-items:start}
   .shell>.main>.dash>.stack:last-child>h2{grid-column:1/-1}
-  /* un libellé de bouton ne se casse pas en trois lignes */
-  .quicks .quick{min-height:0;padding:10px 16px;white-space:nowrap}
   .choice .btn,.grid2 .btn{white-space:nowrap}
   /* les chiffres ne se coupent jamais ; les noms, eux, peuvent passer à la ligne
      plutôt que de pousser les dernières colonnes hors de'écran */
   .tablewrap table{table-layout:auto}
   .tablewrap td.r,.tablewrap th.r,.tablewrap td .chip{white-space:nowrap}
 }
-
 /* ---------- accueil d'Akiba Suivi : entrée claire, preuves à gauche ---------- */
 .hero h1 em{font-style:normal;color:var(--maize)}
 .preuves{list-style:none;margin:26px 0 0;padding:0;display:flex;flex-direction:column;gap:12px;max-width:34ch}
@@ -765,7 +711,6 @@ h2,h3{font-weight:600;letter-spacing:-.005em}
   .shell.home .main.login{gap:22px}
   .preuves{margin-top:30px}
 }
-
 /* le mode'emploi en trois pas, dans l'espace administrateur */
 .cartepas{background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
 .cartepas>summary{padding:14px 16px;cursor:pointer;font-family:var(--f-display)}
@@ -773,15 +718,12 @@ h2,h3{font-weight:600;letter-spacing:-.005em}
 .pas3 li{position:relative;padding-left:52px;font-size:var(--t-md);line-height:1.5}
 .pas3 li::before{counter-increment:pas;content:counter(pas);position:absolute;left:16px;top:-1px;width:26px;height:26px;border-radius:50%;background:var(--brand-soft);color:var(--brand);font-weight:800;font-size:var(--t-sm);display:grid;place-items:center}
 .cartepas .hint{padding:10px 16px 14px}
-
 /* petit trait entre les filtres et les gestes, dans les barres'outils */
 .row>.sep{width:1px;align-self:stretch;margin:2px 4px;background:var(--line)}
-
 /* lien effacé : présent pour qui le cherche, invisible pour les autres */
 .discret{text-align:center;margin:4px 0 0}
 .discret .linkbtn{font-size:var(--t-xs);color:var(--ink-2);opacity:.6;text-decoration:none}
 .discret .linkbtn:hover{opacity:1;text-decoration:underline}
-
 /* ---------- cartes de membre, format carte bancaire, imprimées sur A4 ---------- */
 .cartes{display:grid;grid-template-columns:repeat(auto-fill,minmax(236px,1fr));gap:10px}
 .carte-m{display:flex;flex-direction:column;justify-content:space-between;aspect-ratio:85/54;padding:9px 11px;
@@ -797,7 +739,6 @@ h2,h3{font-weight:600;letter-spacing:-.005em}
 .carte-m .qr{width:52px;height:52px;flex:none}
 .carte-m footer{display:flex;justify-content:space-between;align-items:baseline;font-size:.58rem;color:#51635a;border-top:1px solid #e3e9e5;padding-top:5px}
 .carte-m .emp{font-family:var(--f-mono);letter-spacing:.08em;color:#102017}
-
 @media print{
   /* seules les cartes s'impriment : huit par feuille A4, aux vraies dimensions */
   @page{size:A4 portrait;margin:10mm}
@@ -812,12 +753,10 @@ h2,h3{font-weight:600;letter-spacing:-.005em}
   .carte-m header span,.carte-m .role{font-size:7pt}
   .carte-m footer{font-size:6.5pt}
 }
-
 /* la fenêtre de lecture du QR, dans la feuille « Vérifier une carte » */
 .scanbox{position:relative;border-radius:14px;overflow:hidden;background:#000;aspect-ratio:4/3}
 .scanbox video{width:100%;height:100%;object-fit:cover;display:block}
 .scanbox::after{content:"";position:absolute;inset:18% 22%;border:3px solid var(--maize);border-radius:12px;box-shadow:0 0 0 2000px rgba(0,0,0,.35)}
-
 /* ---------- tableau de bord de l'organisation ----------
    Le même jeu d'AVEC se lit en fiches sur un téléphone et en tableau sur un ordinateur :
    treize colonnes ne tiennent pas dans la main, et une liste de fiches gaspille un grand écran. */
@@ -832,7 +771,6 @@ h2,h3{font-weight:600;letter-spacing:-.005em}
 .ocarte .grow>.sous{color:var(--ink);font-weight:600}
 .ocarte .grow>.small b{display:inline}
 .ocarte>.chip{flex:none;align-self:center}
-
 /* ---------- accueil du suivi : les gestes secondaires ----------
    Trois liens sobres au lieu de trois tuiles : l'oeil va d'abord à la seule porte d'entrée. */
 .liens{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:2px 6px;margin:2px 0 0}
@@ -861,7 +799,7 @@ details.g.demo>:not(summary)+*{margin-top:8px}
 </style>
 <style>html,body{margin:0}</style>
 </head><body>
-<script>window.KITABU_PWA = true; window.KITABU_VERSION = 'akiba-202610241209'; window.AKIBA_CIBLE = 'suivi';</script>
+<script>window.KITABU_PWA = true; window.KITABU_VERSION = 'akiba-202610250724'; window.AKIBA_CIBLE = 'suivi';</script>
 
 <div id="app"></div>
 <script src="core.js"></script>

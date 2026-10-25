@@ -634,7 +634,6 @@ function goBack(d = {}) {
   else if (K.session) ACT.logout();                       // écran d'accueil d'un compte : retour = quitter vers l'accueil
   else if (App.screen !== 'login') App.go('login', {}, true);
 }
-const canGoBack = () => App.screen !== homeScreen() || App.hist.some(backOk);
 ACT.back = d => goBack(d);
 window.addEventListener('popstate', () => {
   if (App.sheet) App.closeSheet(); else goBack();

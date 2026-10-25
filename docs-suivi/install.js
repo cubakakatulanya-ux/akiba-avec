@@ -41,11 +41,6 @@ function installCarte() {
     ${ic('home')}<span>Installer <b>${APP_NOM()}</b> sur cet appareil<span class="small">Une icône sur l'écran d'accueil, et tout s'ouvre sans réseau</span></span>${ic('chev')}
   </button>`;
 }
-function installBanner() {
-  if (!window.KITABU_PWA || isInstalled()) return '';
-  return `<button class="alert warn" style="border-top:0;border-right:0;border-bottom:0;width:100%;text-align:left" data-act="go" data-to="dev.backup">
-    ${icSpan('home')}<span style="flex:1"><b>Installer ${APP_NOM()} sur l'écran d'accueil</b><span class="small">Une icône, et l'application s'ouvre sans réseau.</span></span>${ic('chev')}</button>`;
-}
 ACT.install = () => {
   const ev = App.installEvt;
   if (!ev) return App.toast('Utilisez le menu du navigateur : « Ajouter à l\'écran d\'accueil »');

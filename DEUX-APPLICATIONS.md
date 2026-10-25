@@ -7,8 +7,8 @@ Akiba se construit en deux applications distinctes à partir du même code.
 | pour qui | le bureau et les membres d'une AVEC | animateurs, organisations, administration d'Ubora |
 | adresse | `akiba.uborardc.com` | `akibas.uborardc.com` |
 | dossier construit | `docs/` | `docs-suivi/` |
-| commande | `node build.js docs` | `node build.js docs-suivi suivi` |
-| accueil | le grand bouton AVEC, Créer une AVEC, Guide, Recevoir une AVEC | Animateur, Organisation, Recevoir une AVEC, Espace administrateur, Guide, Formation |
+| commande | `node build.js docs avec` | `node build.js docs-suivi suivi` |
+| accueil | le grand bouton AVEC, puis Créer une AVEC · Recevoir une AVEC · Guide en liens sobres | une seule entrée (animateur ou organisation), le guide, et un lien effacé vers l'administration Ubora |
 | icône | fond vert | fond bleu |
 | console administrateur | absente (`admin.js` n'est pas livré) | présente |
 
@@ -75,7 +75,8 @@ travaillent au bureau.
 
 ## Point GPS du groupe (hors connexion)
 
-`gps.js` ajoute, dans **Plus › Lieu du groupe**, un bouton « Prendre le point GPS ». La puce du téléphone
+`gps.js` ajoute un bouton « Prendre le point » à l'étape **Groupe** de la création — l'assemblée est là, on
+est sur place — puis dans **Plus › Lieu du groupe**. La puce du téléphone
 lit les satellites : **aucun réseau n'est nécessaire**. Ce qui en demande — transformer des coordonnées en
 nom de lieu, afficher une carte — n'est pas fait : on garde les chiffres, et le village reste celui que le
 bureau a saisi.
