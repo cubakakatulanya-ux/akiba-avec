@@ -159,7 +159,11 @@ ACT.runShare = () => {
   const total = recoivent.reduce((a, r) => a + r.net, 0);
   const retenus = plan.rows.filter(r => r.net < r.gross);
   const duPreteur = st.extActive.reduce((a, e) => a + e.remaining, 0);
+  const joursRestants = Math.ceil((cycleEnd(avec) - Date.now()) / DAY);
   App.openSheet(`<h2>Distribuer et fermer le cycle ${avec.cycle.n} ?</h2>
+    ${joursRestants > 14 ? `<div class="alert warn">${icSpan('calendar')}<div><b>Le cycle n'est pas fini</b>
+      <span class="small">Fin prévue le ${fdate(cycleEnd(avec))}, dans ${joursRestants > 60 ? Math.round(joursRestants / 30) + ' mois' : Math.round(joursRestants / 7) + ' semaines'}.
+        Partager plus tôt est permis si <b>l'assemblée l'a décidé</b> — chacun reçoit son épargne et sa part des bénéfices, calculées à aujourd'hui.</span></div></div>` : ''}
     <div class="alert warn">${icSpan('alert')}<div><b>Cette opération ne se reprend pas</b>
       <span class="small">Le cycle ${avec.cycle.n} sera fermé et scellé. Plus personne ne pourra revenir en arrière,
         ni corriger une part, ni rendre un crédit oublié.</span></div></div>

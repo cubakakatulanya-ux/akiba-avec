@@ -49,6 +49,12 @@ const GUIDE = [
       <li>Il envoie le fichier <b>.akiba</b> par WhatsApp, Bluetooth ou carte mémoire, et dit le <b>code de 8 signes</b> de vive voix.</li>
       <li>Sur le téléphone du groupe : ouvrir Akiba, toucher <b>Recevoir une AVEC</b>, choisir le fichier, taper le code. La validation arrive avec le fichier : ce téléphone tient les réunions de son AVEC.</li>
       <li>Les membres se connectent ensuite avec leur nom et leur code.</li></ol>
+    <h4>Les codes se tapent comme on peut</h4>
+    <p>Tous les codes d'Akiba s'affichent <b>d'un seul bloc, sans tiret</b> : le code du téléphone, le code de
+      demande, le code d'activation, le code de transfert. C'est ainsi qu'on les dicte et qu'on les retape.</p>
+    <p>À la saisie, Akiba accepte tout ce qu'un doigt peut écrire : avec tiret, avec des espaces, en minuscules,
+      ou <b>le message WhatsApp collé en entier</b> — il y retrouve le code tout seul. S'il y a deux codes
+      possibles dans le texte, il ne devine pas : recopiez alors seulement les huit signes.</p>
     <h4>Le groupe change de téléphone</h4>
     <p>Sur l'ancien téléphone : <b>Plus › Changer de téléphone</b>, puis même chose. L'ancien téléphone garde une copie mais ne peut plus ouvrir de réunion : il n'y a jamais deux cahiers différents.</p>
     <h4>Le groupe avait un cahier papier</h4>
@@ -175,6 +181,15 @@ const GUIDE = [
       attribué à quelqu'un d'autre, un reçu venu d'un autre groupe : tous sont refusés.</p>
     <div class="tip">Le QR n'est imprimé ni sur le reçu court ni en série : il est à l'écran et sur le reçu partagé par
       WhatsApp. Sur le papier, c'est la <b>référence en chiffres</b> qui sert, et elle se recopie à la main.</div>
+    <h4>Le journal de la séance : votre sauvegarde en papier</h4>
+    <p>À la clôture, Akiba propose d'imprimer le <b>journal de la séance</b> : toutes les écritures du jour dans
+      l'ordre, les totaux, l'ouverture et la clôture, l'écart et son explication, les trois clés et les
+      remplacements, le sceau. Faites-le à chaque réunion.</p>
+    <p><b>Pourquoi.</b> Si le téléphone est perdu, volé, noyé ou cassé, ce papier est ce qui reste du cahier.
+      Les séances mises bout à bout redonnent tout le journal.</p>
+    <p><b>Comment le classer.</b> Le bas du ticket porte une étiquette lisible sans le déplier, du genre
+      <b class="mono">A CLASSER : C1 - S14</b> — cycle 1, séance 14. Rangez-les <b>dans l'ordre des numéros</b>,
+      dans une pochette gardée <b>à l'intérieur de la caisse</b>, avec les trois clés. Une pochette par cycle.</p>
     <h4>Imprimer le journal d'une période</h4>
     <p>Dans l'onglet <b>Journal</b>, le bouton <b>Imprimer le journal</b> demande la période (7 jours, 30 jours, ce cycle, tout, ou deux dates au choix). Akiba annonce le nombre d'écritures et la <b>longueur de papier</b> avant d'imprimer.</p>
     <p>Le ticket reprend chaque écriture jour par jour (numéro, nature, membre, montant), puis les <b>totaux de la période</b>, ce qui est entré et sorti de la caisse, le mouvement net, la caisse du jour et l'<b>empreinte de la dernière écriture</b>. C'est ce document qu'on remet à un contrôleur, à l'animateur ou à une IMF.</p>
@@ -246,6 +261,21 @@ const GUIDE = [
     </ul>
     <p>Les deux ne valent que pour <b>le téléphone qui les a demandés</b>. Dictés ou collés sur un autre téléphone, ils sont refusés. Les partager ne sert à rien.</p>
     <div class="tip">Vous travaillez sans vraies données tant que ce n'est pas fait : la démonstration et le guide restent ouverts à tout le monde, sans code.</div>` },
+  { id: 'cles', icon: 'lock', t: 'Un porte-clé absent, un bureau qui change', b: `
+    <h4>Un porte-clé n'est pas là</h4>
+    <p>La caisse ne s'ouvre qu'à trois clés : sans les trois codes, la réunion ne se ferme pas. Si un porte-clé est
+      absent, touchez sa case à l'étape de clôture. <b>L'assemblée désigne</b> un membre présent pour le remplacer —
+      ni le trésorier, ni un autre porte-clé — et ce membre tape <b>son propre code</b>.</p>
+    <p>Le remplacement ne vaut que <b>pour cette réunion</b> : à la suivante, le porte-clé retrouve sa clé sans rien
+      faire. Le nom du remplaçant reste écrit dans le journal scellé, sur le reçu et sur le journal de séance ;
+      personne ne peut l'effacer. S'il n'y a aucun membre éligible, Akiba le dit : la réunion est reportée.</p>
+    <h4>Changer de trésorier ou de porte-clé en cours de cycle</h4>
+    <p><b>Plus › Bureau et porte-clés</b>, après la clôture d'une réunion. À utiliser quand l'assemblée l'a décidé :
+      nouvelle élection, démission, départ, maladie ou décès. Un deuxième membre du bureau valide avec son code.</p>
+    <p>Chaque changement est écrit dans le journal : qui perd le rôle, qui le prend, qui a validé. Changer de
+      trésorier, c'est changer qui tient la caisse — cela ne doit jamais se faire en silence.</p>
+    <div class="tip">Le trésorier garde la caisse : il ne peut donc jamais garder une clé. Akiba refuse cette
+      combinaison, à la création comme au changement.</div>` },
   { id: 'perdu', icon: 'key', t: 'Code secret perdu : le plan B', b: `
     <p>Touchez le bouton <b>AVEC</b>, puis en bas <b>J'ai oublié mon code secret</b>, puis votre nom. Trois solutions, toutes sans internet :</p>
     <ol>
@@ -317,9 +347,18 @@ const GUIDE = [
   { id: 'partage', icon: 'split', t: 'Fin de cycle et partage', b: `
     <div class="alert warn"><div><b>Le partage ne se reprend pas</b><span class="small">Avant de distribuer, Akiba
       affiche le montant exact, le nombre de membres qui reçoivent, les retenues, le prêteur extérieur soldé d'abord
-      et ce qui reste pour le cycle suivant. Puis le <b>président tape son code</b>. Les trois clés disent que la caisse
-      est juste ; le code du président dit que l'assemblée veut partager aujourd'hui.</span></div></div>
+      et ce qui reste pour le cycle suivant. Puis le <b>président tape son code</b> : les trois clés disent que la caisse est juste, le code du président dit que l'assemblée veut partager aujourd'hui.</span></div></div>
     <p>Un cycle dure en général 12 mois. Akiba prévient <b>4 semaines avant la fin</b>. Avant le partage, les membres doivent rembourser leurs crédits.</p>
+    <h4>Partager avant la fin du cycle</h4>
+    <p>C'est <b>permis</b>, et c'est l'assemblée qui décide — jamais le bureau seul. Un groupe partage parfois plus tôt :
+      avant la rentrée scolaire, avant une saison de semis, avant un déplacement. Akiba ne l'interdit pas, mais il le dit :
+      l'écran de partage rappelle la date de fin prévue et le temps qui reste, et la confirmation le redit une dernière fois.</p>
+    <p>Le calcul ne change pas : chacun reçoit son épargne et sa part des bénéfices, <b>arrêtés au jour du partage</b>.
+      Comme les bénéfices n'ont pas eu le temps de grossir, la part de chacun est simplement plus petite —
+      personne n'est lésé, le groupe gagne seulement moins. Les conditions restent les mêmes :
+      tous les crédits remboursés, le prêteur extérieur soldé, la caisse comptée, les trois clés, puis le code du président.</p>
+    <div class="tip">Après un partage anticipé, le cycle suivant s'ouvre tout de suite : le groupe ne s'arrête pas,
+      il recommence. La caisse sociale, elle, n'est pas partagée : elle passe au cycle suivant.</div>
     <h4>Le calcul</h4>
     <div class="formula">Total à partager = caisse de crédit + crédits à récupérer + amendes dues − crédit extérieur à rendre<br>Bénéfice du cycle = Total − épargne de tous les membres<br>Chaque membre reçoit = son épargne + sa part du bénéfice − ce qu'il doit encore</div>
     <h4>Le temps compte, pour que personne ne mange la part des autres</h4>
@@ -405,7 +444,8 @@ const GUIDE_WHO = {
   animateur: ['anim', 'org', 'none'], organisation: ['org', 'none'], lancer: ['org', 'none'],
   externe: ['bureau', 'anim', 'org', 'none'], qualite: ['bureau', 'anim', 'org', 'none'], recus: ['bureau', 'anim', 'org', 'none'],
   validation: ['org', 'anim', 'bureau', 'none'], installer: ['org', 'anim', 'bureau', 'none'], debut: ['org', 'anim', 'bureau', 'none'],
-  cartes: ['bureau', 'anim', 'org', 'none'], codes: ['org', 'anim', 'bureau', 'none']
+  cartes: ['bureau', 'anim', 'org', 'none'], codes: ['org', 'anim', 'bureau', 'none'],
+  cles: ['bureau', 'anim', 'org', 'none']
 };
 ACT.guideTo = p => {
   App.go('guide', { s: p.s });
