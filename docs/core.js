@@ -595,7 +595,7 @@ function appliquerTheme(v = themeChoisi()) {
     if (v === 'auto') delete r.dataset.theme; else r.dataset.theme = v;
     const sombre = v === 'dark' || (v === 'auto' && window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches);
     const meta = document.querySelector('meta[name="theme-color"]');
-    if (meta) meta.setAttribute('content', sombre ? '#0A1411' : '#0F4D3A');
+    if (meta) meta.setAttribute('content', sombre ? '#131F1B' : '#0F4D3A');
   } catch (e) { /* hors navigateur */ }
 }
 appliquerTheme();
