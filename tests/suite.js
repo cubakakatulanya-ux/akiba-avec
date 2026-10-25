@@ -619,5 +619,100 @@ window.__akibaTests = async function () {
     must(/Ref a verifier/.test(receiptText(a, der, here[0], null, false)), 'référence absente du reçu détaillé');
     return here.length + ' reçus vérifiés, un faux refusé';
   });
+
+  /* ---------- S. un porte-clé absent ne bloque pas le groupe ---------- */
+  await t("Un porte-clé absent : l’assemblée désigne un remplaçant, et c’est écrit", () => {
+    if (typeof ACT.lockSub !== 'function') return 'sans objet';
+    const a = avecById(A);
+    const pres = a.members.find(x => x.role === 'president');
+    K.session = { kind: 'avec', avecId: a.id, memberId: pres.id };
+    if (!openMeeting(a)) ACT.startMeeting();
+    const r = openMeeting(a);
+    const trois = keyHolders(a).slice(0, 3);
+    const absent = trois[2];
+    r.presence[absent.id] = 'A';
+    /* on amène la réunion à la clôture */
+    for (const i of ['0', '1', '2', '3', '4', '5', '6']) ACT.stepDone({ i });
+    App.go('a.meet', { step: '7' });
+    const st = stats(a);
+    App.draft.closeCount = String(st.cash);
+    App.draft.locks = {}; App.draft.subs = {};
+    trois.slice(0, 2).forEach(h => App.draft.locks[h.id] = true);
+    must(!closeReady(a), 'la clôture ne doit pas être possible sans la troisième clé');
+    /* le remplaçant : présent, ni trésorier ni porte-clé */
+    const tres = a.members.find(x => x.role === 'tresorier');
+    const sub = activeM(a).find(x => r.presence[x.id] && r.presence[x.id] !== 'A' && !trois.some(h => h.id === x.id) && (!tres || x.id !== tres.id));
+    must(sub, 'aucun remplaçant possible dans ce groupe');
+    App.draft.subs[absent.id] = sub.id;
+    App.draft.locks[absent.id] = true;
+    must(closeReady(a), 'la clôture doit redevenir possible avec le remplaçant');
+    ACT.saveClose();
+    eq(r.status, 'closed', 'la réunion doit se fermer');
+    /* la trace : dans la réunion et dans le registre de sécurité */
+    must((r.keySubs || []).some(k => k.absent === absent.id && k.par === sub.id), 'le remplacement n’est pas gardé dans la réunion');
+    must((r.validators || []).includes(sub.id), 'le remplaçant doit figurer parmi ceux qui ont confirmé');
+    must((a.security || []).some(e => e.type === 'Clé remplacée' && e.memberId === absent.id), 'rien dans le registre de sécurité');
+    return sub.name.split(' ')[0] + ' a remplacé ' + absent.name.split(' ')[0];
+  });
+
+  /* ---------- T. changer de trésorier ou de porte-clé en cours de cycle ---------- */
+  await t("Changer le bureau en cours de cycle laisse une trace qui ne s’efface pas", () => {
+    if (typeof applyRoles !== 'function') return 'sans objet';
+    const a = avecById(A);
+    const avantTres = a.members.find(x => x.role === 'tresorier' && !x.left);
+    const libres = activeM(a).filter(x => x.role === 'membre' && !x.key);
+    must(avantTres && libres.length, 'il faut un trésorier et un membre disponible');
+    const nouveau = libres[0];
+    const n0 = (a.security || []).length;
+    const pres = a.members.find(x => x.role === 'president' && !x.left);
+    const secr = a.members.find(x => x.role === 'secretaire' && !x.left);
+    /* l'assemblée élit un nouveau trésorier, et confie une clé à l'ancien */
+    const clesActuelles = activeM(a).filter(x => x.key).map(x => x.id);
+    const nouvellesCles = clesActuelles.slice(0, 2).concat([avantTres.id]);
+    applyRoles(a, { b: [pres.id, secr.id, nouveau.id], k: nouvellesCles }, pres.name);
+    eq(memberOf(a, nouveau.id).role, 'tresorier', 'le nouveau trésorier');
+    must(memberOf(a, avantTres.id).role !== 'tresorier', 'l’ancien trésorier garde son rôle');
+    const neuves = (a.security || []).slice(n0);
+    must(neuves.some(e => e.type === 'Rôle changé' && e.memberId === nouveau.id), 'la prise de rôle n’est pas écrite');
+    must(neuves.some(e => e.type === 'Rôle changé' && e.memberId === avantTres.id), 'la perte de rôle n’est pas écrite');
+    must(neuves.some(e => e.type === 'Clé confiée' && e.memberId === avantTres.id), 'la clé confiée n’est pas écrite');
+    must(neuves.every(e => /valid/.test(e.via || '')), 'le validateur n’est pas noté');
+    return neuves.length + ' changement(s) écrits dans le registre';
+  });
+
+  /* ---------- U. le journal de séance, sauvegarde en papier ---------- */
+  await t("Le journal d’une séance s’imprime, se classe, et redonne les écritures", () => {
+    if (typeof journalReunionText !== 'function') return 'sans objet';
+    const a = avecById(A);
+    /* une séance qui a vraiment servi : c'est celle-là qu'on imprime */
+    const m = a.meetings.filter(x => x.status === 'closed' && a.tx.some(y => y.meetingId === x.id)).slice(-1)[0];
+    must(m, 'aucune réunion fermée avec des écritures');
+    const t0 = journalReunionText(a, m);
+    const lignes = t0.split(String.fromCharCode(10));
+    must(!lignes.filter(l => l.length > RECU_W).length, 'ligne trop longue pour la bande de 58 mm');
+    must(!lignes.filter(l => /[éèêàçùôîïûÉÈÊÀÇÙÔÎÏÛ]/.test(l)).length, 'accents sur l’imprimante');
+    /* toutes les écritures de la séance doivent y être */
+    const ecritures = a.tx.filter(x => x.meetingId === m.id);
+    must(ecritures.length, 'la séance n’a aucune écriture');
+    const manquantes = ecritures.filter(x => !t0.includes('#' + x.seq + ' '));
+    must(!manquantes.length, manquantes.length + ' écriture(s) absente(s) du journal');
+    /* et de quoi le classer sans le déplier */
+    must(/A CLASSER : C\d+ - S\d+/.test(t0), 'étiquette de classement absente');
+    must(/Sceau de la seance/.test(t0), 'sceau absent');
+    return ecritures.length + ' écritures sur ≈ ' + Math.round(lignes.length * 0.4) + ' cm';
+  });
+
+  /* ---------- V. un code se retape comme on peut ---------- */
+  await t("Le code de transfert s’accepte avec tiret, espaces, minuscules, ou collé en entier", () => {
+    if (typeof cleanXfer !== 'function') return 'sans objet';
+    const vrai = 'AB3DEF7H';
+    const formes = [vrai, 'ab3def7h', 'AB3D-EF7H', 'AB3D EF7H', ' ab3d-ef7h ',
+      'Bonjour, le code de l AVEC est AB3DEF7H, bonne reception'];
+    const mauvaises = formes.filter(f => cleanXfer(f) !== vrai);
+    must(!mauvaises.length, mauvaises.length + ' forme(s) refusée(s) : ' + JSON.stringify(mauvaises[0] || ''));
+    /* on ne devine pas : deux suites de huit signes, on ne choisit pas à la place de l utilisateur */
+    must(cleanXfer('AB3DEF7H et aussi ZZ9YXW8V') !== vrai, 'Akiba ne doit pas deviner entre deux codes');
+    return formes.length + ' façons d’écrire le même code';
+  });
   return res;
 };

@@ -238,11 +238,28 @@ function readRoles(p) {
   if (k.includes(b[2])) { App.toast('Le trésorier garde la caisse : il ne peut pas garder une clé'); return null; }
   return { b, k };
 }
-function applyRoles(avec, r) {
+/* Changer de trésorier, c'est changer qui tient la caisse ; changer un porte-clé, c'est changer
+   qui peut l'ouvrir. Ce sont les deux décisions les plus lourdes d'un cycle, et elles ne
+   laissaient aucune trace. Chaque changement s'écrit maintenant dans le registre de sécurité :
+   qui perd le rôle, qui le prend, et qui a validé. Le registre ne s'efface pas. */
+function applyRoles(avec, r, par) {
+  const ROLES_NOM = { president: 'président', secretaire: 'secrétaire', tresorier: 'trésorier', compteur: 'compteur', membre: 'membre' };
+  const avant = new Map(activeM(avec).map(m => [m.id, { role: m.role, key: !!m.key }]));
   activeM(avec).forEach(m => {
     const i = r.b.indexOf(m.id);
     m.role = i >= 0 ? ['president', 'secretaire', 'tresorier'][i] : (m.role === 'compteur' ? 'compteur' : 'membre');
     m.key = r.k.includes(m.id);
+  });
+  const via = par ? 'validé par ' + par : '';
+  activeM(avec).forEach(m => {
+    const a0 = avant.get(m.id);
+    if (!a0) return;
+    if (a0.role !== m.role) {
+      secLog(avec, 'Rôle changé', m.id, `${m.name} : ${ROLES_NOM[a0.role] || a0.role} → ${ROLES_NOM[m.role] || m.role}${via ? ' · ' + via : ''}`);
+    }
+    if (a0.key !== !!m.key) {
+      secLog(avec, m.key ? 'Clé confiée' : 'Clé retirée', m.id, `${m.name}${via ? ' · ' + via : ''}`);
+    }
   });
 }
 SCREENS['a.newCycle'] = () => {
@@ -279,7 +296,7 @@ ACT.saveNewCycle = () => {
   Object.assign(avec.settings, { partValue: g('ncP'), socialFee: g('ncS'), rate: g('ncR'), maxMonths: g('ncD'), cycleMonths: g('ncC'), fineAbsent: g('ncF'), fineLate: g('ncL'), penaltyRate: g('ncPn'), maxMult: g('ncX'), maxParts: g('ncM'), frequency: g('ncQ') });
   avec.cycle.end = avec.cycle.start + avec.settings.cycleMonths * 30 * DAY;
   avec.cycle.rulesPending = false;
-  applyRoles(avec, r);
+  applyRoles(avec, r, ap.name);
   DB.save(); App.go('a.home'); App.toast(`Cycle ${avec.cycle.n} commencé. Bonne épargne !`);
 };
 SCREENS['a.cycles'] = () => {
@@ -300,7 +317,7 @@ SCREENS['a.roles'] = () => {
   const { avec, me } = cur();
   if (!isBureau(me)) return SCREENS['a.home']();
   return `<div class="shell">${topbar('Bureau et porte-clés', esc(avec.name), backBtn('a.more'))}<main class="main">
-    <p class="muted">À utiliser seulement quand l'assemblée l'a décidé : démission, départ ou décès d'un responsable. Le changement est validé par deux membres du bureau actuel.</p>
+    <p class="muted">À utiliser quand l'assemblée l'a décidé, en cours de cycle comme à la fin : nouvelle élection, démission, départ, maladie ou décès d'un responsable. Le changement est validé par un deuxième membre du bureau actuel, et <b>reste écrit dans le journal</b> — qui perd le rôle, qui le prend, et qui a validé.</p>
     ${openMeeting(avec) ? '<div class="alert warn"><div><b>Réunion ouverte</b><span class="small">Changez les rôles après la clôture : les clés servent à fermer la caisse.</span></div></div>' : `${rolesForm(avec, 'ro')}${approverFields(avec, me, 'ra')}
     <button class="btn primary block xl" data-act="saveRoles">${ic('check')} Enregistrer le nouveau bureau</button>`}
   </main></div>`;
@@ -309,7 +326,7 @@ ACT.saveRoles = () => {
   const { avec } = cur();
   const r = readRoles('ro'); if (!r) return;
   const ap = checkApprover(avec, 'ra', null); if (!ap) return;
-  applyRoles(avec, r); DB.save(); App.go('a.more'); App.toast('Nouveau bureau enregistré');
+  applyRoles(avec, r, ap.name); DB.save(); App.go('a.more'); App.toast('Nouveau bureau enregistré · le changement est écrit dans le journal');
 };
 
 /* ---------- membres : arrivée, départ, codes ---------- */

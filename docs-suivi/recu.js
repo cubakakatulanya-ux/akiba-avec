@@ -15,6 +15,25 @@ const noAcc = s => String(s == null ? '' : s).normalize('NFD').replace(/[̀-ͯ]/
 const rLine = (l, v, w = RECU_W) => { const b = noAcc(v); const a = noAcc(l).slice(0, Math.max(0, w - b.length - 1)); return a + ' '.repeat(Math.max(1, w - a.length - b.length)) + b; };
 const rCenter = (s, w = RECU_W) => { const t = noAcc(s).slice(0, w); return ' '.repeat(Math.max(0, Math.floor((w - t.length) / 2))) + t; };
 const rRule = (c = '-', w = RECU_W) => c.repeat(w);
+/* une phrase libre ne tient pas sur trente-deux signes : on la replie sur plusieurs lignes,
+   en coupant entre les mots — jamais au milieu d'un montant ou d'un nom. */
+/* Dernière garantie avant le papier : une ligne trop longue ne se voit pas à l'écran, elle se
+   coupe en silence sur l'imprimante — et c'est un montant tronqué. Tout ticket passe donc par
+   ici : accents retirés, lignes ramenées à la largeur de la bande. Aucune donnée, si longue
+   soit-elle, ne peut déborder. */
+const rTicket = lignes => lignes.map(l => noAcc(String(l)).slice(0, RECU_W)).join(String.fromCharCode(10));
+function rWrap(texte, w = RECU_W) {
+  const mots = noAcc(String(texte || '')).split(/s+/).filter(Boolean);
+  const out = []; let ligne = '';
+  for (const mot of mots) {
+    const m2 = mot.length > w ? mot.slice(0, w) : mot;
+    if (!ligne) ligne = m2;
+    else if ((ligne + ' ' + m2).length <= w) ligne += ' ' + m2;
+    else { out.push(ligne); ligne = m2; }
+  }
+  if (ligne) out.push(ligne);
+  return out;
+}
 
 /* ce que le membre a fait à cette réunion, et où il en est */
 function memberReceipt(avec, m, x) {
@@ -270,6 +289,100 @@ function journalText(avec, from, to) {
   L.push(rCenter('Akiba - Ubora - ' + UBORA.telShow));
   return L.join('\n');
 }
+/* Le journal d'une seule réunion : toutes les écritures de ce jour-là, dans l'ordre où elles
+   ont été faites, avec les totaux, les trois clés et le sceau. C'est la pièce que le bureau
+   garde dans la caisse et que l'animateur relit à sa visite — le procès-verbal de la séance,
+   écrit par le logiciel plutôt qu'à la main. */
+function journalReunionText(avec, m) {
+  const an = annulledSet(avec);
+  const rows = avec.tx.filter(t => t.meetingId === m.id).map(t => Object.assign({ annulled: an.has(t.id) }, t));
+  const L = [];
+  L.push(rCenter('AKIBA - JOURNAL DE SEANCE'));
+  L.push(rCenter(noAcc(avec.name)));
+  L.push(rCenter(`Cycle ${m.cycle || avec.cycle.n} - seance n${m.n}`));
+  L.push(rCenter(noAcc(fdate(m.date))));
+  L.push(rRule('='));
+  const presents = activeM(avec).filter(x => (m.presence || {})[x.id] && (m.presence || {})[x.id] !== 'A').length;
+  const absents = activeM(avec).filter(x => (m.presence || {})[x.id] === 'A').length;
+  const retards = activeM(avec).filter(x => (m.presence || {})[x.id] === 'R').length;
+  L.push(rLine('Presents', String(presents)));
+  if (retards) L.push(rLine(' dont en retard', String(retards)));
+  L.push(rLine('Absents', String(absents)));
+  L.push(rRule());
+  if (!rows.length) L.push('Aucune ecriture pour cette seance.');
+  rows.forEach(t => {
+    const inFlow = TX[t.type] && TX[t.type].in;
+    const money = (t.type === 'ANNUL' || t.type === 'DETTE' ? '  ' : inFlow ? '+ ' : '- ') + grp(t.amount);
+    L.push(rLine(`#${t.seq} ${J_SHORT[t.type] || t.type}`, money));
+    const who = t.memberId ? (memberOf(avec, t.memberId) || {}).name : (t.note || '');
+    if (who) L.push('   ' + noAcc(who).slice(0, RECU_W - 3));
+    if (t.annulled) L.push('   (annulee)');
+  });
+  const sum = k => rows.filter(t => t.type === k && !t.annulled).reduce((a, t) => a + t.amount, 0);
+  const kinds = [...new Set(rows.filter(t => !t.annulled && t.type !== 'ANNUL').map(t => t.type))];
+  L.push(rRule('='));
+  L.push('TOTAUX DE LA SEANCE');
+  kinds.forEach(k => L.push(rLine(' ' + (J_SHORT[k] || k), fc(sum(k)))));
+  const entre = kinds.filter(k => TX[k] && TX[k].in).reduce((a, k) => a + sum(k), 0);
+  const sorti = kinds.filter(k => TX[k] && !TX[k].in).reduce((a, k) => a + sum(k), 0);
+  L.push(rRule());
+  L.push(rLine('Entre dans la caisse', fc(entre)));
+  L.push(rLine('Sorti de la caisse', fc(sorti)));
+  if (m.openCount != null) L.push(rLine('Ouverture', fc(m.openCount)));
+  if (m.closeCount != null) {
+    L.push(rLine('Compte a la cloture', fc(m.closeCount)));
+    const ecart = (m.closeCount || 0) - (m.closeExpected || 0);
+    L.push(rLine(ecart === 0 ? 'Caisse' : 'ECART', ecart === 0 ? 'juste' : fc(ecart)));
+    if (ecart !== 0 && m.note) { L.push('Explication :'); rWrap(m.note).forEach(l => L.push(l)); }
+  }
+  L.push(rRule());
+  if ((m.validators || []).length) {
+    L.push('Cles : ' + noAcc(m.validators.map(id => (memberOf(avec, id) || {}).name || '').filter(Boolean).map(n => n.split(' ')[0]).join(', ')).slice(0, RECU_W - 7));
+  }
+  (m.keySubs || []).forEach(k => {
+    const a0 = memberOf(avec, k.absent), s0 = memberOf(avec, k.par);
+    if (a0 && s0) L.push(noAcc(`${s0.name.split(' ')[0]} a remplace ${a0.name.split(' ')[0]}, absent`).slice(0, RECU_W));
+  });
+  L.push(rLine('Ecritures', String(rows.length)));
+  if (m.seal) { L.push('Sceau de la seance :'); L.push(noAcc(m.seal.slice(0, 16).replace(/(.{4})/g, '$1 ').trim())); }
+  /* l'etiquette de classement : elle se lit sans deplier le ticket, une fois dans la boite */
+  L.push(rRule('='));
+  L.push(rCenter(noAcc(`A CLASSER : C${m.cycle || avec.cycle.n} - S${String(m.n).padStart(2, '0')}`)));
+  L.push(rCenter(noAcc(avec.name).slice(0, RECU_W)));
+  return rTicket(L);
+}
+ACT.journalReunion = async d => {
+  const { avec } = cur();
+  const m = avec.meetings.find(x => x.id === d.m) || recuMeeting(d);
+  if (!m) return App.toast('Réunion introuvable');
+  const how = await printReceipt(journalReunionText(avec, m));
+  App.toast(how === 'pos' ? 'Journal de la séance envoyé à l\x27imprimante' : how === 'rawbt' ? 'Journal envoyé à l\x27application d\x27impression' : 'Aucune imprimante trouvée');
+};
+ACT.journalReunionVoir = d => {
+  const { avec } = cur();
+  const m = avec.meetings.find(x => x.id === d.m) || recuMeeting(d);
+  if (!m) return;
+  const t = journalReunionText(avec, m);
+  App.openSheet(`<h2>Journal de la réunion n°${m.n}</h2>
+    <p class="muted">Toutes les écritures de la séance, dans l'ordre, avec les totaux, les clés et le sceau. Environ ${Math.round(t.split(String.fromCharCode(10)).length * 0.4)} cm de papier.</p>
+    <div class="alert">${icSpan('shield')}<div><b>Comment le classer</b>
+      <span class="small">Le bas du ticket porte une étiquette lisible sans le déplier : <b class="mono">C${m.cycle || avec.cycle.n} - S${String(m.n).padStart(2, '0')}</b>.
+        Rangez-les <b>dans l'ordre des numéros</b>, dans une pochette gardée <b>à l'intérieur de la caisse</b>, avec les trois clés.
+        Une pochette par cycle. Si le téléphone disparaît, ces papiers remis bout à bout redonnent tout le cahier.</span></div></div>
+    <pre class="ticket">${esc(t)}</pre>
+    <div class="grid2"><button class="btn brand" data-act="journalReunion" data-m="${m.id}">${ic('clip')} Imprimer</button>
+      <button class="btn ghost" data-act="journalReunionPartager" data-m="${m.id}">${ic('chat')} Partager</button></div>
+    <button class="btn ghost block" data-act="closeSheet">Fermer</button>`);
+};
+ACT.journalReunionPartager = async d => {
+  const { avec } = cur();
+  const m = avec.meetings.find(x => x.id === d.m);
+  if (!m) return;
+  const t = journalReunionText(avec, m);
+  try { if (navigator.share) { await navigator.share({ title: `Journal réunion n°${m.n} · ${avec.name}`, text: t }); return; } } catch (e) { return; }
+  window.open(`https://wa.me/?text=${encodeURIComponent(t)}`, '_blank', 'noopener');
+};
+
 /* choisir la période, voir la longueur de papier, imprimer ou partager */
 const jFrom = () => { const v = fval('jrA'); return v ? new Date(v + 'T00:00:00').getTime() : 0; };
 const jTo = () => { const v = fval('jrB'); return v ? new Date(v + 'T23:59:59').getTime() : Date.now(); };

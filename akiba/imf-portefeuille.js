@@ -39,14 +39,21 @@ const IMF_COLS = [
 
 function imfPortefeuilleFeuilles(rows, org, noms) {
   const nomDe = r => noms ? r.avec.name : 'AVEC ' + (rows.indexOf(r) + 1);
-  const credits = [], exts = [];
+  const credits = [], exts = [], aides = [];
   rows.forEach(r => {
     const nom = nomDe(r), st = r.st;
     const etiquette = new Map(activeM(r.avec).map((m, i) => [m.id, noms ? m.name : 'Membre ' + (i + 1)]));
     st.loanList.forEach(l => {
       const m = memberOf(r.avec, l.memberId) || {};
       credits.push([nom, etiquette.get(l.memberId) || '—', m.sex === 'M' ? 'H' : 'F', l.ts, l.principal, l.months,
-        l.due, l.paid, l.remaining, l.status === 'solde' ? 'Soldé' : l.status === 'retard' ? 'En retard' : 'En cours', l.daysLate]);
+        l.due, l.paid, l.remaining, l.status === 'solde' ? 'Soldé' : l.status === 'retard' ? 'En retard' : 'En cours', l.daysLate, butDe(l.note)]);
+    });
+    /* La caisse sociale est ce qui distingue une AVEC d'un simple groupe d'épargne : elle paie
+       la maladie, le deuil, la naissance. Un bailleur le demande toujours, et cela ne sortait
+       dans aucun tableau. */
+    r.avec.tx.filter(x => x.type === 'AIDE').forEach(x => {
+      const mm = memberOf(r.avec, x.memberId);
+      aides.push([nom, mm ? etiquette.get(mm.id) || (noms ? mm.name : 'Membre') : '—', mm && mm.sex === 'M' ? 'H' : 'F', x.ts, x.amount, butDe(x.note)]);
     });
     st.extList.forEach(e => exts.push([nom, e.lender, e.ts, e.principal, e.rate / 100, e.months, e.fees, e.guar, e.due, e.paid, e.remaining, e.dueDate,
       e.status === 'solde' ? 'Remboursé' : e.status === 'retard' ? 'En retard' : 'En cours']));
@@ -69,8 +76,12 @@ function imfPortefeuilleFeuilles(rows, org, noms) {
       ] },
     { name: 'Crédits internes', cols: [{ h: 'AVEC', w: 22 }, { h: 'Membre', w: 20 }, { h: 'Sexe', w: 6 }, { h: 'Date', w: 12, t: 'd' },
       { h: 'Montant (FC)', w: 12, t: 'n' }, { h: 'Durée (mois)', w: 9, t: 'n' }, { h: 'Total dû (FC)', w: 12, t: 'n' },
-      { h: 'Remboursé (FC)', w: 12, t: 'n' }, { h: 'Reste (FC)', w: 11, t: 'n' }, { h: 'Situation', w: 11 }, { h: 'Jours de retard', w: 9, t: 'n' }],
+      { h: 'Remboursé (FC)', w: 12, t: 'n' }, { h: 'Reste (FC)', w: 11, t: 'n' }, { h: 'Situation', w: 11 }, { h: 'Jours de retard', w: 9, t: 'n' },
+      { h: 'But du crédit', w: 26 }],
       rows: credits },
+    { name: 'Aides sociales', cols: [{ h: 'AVEC', w: 22 }, { h: 'Membre', w: 20 }, { h: 'Sexe', w: 6 }, { h: 'Date', w: 12, t: 'd' },
+      { h: 'Montant (FC)', w: 12, t: 'n' }, { h: 'Motif', w: 30 }],
+      rows: aides },
     { name: 'Crédits extérieurs', cols: [{ h: 'AVEC', w: 22 }, { h: 'Prêteur', w: 22 }, { h: 'Date', w: 12, t: 'd' },
       { h: 'Montant (FC)', w: 12, t: 'n' }, { h: 'Intérêt par mois', w: 9, t: 'p' }, { h: 'Durée (mois)', w: 9, t: 'n' },
       { h: 'Frais (FC)', w: 11, t: 'n' }, { h: 'Garantie (FC)', w: 12, t: 'n' }, { h: 'Total dû (FC)', w: 12, t: 'n' },

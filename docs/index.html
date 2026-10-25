@@ -803,6 +803,9 @@ h2,h3{font-weight:600;letter-spacing:-.005em}
 .etat.cur>svg:first-child{opacity:1;color:var(--brand)}
 .aenvoyer{display:flex;align-items:center;justify-content:center;gap:7px;margin:0;color:var(--ink-2);font-size:var(--t-sm)}
 .aenvoyer svg{width:16px;height:16px;flex:none;opacity:.7}
+/* un porte-clé absent : la case le dit, au lieu d'attendre un code qui ne viendra pas */
+.lock.absent{border-color:var(--warn);background:var(--warn-soft,transparent)}
+.lock.absent svg{color:var(--warn)}
 /* le haut de page se resserre dès qu'un groupe est sur le téléphone : il sait déjà ce qu'est Akiba */
 .hero.tight.connu{padding-top:16px;padding-bottom:16px}
 .hero.tight.connu h1{font-size:clamp(1.5rem,4.6vh,2rem);margin-bottom:0}
@@ -822,7 +825,7 @@ details.g.demo>:not(summary)+*{margin-top:8px}
 </style>
 <style>html,body{margin:0}</style>
 </head><body>
-<script>window.KITABU_PWA = true; window.KITABU_VERSION = 'akiba-202610251046'; window.AKIBA_CIBLE = 'avec';</script>
+<script>window.KITABU_PWA = true; window.KITABU_VERSION = 'akiba-202610251103'; window.AKIBA_CIBLE = 'avec';</script>
 
 <div id="app"></div>
 <script src="core.js"></script>

@@ -350,7 +350,14 @@ const STEP = {
         <div class="field" id="closeGapNote" ${filled && parseAmt(dr.closeCount) !== st.cash ? '' : 'hidden'}><label for="closeNote">Expliquez l'écart (obligatoire)</label><textarea id="closeNote" class="input" rows="2" data-in="keep">${esc(dr.closeNote || '')}</textarea></div>
       </div>
       <section class="section"><h3>Les trois clés</h3>
-        <div class="locks3">${holders.slice(0, 3).map(h => `<button class="lock ${dr.locks[h.id] ? 'ok' : ''}" data-act="lockPin" data-id="${h.id}">${ic(dr.locks[h.id] ? 'lock' : 'key')}<b>${esc(h.name.split(' ')[0])}</b><span class="small muted">${dr.locks[h.id] ? 'confirmé' : 'toucher'}</span></button>`).join('')}</div></section>
+        <div class="locks3">${holders.slice(0, 3).map(h => {
+          const sub = (dr.subs || {})[h.id] ? memberOf(avec, dr.subs[h.id]) : null;
+          const absent = (m.presence || {})[h.id] === 'A' || !(m.presence || {})[h.id];
+          const fait = dr.locks[h.id];
+          return `<button class="lock ${fait ? 'ok' : absent ? 'absent' : ''}" data-act="${fait ? 'lockPin' : absent ? 'lockAbsent' : 'lockPin'}" data-id="${h.id}">${ic(fait ? 'lock' : absent ? 'alert' : 'key')}<b>${esc(h.name.split(' ')[0])}</b><span class="small muted">${sub ? 'par ' + esc(sub.name.split(' ')[0]) : fait ? 'confirmé' : absent ? 'absent' : 'toucher'}</span></button>`;
+        }).join('')}</div>
+        ${holders.slice(0, 3).some(h => ((m.presence || {})[h.id] === 'A' || !(m.presence || {})[h.id]) && !dr.locks[h.id])
+          ? `<p class="hint">Un porte-clé est absent : touchez sa case. L'assemblée désignera quelqu'un pour le remplacer <b>aujourd'hui seulement</b>, et la décision restera écrite dans le journal.</p>` : ''}</section>
       <div class="sticky-foot"><button id="closeBtn" class="btn primary block xl" data-act="saveClose" data-exp="${st.cash}" ${closeReady(avec) ? '' : 'disabled'}>${ic('lock')} Fermer et sceller la réunion</button></div>`;
   }
 };
@@ -422,6 +429,43 @@ ACT.saveFines = () => {
   });
   finishStep(avec, m, 6, 'Amendes enregistrées');
 };
+/* L'assemblée, et elle seule, désigne un remplaçant. Trois règles tiennent la décision :
+   le remplaçant est présent, il n'est pas déjà l'un des trois, et ce n'est pas le trésorier —
+   qui garde la caisse et ne peut donc pas garder une clé. Le remplacement ne vaut que pour cette
+   réunion : à la suivante, le porte-clé retrouve sa clé sans rien faire. */
+ACT.lockAbsent = d => {
+  const { avec } = cur(); const m = openMeeting(avec); const h = memberOf(avec, d.id);
+  if (!h || !m) return;
+  const tresorier = avec.members.find(x => x.role === 'tresorier');
+  const trois = keyHolders(avec).slice(0, 3).map(x => x.id);
+  const candidats = activeM(avec).filter(x => (m.presence || {})[x.id] && (m.presence || {})[x.id] !== 'A'
+    && !trois.includes(x.id) && !(tresorier && x.id === tresorier.id)
+    && !Object.values(App.draft.subs || {}).includes(x.id));
+  App.openSheet(`<h2>${esc(h.name)} est absent·e</h2>
+    <p class="muted">La caisse ne s'ouvre qu'à trois clés. Si un porte-clé n'est pas là, l'assemblée désigne
+      quelqu'un pour le remplacer <b>pour cette réunion seulement</b> — à la prochaine, ${esc(h.name.split(' ')[0])}
+      retrouve sa clé sans rien faire.</p>
+    <div class="alert warn">${icSpan('alert')}<div><b>La décision est écrite</b>
+      <span class="small">Le nom du remplaçant reste dans le journal scellé et sur le reçu de la réunion. Personne ne peut l'effacer.</span></div></div>
+    ${candidats.length
+      ? `<p class="small muted">Qui l'assemblée désigne-t-elle ? Le trésorier et les deux autres porte-clés ne peuvent pas être choisis.</p>
+         <div class="list">${candidats.map(x => `<button class="li" data-act="lockSub" data-id="${h.id}" data-sub="${x.id}">${avatar(x)}
+           <span class="grow"><b>${esc(x.name)}</b><span class="small muted">${roleLabel(x)}</span></span>${ic('chev')}</button>`).join('')}</div>`
+      : `<div class="alert bad">${icSpan('alert')}<div><b>Personne ne peut remplacer</b><span class="small">Il faut un membre présent qui ne soit ni trésorier ni porte-clé. La réunion ne peut pas être fermée aujourd'hui : reportez-la.</span></div></div>`}
+    <button class="btn ghost block" data-act="closeSheet">Annuler</button>`);
+};
+ACT.lockSub = d => {
+  const { avec } = cur(); const h = memberOf(avec, d.id), sub = memberOf(avec, d.sub);
+  if (!h || !sub) return;
+  const dr = App.draft;
+  askPin(sub, 'Remplacer la clé de ' + h.name.split(' ')[0], () => {
+    dr.subs = dr.subs || {};
+    dr.subs[h.id] = sub.id;
+    dr.locks[h.id] = true;
+    App.draft = dr; render();
+    App.toast(`${sub.name.split(' ')[0]} remplace la clé de ${h.name.split(' ')[0]}`);
+  });
+};
 ACT.lockPin = d => {
   const { avec } = cur(); const h = memberOf(avec, d.id);
   if (App.draft.locks[h.id]) return;
@@ -433,9 +477,17 @@ ACT.saveClose = () => {
   const v = parseAmt(dr.closeCount);
   if (!closeReady(avec)) return App.toast('Il manque le comptage ou une clé');
   if (v !== st.cash && !(dr.closeNote || '').trim()) return App.toast('Expliquez l\'écart : c\'est obligatoire');
+/* un remplacement se garde : qui remplaçait qui, et pourquoi. Il part avec la réunion. */
+  const subs = dr.subs || {};
+  Object.keys(subs).forEach(absentId => {
+    const a0 = memberOf(avec, absentId), s0 = memberOf(avec, subs[absentId]);
+    if (a0 && s0) secLog(avec, 'Clé remplacée', absentId, `${s0.name} a remplacé ${a0.name}, absent·e, par décision de l'assemblée (réunion n°${m.n})`);
+  });
   Object.assign(m, {
     status: 'closed', closedAt: Date.now(), closeExpected: st.cash, closeCount: v, note: v !== st.cash ? dr.closeNote.trim() : '',
-    validators: Object.keys(dr.locks), sealSeq: avec.tx.length, seal: avec.tx.length ? avec.tx[avec.tx.length - 1].hash : 'GENESE:' + avec.id, stepDone: 7
+    validators: Object.keys(dr.locks).map(id => subs[id] || id),
+    keySubs: Object.keys(subs).length ? Object.keys(subs).map(id => ({ absent: id, par: subs[id] })) : undefined,
+    sealSeq: avec.tx.length, seal: avec.tx.length ? avec.tx[avec.tx.length - 1].hash : 'GENESE:' + avec.id, stepDone: 7
   });
   if (m.openExpected === undefined) { m.openExpected = m.openCount = st.cash; }
   DB.save();
@@ -614,6 +666,12 @@ SCREENS['a.receipt'] = p => {
       <div><span class="label">Sceau</span><div class="mono" style="word-break:break-all">${m.seal.slice(0, 32).replace(/(.{4})/g, '$1 ')}</div></div>
     </div>
     <button class="btn brand block xl" data-act="go" data-to="a.receipts" data-id="${m.id}">${ic('clip')} Reçus des membres</button>
+    <!-- Le papier est la seule sauvegarde qui survit à un téléphone perdu, volé, noyé ou cassé.
+         On le recommande à chaque clôture, en disant pourquoi — pas comme une option de plus. -->
+    <div class="alert">${icSpan('shield')}<div><b>Imprimez le journal de cette séance</b>
+      <span class="small">Si le téléphone est perdu, volé ou cassé, ce papier est ce qui reste du cahier.
+        Gardez-le dans la caisse, avec les trois clés : il reprend chaque écriture, les totaux et le sceau.</span>
+      <button class="btn sm brand" style="margin-top:9px" data-act="journalReunionVoir" data-m="${m.id}">${ic('clip')} Journal de la séance</button></div></div>
     <button class="btn primary block xl" data-act="go" data-to="a.home">Retour à l'accueil</button>
   </main></div>`;
 };

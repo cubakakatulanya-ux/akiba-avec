@@ -3,8 +3,25 @@
 'use strict';
 
 const TRANSFER_KIND = 'kitabu-transfert';
-const fmtXfer = c => String(c || '').replace(/^(.{4})(.{4})$/, '$1-$2');
-const cleanXfer = c => String(c || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+/* Les codes s'affichent d'un bloc, sans tiret : c'est ainsi qu'on les dicte et qu'on les retape.
+   La saisie, elle, accepte tout — tiret, espace, minuscules — et nettoie avant de vérifier. */
+const fmtXfer = c => String(c || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+/* On accepte tout ce qu'un doigt peut taper ou coller : le code seul, avec tiret, avec espaces,
+   en minuscules, ou le message entier reçu par WhatsApp. Dans ce dernier cas, on cherche la
+   seule suite de huit signes du texte — s'il y en a plusieurs, on ne devine pas. */
+function cleanXfer(c) {
+  const brut = String(c || '').toUpperCase();
+  const colle = brut.replace(/[^A-Z0-9]/g, '');
+  if (colle.length === 8) return colle;
+  let suites = [];
+  try { suites = brut.match(/(?<![A-Z0-9])[A-Z0-9]{8}(?![A-Z0-9])/g) || []; }
+  catch (e) { suites = brut.match(/[A-Z0-9]{8}(?![A-Z0-9])/g) || []; }   // vieux navigateur sans arrière-recherche
+  if (suites.length === 1) return suites[0];
+  /* plusieurs suites de huit signes : un vrai code tiré au hasard porte presque toujours un
+     chiffre, un mot de la phrase presque jamais. Si cela ne tranche pas, on ne devine pas. */
+  const avecChiffre = suites.filter(x => /[0-9]/.test(x));
+  return avecChiffre.length === 1 ? avecChiffre[0] : colle;
+}
 const whoName = () => { const s = K.session; if (!s) return ''; if (s.kind === 'avec') { const a = avecById(s.avecId); return (memberOf(a, s.memberId) || {}).name || ''; } return (userById(s.userId) || {}).name || ''; };
 const readFileText = file => new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = () => rej(r.error); r.readAsText(file); });
 const canMove = avec => {
@@ -119,7 +136,8 @@ ACT.transferRun = async d => {
 ACT.receiveSheet = () => App.openSheet(`<h2>Recevoir une AVEC</h2>
   <p class="muted">Pour le téléphone du groupe. Vous avez reçu un fichier <b>.akiba</b> et un code de 8 signes (de l'animateur, de l'organisation ou de l'ancien téléphone).</p>
   <div class="field"><label for="rcF">Fichier reçu</label><input id="rcF" class="input" type="file" accept=".akiba,.kitabu,application/octet-stream,application/json"></div>
-  <div class="field"><label for="rcC">Code de transfert</label><input id="rcC" class="input bignum" maxlength="9" autocomplete="off" autocapitalize="characters" style="text-transform:uppercase" placeholder="ABCD-EFGH"></div>
+  <div class="field"><label for="rcC">Code de transfert</label><input id="rcC" class="input bignum" maxlength="40" autocomplete="off" autocapitalize="characters" style="text-transform:uppercase" placeholder="ABCDEFGH">
+    <span class="hint">Huit signes, dictés ou reçus par message. Tiret, espace, minuscules : tapez comme vous voulez, Akiba s'y retrouve.</span></div>
   <button class="btn primary block xl" data-act="receiveRun">${ic('check')} Recevoir l'AVEC</button>`);
 ACT.receiveRun = async () => {
   const f = document.getElementById('rcF');

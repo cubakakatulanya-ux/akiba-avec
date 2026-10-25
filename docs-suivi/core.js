@@ -212,7 +212,7 @@ function stats(avec, opt = {}) {
     if (t.type === 'SOCIAL' && m) m.social += t.amount;
     if (t.type === 'AMENDE' && m) { m.fines += t.amount; if (t.ref === 'DETTE') m.fineDebt -= t.amount; }
     if (t.type === 'DETTE' && m) m.fineDebt += t.amount;
-    if (t.type === 'CREDIT') loans[t.id] = { id: t.id, memberId: t.memberId, principal: t.amount, rate: t.rate, months: t.months, ts: t.ts, due: Math.round(t.amount * (1 + t.rate / 100 * t.months)), paid: 0, dueDate: jourDeReunion(avec, t.ts + t.months * 28 * DAY), pays: [] };
+    if (t.type === 'CREDIT') loans[t.id] = { id: t.id, memberId: t.memberId, principal: t.amount, rate: t.rate, months: t.months, ts: t.ts, note: t.note || '', due: Math.round(t.amount * (1 + t.rate / 100 * t.months)), paid: 0, dueDate: jourDeReunion(avec, t.ts + t.months * 28 * DAY), pays: [] };
     if (t.type === 'REMB' && loans[t.ref]) { loans[t.ref].paid += t.amount; loans[t.ref].pays.push(t); }
   }
   const now = Date.now();
@@ -377,6 +377,9 @@ const DB = {
 const avecById = id => K.data.avecs.find(a => a.id === id);
 const userById = id => K.data.users.find(u => u.id === id);
 const memberOf = (avec, id) => avec.members.find(m => m.id === id);
+/* Le but d'un crédit et le motif d'une aide sont écrits dans la note, suivis de la mention de
+   validation. Pour un tableau, on ne garde que ce qu'a dit l'assemblée. */
+const butDe = note => String(note || '').split(' · ')[0].trim();
 const openMeeting = avec => avec.meetings.find(m => m.status === 'open');
 const pending = avec => avec.tx.filter(t => !t.synced).length;
 const isActive = avec => !avec.status || avec.status === 'active';
@@ -390,7 +393,8 @@ function signCode(kind, orgId, req) {
   const h = sha256('KITABU-' + kind + '|' + orgSecret(orgId) + '|' + String(req).toUpperCase().replace(/[^A-Z0-9]/g, ''));
   return String(parseInt(h.slice(0, 12), 16) % 1e8).padStart(8, '0');
 }
-const fmtCode = c => String(c).replace(/^(\d{4})(\d{4})$/, '$1 $2');
+/* un code se dicte et se retape d'un bloc : pas de tiret ni d'espace à recopier de travers */
+const fmtCode = c => String(c).replace(/[^0-9A-Za-z]/g, '');
 function randCode(n) {
   const A = 'ACDEFHJKLMNPQRTUVWXY34679', r = new Uint32Array(n);
   if (window.crypto && crypto.getRandomValues) crypto.getRandomValues(r); else for (let i = 0; i < n; i++) r[i] = Math.floor(Math.random() * 1e9);

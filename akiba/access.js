@@ -2,7 +2,7 @@
    Tout marche sans internet : les codes se transmettent par un simple appel téléphonique. */
 'use strict';
 
-const fmtReq = c => String(c || '').replace(/^(.{3})(.{3})$/, '$1-$2');
+const fmtReq = c => String(c || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
 const icSpan = n => `<span style="width:22px;flex:none">${ic(n)}</span>`;
 const cap = s => String(s || '').charAt(0).toUpperCase() + String(s || '').slice(1);
 function secLog(avec, type, memberId, via) { (avec.security = avec.security || []).push({ ts: Date.now(), type, memberId: memberId || null, via: via || '' }); }
