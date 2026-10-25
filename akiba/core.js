@@ -583,7 +583,12 @@ try { document.documentElement.dataset.cible = CIBLE; } catch (e) { /* hors navi
    Le choix est gardé sur l'appareil ; il ne voyage pas avec les données du groupe. */
 const THEME_STORE = 'kitabu.theme';
 const THEMES = { auto: 'Comme le téléphone', light: 'Fond clair', dark: 'Fond sombre' };
-const themeChoisi = () => { try { return THEMES[localStorage.getItem(THEME_STORE)] ? localStorage.getItem(THEME_STORE) : 'auto'; } catch (e) { return 'auto'; } };
+/* Le fond sombre par défaut, et non « comme le téléphone ». Un écran sombre fatigue moins l'œil
+   le soir — l'heure des réunions — et consomme moins sur les écrans OLED, ce qui compte quand on
+   recharge au panneau solaire. « Comme le téléphone » et le fond clair restent à un toucher, dans
+   Apparence ; un choix déjà fait par quelqu'un n'est jamais écrasé. */
+const THEME_DEFAUT = 'dark';
+const themeChoisi = () => { try { return THEMES[localStorage.getItem(THEME_STORE)] ? localStorage.getItem(THEME_STORE) : THEME_DEFAUT; } catch (e) { return THEME_DEFAUT; } };
 function appliquerTheme(v = themeChoisi()) {
   try {
     const r = document.documentElement;

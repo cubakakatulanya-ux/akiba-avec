@@ -217,8 +217,8 @@ ACT.themeSheet = () => {
     <span class="grow"><b>${titre}</b><span class="small muted">${sous}</span></span>${cur === id ? `<span class="chip brand">Choisi</span>` : ic('chev')}</button>`;
   App.openSheet(`<h2>Apparence</h2><p class="muted">Le fond clair se lit mieux en plein soleil ; le fond sombre fatigue moins les yeux le soir et économise un peu de batterie.</p>
     <div class="list">
+      ${ligne('dark', 'Fond sombre', 'Toujours sombre · choix par défaut d\x27Akiba')}
       ${ligne('light', 'Fond clair', 'Toujours clair, quel que soit le téléphone')}
-      ${ligne('dark', 'Fond sombre', 'Toujours sombre')}
       ${ligne('auto', 'Comme le téléphone', 'Suit le réglage d\'Android ou d\'iPhone')}
     </div>
     <button class="btn ghost block" data-act="closeSheet">Fermer</button>`);
