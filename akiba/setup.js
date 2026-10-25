@@ -143,6 +143,9 @@ ACT.saveOrg = () => {
 ACT.addAnimSheet = () => App.openSheet(`<h2>Ajouter un animateur</h2>
   <div class="field"><label for="anN">Nom complet</label><input id="anN" class="input" autocomplete="off"></div>
   ${geoZoneFields('an', {}, 'Précision sur la zone')}
+  <div class="field"><span class="flabel">Sexe</span><div class="choice" role="radiogroup" aria-label="Sexe">
+    <label><input type="radio" name="anSex" value="F" checked><span>Femme</span></label>
+    <label><input type="radio" name="anSex" value="M"><span>Homme</span></label></div></div>
   <div class="field"><label for="anT">Téléphone</label><input id="anT" class="input" inputmode="tel"></div>
   <button class="btn primary block xl" data-act="saveAnim">${ic('plus')} Ajouter</button>`);
 ACT.saveAnim = () => {
@@ -152,7 +155,8 @@ ACT.saveAnim = () => {
   if (K.data.users.some(x => x.orgId === u.orgId && x.name.toLowerCase() === name.toLowerCase())) return App.toast('Ce nom existe déjà');
   const pin = newPin();
   const g = readGeoZone('an');
-  K.data.users.push({ id: 'u-' + uid(), role: 'anim', orgId: u.orgId, name, zone: zoneLabel(g), province: g.province, territoire: g.territoire, entite: g.entite, phone: (fval('anT') || '').trim(), pin });
+  const sexe = (document.querySelector('input[name="anSex"]:checked') || {}).value === 'M' ? 'M' : 'F';
+  K.data.users.push({ id: 'u-' + uid(), role: 'anim', orgId: u.orgId, name, zone: zoneLabel(g), province: g.province, territoire: g.territoire, entite: g.entite, sex: sexe, phone: (fval('anT') || '').trim(), pin });
   DB.save();
   App.openSheet(`<h2>${esc(name)} peut se connecter</h2>
     <div class="receipt" style="text-align:center"><span class="label">Code secret provisoire</span>${bigCode(pin)}</div>
@@ -171,7 +175,7 @@ ACT.animCodesSheet = () => {
   const anims = K.data.users.filter(x => x.role === 'anim' && x.orgId === boss.orgId && !x.remote);
   App.openSheet(`<h2>Code oublié d'un animateur</h2>
     <p class="muted">Choisissez l'animateur. Vous confirmez avec votre propre code, puis Akiba affiche son nouveau code une seule fois.</p>
-    <div class="list">${anims.map(a => `<button class="li" data-act="resetUserPin" data-id="${a.id}"><span class="av">${esc(initials(a.name))}</span><span class="grow"><b>${esc(a.name)}</b><span class="small muted">${esc(a.zone || '')}${a.phone ? ' · ' + esc(a.phone) : ''}</span></span>${ic('chev')}</button>`).join('')}</div>`);
+    <div class="list">${anims.map(a => `<button class="li" data-act="resetUserPin" data-id="${a.id}"><span class="av">${esc(initials(a.name))}</span><span class="grow"><b>${esc(a.name)}</b><span class="small muted">${[a.sex ? (a.sex === 'M' ? 'Homme' : 'Femme') : '', esc(a.zone || ''), a.phone ? esc(a.phone) : ''].filter(Boolean).join(' · ')}</span></span>${ic('chev')}</button>`).join('')}</div>`);
 };
 ACT.userPinSheet = () => {
   const u = me_user(), org = orgOf(u.orgId) || {};

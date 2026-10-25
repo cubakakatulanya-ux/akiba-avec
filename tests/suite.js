@@ -412,5 +412,157 @@ window.__akibaTests = async function () {
     must(jourDeReunion(a, brut) >= brut - 12 * 3600e3, 'une échéance ne doit jamais être avancée');
     return tous.length + ' crédits, tous au ' + a.settings.meetingDay.toLowerCase();
   });
+
+  /* ---------- P. de la création du groupe au partage, sur un groupe neuf ----------
+     Les essais précédents travaillent sur un groupe de la démonstration, déjà en route.
+     Celui-ci part de rien : il crée l'AVEC comme le ferait une assemblée, tient une réunion
+     entière, puis ferme le cycle et partage. C'est le chemin complet d'un vrai groupe. */
+  let neuve = null;
+  await t("Bout en bout : créer un groupe avec son bureau", () => {
+    const noms = ['Kavira Mbusa', 'Masika Vighano', 'Kahambu Kamabu', 'Mbambu Maliro', 'Kasoki Kataliko',
+      'Furaha Kyavumba', 'Neema Muhesi', 'Sifa Siviri', 'Kambale Ngeleza', 'Paluku Mathe',
+      'Muhindo Vihamba', 'Kasereka Kombi'];
+    const membres = noms.map((n, i) => ({ id: 'n' + i, name: n, sex: i < 9 ? 'F' : 'M', phone: '', birthYear: 1990 }));
+    K.session = null;
+    App.cdraft = {
+      step: 5, from: 'login', mode: 'neuf', editing: null,
+      g: { name: 'Tuungane Essai', province: 'Nord-Kivu', territoire: 'Lubero', entite: 'territoire',
+        secteur: '', groupement: '', village: 'Kirumba', animId: '', meetingDay: 'Samedi', frequency: 7,
+        createdOn: isoDay(Date.now()) },
+      r: { partValue: 1000, maxParts: 5, socialFee: 500, cycleMonths: 12, rate: 10, maxMult: 3, maxMonths: 3,
+        cycleStart: isoDay(Date.now()), fineAbsent: 500, fineLate: 200, penaltyRate: 10 },
+      members: membres,
+      roles: { P: 'n0', S: 'n1', T: 'n2', C1: 'n3', C2: 'n4', K1: 'n5', K2: 'n6', K3: 'n7' },
+      rep: { social: '', credit: '', rows: {} },
+    };
+    ACT.cCreate();
+    neuve = K.data.avecs.find(x => x.name === 'Tuungane Essai');
+    must(neuve, "l'AVEC n'a pas été créée");
+    eq(activeM(neuve).length, 12, 'nombre de membres');
+    eq(neuve.members.filter(x => x.key).length, 3, 'porte-clés');
+    must(!neuve.members.find(x => x.role === 'tresorier').key, 'le trésorier ne doit pas garder de clé');
+    eq(neuve.settings.meetingDay, 'Samedi', 'jour de réunion');
+    return neuve.name + ' · ' + activeM(neuve).length + ' membres';
+  });
+
+  await t("Bout en bout : une réunion entière, scellée à trois clés", () => {
+    const pres = neuve.members.find(x => x.role === 'president');
+    K.session = { kind: 'avec', avecId: neuve.id, memberId: pres.id };
+    ACT.startMeeting();
+    const r = openMeeting(neuve);
+    must(r, 'réunion non ouverte');
+    /* présences : un absent */
+    const liste = activeM(neuve);
+    r.presence[liste[liste.length - 1].id] = 'A';
+    ACT.stepDone({ i: '0' });
+    /* comptage d'ouverture : caisse vide sur un groupe neuf */
+    App.go('a.meet', { step: '1' });
+    App.draft.openCount = String(stats(neuve).cash);
+    ACT.saveOpen();
+    /* caisse sociale : tous les présents cotisent */
+    App.go('a.meet', { step: '2' });
+    App.draft.social = {};
+    activeM(neuve).filter(x => r.presence[x.id] !== 'A').forEach(x => App.draft.social[x.id] = true);
+    ACT.saveSocial();
+    /* épargne : deux parts chacun */
+    App.go('a.meet', { step: '3' });
+    App.draft.parts = {};
+    activeM(neuve).filter(x => r.presence[x.id] !== 'A').forEach(x => App.draft.parts[x.id] = 2);
+    ACT.saveParts();
+    const apresEpargne = stats(neuve);
+    must(apresEpargne.sum.EPARGNE > 0, "l'épargne n'est pas enregistrée");
+    /* clôture à trois clés */
+    App.go('a.meet', { step: '7' });
+    App.draft.closeCount = String(stats(neuve).cash);
+    App.draft.locks = {};
+    keyHolders(neuve).slice(0, 3).forEach(h => App.draft.locks[h.id] = true);
+    ACT.saveClose();
+    eq(r.status, 'closed', 'statut de la réunion');
+    eq(r.closeCount, r.closeExpected, 'comptage de clôture');
+    const st = stats(neuve);
+    eq(st.cash, st.socialFund + st.loanFund, 'la caisse est la somme des deux caisses');
+    return 'épargne ' + fc(st.sum.EPARGNE) + ' · caisse ' + fc(st.cash);
+  });
+
+  await t("Bout en bout : le partage rend tout l'argent et ouvre le cycle suivant", () => {
+    const st = stats(neuve);
+    const caisseAvant = st.cash;
+    const cycleAvant = neuve.cycle.n;
+    App.go('a.cycles');
+    App.draft = { closeCount: String(st.cash), closeNote: '', locks: {} };
+    keyHolders(neuve).slice(0, 3).forEach(h => App.draft.locks[h.id] = true);
+    ACT.runShare();
+    eq(neuve.cycle.n, cycleAvant + 1, 'le cycle suivant doit être ouvert');
+    const apres = stats(neuve);
+    eq(apres.sum.EPARGNE, 0, 'le nouveau cycle commence à zéro');
+    const partages = neuve.tx.filter(x => x.type === 'PARTAGE' || x.type === 'SHARE' || /partage/i.test(x.note || ''));
+    must(partages.length > 0, 'aucune écriture de partage dans le journal');
+    const rendu = partages.reduce((a, x) => a + Math.abs(x.amount), 0);
+    must(rendu > 0, "le partage n'a rien distribué");
+    return 'caisse ' + fc(caisseAvant) + ' partagée · cycle n°' + neuve.cycle.n;
+  });
+
+  await t("Bout en bout : le journal du groupe neuf reste vérifiable", async () => {
+    delete _chain[neuve.id];
+    const r = await verifyChain(neuve);
+    must(r.ok, r.reason || 'chaîne rompue');
+    return r.n + ' écritures scellées, de la création au partage';
+  });
+
+
+  /* ---------- Q. ce qui sort sur le papier ----------
+     Un reçu et une carte sortent d'une bande de 58 mm : trente-deux signes par ligne, pas un de plus,
+     et sans accent — une imprimante thermique ne sait pas les faire. Une ligne trop longue se coupe
+     en silence sur l'imprimante : seul un essai l'attrape. */
+  await t("Reçu de réunion : 32 colonnes, sans accent", () => {
+    const a = avecById(A);
+    const der = a.meetings.filter(x => x.status === 'closed').slice(-1)[0];
+    must(der, 'aucune réunion fermée');
+    const texte = receiptText(a, der, activeM(a)[0]);
+    const lignes = String(texte).split('\n');
+    const longues = lignes.filter(l => l.length > RECU_W);
+    must(!longues.length, longues.length + ' ligne(s) dépassent ' + RECU_W + ' signes : ' + (longues[0] || ''));
+    const accents = lignes.filter(l => /[éèêàçùôîïûÉÈÊÀÇÙÔÎÏÛ]/.test(l));
+    must(!accents.length, 'accents sur l’imprimante : ' + (accents[0] || ''));
+    must(lignes.length > 8, 'reçu trop court');
+    return lignes.length + ' lignes, la plus longue ' + Math.max(...lignes.map(l => l.length)) + ' signes';
+  });
+  await t("Reçu d'un membre : 32 colonnes, sans accent", () => {
+    const a = avecById(A);
+    const der = a.meetings.filter(x => x.status === 'closed').slice(-1)[0];
+    /* chaque membre présent reçoit le sien : on les éprouve tous, pas seulement le premier */
+    const here = activeM(a).filter(x => (der.presence || {})[x.id] && (der.presence || {})[x.id] !== 'A');
+    must(here.length, 'aucun membre présent à la dernière réunion');
+    const lignes = here.flatMap(x => String(receiptText(a, der, x)).split('\n'));
+    const longues = lignes.filter(l => l.length > RECU_W);
+    must(!longues.length, longues.length + ' ligne(s) trop longues : ' + (longues[0] || ''));
+    must(!lignes.filter(l => /[éèêàçùôîïûÉÈÊÀÇÙÔÎÏÛ]/.test(l)).length, 'accents sur l’imprimante');
+    return here.length + ' reçus, la plus longue ligne ' + Math.max(...lignes.map(l => l.length)) + ' signes';
+  });
+  await t("Carte de membre sur le terminal : 32 colonnes, sans accent", () => {
+    if (typeof carteTicket !== 'function') return 'sans objet';
+    const a = avecById(A);
+    const faux = activeM(a).map(m => carteTicket(a, m, a.tx.length));
+    const lignes = faux.join('\n').split('\n');
+    const longues = lignes.filter(l => l.length > RECU_W);
+    must(!longues.length, longues.length + ' ligne(s) trop longues : ' + (longues[0] || ''));
+    must(!lignes.filter(l => /[éèêàçùôîïûÉÈÊÀÇÙÔÎÏÛ]/.test(l)).length, 'accents sur l’imprimante');
+    return activeM(a).length + ' cartes, ' + lignes.length + ' lignes';
+  });
+  await t("Cartes sur A4 : dix par feuille, et chacune vérifiable", () => {
+    if (typeof carteHTML !== 'function') return 'sans objet';
+    const a = avecById(A);
+    const seq = a.tx.length;
+    const membres = activeM(a);
+    const html = membres.map(m => carteHTML(a, m, seq)).join('');
+    eq((html.match(/class="carte-m"/g) || []).length, membres.length, 'nombre de cartes');
+    /* chaque carte doit se vérifier sur ce même journal */
+    const mauvaises = membres.filter(m => !carteVerifierTexte(a, carteTexte(a, m, seq)).ok);
+    must(!mauvaises.length, mauvaises.length + ' carte(s) refusée(s) par la vérification');
+    /* une carte fabriquée avec une fausse empreinte doit être refusée */
+    const faux = carteTexte(a, membres[0], seq).replace(/(\d+)-([0-9A-F]{6})/, (x, n) => n + '-ABCDEF');
+    must(!carteVerifierTexte(a, faux).ok, 'une carte falsifiée a été acceptée');
+    return membres.length + ' cartes, ' + Math.ceil(membres.length / 10) + ' feuille(s) A4';
+  });
   return res;
 };

@@ -61,6 +61,13 @@ SCREENS['t.home'] = () => {
   return `<div class="shell">${topbar('Formation des AVEC', '7 modules', isAnim ? '' : backBtn('o.home'), isAnim ? logoutBtn : '')}<main class="main">
     <div><h1>Les 7 modules</h1><p class="muted">À animer avec chaque groupe, dans l'ordre. Chaque module dit quoi faire avec l'assemblée et où le faire dans Akiba.${isAnim ? ' Cochez-les pour chacune de vos AVEC.' : ''}</p></div>
     <div class="list">${MODULES.map(m => { const done = avecs.filter(a => (a.trainings || {})[m.id]).length; return `<button class="li" data-act="go" data-to="t.mod" data-m="${m.id}"><span class="av" style="border-radius:12px;font-family:var(--f-display)">${m.n}</span><span class="grow"><b>${esc(m.t)}</b><span class="small muted">${m.when} · ${m.dur}</span></span><span class="chip ${avecs.length && done === avecs.length ? 'good' : ''}">${done} / ${avecs.length}</span></button>`; }).join('')}</div>
+    <h2>Où en est chaque AVEC</h2>
+    <div class="list">${avecs.map(a => { const n = trainingCount(a), suiv = nextModule(a); return `<button class="li" data-act="go" data-to="n.avec" data-id="${a.id}">
+      <span class="grow"><b>${esc(a.name)}</b>
+        <span class="small muted">${esc(userById(a.animId)?.name || 'sans animateur')} · ${suiv ? 'prochain : module ' + suiv.n : 'formation terminée'}</span>
+        <span class="trainrow" style="margin-top:6px">${MODULES.map(m => `<span class="tstep ${(a.trainings || {})[m.id] ? 'done' : ''}" aria-hidden="true">${m.n}</span>`).join('')}</span></span>
+      ${trainingChip(a)}</button>`; }).join('') || '<div class="li muted">Aucune AVEC active.</div>'}</div>
+    <button class="btn brand block" data-act="go" data-to="f.anim">${ic('users')} Formation des animateurs : comment animer</button>
     <div class="tip">Après les 7 modules, l'animateur continue les visites de suivi : fiche de l'AVEC › <b>Noter une visite</b>.</div>
   </main>${isAnim ? tabbar(N_TABS, 't.home') : ''}</div>`;
 };

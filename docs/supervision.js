@@ -303,7 +303,7 @@ INP.oAnim = el => App.go('o.home', el.value ? { anim: el.value } : {});
 const oAnimListe = (anims, all) => `<div class="list">${anims.map(a => {
   const mine = all.filter(r => r.avec.animId === a.id);
   const al = mine.reduce((s, r) => s + r.h.alerts.length, 0);
-  const sous = [esc(a.zone || ''), mine.length ? mine.length + ' AVEC · ' + mine.reduce((s, r) => s + r.st.activeCount, 0) + ' membres' : 'aucune AVEC'].filter(Boolean).join(' · ');
+  const sous = [a.sex ? (a.sex === 'M' ? 'Homme' : 'Femme') : '', esc(a.zone || ''), mine.length ? mine.length + ' AVEC · ' + mine.reduce((s, r) => s + r.st.activeCount, 0) + ' membres' : 'aucune AVEC'].filter(Boolean).join(' · ');
   return `<button class="li" data-act="go" data-to="o.home" data-anim="${a.id}"><span class="av">${esc(initials(a.name))}</span><span class="grow"><b>${esc(a.name)}</b><span class="small muted">${sous}</span></span>${al ? `<span class="chip warn">${al} alerte${al > 1 ? 's' : ''}</span>` : mine.length ? '<span class="chip good">RAS</span>' : ''}</button>`;
 }).join('')}</div>`;
 const oAnimBoutons = anims => `<button class="btn ghost block" data-act="addAnimSheet">${ic('plus')} Ajouter un animateur</button>
