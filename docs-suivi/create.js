@@ -56,7 +56,7 @@ const C_RENDER = {
       <div class="field"><label for="cgO">Date de création du groupe</label><input id="cgO" type="date" class="input" value="${g.createdOn}"></div>
     </section>
     ${cGpsBloc(g)}
-    <p class="hint">Un groupe AVEC réunit en général 15 à 25 personnes du même village qui se font confiance et habitent près les unes des autres.</p>`;
+    <p class="hint">Un groupe AVEC réunit en général 15 à 35 personnes du même village qui se font confiance et habitent près les unes des autres.</p>`;
   },
   2: d => {
     const r = d.r;
@@ -88,7 +88,7 @@ const C_RENDER = {
         ${d.members.length ? `<div class="list">${d.members.map((m, i) => `<div class="li"><span class="av ${m.sex === 'F' ? 'f' : ''}">${i + 1}</span><span class="grow"><b>${esc(m.name)}</b><span class="small muted">${memberBrief(m)}</span></span>
           <button class="iconbtn" style="color:var(--brand)" data-act="cEditMember" data-id="${m.id}" aria-label="Modifier ${esc(m.name)}">${ic('clip')}</button>
           <button class="iconbtn" style="color:var(--bad)" data-act="cDelMember" data-id="${m.id}" aria-label="Retirer ${esc(m.name)}">${ic('x')}</button></div>`).join('')}</div>`
-          : '<div class="card small muted">Aucun membre pour le moment. Une AVEC compte en général 15 à 25 membres (au moins 6).</div>'}
+          : '<div class="card small muted">Aucun membre pour le moment. Une AVEC compte en général 15 à 35 membres (au moins 6).</div>'}
       </section>
       <details class="g"><summary><span class="gi">${ic('book')}</span>Aller plus vite : coller une liste</summary><div class="gb">
         <p class="small muted">Un membre par ligne, par exemple « Paluku Maliro, H, 0812345678 ». Complétez ensuite les fiches avec le bouton de modification.</p>

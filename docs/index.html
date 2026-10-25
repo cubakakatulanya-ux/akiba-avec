@@ -789,6 +789,10 @@ h2,h3{font-weight:600;letter-spacing:-.005em}
 .instal-ligne>span .small{display:block;opacity:.75;margin-top:1px}
 .instal-ligne:hover,.instal-ligne:focus-visible{color:var(--brand)}
 .instal-ligne:hover>svg,.instal-ligne:focus-visible>svg{opacity:1}
+/* case à cocher d'une liste : assez grande pour le pouce, visible d'un coup d'oeil */
+.chk{width:24px;height:24px;flex:none;border:1.6px solid var(--line);border-radius:7px;display:grid;place-items:center;color:var(--brand-ink);background:var(--surface)}
+.chk.on{background:var(--brand);border-color:var(--brand)}
+.chk svg{width:16px;height:16px}
 /* la démonstration, repliée : une ligne sur la page de connexion, le détail au toucher */
 details.g.demo{background:none;box-shadow:none;border:1.5px dashed var(--line);padding:0}
 details.g.demo summary{font-size:var(--t-md);font-weight:600;padding:11px 14px}
@@ -799,7 +803,7 @@ details.g.demo>:not(summary)+*{margin-top:8px}
 </style>
 <style>html,body{margin:0}</style>
 </head><body>
-<script>window.KITABU_PWA = true; window.KITABU_VERSION = 'akiba-202610250724'; window.AKIBA_CIBLE = 'avec';</script>
+<script>window.KITABU_PWA = true; window.KITABU_VERSION = 'akiba-202610250749'; window.AKIBA_CIBLE = 'avec';</script>
 
 <div id="app"></div>
 <script src="core.js"></script>
@@ -823,6 +827,7 @@ details.g.demo>:not(summary)+*{margin-top:8px}
 <script src="export.js"></script>
 <script src="externe.js"></script>
 <script src="impact.js"></script>
+<script src="imf-portefeuille.js"></script>
 <script src="recu.js"></script>
 <script src="cartes.js"></script>
 <script src="boot.js"></script>

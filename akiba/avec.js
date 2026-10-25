@@ -138,6 +138,21 @@ const STEPS = [
   { id: 'presence', l: 'Présences' }, { id: 'ouverture', l: 'Comptage' }, { id: 'social', l: 'Sociale' }, { id: 'epargne', l: 'Épargne' },
   { id: 'remb', l: 'Rembours.' }, { id: 'credit', l: 'Crédits' }, { id: 'amende', l: 'Amendes' }, { id: 'cloture', l: 'Clôture' }
 ];
+
+/* Ce que la voix dit à chaque étape de la réunion. Écrit pour être entendu : des phrases courtes,
+   l'ordre des gestes, et ce qu'il ne faut pas oublier. Le secrétaire peut poser le téléphone,
+   écouter, et faire — sans lire. Ce texte n'est jamais affiché : il n'existe que pour la voix. */
+const VOIX_ETAPE = {
+  presence: "Étape 1 sur 8 : les présences. Appelez chaque membre à haute voix. Pour chacun, touchez son nom : présent, en retard, ou absent. Un retard et une absence créent une amende, à l'étape des amendes. Quand tout le monde est appelé, touchez Suivant.",
+  ouverture: "Étape 2 sur 8 : le comptage de la caisse. Ouvrez la caisse devant tout le monde. Comptez l'argent à haute voix, billet par billet. Écrivez le montant compté. Akiba le compare à ce que dit le cahier : s'il manque quelque chose, il le dit tout de suite, devant l'assemblée.",
+  social: "Étape 3 sur 8 : la caisse sociale. Chaque membre présent verse sa cotisation. Touchez les noms de ceux qui ont payé. Si quelqu'un demande une aide, c'est ici : dites pourquoi, et l'assemblée décide avant d'enregistrer.",
+  epargne: "Étape 4 sur 8 : l'épargne. Appelez les membres un par un. Pour chacun, touchez son nom, puis le nombre de parts qu'il achète aujourd'hui. L'argent entre dans la caisse au moment où vous enregistrez. Personne n'achète plus de parts que le règlement ne le permet.",
+  remb: "Étape 5 sur 8 : les remboursements. Appelez ceux qui doivent rembourser. Pour chacun, touchez son nom et le montant qu'il apporte. Akiba calcule tout seul ce qui reste à payer et les intérêts. Un retard ajoute une pénalité : elle est proposée, l'assemblée décide.",
+  credit: "Étape 6 sur 8 : les crédits. Chaque demande se dit à haute voix devant l'assemblée. Touchez le nom du membre, le montant et la durée. Akiba refuse ce que le règlement interdit et dit pourquoi. L'argent sort de la caisse devant tout le monde.",
+  amende: "Étape 7 sur 8 : les amendes. Akiba propose les amendes de retard et d'absence relevées tout à l'heure. Ajoutez celles que l'assemblée décide. Chaque amende est dite à haute voix avec sa raison, et payée maintenant ou notée comme due.",
+  cloture: "Étape 8 sur 8 : la clôture. Recomptez l'argent dans la caisse et écrivez ce que vous trouvez. Akiba compare avec ce qu'il attend. Puis les trois porte-clés tapent leur code secret, l'un après l'autre : la réunion est fermée et scellée. Après cela, plus personne ne peut rien changer. Remettez les reçus aux membres.",
+};
+const voixEtape = id => VOIX_ETAPE[id] ? `<p class="direaudio no-tr" hidden>${esc(VOIX_ETAPE[id])}</p>` : '';
 function draft(key, init) { if (App.draftKey !== key) { App.draftKey = key; App.draft = init(); } return App.draft; }
 const meetTx = (avec, m, types) => { const an = annulledSet(avec); return avec.tx.filter(t => t.meetingId === m.id && types.includes(t.type)).map(t => Object.assign({ annulled: an.has(t.id) }, t)); };
 function txRows(avec, list, empty) {
@@ -172,7 +187,7 @@ SCREENS['a.meet'] = p => {
   const step = p.step != null && p.step !== '' ? Math.min(+p.step, m.stepDone + 1) : Math.min(m.stepDone + 1, 7);
   const bar = `<div class="steps" role="list">${STEPS.map((s, i) => `<button class="stp ${i === step ? 'cur' : i <= m.stepDone ? 'done' : ''}" data-act="go" data-to="a.meet" data-step="${i}" ${i > m.stepDone + 1 ? 'disabled' : ''}><i>${i <= m.stepDone && i !== step ? '✓' : i + 1}</i>${s.l}</button>`).join('')}</div>`;
   return `<div class="shell">${topbar(`Réunion n°${m.n}`, `${fdate(m.date)} · étape ${step + 1} sur 8`, backBtn('a.home'), syncPill(avec))}
-    <main class="main">${bar}<div class="row">${speakBtn('step' + step, '.main h2, .main > div > p.muted', 'Écouter cette étape', I18N.cur())}</div>${STEP[STEPS[step].id](avec, m, st, me, step)}</main></div>`;
+    <main class="main">${bar}<div class="row">${speakBtn('step' + step, '.main .direaudio, .main h2, .main > div > p.muted, .main .hint', 'Écouter cette étape', I18N.cur())}</div>${voixEtape(STEPS[step].id)}${STEP[STEPS[step].id](avec, m, st, me, step)}</main></div>`;
 };
 ACT.stepDone = d => {
   const { avec } = cur(); const m = openMeeting(avec);

@@ -56,6 +56,7 @@ ACT.outilsSheet = () => {
       ${row('go', 'guide', 'book', 'Guide d’utilisation', 'Tout sur l’AVEC et l’application')}
       ${row('go', 'tr.edit', 'globe', 'Langues', 'Relire et corriger les traductions', 'data-lang="ln"')}
       ${row('themeSheet', '', 'eye', 'Apparence', THEMES[themeChoisi()])}
+      ${row('voixSheet', '', 'volume', 'Voix de lecture', 'Choisir la voix qui lit à haute voix')}
       ${row('userPinSheet', '', 'key', 'Mon code', 'Changer mon code secret')}
       ${row('go', 'dev.backup', 'shield', 'Installer et sauvegarder', 'Icône sur l’écran d’accueil, sauvegarde chiffrée')}
     </div>
@@ -355,6 +356,7 @@ SCREENS['o.home'] = p => {
         ${filtre}
         <span class="sep" aria-hidden="true"></span>
         <button class="btn sm brand" data-act="go" data-to="o.impact">${ic('chart')} Impact</button>
+        <button class="btn sm ghost" data-act="go" data-to="o.imf">${ic('building')} IMF</button>
         <button class="btn sm ghost" data-act="exportSheet" data-anim="${esc(p.anim || '')}">${ic('chart')} Excel</button>
         <button class="btn sm primary" data-act="go" data-to="c.avec" data-from="org">${ic('plus')} Nouvelle AVEC</button>
         <button class="btn sm ghost" data-act="outilsSheet" aria-label="Autres outils">${ic('more')}</button>

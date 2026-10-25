@@ -87,7 +87,7 @@ function reviewChecks(avec) {
   const women = m.filter(x => x.sex === 'F').length;
   const t = m.find(x => x.role === 'tresorier');
   const phones = m.filter(x => x.phone && x.phone !== '—').length;
-  add(m.length >= 10 && m.length <= 30, `${m.length} membres (conseillé : 10 à 30)`);
+  add(m.length >= 10 && m.length <= 35, `${m.length} membres (conseillé : 10 à 35)`);
   add(women * 2 >= m.length, `${women} femmes sur ${m.length}`);
   add(['president', 'secretaire', 'tresorier'].every(r => m.some(x => x.role === r)), 'Bureau complet : président, secrétaire, trésorier');
   add(m.filter(x => x.key).length === 3 && t && !t.key, '3 porte-clés, et le trésorier ne garde pas de clé');

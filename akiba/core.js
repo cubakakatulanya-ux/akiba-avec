@@ -59,6 +59,23 @@ const fc = n => (n < 0 ? '−' : '') + grp(Math.abs(n)) + ' FC';
 const fck = n => Math.abs(n) >= 1e6 ? (n / 1e6).toFixed(1).replace('.', ',') + ' M FC' : fc(n);
 const pct = x => Math.round(x * 100) + ' %';
 const fdate = ts => new Date(ts).toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' });
+/* Une échéance ne doit jamais tomber un jour où le groupe ne se réunit pas : personne ne peut
+   rembourser ce jour-là, et le crédit passerait « en retard » un jour sans réunion. On reporte
+   donc l'échéance au premier jour de réunion qui suit — jamais avant, pour ne pénaliser personne.
+   Le rythme de quinzaine se cale sur la dernière réunion tenue, qui est le rythme réel du groupe. */
+const JOURS_IDX = { Dimanche: 0, Lundi: 1, Mardi: 2, Mercredi: 3, Jeudi: 4, Vendredi: 5, Samedi: 6 };
+function jourDeReunion(avec, ts) {
+  const idx = JOURS_IDX[(avec.settings || {}).meetingDay];
+  if (idx == null || !ts) return ts;
+  const d = new Date(ts); d.setHours(12, 0, 0, 0);
+  d.setDate(d.getDate() + ((idx - d.getDay() + 7) % 7));
+  if (((avec.settings || {}).frequency || 7) === 14) {
+    const refs = (avec.meetings || []).filter(m => m.date);
+    const ref = new Date(refs.length ? refs[refs.length - 1].date : avec.cycle.start); ref.setHours(12, 0, 0, 0);
+    if (Math.abs(Math.round((d - ref) / (7 * DAY))) % 2 === 1) d.setDate(d.getDate() + 7);
+  }
+  return d.getTime();
+}
 const fdt = ts => new Date(ts).toLocaleString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
 const daysAgo = ts => Math.floor((Date.now() - ts) / DAY);
 const ago = ts => { const d = daysAgo(ts); return d <= 0 ? "aujourd'hui" : d === 1 ? 'hier' : `il y a ${d} jours`; };
@@ -186,7 +203,7 @@ function stats(avec, opt = {}) {
     if (rep[t.type]) { rep[t.type][t.ref] += t.amount; continue; }
     sum[t.type] += t.amount;
     // crédit extérieur (IMF, banque…) : il renforce la caisse de crédit, mais reste une dette du groupe
-    if (t.type === 'EXT_IN') exts[t.id] = { id: t.id, lender: t.note || '', ag: t.ref || '', principal: t.amount, rate: t.rate || 0, months: t.months || 1, ts: t.ts, due: Math.round(t.amount * (1 + (t.rate || 0) / 100 * (t.months || 1))), paid: 0, fees: 0, feeList: [], guar: 0, dueDate: t.ts + (t.months || 1) * 30 * DAY };
+    if (t.type === 'EXT_IN') exts[t.id] = { id: t.id, lender: t.note || '', ag: t.ref || '', principal: t.amount, rate: t.rate || 0, months: t.months || 1, ts: t.ts, due: Math.round(t.amount * (1 + (t.rate || 0) / 100 * (t.months || 1))), paid: 0, fees: 0, feeList: [], guar: 0, dueDate: jourDeReunion(avec, t.ts + (t.months || 1) * 30 * DAY) };
     if (t.type === 'EXT_FEE' && exts[t.ref]) { exts[t.ref].fees += t.amount; exts[t.ref].feeList.push(t); }
     if (t.type === 'EXT_REPAY' && exts[t.ref]) exts[t.ref].paid += t.amount;
     if (t.type === 'EXT_GUAR' && exts[t.ref]) exts[t.ref].guar += t.amount;
@@ -195,7 +212,7 @@ function stats(avec, opt = {}) {
     if (t.type === 'SOCIAL' && m) m.social += t.amount;
     if (t.type === 'AMENDE' && m) { m.fines += t.amount; if (t.ref === 'DETTE') m.fineDebt -= t.amount; }
     if (t.type === 'DETTE' && m) m.fineDebt += t.amount;
-    if (t.type === 'CREDIT') loans[t.id] = { id: t.id, memberId: t.memberId, principal: t.amount, rate: t.rate, months: t.months, ts: t.ts, due: Math.round(t.amount * (1 + t.rate / 100 * t.months)), paid: 0, dueDate: t.ts + t.months * 28 * DAY, pays: [] };
+    if (t.type === 'CREDIT') loans[t.id] = { id: t.id, memberId: t.memberId, principal: t.amount, rate: t.rate, months: t.months, ts: t.ts, due: Math.round(t.amount * (1 + t.rate / 100 * t.months)), paid: 0, dueDate: jourDeReunion(avec, t.ts + t.months * 28 * DAY), pays: [] };
     if (t.type === 'REMB' && loans[t.ref]) { loans[t.ref].paid += t.amount; loans[t.ref].pays.push(t); }
   }
   const now = Date.now();
@@ -298,6 +315,17 @@ function migrate(d) {
     if (!a.trainings || typeof a.trainings !== 'object') a.trainings = {};
     a.status = a.status || 'active';
     a.settings = Object.assign({ partValue: 1000, maxParts: 5, socialFee: 500, rate: 10, maxMult: 3, maxMonths: 3, fineAbsent: 500, fineLate: 200, cycleMonths: 12, frequency: 7 }, a.settings || {});
+    /* Le jour de réunion n'a pas toujours été demandé. On le déduit des réunions déjà tenues —
+       c'est le rythme réel du groupe — sinon du début du cycle. Sans lui, une échéance ne peut
+       pas être reportée au bon jour. */
+    if (!a.settings.meetingDay) {
+      const JOURS_FR = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
+      const tenues = (a.meetings || []).filter(m => m.date);
+      const compte = {};
+      tenues.forEach(m => { const j = new Date(m.date).getDay(); compte[j] = (compte[j] || 0) + 1; });
+      const plus = Object.keys(compte).sort((x, y) => compte[y] - compte[x])[0];
+      a.settings.meetingDay = JOURS_FR[plus != null ? +plus : new Date(a.cycle && a.cycle.start ? a.cycle.start : Date.now()).getDay()];
+    }
     if (a.settings.penaltyRate == null) a.settings.penaltyRate = a.settings.rate;   // pénalité de retard : par défaut, le taux du crédit
     a.cycle = a.cycle || { n: 1, start: a.createdAt || Date.now() };
     if (!a.cycle.end) a.cycle.end = a.cycle.start + a.settings.cycleMonths * 30 * DAY;
@@ -343,7 +371,8 @@ const DB = {
   save() {
     try { localStorage.setItem(STORE, JSON.stringify(K.data)); localStorage.setItem(STORE + '.s', JSON.stringify(K.session)); } catch (e) { /* stockage indisponible : l'app continue en mémoire */ }
   },
-  reset() { K.data = seed(); K.session = null; DB.save(); }
+  /* la graine passe par migrate() comme toute donnée chargée : mêmes valeurs par défaut, mêmes règles */
+  reset() { K.data = seed(); migrate(K.data); K.session = null; DB.save(); }
 };
 const avecById = id => K.data.avecs.find(a => a.id === id);
 const userById = id => K.data.users.find(u => u.id === id);

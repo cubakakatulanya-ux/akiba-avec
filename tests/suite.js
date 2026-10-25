@@ -395,5 +395,22 @@ window.__akibaTests = async function () {
     } finally { if (avant === null) localStorage.removeItem('kitabu.installe'); else localStorage.setItem('kitabu.installe', avant); }
   });
 
+  /* ---------- O. une échéance tombe toujours un jour de réunion ---------- */
+  await t("L'échéance d'un crédit tombe un jour de réunion", () => {
+    if (typeof jourDeReunion !== 'function') return 'sans objet';
+    const a = avecById('avec1');
+    const JOURS = { Dimanche: 0, Lundi: 1, Mardi: 2, Mercredi: 3, Jeudi: 4, Vendredi: 5, Samedi: 6 };
+    const idx = JOURS[a.settings.meetingDay];
+    must(idx != null, 'jour de réunion inconnu : ' + a.settings.meetingDay);
+    const st = stats(a);
+    const tous = st.loanList.concat(st.extList);
+    must(tous.length > 0, 'aucun crédit pour éprouver la règle');
+    const faux = tous.filter(l => new Date(l.dueDate).getDay() !== idx);
+    must(!faux.length, faux.length + ' échéance(s) hors jour de réunion');
+    /* et jamais avancée : on reporte, on n'anticipe pas */
+    const brut = Date.now();
+    must(jourDeReunion(a, brut) >= brut - 12 * 3600e3, 'une échéance ne doit jamais être avancée');
+    return tous.length + ' crédits, tous au ' + a.settings.meetingDay.toLowerCase();
+  });
   return res;
 };

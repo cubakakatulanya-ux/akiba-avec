@@ -52,6 +52,7 @@ module.exports = `(() => {
     ['n.avec', 'suivi', sAnim, { id: 'avec1' }],
     ['o.home', 'suivi', sOrg, {}],
     ['o.impact', 'suivi', sOrg, {}],
+    ['o.imf', 'suivi', sOrg, {}],
     ['o.review', 'suivi', sOrg, { id: 'avec1' }],
   ];
 })()`;
