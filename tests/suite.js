@@ -491,7 +491,17 @@ window.__akibaTests = async function () {
     App.go('a.cycles');
     App.draft = { closeCount: String(st.cash), closeNote: '', locks: {} };
     keyHolders(neuve).slice(0, 3).forEach(h => App.draft.locks[h.id] = true);
+    /* le vrai parcours : une confirmation, puis le code du président — rien ne part tout seul */
     ACT.runShare();
+    must(App.sheet && /ne se reprend pas/.test(App.sheet), 'le partage doit demander confirmation');
+    eq(neuve.cycle.n, cycleAvant, 'rien ne doit être écrit avant la confirmation');
+    ACT.shareGo();
+    must(App.pin, 'le partage doit demander le code du président');
+    const chef = neuve.members.find(x => x.role === 'president');
+    eq(App.pin.person.id, chef.id, 'c’est le président qui confirme');
+    ACT.pinKey({ k: '0' }); ACT.pinKey({ k: '0' }); ACT.pinKey({ k: '0' }); ACT.pinKey({ k: '0' });
+    eq(neuve.cycle.n, cycleAvant, 'un code faux ne doit rien partager');
+    String(chef.pin).split('').forEach(k => ACT.pinKey({ k }));
     eq(neuve.cycle.n, cycleAvant + 1, 'le cycle suivant doit être ouvert');
     const apres = stats(neuve);
     eq(apres.sum.EPARGNE, 0, 'le nouveau cycle commence à zéro');

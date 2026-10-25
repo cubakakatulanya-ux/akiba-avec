@@ -131,16 +131,63 @@ SCREENS['a.shareRun'] = () => {
   </main></div>`;
 };
 
+/* Les contrôles qui empêchent un partage, rassemblés : ils sont posés deux fois,
+   avant de demander confirmation, puis juste avant d'écrire — entre les deux, une
+   réunion peut s'être ouverte sur un autre téléphone du groupe. */
+function sharePret(avec, st) {
+  if (openMeeting(avec)) return 'Fermez d\'abord la réunion en cours';
+  const plan = sharePlan(avec, st);
+  if (plan.blocked.length) return 'Des membres doivent rembourser avant le partage';
+  if (plan.extShort) return 'La caisse de crédit ne suffit pas pour rembourser le prêteur';
+  if (!closeReady(avec)) return 'Il manque le comptage ou une clé';
+  const dr = App.draft || {};
+  if (parseAmt(dr.closeCount) !== st.cash && !(dr.closeNote || '').trim()) return 'Expliquez l\'écart : c\'est obligatoire';
+  return '';
+}
+
+/* Le partage est l'opération la plus grave de l'application : elle rend une année d'épargne à
+   douze ou trente familles, ferme le cycle, et ne se reprend pas. Le comptage et les trois clés
+   disent que la caisse est juste ; ils ne disent pas que l'assemblée veut partager aujourd'hui.
+   On le demande donc une dernière fois — montant, nombre de membres, ce qui sera scellé — puis
+   le président tape son code. */
 ACT.runShare = () => {
+  const { avec, st } = cur();
+  const faute = sharePret(avec, st);
+  if (faute) return App.toast(faute);
+  const plan = sharePlan(avec, st);
+  const recoivent = plan.rows.filter(r => r.net > 0);
+  const total = recoivent.reduce((a, r) => a + r.net, 0);
+  const retenus = plan.rows.filter(r => r.net < r.gross);
+  const duPreteur = st.extActive.reduce((a, e) => a + e.remaining, 0);
+  App.openSheet(`<h2>Distribuer et fermer le cycle ${avec.cycle.n} ?</h2>
+    <div class="alert warn">${icSpan('alert')}<div><b>Cette opération ne se reprend pas</b>
+      <span class="small">Le cycle ${avec.cycle.n} sera fermé et scellé. Plus personne ne pourra revenir en arrière,
+        ni corriger une part, ni rendre un crédit oublié.</span></div></div>
+    <div class="receipt stack" style="gap:4px">
+      <div class="row between"><span class="muted">À distribuer maintenant</span><b class="num">${fc(total)}</b></div>
+      <div class="row between small"><span class="muted">Membres qui reçoivent</span><b>${recoivent.length}</b></div>
+      ${retenus.length ? `<div class="row between small"><span class="muted">Dont retenues sur le partage</span><b>${retenus.length} membre${retenus.length > 1 ? 's' : ''}</b></div>` : ''}
+      ${duPreteur ? `<div class="row between small"><span class="muted">Prêteur extérieur soldé d'abord</span><b class="num">${fc(duPreteur)}</b></div>` : ''}
+      <div class="row between small"><span class="muted">Gardé pour le cycle suivant</span><b class="num">${fc(st.socialFund)}</b></div>
+    </div>
+    <p class="hint">Comptez une dernière fois l'argent devant l'assemblée avant de continuer.</p>
+    <button class="btn danger block xl" data-act="shareGo">${ic('split')} Oui, distribuer ${fc(total)}</button>
+    <button class="btn ghost block" data-act="closeSheet">Pas encore</button>`);
+};
+ACT.shareGo = () => {
   const { avec, me, st } = cur();
-  if (openMeeting(avec)) return App.toast('Fermez d\'abord la réunion en cours');
+  const faute = sharePret(avec, st);
+  if (faute) { App.closeSheet(); return App.toast(faute); }
+  const chef = avec.members.find(x => x.role === 'president' && !x.left) || me;
+  askPin(chef, 'Distribuer et fermer le cycle', shareExecuter);
+};
+function shareExecuter() {
+  const { avec, me, st } = cur();
+  const faute = sharePret(avec, st);
+  if (faute) return App.toast(faute);
   const plan = sharePlan(avec, st);
   const dr = App.draft;
-  if (plan.blocked.length) return App.toast('Des membres doivent rembourser avant le partage');
-  if (plan.extShort) return App.toast('La caisse de crédit ne suffit pas pour rembourser le prêteur');
-  if (!closeReady(avec)) return App.toast('Il manque le comptage ou une clé');
   const v = parseAmt(dr.closeCount);
-  if (v !== st.cash && !(dr.closeNote || '').trim()) return App.toast('Expliquez l\'écart : c\'est obligatoire');
   const old = avec.cycle, now = Date.now(), by = me.id, next = old.n + 1;
   const m = {
     id: avec.id + '-p' + old.n + '-' + uid(), n: avec.meetings.reduce((a, x) => Math.max(a, x.n), 0) + 1, cycle: old.n, kind: 'partage',
@@ -171,7 +218,7 @@ ACT.runShare = () => {
   DB.save();
   if (K.data.net.online) syncAvec(avec);
   App.go('a.newCycle');
-};
+}
 
 /* ---------- nouveau cycle ---------- */
 const pickSel = (id, label, opts, v) => `<div class="field"><label for="${id}">${label}</label><select id="${id}" class="input">${opts.map(([val, l]) => `<option value="${val}" ${String(v) === String(val) ? 'selected' : ''}>${l}</option>`).join('')}</select></div>`;
