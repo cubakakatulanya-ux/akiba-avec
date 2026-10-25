@@ -114,6 +114,8 @@ function accueilSuivi() {
 SCREENS.login = () => {
   if (estSuivi()) return accueilSuivi();
   const canCreate = !(K.data.mode === 'prod' && K.data.orgs.length);
+  /* l'AVEC mise en avant : c'est elle qui décide si l'accueil explique ou s'il informe */
+  const enAvant = typeof avecEnAvant === 'function' ? avecEnAvant() : null;
   /* La démonstration est un détail de découverte, pas le sujet de l'écran : une ligne repliée,
      qui ne vient pas disputer la place au seul bouton qui compte. */
   const demo = K.data.mode === 'prod' ? ''
@@ -123,18 +125,22 @@ SCREENS.login = () => {
         <button class="linkbtn" data-act="resetDemo">Remettre la démo à zéro</button>
       </details>`;
   return `<div class="shell home">
-  <header class="hero tight">
+  <header class="hero tight${enAvant ? ' connu' : ''}">
     <button class="langbtn pastille2" data-act="themeSheet" aria-label="Choisir l’apparence">${ic("eye")}</button><button class="langbtn" data-act="langSheet" aria-label="Choisir la langue">${ic('globe')}<span class="no-tr">${esc(I18N.name())}</span></button>
     <svg class="ledger" viewBox="0 0 200 200" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><rect x="30" y="20" width="140" height="170" rx="10"/>${[55, 80, 105, 130, 155].map(y => `<path d="M50 ${y}h100"/>`).join('')}<path d="M80 20v170"/></svg>
     <img class="hubmark no-tr" src="ubora-hub.png" width="512" height="512" alt="Logo Ubora" decoding="async">
     <div class="label" style="color:inherit;opacity:.85">Épargne et crédit villageois</div>
     <h1>Akiba</h1>
-    <p>Le cahier de l'AVEC dans le téléphone, même sans réseau.</p>
+    ${enAvant ? '' : '<p>Le cahier de l\'AVEC dans le téléphone, même sans réseau.</p>'}
   </header>
   <main class="main login">
     ${licenceBanner()}
     ${avecCard()}
-    ${ticker([{ icon: 'shield', label: "Journal scellé, impossible à modifier" }, { icon: 'sync', label: "Tout fonctionne sans réseau" }, { icon: 'calendar', label: "La réunion guidée en 8 étapes" }, { icon: 'coins', label: "Épargne, crédits, amendes, partage" }, { icon: 'users', label: "Le carnet de chaque membre" }, { icon: 'globe', label: "Français, lingala, swahili, tshiluba, kikongo" }, { icon: 'chart', label: "Export Excel pour l'organisation" }], { aria: "Ce que fait Akiba" })}
+    <!-- Un groupe qui ouvre Akiba trois fois par semaine n'a pas besoin qu'on lui redise ce que fait
+         l'application : il veut savoir ce qui se passe maintenant. La promesse ne reste donc affichée
+         que sur un téléphone encore vierge. Et aucun montant ici : l'écran s'affiche avant tout code. -->
+    ${enAvant ? etatBloc(enAvant) + envoiBloc(enAvant)
+      : ticker([{ icon: 'shield', label: "Journal scellé, impossible à modifier" }, { icon: 'sync', label: "Tout fonctionne sans réseau" }, { icon: 'calendar', label: "La réunion guidée en 8 étapes" }, { icon: 'coins', label: "Épargne, crédits, amendes, partage" }, { icon: 'users', label: "Le carnet de chaque membre" }, { icon: 'globe', label: "Français, lingala, swahili, tshiluba, kikongo" }, { icon: 'chart', label: "Export Excel pour l'organisation" }], { aria: "Ce que fait Akiba" })}
     <!-- les gestes secondaires : des liens sobres, comme sur Akiba Suivi. Une seule porte visible. -->
     <nav class="liens" aria-label="Autres gestes">
       ${canCreate ? `<button data-act="createAvec">${ic('plus')}<span>Créer une AVEC</span></button>` : ''}

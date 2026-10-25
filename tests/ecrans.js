@@ -23,6 +23,7 @@ module.exports = `(() => {
     ['tr.edit', '', sNon, { lang: 'ln' }],
     ['lic.gate', '', sNon, {}],
     ['c.avec', '', sNon, { from: 'login' }],
+    ['c.avec', '', () => { sNon(); App.cdraft = null; }, { from: 'login' }],
 
     ['l.avec', 'avec', sNon, {}],
     ['l.member', 'avec', sNon, { id: 'avec1' }],

@@ -11,7 +11,7 @@ function cDraft(p) {
   const from = p.from || (K.session ? (K.session.kind === 'org' ? 'org' : 'anim') : 'login');
   if (!App.cdraft || App.cdraft.done || (p.from && App.cdraft.from !== p.from)) {
     App.cdraft = {
-      from, step: 1, mode: 'new', names: '', members: [], roles: {}, nextId: 0, editing: null,
+      from, step: 1, prep: true, mode: 'new', names: '', members: [], roles: {}, nextId: 0, editing: null,
       g: { name: '', province: '', territoire: '', entite: '', secteur: '', groupement: '', village: '', animId: '', meetingDay: 'Samedi', frequency: 7, createdOn: isoDay(Date.now()) },
       r: { partValue: 1000, maxParts: 5, socialFee: 500, rate: 10, maxMult: 3, maxMonths: 3, fineAbsent: 500, fineLate: 200, penaltyRate: 10, cycleMonths: 12, cycleStart: isoDay(Date.now()) },
       rep: { social: '', credit: '', rows: {} }
@@ -56,6 +56,7 @@ const C_RENDER = {
       <div class="field"><label for="cgO">Date de création du groupe</label><input id="cgO" type="date" class="input" value="${g.createdOn}"></div>
     </section>
     ${cGpsBloc(g)}
+    <p class="hint" style="text-align:center"><button class="linkbtn" data-act="cPrepVoir">Revoir ce qu’il faut pour finir sans s’interrompre</button></p>
     <p class="hint">Un groupe AVEC réunit en général 15 à 35 personnes du même village qui se font confiance et habitent près les unes des autres.</p>`;
   },
   2: d => {
@@ -163,7 +164,7 @@ function cGpsBloc(g) {
   if (typeof gpsDispo !== 'function' || !gpsDispo()) return '';
   const p = g.gps;
   return `<section class="card stack"><div class="row between">
-      <div><b>Point GPS du groupe</b><p class="hint" style="margin:2px 0 0">${p ? 'Pris ici même' + (p.acc ? ' · ' + gpsPrecision(p) : '') : 'Facultatif. Dehors, sans réseau, en une minute.'}</p></div>
+      <div><b>Point GPS du groupe</b><p class="hint" style="margin:2px 0 0">${p ? 'Pris ici même' + (p.acc ? ' · ' + gpsPrecision(p) : '') : 'Facultatif — à prendre <b>sur le lieu de réunion</b>, dehors, à ciel ouvert. Sans réseau.'}</p></div>
       ${p ? `<span class="chip good">${ic('check')} Pris</span>` : '<span class="chip">Facultatif</span>'}</div>
     ${p ? `<p class="mono" style="font-size:1.05rem;margin:4px 0 0">${gpsTexte(p)}</p>` : ''}
     <button class="btn ${p ? 'ghost' : 'brand'} block" data-act="cGps">${ic('map')} ${p ? 'Reprendre le point' : 'Prendre le point maintenant'}</button>
@@ -224,10 +225,38 @@ function validateStep(step, d) {
   return '';
 }
 
+/* Créer une AVEC se fait en une seule fois, avec l'assemblée assise devant vous. S'interrompre
+   au milieu parce qu'il manque la liste des membres, ou parce qu'il faut sortir prendre le point
+   GPS, c'est renvoyer tout le monde chez soi. Cet écran dit, avant de commencer, ce qu'il faut
+   avoir sous la main — et où il faut se tenir. Il ne s'affiche qu'une fois par création. */
+const C_PREP = [
+  ['users', 'L\'assemblée réunie', 'De 15 à 35 personnes du même village, venues librement. Elles votent les règles et élisent le bureau : rien ne se décide sans elles.'],
+  ['clip', 'La liste des membres', 'Nom complet et sexe de chacun — c\'est tout ce qui est obligatoire. L\'âge, le téléphone et l\'activité se complètent plus tard.'],
+  ['shield', 'Le bureau et les trois clés', 'Président, secrétaire, trésorier, deux compteurs, et trois porte-clés. Le trésorier garde la caisse : il ne peut pas garder de clé.'],
+  ['coins', 'Les règles à voter', 'Valeur d\'une part, parts par réunion, caisse sociale, intérêt du crédit, crédit maximum, amendes, durée du cycle. Akiba propose, l\'assemblée décide.'],
+  ['calendar', 'Le jour et le rythme', 'Le jour de réunion et la date de début du cycle. Le jour choisi sert aussi aux échéances des crédits.'],
+  ['map', 'Être sur le lieu de réunion', 'Le point GPS se prend <b>dehors, à ciel ouvert, là où le groupe se réunit</b>. Comptez jusqu\'à une minute et demie. Sans réseau, c\'est le satellite qui répond. Si vous n\'y êtes pas, sautez-le : il se reprend plus tard dans <b>Plus › Lieu du groupe</b>.'],
+];
+function cPrepHtml(d) {
+  return `<div><span class="label">Avant de commencer</span><h1>Ce qu'il faut avoir sous la main</h1>
+    <p class="muted">La création se fait d'un seul trait, avec l'assemblée. Comptez environ trois quarts d'heure.
+      <b>Aucun réseau n'est nécessaire.</b></p></div>
+    <div class="list">${C_PREP.map(([ic0, t, s]) => `<div class="li"><span class="xl-ic">${ic(ic0)}</span>
+      <span class="grow"><b>${t}</b><span class="small muted">${s}</span></span></div>`).join('')}</div>
+    <div class="tip">À la fin, Akiba affiche <b>un code secret par membre, une seule fois</b>. Prévoyez de quoi les recopier
+      sur de petits papiers, et donnez-les en main propre.</div>`;
+}
+ACT.cPrepOk = () => { App.cdraft.prep = false; App.go('c.avec'); };
+ACT.cPrepVoir = () => { App.cdraft.prep = true; App.go('c.avec'); };
+
 SCREENS['c.avec'] = p => {
   const d = cDraft(p);
   const u = K.session && K.session.userId ? me_user() : null;
   const back = d.from === 'org' ? 'o.home' : d.from === 'anim' ? 'n.home' : 'login';
+  if (d.prep) return `<div class="shell">${topbar('Nouvelle AVEC', 'Préparation', `<button class="iconbtn" data-act="cQuit" data-to="${back}" aria-label="Quitter">${ic('x')}</button>`)}<main class="main">
+    ${cPrepHtml(d)}
+    <div class="sticky-foot"><button class="btn primary block xl" data-act="cPrepOk">${ic('check')} J'ai tout, commencer</button></div>
+  </main>${d.from === 'anim' ? tabbar(N_TABS, 'c.avec') : ''}</div>`;
   const step = d.step;
   const left = step > 1 ? `<button class="iconbtn" data-act="cPrev" aria-label="Étape précédente">${ic('back')}</button>` : `<button class="iconbtn" data-act="cQuit" data-to="${back}" aria-label="Quitter">${ic('x')}</button>`;
   const bar = `<div class="steps">${C_STEPS.map((s, i) => `<span class="stp ${i + 1 === step ? 'cur' : i + 1 < step ? 'done' : ''}"><i>${i + 1 < step ? '✓' : i + 1}</i>${s}</span>`).join('')}</div>`;
