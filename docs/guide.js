@@ -72,6 +72,9 @@ const GUIDE = [
     <p>L'épargne se fait en <b>parts</b>. Toutes les parts ont la même valeur pendant le cycle (par exemple 1 000 FC). À chaque réunion, un membre achète de 1 à 5 parts.</p>
     <p>Le carnet du membre montre ses parts à chaque réunion, son épargne totale et <b>la valeur de ses parts si le partage avait lieu aujourd'hui</b>. Cette valeur augmente grâce aux intérêts et aux amendes.</p>` },
   { id: 'credit', icon: 'hand', t: 'Les crédits', b: `
+    <div class="tip">L'<b>échéance</b> d'un crédit tombe toujours un <b>jour de réunion</b> : personne ne peut rembourser
+      un mardi si le groupe se réunit le samedi. Si le calcul tombe entre deux réunions, Akiba reporte à la suivante —
+      jamais avant, pour ne pénaliser personne.</div>
     <h4>Règles appliquées par Akiba</h4>
     <ul>
       <li>Un membre emprunte au plus <b>3 fois son épargne</b>, et jamais plus que l'argent disponible dans la caisse de crédit.</li>
@@ -154,8 +157,24 @@ const GUIDE = [
       <li>la caisse sociale, les <b>amendes</b> payées ou dues ;</li>
       <li>le <b>crédit</b> : accordé, remboursé, reste à rembourser et échéance ;</li>
       <li>la valeur estimée de ses parts ;</li>
-      <li>le <b>sceau de la réunion</b> : il permet de vérifier que le reçu correspond bien au journal scellé.</li>
+      <li>une <b>référence</b> du genre <b class="mono">14-A78E64</b> : c'est elle qui permet de vérifier le reçu.</li>
     </ul>
+    <h4>Reçu court ou reçu détaillé</h4>
+    <p>Le papier thermique coûte cher et se trouve mal. Akiba imprime donc par défaut un <b>reçu court</b> : environ
+      trois fois moins de papier, en gardant tout ce qui prouve — le nom, la réunion, ce qui a bougé ce jour-là, le
+      cumul du cycle, le crédit restant et la référence. Sur une réunion de vingt membres, cela fait à peu près
+      <b>184 cm de bande au lieu de 5 mètres</b>. Le format se change d'un toucher sur l'écran des reçus : la longueur
+      en centimètres y est annoncée pour chacun.</p>
+    <h4>Un membre conteste son reçu</h4>
+    <p>C'est le cas le plus difficile d'une AVEC : trois mois plus tard, quelqu'un dit « on m'a écrit deux parts,
+      j'en avais payé trois ». Avant, seul le téléphone du groupe pouvait trancher — et c'est justement lui que l'on
+      soupçonne.</p>
+    <p>Maintenant, n'importe quel téléphone du groupe fait le juge. <b>Reçus des membres › Vérifier un reçu contesté</b> :
+      visez le QR du reçu, ou recopiez la <b>référence</b> et le nom. Akiba refait le calcul <b>sans réseau</b> et répond
+      « Reçu authentique », avec les montants — ou bien dit ce que le journal annonce vraiment. Un reçu refait, un reçu
+      attribué à quelqu'un d'autre, un reçu venu d'un autre groupe : tous sont refusés.</p>
+    <div class="tip">Le QR n'est imprimé ni sur le reçu court ni en série : il est à l'écran et sur le reçu partagé par
+      WhatsApp. Sur le papier, c'est la <b>référence en chiffres</b> qui sert, et elle se recopie à la main.</div>
     <h4>Imprimer le journal d'une période</h4>
     <p>Dans l'onglet <b>Journal</b>, le bouton <b>Imprimer le journal</b> demande la période (7 jours, 30 jours, ce cycle, tout, ou deux dates au choix). Akiba annonce le nombre d'écritures et la <b>longueur de papier</b> avant d'imprimer.</p>
     <p>Le ticket reprend chaque écriture jour par jour (numéro, nature, membre, montant), puis les <b>totaux de la période</b>, ce qui est entré et sorti de la caisse, le mouvement net, la caisse du jour et l'<b>empreinte de la dernière écriture</b>. C'est ce document qu'on remet à un contrôleur, à l'animateur ou à une IMF.</p>
@@ -249,10 +268,22 @@ const GUIDE = [
   { id: 'audio', icon: 'volume', t: 'Écouter au lieu de lire', b: `
     <p>Akiba peut <b>lire à voix haute</b>, même sans réseau, avec la voix installée sur le téléphone.</p>
     <ul><li>Dans ce guide : <b>Écouter cette partie</b> ou <b>Écouter tout le guide</b>.</li>
-      <li>Pendant la réunion : <b>Écouter cette étape</b> explique ce qu'il faut faire.</li>
+      <li>Pendant la réunion : <b>Écouter cette étape</b> ne lit plus le titre, elle <b>conduit la réunion</b> —
+        l'ordre des gestes, ce qu'il ne faut pas oublier. Le secrétaire peut poser le téléphone, écouter, et faire.</li>
       <li>Dans le carnet : <b>Écouter mon carnet</b> dit l'épargne et la valeur des parts.</li>
+      <li>Dans la formation : <b>Écouter le module</b>, pour préparer une séance en chemin.</li>
       <li>Touchez à nouveau le bouton pour <b>arrêter</b>.</li></ul>
-    <div class="tip">Pas de son ? Montez le volume, puis vérifiez dans les paramètres du téléphone que « Services vocaux Google » est installé, avec la langue française téléchargée.</div>` },
+    <h4>Choisir la voix</h4>
+    <p><b>Plus › Voix de lecture</b> : Akiba liste les voix installées sur ce téléphone, on les écoute une par une et
+      on garde celle qui sonne le mieux. Les voix récentes, plus naturelles, sont proposées d'abord.</p>
+    <h4>Écouter dans sa langue</h4>
+    <p>Aucun téléphone n'a de voix lingála, kikongo ni tshiluba : elles n'existent nulle part. Mais ces langues ont les
+      <b>cinq voyelles pures</b> du kiswahili, de l'espagnol et de l'italien — rien à voir avec les voyelles nasales et
+      les lettres muettes du français. Akiba cherche donc, dans l'ordre : la langue elle-même, le kiswahili, l'espagnol,
+      l'italien, et le français en dernier. Une voix kiswahili lit le lingála bien plus près du vrai qu'une voix française.</p>
+    <div class="tip">Pour ajouter ces voix, gratuitement : <b>Paramètres du téléphone › Langues › Synthèse vocale ›
+      Google</b>, puis téléchargez le kiswahili ou l'espagnol. Pas de son du tout ? Montez le volume, et vérifiez que
+      « Services vocaux Google » est installé.</div>` },
   { id: 'installer', icon: 'home', t: 'Icône, protection et sauvegarde', b: `
     <h4>Mettre l'icône sur l'écran d'accueil</h4>
     <ol><li>Ouvrez l'adresse d\'Akiba dans <b>Chrome</b>, avec du réseau.</li><li>Touchez <b>Installer Akiba</b> (ou menu ⋮ › « Ajouter à l'écran d'accueil »).</li><li>Une icône verte apparaît. Ensuite, Akiba s'ouvre <b>sans réseau</b>.</li></ol>
@@ -284,6 +315,10 @@ const GUIDE = [
     <h4>Code oublié</h4><p>Un membre du bureau ouvre le carnet du membre puis <b>Code oublié</b>. L'ancien code ne marche plus.</p>
     <h4>Changer de responsable</h4><p><b>Plus › Bureau et porte-clés</b>, après décision de l'assemblée.</p>` },
   { id: 'partage', icon: 'split', t: 'Fin de cycle et partage', b: `
+    <div class="alert warn"><div><b>Le partage ne se reprend pas</b><span class="small">Avant de distribuer, Akiba
+      affiche le montant exact, le nombre de membres qui reçoivent, les retenues, le prêteur extérieur soldé d'abord
+      et ce qui reste pour le cycle suivant. Puis le <b>président tape son code</b>. Les trois clés disent que la caisse
+      est juste ; le code du président dit que l'assemblée veut partager aujourd'hui.</span></div></div>
     <p>Un cycle dure en général 12 mois. Akiba prévient <b>4 semaines avant la fin</b>. Avant le partage, les membres doivent rembourser leurs crédits.</p>
     <h4>Le calcul</h4>
     <div class="formula">Total à partager = caisse de crédit + crédits à récupérer + amendes dues − crédit extérieur à rendre<br>Bénéfice du cycle = Total − épargne de tous les membres<br>Chaque membre reçoit = son épargne + sa part du bénéfice − ce qu'il doit encore</div>
@@ -310,6 +345,13 @@ const GUIDE = [
     </ol>
     <p>Les anciens cycles restent consultables dans <b>Plus › Historique des cycles</b> : valeur de la part, montant partagé, nombre de membres.</p>` },
   { id: 'animateur', icon: 'map', t: 'Pour l\'animateur', b: `
+    <h4>Votre propre formation</h4>
+    <p>Les sept modules des AVEC disent <b>quoi</b> enseigner à un groupe. Sept autres disent <b>comment</b> :
+      <b>Formation › Formation des animateurs</b>. Préparer une séance, animer sans faire à la place du groupe, faire
+      parler ceux qui se taisent, vérifier qu'on a vraiment compris, mener une visite de suivi, rattraper les erreurs
+      fréquentes, protéger le groupe contre la fraude et la pression.</p>
+    <p>Vous les cochez vous-même quand les points de contrôle sont passés. Votre organisation voit votre avancement,
+      sans pouvoir le remplir à votre place.</p>
     <ul>
       <li><b>Mes AVEC</b> : un point vert, orange ou rouge montre l'état de chaque groupe.</li>
       <li><b>Alertes</b> : écarts de caisse, crédits en retard, réunions manquées, journal altéré, fin de cycle, données non envoyées.</li>
@@ -318,6 +360,14 @@ const GUIDE = [
       <li>L'animateur <b>ne peut rien modifier</b> dans les comptes du groupe. Il conseille et vérifie.</li>
     </ul>` },
   { id: 'organisation', icon: 'building', t: 'Pour l\'organisation', b: `
+    <h4>Présenter un portefeuille à une IMF</h4>
+    <p>Une AVEC seule prépare son propre dossier. Une organisation, elle, présente un <b>portefeuille</b> :
+      <b>Tableau de bord › IMF</b>. On choisit les groupes — toutes, les prêtes, ou à la main — et Akiba écrit un
+      fichier Excel de quatre feuilles : une ligne par AVEC avec ce qu'une institution de microfinance regarde, un
+      résumé du portefeuille, puis le détail des crédits internes et extérieurs.</p>
+    <p>Mêmes garde-fous que pour un groupe seul : rien ne part sans que vous confirmiez l'<b>accord des assemblées
+      générales</b>, les noms des membres restent dehors par défaut, et <b>jamais</b> de téléphone ni d'adresse.
+      Chaque envoi laisse sa trace, visible sur le même écran.</p>
     <ul>
       <li>Le tableau de bord additionne toutes les AVEC accompagnées : membres, part des femmes, épargne, crédits, PAR, caisses sociales.</li>
       <li>Filtrez par animateur avec les boutons en haut.</li>
