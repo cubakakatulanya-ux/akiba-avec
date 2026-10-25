@@ -33,9 +33,22 @@ function memberReceipt(avec, m, x) {
   };
 }
 
+/* Le papier thermique coûte cher et se trouve mal : un reçu de vingt-six lignes, c'est dix
+   centimètres de bande par membre, deux mètres par réunion, cent mètres dans un cycle.
+   Le reçu court garde tout ce qui sert de preuve — qui, quelle réunion, ce qui a bougé
+   aujourd'hui, le cumul, le sceau — et laisse tomber ce que le groupe sait déjà : son village,
+   le rôle du membre, le nom de l'application, et les trois traits de séparation.
+   Le reçu détaillé reste disponible d'un toucher quand un membre conteste. */
+const RECU_COURT_STORE = 'kitabu.recuCourt';
+const recuCourt = () => { try { return localStorage.getItem(RECU_COURT_STORE) !== '0'; } catch (e) { return true; } };
+const recuCourtSet = v => { try { localStorage.setItem(RECU_COURT_STORE, v ? '1' : '0'); } catch (e) { /* rien */ } };
+ACT.recuFormat = () => { recuCourtSet(!recuCourt()); render(); App.toast(recuCourt() ? 'Reçus courts : moins de papier' : 'Reçus détaillés'); };
+
 /* le ticket, en texte simple : c'est lui qu'on imprime ou qu'on partage */
-function receiptText(avec, m, x, r) {
+function receiptText(avec, m, x, r, court) {
   r = r || memberReceipt(avec, m, x);
+  if (court === undefined) court = recuCourt();
+  if (court) return receiptCourt(avec, m, x, r);
   const L = [];
   L.push(rCenter('AKIBA - RECU DE REUNION'));
   L.push(rCenter(avec.name));
@@ -82,6 +95,35 @@ function receiptText(avec, m, x, r) {
   return L.join('\n');
 }
 
+/* Le reçu court : douze lignes au lieu de vingt-six. Rien de ce qui prouve n'a disparu —
+   le nom, la réunion, ce qui a bougé aujourd'hui, le cumul du cycle et le sceau y sont tous.
+   Ce qui part, c'est ce que le groupe sait déjà par cœur. */
+function receiptCourt(avec, m, x, r) {
+  const L = [];
+  L.push(rCenter(noAcc(avec.name)));
+  L.push(rCenter(`Reunion n${m.n} - ${fdate(m.date)}`));
+  L.push(rRule());
+  L.push(noAcc(x.name).slice(0, RECU_W));
+  const mouvements = [];
+  if (r.parts) mouvements.push(rLine(`Epargne ${r.parts} part(s)`, fc(r.epargne)));
+  if (r.social) mouvements.push(rLine('Caisse sociale', fc(r.social)));
+  if (r.remb) mouvements.push(rLine('Rembourse', fc(r.remb)));
+  if (r.credit) mouvements.push(rLine('Credit recu', fc(r.credit)));
+  if (r.amende) mouvements.push(rLine('Amende payee', fc(r.amende)));
+  if (r.dette) mouvements.push(rLine('Amende notee', fc(r.dette)));
+  if (r.aide) mouvements.push(rLine('Aide sociale', fc(r.aide)));
+  if (r.partage) mouvements.push(rLine('Part du partage', fc(r.partage)));
+  if (r.depart) mouvements.push(rLine('Epargne rendue', fc(r.depart)));
+  if (!mouvements.length) mouvements.push(rLine('Presence', { P: 'Present', R: 'En retard', A: 'Absent' }[r.presence] || '-'));
+  mouvements.forEach(l => L.push(l));
+  L.push(rRule());
+  L.push(rLine(`Cumul ${r.cumulParts} parts`, fc(r.cumulEpargne)));
+  if (r.loan) L.push(rLine(r.loan.status === 'retard' ? `RETARD ${r.loan.daysLate} j, reste` : 'Credit reste', fc(r.loan.remaining)));
+  if (r.resteAmende) L.push(rLine('Amendes dues', fc(r.resteAmende)));
+  L.push(rLine('Sceau', noAcc((m.seal || '').slice(0, 8))));
+  return L.join('\n');
+}
+
 /* commandes ESC/POS : init, titre en gras, texte, avance papier, coupe */
 function escposBytes(text) {
   const out = [];
@@ -90,7 +132,7 @@ function escposBytes(text) {
   push(0x1b, 0x74, 0x00);                                            // page de codes 437
   push(0x1b, 0x61, 0x00);                                            // aligner a gauche
   noAcc(text).split('\n').forEach(l => { for (const c of l) out.push(c.charCodeAt(0) & 0xff); out.push(0x0a); });
-  push(0x0a, 0x0a, 0x0a);
+  push(0x0a, 0x0a);                                                  // deux lignes : le couteau est au-dessus de la tête d'impression, pas davantage
   push(0x1d, 0x56, 0x00);                                            // GS V 0 : couper le papier
   return new Uint8Array(out);
 }
@@ -120,7 +162,14 @@ SCREENS['a.receipts'] = p => {
     ${posAvailable() ? '' : '<div class="tip row" style="align-items:flex-start">' + icSpan('alert') + '<div><b>Aucune imprimante détectée</b><span class="small">Sur un terminal POS, ouvrez Akiba depuis l\'application Android. Sinon, installez RawBT pour une imprimante Bluetooth, ou partagez le reçu.</span></div></div>'}
     <div class="list">${rows.map(({ x, r }) => `<button class="li" data-act="recuSheet" data-m="${m.id}" data-id="${x.id}">${avatar(x)}
       <span class="grow"><b>${esc(x.name)}</b><span class="small muted">Épargne ${fc(r.epargne)}${r.remb ? ' · remb. ' + fc(r.remb) : ''}${r.credit ? ' · crédit ' + fc(r.credit) : ''}</span></span>${ic('chev')}</button>`).join('') || '<div class="li muted">Aucun membre présent à cette réunion</div>'}</div>
-    ${rows.length ? `<button class="btn primary block xl" data-act="recuPrintAll" data-m="${m.id}">${ic('clip')} Imprimer les ${rows.length} reçus</button>` : ''}
+    ${rows.length ? `<button class="btn primary block xl" data-act="recuPrintAll" data-m="${m.id}">${ic('clip')} Imprimer les ${rows.length} reçus</button>
+      <!-- le papier thermique se trouve mal et coûte cher : le format est un vrai choix, pas un réglage caché -->
+      <button class="li" data-act="recuFormat" style="border:1px solid var(--line);border-radius:var(--r)">
+        ${rowIc('clip')}<span class="grow"><b>${recuCourt() ? 'Reçus courts' : 'Reçus détaillés'}</b>
+          <span class="small muted">${recuCourt()
+            ? 'Le nécessaire et le sceau, sur ' + Math.round(receiptText(avec, m, rows[0].x, rows[0].r, true).split(String.fromCharCode(10)).length * 0.4) + ' cm environ. Touchez pour le détail complet.'
+            : 'Tout le détail, sur ' + Math.round(receiptText(avec, m, rows[0].x, rows[0].r, false).split(String.fromCharCode(10)).length * 0.4) + ' cm environ. Touchez pour économiser le papier.'}</span></span>
+        <span class="chip ${recuCourt() ? 'good' : 'warn'}">${recuCourt() ? 'économe' : 'complet'}</span></button>` : ''}
   </main></div>`;
 };
 

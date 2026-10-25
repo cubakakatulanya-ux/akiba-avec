@@ -537,6 +537,24 @@ window.__akibaTests = async function () {
     must(lignes.length > 8, 'reçu trop court');
     return lignes.length + ' lignes, la plus longue ' + Math.max(...lignes.map(l => l.length)) + ' signes';
   });
+  await t("Reçu court : moitié moins de papier, et toujours la preuve", () => {
+    const a = avecById(A);
+    const der = a.meetings.filter(x => x.status === 'closed').slice(-1)[0];
+    const here = activeM(a).filter(x => (der.presence || {})[x.id] && (der.presence || {})[x.id] !== 'A');
+    const longs = here.map(x => String(receiptText(a, der, x, null, false)).split(String.fromCharCode(10)).length);
+    const courts = here.map(x => String(receiptText(a, der, x, null, true)).split(String.fromCharCode(10)).length);
+    const totalLong = longs.reduce((p, q) => p + q, 0), totalCourt = courts.reduce((p, q) => p + q, 0);
+    must(totalCourt < totalLong * 0.65, 'le reçu court doit économiser au moins un tiers du papier');
+    /* ce qui prouve doit rester : le nom, la réunion, le cumul et le sceau */
+    const t1 = receiptText(a, der, here[0], null, true);
+    must(t1.includes(noAcc(here[0].name).slice(0, 10)), 'le nom a disparu du reçu court');
+    must(/Reunion n\d/.test(t1), 'la réunion a disparu');
+    must(/Cumul/.test(t1), 'le cumul a disparu');
+    must(/Sceau/.test(t1), 'le sceau a disparu');
+    must(!String(t1).split(String.fromCharCode(10)).filter(l => l.length > RECU_W).length, 'ligne trop longue');
+    const cm = n => Math.round(n * 0.4);
+    return cm(totalLong) + ' cm -> ' + cm(totalCourt) + ' cm pour ' + here.length + ' membres';
+  });
   await t("Reçu d'un membre : 32 colonnes, sans accent", () => {
     const a = avecById(A);
     const der = a.meetings.filter(x => x.status === 'closed').slice(-1)[0];
