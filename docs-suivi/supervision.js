@@ -51,6 +51,9 @@ ACT.outilsSheet = () => {
   const row = (act, to, icon, titre, sous, extra = '') => `<button class="li" data-act="${act}" ${to ? `data-to="${to}"` : ''} ${extra}><span class="xl-ic">${ic(icon)}</span><span class="grow"><b>${titre}</b><span class="small muted">${sous}</span></span>${ic('chev')}</button>`;
   App.openSheet(`<h2>Outils</h2>
     <div class="list">
+      ${K.session && K.session.kind === 'org' ? row('go', 'o.impact', 'chart', 'Impact', 'Les quatre piliers, chiffrés sur les journaux reçus')
+        + row('go', 'o.imf', 'building', 'Dossier pour une IMF', 'Présenter un portefeuille d’AVEC à une institution')
+        + row('exportSheet', '', 'chart', 'Export Excel', 'Toutes les AVEC suivies, pour le bailleur') : ''}
       ${estSuivi() ? row('receiveSheet', '', 'sync', 'Recevoir une AVEC', 'Le groupe vous a envoyé son fichier et son code') : ''}
       ${row('go', 't.home', 'clip', 'Formation', 'Les modules de la méthode AVEC')}
       ${row('go', 'guide', 'book', 'Guide d’utilisation', 'Tout sur l’AVEC et l’application')}
@@ -205,7 +208,13 @@ const myAvecs = u => K.data.avecs.filter(a => u.role === 'org' ? a.orgId === u.o
 /* bande défilante de suivi : les alertes passent en premier, sinon les grands repères */
 function supBand(rows, extra) {
   const al = rows.flatMap(r => r.h.alerts.map(a => Object.assign({ av: r.avec.name }, a))).sort((a, b) => LVL[a.lvl] - LVL[b.lvl]);
-  if (al.length) return ticker(al.slice(0, 10).map(a => ({ icon: 'alert', label: `${a.av} : ${a.title}`, value: a.detail })), { cls: 'alerts', aria: 'Points à vérifier' });
+  /* La bande sert à alerter, pas à tout dire : les trois plus graves, puis le compte des autres.
+     La liste complète est juste en dessous, dans « Alertes ». */
+  if (al.length) {
+    const vues = al.slice(0, 3).map(a => ({ icon: 'alert', label: `${a.av} : ${a.title}`, value: a.detail }));
+    if (al.length > 3) vues.push({ icon: 'chev', label: `et ${al.length - 3} autre${al.length - 3 > 1 ? 's' : ''} plus bas` });
+    return ticker(vues, { cls: 'alerts', aria: 'Points à vérifier' });
+  }
   return ticker([{ icon: 'check', label: 'Aucune alerte sur les AVEC suivies' }].concat(extra || []), { aria: 'Repères du suivi' });
 }
 SCREENS['n.home'] = () => {
@@ -361,9 +370,11 @@ SCREENS['o.home'] = p => {
       <div class="row" style="flex-wrap:wrap;gap:6px">
         ${filtre}
         <span class="sep" aria-hidden="true"></span>
-        <button class="btn sm brand" data-act="go" data-to="o.impact">${ic('chart')} Impact</button>
-        <button class="btn sm ghost" data-act="go" data-to="o.imf">${ic('building')} IMF</button>
-        <button class="btn sm ghost" data-act="exportSheet" data-anim="${esc(p.anim || '')}">${ic('chart')} Excel</button>
+        <!-- sur un téléphone ces trois-là passent dans « Outils » : une barre de quatre rangées
+             mange l'écran, et on ne les touche pas à chaque visite -->
+        <button class="btn sm brand surOrdi" data-act="go" data-to="o.impact">${ic('chart')} Impact</button>
+        <button class="btn sm ghost surOrdi" data-act="go" data-to="o.imf">${ic('building')} IMF</button>
+        <button class="btn sm ghost surOrdi" data-act="exportSheet" data-anim="${esc(p.anim || '')}">${ic('chart')} Excel</button>
         <button class="btn sm primary" data-act="go" data-to="c.avec" data-from="org">${ic('plus')} Nouvelle AVEC</button>
         <button class="btn sm ghost" data-act="outilsSheet" aria-label="Autres outils">${ic('more')}</button>
       </div>

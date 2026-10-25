@@ -150,8 +150,10 @@ function ticker(items, opts = {}) {
     const o = typeof x === 'string' ? { label: x } : x;
     return `<span>${o.icon ? ic(o.icon) : ''}${o.label ? esc(o.label) : ''}${o.value != null && o.value !== '' ? `${o.label ? ' ' : ''}<b>${esc(o.value)}</b>` : ''}</span>`;
   }).join('');
-  const secs = opts.speed || Math.max(20, list.length * 5);
-  return `<div class="ticker${opts.cls ? ' ' + opts.cls : ''}" aria-label="${esc(opts.aria || 'Repères qui défilent')}"><div class="run" style="animation-duration:${secs}s">${one}${one}</div></div>`;
+  /* Rien ne défile. Un texte en mouvement est coupé aux deux bords et illisible pour quelqu'un
+     qui déchiffre lentement — c'est exactement le public de cette application. Les mêmes repères
+     s'affichent donc d'un coup, et passent à la ligne quand il y en a trop. */
+  return `<div class="reperes${opts.cls ? ' ' + opts.cls : ''}" aria-label="${esc(opts.aria || 'Repères')}">${one}</div>`;
 }
 
 /* ---------- registre chaîné (append-only) ---------- */
