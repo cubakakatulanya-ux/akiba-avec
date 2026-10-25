@@ -86,6 +86,11 @@ function receiptText(avec, m, x, r, court) {
   L.push(rRule());
   L.push(rLine('Valeur des parts', fc(r.valeur)));
   L.push(rRule());
+  if (typeof recuRef === 'function') {
+    L.push(rLine('Ref a verifier', recuRef(avec, m, x, r)));
+    L.push('A verifier dans Akiba :');
+    L.push('Recus > Verifier un recu');
+  }
   L.push('Sceau de la reunion :');
   L.push(noAcc((m.seal || '').slice(0, 16).replace(/(.{4})/g, '$1 ').trim()));
   if ((m.validators || []).length) L.push('Cles : ' + noAcc(m.validators.map(id => (memberOf(avec, id) || {}).name || '').filter(Boolean).map(n => n.split(' ')[0]).join(', ')).slice(0, RECU_W - 7));
@@ -120,7 +125,9 @@ function receiptCourt(avec, m, x, r) {
   L.push(rLine(`Cumul ${r.cumulParts} parts`, fc(r.cumulEpargne)));
   if (r.loan) L.push(rLine(r.loan.status === 'retard' ? `RETARD ${r.loan.daysLate} j, reste` : 'Credit reste', fc(r.loan.remaining)));
   if (r.resteAmende) L.push(rLine('Amendes dues', fc(r.resteAmende)));
-  L.push(rLine('Sceau', noAcc((m.seal || '').slice(0, 8))));
+  /* une seule ligne, et elle remplace le sceau : elle le contient, et lie en plus ce membre
+     à sa propre ligne du journal. C'est elle qui tranche quand un reçu est contesté. */
+  L.push(rLine('Ref a verifier', typeof recuRef === 'function' ? recuRef(avec, m, x, r) : noAcc((m.seal || '').slice(0, 8))));
   return L.join('\n');
 }
 
@@ -169,7 +176,8 @@ SCREENS['a.receipts'] = p => {
           <span class="small muted">${recuCourt()
             ? 'Le nécessaire et le sceau, sur ' + Math.round(receiptText(avec, m, rows[0].x, rows[0].r, true).split(String.fromCharCode(10)).length * 0.4) + ' cm environ. Touchez pour le détail complet.'
             : 'Tout le détail, sur ' + Math.round(receiptText(avec, m, rows[0].x, rows[0].r, false).split(String.fromCharCode(10)).length * 0.4) + ' cm environ. Touchez pour économiser le papier.'}</span></span>
-        <span class="chip ${recuCourt() ? 'good' : 'warn'}">${recuCourt() ? 'économe' : 'complet'}</span></button>` : ''}
+        <span class="chip ${recuCourt() ? 'good' : 'warn'}">${recuCourt() ? 'économe' : 'complet'}</span></button>
+      <button class="btn ghost block" data-act="recuVerifier">${ic('shield')} Vérifier un reçu contesté</button>` : ''}
   </main></div>`;
 };
 
@@ -180,9 +188,12 @@ ACT.recuSheet = d => {
   const text = receiptText(avec, m, x);
   App.openSheet(`<h2>Reçu de ${esc(x.name.split(' ')[0])}</h2>
     <pre class="ticket">${esc(text)}</pre>
+    <!-- le QR dit la même chose que la référence, en se scannant : il coûte du papier, donc il reste ici -->
+    <div style="text-align:center"><img id="recuQrImg" data-qr="${esc(recuQrTexte(avec, m, x))}" alt="QR du reçu" hidden style="width:190px;max-width:100%;border-radius:12px;background:#fff;padding:8px"></div>
     <div class="grid2"><button class="btn brand" data-act="recuPrint" data-m="${m.id}" data-id="${x.id}">${ic('clip')} Imprimer</button>
       <button class="btn ghost" data-act="recuShare" data-m="${m.id}" data-id="${x.id}">${ic('chat')} Partager</button></div>
     <button class="btn ghost block" data-act="closeSheet">Fermer</button>`);
+  setTimeout(recuQrDessiner, 60);
 };
 ACT.recuPrint = async d => {
   const { avec } = cur();

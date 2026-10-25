@@ -550,7 +550,8 @@ window.__akibaTests = async function () {
     must(t1.includes(noAcc(here[0].name).slice(0, 10)), 'le nom a disparu du reçu court');
     must(/Reunion n\d/.test(t1), 'la réunion a disparu');
     must(/Cumul/.test(t1), 'le cumul a disparu');
-    must(/Sceau/.test(t1), 'le sceau a disparu');
+    /* la référence remplace le sceau : elle le contient, et lie en plus le membre à sa ligne */
+    must(/Ref a verifier\s+\d+-[0-9A-F]{6}/.test(t1), 'la référence vérifiable a disparu');
     must(!String(t1).split(String.fromCharCode(10)).filter(l => l.length > RECU_W).length, 'ligne trop longue');
     const cm = n => Math.round(n * 0.4);
     return cm(totalLong) + ' cm -> ' + cm(totalCourt) + ' cm pour ' + here.length + ' membres';
@@ -591,6 +592,32 @@ window.__akibaTests = async function () {
     const faux = carteTexte(a, membres[0], seq).replace(/(\d+)-([0-9A-F]{6})/, (x, n) => n + '-ABCDEF');
     must(!carteVerifierTexte(a, faux).ok, 'une carte falsifiée a été acceptée');
     return membres.length + ' cartes, ' + Math.ceil(membres.length / 10) + ' feuille(s) A4';
+  });
+
+  /* ---------- R. le reçu se vérifie sans croire personne ---------- */
+  await t("Un reçu authentique est reconnu, un reçu refait est refusé", () => {
+    if (typeof recuVerifierTexte !== 'function') return 'sans objet';
+    const a = avecById(A);
+    const der = a.meetings.filter(x => x.status === 'closed').slice(-1)[0];
+    const here = activeM(a).filter(x => (der.presence || {})[x.id] && (der.presence || {})[x.id] !== 'A');
+    must(here.length, 'aucun membre présent');
+    /* tous les reçus de la réunion doivent se vérifier */
+    const refuses = here.filter(x => !recuVerifierTexte(a, recuQrTexte(a, der, x)).ok);
+    must(!refuses.length, refuses.length + ' reçu(s) authentique(s) refusé(s)');
+    /* un papier refait avec une autre empreinte doit être refusé */
+    const faux = recuQrTexte(a, der, here[0]).replace(/(\d+)-([0-9A-F]{6})/, (x, n) => n + '-ABCDEF');
+    const r1 = recuVerifierTexte(a, faux);
+    must(!r1.ok, 'un reçu falsifié a été accepté');
+    must(/journal/i.test(r1.detail), 'le refus doit dire ce que le journal annonce');
+    /* le reçu d un membre ne doit pas valoir pour un autre */
+    if (here.length > 1) {
+      const melange = recuQrTexte(a, der, here[0]).replace(here[0].name, here[1].name);
+      must(!recuVerifierTexte(a, melange).ok, 'un reçu attribué à un autre membre a été accepté');
+    }
+    /* la référence voyage sur le papier : elle doit être dans le reçu imprimé, court comme long */
+    must(/Ref a verifier/.test(receiptText(a, der, here[0], null, true)), 'référence absente du reçu court');
+    must(/Ref a verifier/.test(receiptText(a, der, here[0], null, false)), 'référence absente du reçu détaillé');
+    return here.length + ' reçus vérifiés, un faux refusé';
   });
   return res;
 };
