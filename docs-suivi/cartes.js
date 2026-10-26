@@ -26,8 +26,9 @@ function carteTexte(avec, m, seq) {
 /* le dessin d'une carte : sobre, lisible à bout de bras, imprimable en noir et blanc */
 function carteHTML(avec, m, seq) {
   return `<article class="carte-m">
-    <header><b>${esc(avec.name)}</b><span>${esc([avec.village, avec.territoire].filter(Boolean).join(' · '))}</span></header>
+    <header>${emblemeImprime(avec, 22)}<span class="ou"><b>${esc(avec.name)}</b><span>${esc([avec.village, avec.territoire].filter(Boolean).join(' · '))}</span></span></header>
     <div class="qui">
+      ${photoDe(m) ? `<img class="photo" src="${photoDe(m)}" alt="">` : ''}
       <div><span class="num">n°${carteNum(avec, m)}</span><b class="nom">${esc(m.name)}</b><span class="role">${esc(roleLabel(m))}</span></div>
       <img class="qr" data-qr="${esc(carteTexte(avec, m, seq))}" alt="" width="104" height="104">
     </div>

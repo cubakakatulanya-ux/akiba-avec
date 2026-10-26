@@ -122,7 +122,7 @@ function exportSheets(avecs) {
 
   const memberSheet = {
     name: 'Membres', cols: [
-      { h: 'AVEC', w: 24 }, { h: 'Nom', w: 26 }, { h: 'Sexe', w: 7 }, { h: 'Âge', w: 7, t: 'n' }, { h: 'Téléphone', w: 16 }, { h: 'Activité', w: 18 }, { h: 'Adresse', w: 22 },
+      { h: 'AVEC', w: 24 }, { h: 'Nom', w: 26 }, { h: 'Sexe', w: 7 }, { h: 'Âge', w: 7, t: 'n' }, { h: 'Date de naissance', w: 13 }, { h: 'Téléphone', w: 16 }, { h: 'Activité', w: 18 }, { h: 'Adresse', w: 22 },
       { h: 'Rôle', w: 20 }, { h: 'Situation', w: 10 }, { h: 'Parts', w: 8, t: 'n' }, { h: 'Épargne (FC)', w: 12, t: 'n' }, { h: 'Valeur si partage (FC)', w: 13, t: 'n' },
       { h: 'Caisse sociale versée (FC)', w: 13, t: 'n' }, { h: 'Amendes payées (FC)', w: 12, t: 'n' }, { h: 'Amendes dues (FC)', w: 12, t: 'n' },
       { h: 'Crédit en cours (FC)', w: 13, t: 'n' }, { h: 'Jours de retard', w: 9, t: 'n' }
@@ -130,7 +130,7 @@ function exportSheets(avecs) {
     rows: rows.flatMap(({ a, st }) => a.members.map(m => {
       const d = st.mem[m.id] || { parts: 0, savings: 0, social: 0, fines: 0, fineDebt: 0, loans: [] };
       const open = d.loans.filter(l => l.status !== 'solde');
-      return [a.name, m.name, m.sex === 'M' ? 'H' : 'F', ageOf(m), hasPhone(m) ? m.phone : '', m.activity || '', m.address || '', roleLabel(m), m.left ? 'Parti' : 'Actif',
+      return [a.name, m.name, m.sex === 'M' ? 'H' : 'F', ageOf(m), m.birthDate || '', hasPhone(m) ? m.phone : '', m.activity || '', m.address || '', roleLabel(m), m.left ? 'Parti' : 'Actif',
         d.parts, d.savings, Math.round(d.parts * st.shareValue), d.social, d.fines, Math.max(0, d.fineDebt),
         open.reduce((s, l) => s + l.remaining, 0), open.reduce((s, l) => Math.max(s, l.daysLate), 0)];
     }))

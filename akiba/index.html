@@ -147,9 +147,13 @@ button.li:hover{background:var(--surface-2)}
 .chip.bad{background:var(--bad-soft);color:var(--bad)}
 .chip.brand{background:var(--brand-soft);color:var(--brand)}
 /* avatars */
-.av{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:var(--t-md);flex:none;background:var(--brand-soft);color:var(--brand)}
+.av{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:var(--t-md);flex:none;background:var(--brand-soft);color:var(--brand);overflow:hidden}
+.av img{width:100%;height:100%;object-fit:cover;display:block}
 .av.f{background:var(--maize-soft);color:var(--warn)}
 /* forms */
+/* une case masquée doit vraiment disparaître : sans cette règle, un .field en flex ignore hidden
+   et laisse traîner un champ vide (« Quelle activité ? ») dans chaque fiche membre */
+[hidden]{display:none !important}
 .field{display:flex;flex-direction:column;gap:6px}
 .field label{font-weight:700;font-size:var(--t-md)}
 .input,select.input,textarea.input{width:100%;border:1.5px solid var(--line);background:var(--surface);border-radius:12px;padding:12px;min-height:48px}
@@ -731,7 +735,9 @@ h2,h3{font-weight:600;letter-spacing:-.005em}
 .cartes{display:grid;grid-template-columns:repeat(auto-fill,minmax(236px,1fr));gap:10px}
 .carte-m{display:flex;flex-direction:column;justify-content:space-between;aspect-ratio:85/54;padding:9px 11px;
   border:1px dashed var(--line);border-radius:10px;background:#fff;color:#102017;overflow:hidden}
-.carte-m header{display:flex;flex-direction:column;line-height:1.15}
+.carte-m header{display:flex;align-items:center;gap:7px;line-height:1.15}
+.carte-m .photo{width:17mm;height:21mm;object-fit:cover;border:.3mm solid #000;border-radius:1.5mm;flex:none;background:#fff}
+.carte-m header .ou{display:flex;flex-direction:column;min-width:0}
 .carte-m header b{font-family:var(--f-display);font-size:.84rem}
 .carte-m header span{font-size:.62rem;color:#51635a}
 .carte-m .qui{display:flex;align-items:flex-end;justify-content:space-between;gap:8px;min-width:0}
@@ -806,6 +812,20 @@ h2,h3{font-weight:600;letter-spacing:-.005em}
 .etat.cur>svg:first-child{opacity:1;color:var(--brand)}
 .aenvoyer{display:flex;align-items:center;justify-content:center;gap:7px;margin:0;color:var(--ink-2);font-size:var(--t-sm)}
 .aenvoyer svg{width:16px;height:16px;flex:none;opacity:.7}
+/* la photo du membre : facultative, et jamais plus grande que ce qu’elle sert à prouver */
+.photoline{display:flex;gap:12px;align-items:flex-start}
+.photovue{width:72px;height:72px;border-radius:14px;flex:none;display:grid;place-items:center;background:var(--surface-2);border:1.5px solid var(--line);overflow:hidden;color:var(--ink-2);font-weight:800;font-size:var(--t-lg)}
+.photovue img{width:100%;height:100%;object-fit:cover;display:block}
+/* le signe du groupe : reconnaissable sans savoir lire, dessiné donc sans poids */
+.embleme{display:inline-grid;place-items:center;border-radius:50%;flex:none;box-shadow:var(--sh-1)}
+.embgrille{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.embcase{display:grid;place-items:center;aspect-ratio:1;border:1.5px solid var(--line);border-radius:var(--r-s,10px);background:var(--surface);color:var(--ink-2);padding:0}
+.embcase svg{width:60%;height:60%}
+.embcase.on{border-color:transparent;box-shadow:var(--sh-1)}
+.embteintes{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.embteinte{width:36px;height:36px;border-radius:50%;border:2.5px solid transparent;box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.25);padding:0}
+.embteinte.on{border-color:var(--ink);outline:2px solid var(--surface);outline-offset:-5px}
+@media (min-width:480px){.embgrille{grid-template-columns:repeat(6,1fr)}}
 /* un porte-clé absent : la case le dit, au lieu d'attendre un code qui ne viendra pas */
 .lock.absent{border-color:var(--warn);background:var(--warn-soft,transparent)}
 .lock.absent svg{color:var(--warn)}
@@ -828,10 +848,12 @@ details.g.demo>:not(summary)+*{margin-top:8px}
 </style>
 <div id="app"></div>
 <script src="core.js"></script>
+<script src="embleme.js"></script>
 <script src="avec.js"></script>
 <script src="accueil.js"></script>
 <script src="supervision.js"></script>
 <script src="cycle.js"></script>
+<script src="photo.js"></script>
 <script src="member-form.js"></script>
 <script src="geo.js"></script>
 <script src="gps.js"></script>
@@ -854,5 +876,6 @@ details.g.demo>:not(summary)+*{margin-top:8px}
 <script src="imf-portefeuille.js"></script>
 <script src="recu.js"></script>
 <script src="recu-preuve.js"></script>
+<script src="reve.js"></script>
 <script src="cartes.js"></script>
 <script src="boot.js"></script>

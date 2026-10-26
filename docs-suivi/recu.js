@@ -146,6 +146,8 @@ function receiptCourt(avec, m, x, r) {
   if (r.resteAmende) L.push(rLine('Amendes dues', fc(r.resteAmende)));
   /* une seule ligne, et elle remplace le sceau : elle le contient, et lie en plus ce membre
      à sa propre ligne du journal. C'est elle qui tranche quand un reçu est contesté. */
+  /* le rêve tient en une ligne : c'est ce qui donne un sens au chiffre au-dessus */
+  if (typeof reveLigneRecu === 'function') { const lr = reveLigneRecu(avec, stats(avec, { cycle: m.cycle || 1 }), x); if (lr) L.push(lr); }
   L.push(rLine('Ref a verifier', typeof recuRef === 'function' ? recuRef(avec, m, x, r) : noAcc((m.seal || '').slice(0, 8))));
   return L.join('\n');
 }

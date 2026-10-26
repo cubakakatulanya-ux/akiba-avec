@@ -370,8 +370,20 @@ const DB = {
     migrate(K.data);
     try { K.session = JSON.parse(localStorage.getItem(STORE + '.s') || 'null'); } catch (e) { K.session = null; }
   },
+  /* Rend true quand le téléphone a bien gardé l'écriture. Un échec — mémoire pleine, navigation
+     privée — laissait jusqu'ici l'application tourner en mémoire sans rien dire, et tout se perdait
+     à la fermeture. On le dit une fois, et l'appelant qui peut revenir en arrière le fait. */
   save() {
-    try { localStorage.setItem(STORE, JSON.stringify(K.data)); localStorage.setItem(STORE + '.s', JSON.stringify(K.session)); } catch (e) { /* stockage indisponible : l'app continue en mémoire */ }
+    try {
+      localStorage.setItem(STORE, JSON.stringify(K.data));
+      localStorage.setItem(STORE + '.s', JSON.stringify(K.session));
+      DB.enPanne = false;
+      return true;
+    } catch (e) {
+      if (!DB.enPanne && typeof App !== 'undefined' && App.toast) App.toast('Le téléphone n’arrive plus à garder les écritures : mémoire pleine. Exportez vos données.');
+      DB.enPanne = true;
+      return false;
+    }
   },
   /* la graine passe par migrate() comme toute donnée chargée : mêmes valeurs par défaut, mêmes règles */
   reset() { K.data = seed(); migrate(K.data); K.session = null; DB.save(); }
@@ -699,7 +711,7 @@ document.addEventListener('input', e => {
 });
 
 /* ---------- pièces communes ---------- */
-const avatar = m => `<span class="av ${m.sex === 'F' ? 'f' : ''}">${esc(initials(m.name))}</span>`;
+const avatar = m => `<span class="av ${m.sex === 'F' ? 'f' : ''}">${typeof photoDe === 'function' && photoDe(m) ? `<img src="${photoDe(m)}" alt="">` : esc(initials(m.name))}</span>`;
 const stampsHtml = (n, max = 5) => `<span class="stamps" aria-label="${n} parts">${Array.from({ length: max }, (_, i) => `<span class="${i < n ? 'on' : ''}"></span>`).join('')}</span>`;
 const topbar = (title, sub, left = '', right = '') => {
   // flèche retour et bouton de déconnexion sur tous les écrans à barre verte

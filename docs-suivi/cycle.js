@@ -478,6 +478,7 @@ SCREENS['a.more'] = () => {
       ${li('a.cycles', 'calendar', 'Historique des cycles', `${avec.cycles.length} cycle${avec.cycles.length > 1 ? 's' : ''} terminé${avec.cycles.length > 1 ? 's' : ''}`)}
       ${li('a.roles', 'users', 'Bureau et porte-clés', 'Changer un responsable')}
       ${li('', 'map', 'Lieu du groupe', placeShort(avec) || 'À compléter', 'placeSheet')}
+      ${isBureau(me) ? li('', 'eye', 'Signe du groupe', EMBLEMES[emblemeDe(avec).signe].nom + ' · ' + TEINTES[emblemeDe(avec).teinte].nom, 'emblemeSheet') : ''}
       ${li('a.security', 'shield', 'Sécurité et carte de secours', `${(avec.rescue || []).filter(r => !r.used).length} codes de secours valables`)}
       ${li('a.member', 'user', 'Mon carnet et mon code', esc(me.name)).replace('data-to="a.member"', `data-to="a.member" data-id="${me.id}"`)}
       ${li('', 'sync', 'Changer de téléphone', 'Mettre l\'AVEC sur un nouveau téléphone', 'transferSheet').replace('data-act="transferSheet"', `data-act="transferSheet" data-id="${avec.id}"`)}

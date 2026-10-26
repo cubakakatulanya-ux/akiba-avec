@@ -24,7 +24,7 @@ const A_TABS = [
   { id: 'a.more', icon: 'more', label: 'Plus' }
 ];
 const cycleWeek = avec => Math.max(1, Math.floor((Date.now() - avec.cycle.start) / (7 * DAY)) + 1);
-const aTop = (avec, sub, left = '') => topbar(avec.name, sub || `${esc(avec.village)} · cycle ${avec.cycle.n}, semaine ${cycleWeek(avec)}`, left, syncPill(avec));
+const aTop = (avec, sub, left = '') => topbar(avec.name, sub || `${esc(avec.village)} · cycle ${avec.cycle.n}, semaine ${cycleWeek(avec)}`, (left || `<button class="iconbtn" data-act="back" aria-label="Retour">${ic('back')}</button>`) + emblemeHtml(avec, 30), syncPill(avec));
 const activeM = avec => avec.members.filter(m => !m.left);
 const bureauOf = avec => activeM(avec).filter(isBureau);
 const keyHolders = avec => { const k = activeM(avec).filter(m => m.key); return k.length >= 3 ? k : bureauOf(avec); };
@@ -706,6 +706,7 @@ SCREENS['a.member'] = p => {
     <section class="caisse"><div class="label" style="color:inherit;opacity:.8">Mon épargne</div><div class="big num">${grp(d.savings)}<small>FC</small></div>
       <div class="split"><div><span>Parts achetées</span><b class="num">${d.parts}</b></div><div><span>Valeur estimée si partage</span><b class="num">${fc(d.parts * st.shareValue)}</b></div></div></section>
     <div class="row">${speakBtn('carnet', '.main h1, .caisse .label, .caisse .big, .caisse .split span, .caisse .split b', 'Écouter mon carnet', I18N.cur())}</div>
+    ${typeof reveCarte === 'function' ? reveCarte(avec, st, x, self || isBureau(me)) : ''}
     <section class="section"><h2>Timbres d'épargne</h2><div class="card" style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px">
       ${closed.map(m => { const n = byMeet[m.id] || 0; return `<div style="text-align:center"><div class="small muted">R${m.n}</div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:2px;justify-items:center;margin-top:3px">${Array.from({ length: 5 }, (_, i) => `<span style="width:9px;height:9px;border-radius:50%;${i < n ? 'background:var(--maize)' : 'border:1.5px solid var(--line)'}"></span>`).join('')}</div></div>`; }).join('') || '<span class="muted">Pas encore de réunion</span>'}
     </div></section>

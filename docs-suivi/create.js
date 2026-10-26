@@ -12,7 +12,7 @@ function cDraft(p) {
   if (!App.cdraft || App.cdraft.done || (p.from && App.cdraft.from !== p.from)) {
     App.cdraft = {
       from, step: 1, prep: true, mode: 'new', names: '', members: [], roles: {}, nextId: 0, editing: null,
-      g: { name: '', province: '', territoire: '', entite: '', secteur: '', groupement: '', village: '', animId: '', meetingDay: 'Samedi', frequency: 7, createdOn: isoDay(Date.now()) },
+      g: { name: '', province: '', territoire: '', entite: '', secteur: '', groupement: '', village: '', animId: '', meetingDay: 'Samedi', frequency: 7, createdOn: isoDay(Date.now()), embleme: Object.assign({}, EMB_DEFAUT) },
       r: { partValue: 1000, maxParts: 5, socialFee: 500, rate: 10, maxMult: 3, maxMonths: 3, fineAbsent: 500, fineLate: 200, penaltyRate: 10, cycleMonths: 12, cycleStart: isoDay(Date.now()) },
       rep: { social: '', credit: '', rows: {} }
     };
@@ -56,6 +56,12 @@ const C_RENDER = {
       <div class="field"><label for="cgO">Date de création du groupe</label><input id="cgO" type="date" class="input" value="${g.createdOn}"></div>
     </section>
     ${cGpsBloc(g)}
+    <section class="card stack"><h2>Le signe du groupe</h2>
+      <div class="row" style="gap:12px;align-items:center">${emblemeHtml(g, 52)}
+        <p class="small muted" style="margin:0;flex:1">Choisissez un signe et une couleur que tout le monde reconnaît, même sans savoir lire.
+          Ils marqueront l'accueil du téléphone, le carnet de chacun et les cartes de membre.</p></div>
+      ${emblemeChoix('cEmbleme', g.embleme)}
+    </section>
     <p class="hint" style="text-align:center"><button class="linkbtn" data-act="cPrepVoir">Revoir ce qu’il faut pour finir sans s’interrompre</button></p>
     <p class="hint">Un groupe AVEC réunit en général 15 à 35 personnes du même village qui se font confiance et habitent près les unes des autres.</p>`;
   },
@@ -351,7 +357,7 @@ ACT.cCreate = () => {
   const start = fromIso(r.cycleStart);
   const members = d.members.map(m => ({
     id: id + '-' + m.id, name: m.name, sex: m.sex, phone: m.phone || '—', pin: newPin(), joined: Date.now(),
-    birthYear: m.birthYear || null, activity: m.activity || '', address: m.address || '',
+    birthYear: m.birthYear || null, birthDate: m.birthDate || '', photo: m.photo || '', activity: m.activity || '', address: m.address || '',
     role: m.id === R.P ? 'president' : m.id === R.S ? 'secretaire' : m.id === R.T ? 'tresorier' : (m.id === R.C1 || m.id === R.C2) ? 'compteur' : 'membre',
     key: [R.K1, R.K2, R.K3].includes(m.id)
   }));
@@ -359,7 +365,7 @@ ACT.cCreate = () => {
     id, name: g.name, village: g.village, territoire: g.territoire || '—',
     province: g.province, entite: g.entite, secteur: g.secteur, groupement: g.groupement,
     orgId: d.from === 'login' ? null : u.orgId, animId: d.from === 'org' ? g.animId : d.from === 'anim' ? u.id : null,
-    createdAt: fromIso(g.createdOn), cycle: { n: 1, start, end: start + r.cycleMonths * 30 * DAY }, cycles: [],
+    embleme: Object.assign({}, EMB_DEFAUT, g.embleme || {}), createdAt: fromIso(g.createdOn), cycle: { n: 1, start, end: start + r.cycleMonths * 30 * DAY }, cycles: [],
     settings: { partValue: r.partValue, maxParts: r.maxParts, socialFee: r.socialFee, rate: r.rate, maxMult: r.maxMult, maxMonths: r.maxMonths, fineAbsent: r.fineAbsent, fineLate: r.fineLate, penaltyRate: r.penaltyRate != null ? r.penaltyRate : r.rate, cycleMonths: r.cycleMonths, meetingDay: g.meetingDay, frequency: g.frequency },
     members, meetings: [], tx: [], visits: [], lastSync: 0
   };

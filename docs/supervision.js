@@ -20,10 +20,10 @@ const rememberAvec = id => { try { localStorage.setItem(LAST_AVEC, id); } catch 
 /* le grand bouton « AVEC » : une seule AVEC (ou la dernière utilisée) = un toucher jusqu'à la liste des noms */
 function avecCard() {
   const list = K.data.avecs;
-  const inner = (name, sub) => `<span class="ic">${ic('users')}</span><span class="t"><b>AVEC</b><span class="nm">${name}</span><span class="sub">${sub}</span></span>${ic('chev')}`;
+  const inner = (name, sub, avec) => `<span class="ic">${avec ? emblemeHtml(avec, 44) : ic('users')}</span><span class="t"><b>AVEC</b><span class="nm">${name}</span><span class="sub">${sub}</span></span>${ic('chev')}`;
   if (!list.length) return `<button class="avec-main" data-act="avecStart">${inner('Entrer mon AVEC', 'Touchez pour recevoir ou créer votre AVEC')}</button>`;
   const pick = list.length === 1 ? list[0] : list.find(a => a.id === lastAvecId());
-  if (pick) return `<button class="avec-main" data-act="go" data-to="l.member" data-id="${pick.id}">${inner(esc(pick.name), esc(pick.village) + ' · touchez pour entrer')}</button>
+  if (pick) return `<button class="avec-main" data-act="go" data-to="l.member" data-id="${pick.id}">${inner(esc(pick.name), esc(pick.village) + ' · touchez pour entrer', pick)}</button>
     ${list.length > 1 ? `<button class="linkbtn" data-act="go" data-to="l.avec">Autre AVEC sur ce téléphone (${list.length})</button>` : ''}`;
   return `<button class="avec-main" data-act="go" data-to="l.avec">${inner('Choisir mon AVEC', list.length + ' AVEC sur ce téléphone')}</button>`;
 }
@@ -159,7 +159,7 @@ ACT.resetDemo = () => App.openSheet(`<h2>Remettre la démo à zéro ?</h2><p cla
 ACT.resetDemoOk = () => { DB.reset(); Object.keys(_chain).forEach(k => delete _chain[k]); App.go('login'); App.toast('Démo rechargée'); };
 
 SCREENS['l.avec'] = () => `<div class="shell">${topbar('Choisir mon AVEC', 'Sur ce téléphone', backBtn('login'))}<main class="main">
-  <div class="list">${K.data.avecs.map(a => `<button class="li" data-act="go" data-to="l.member" data-id="${a.id}"><span class="av" style="border-radius:12px">${ic('users')}</span>
+  <div class="list">${K.data.avecs.map(a => `<button class="li" data-act="go" data-to="l.member" data-id="${a.id}">${emblemeHtml(a, 42)}
     <span class="grow"><b>${esc(a.name)}</b><span class="small muted">${esc(a.village)} · ${a.members.length} membres</span></span>
     ${a.status === 'pending' ? '<span class="chip warn">À valider</span>' : a.status === 'refused' ? '<span class="chip bad">Refusée</span>' : `<span class="chip ${a.orgId ? 'brand' : ''}">${a.orgId ? 'Suivie' : 'Autonome'}</span>`}</button>`).join('') || '<div class="li muted">Aucune AVEC sur ce téléphone. Créez-en une depuis l\'accueil.</div>'}</div>
   <button class="linkbtn" data-act="receiveSheet">Recevoir une autre AVEC (fichier envoyé par l'animateur)</button></main></div>`;

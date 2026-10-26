@@ -2,8 +2,25 @@
 'use strict';
 
 const ACTIVITIES = ['Agriculture', 'Petit commerce', 'Élevage', 'Pêche', 'Artisanat', 'Couture', 'Transport (moto, vélo)', 'Enseignement', 'Santé', 'Travaux ménagers', 'Élève ou étudiant', 'Salarié', 'Sans activité'];
-const FIELD_LABEL = { name: 'nom', sex: 'sexe', birthYear: 'âge', phone: 'téléphone', activity: 'activité', address: 'adresse' };
-const ageOf = m => (m && m.birthYear ? new Date().getFullYear() - m.birthYear : null);
+const FIELD_LABEL = { name: 'nom', sex: 'sexe', birthYear: 'âge', birthDate: 'date de naissance', photo: 'photo', phone: 'téléphone', activity: 'activité', address: 'adresse' };
+/* La date de naissance exacte figure sur la carte d'électeur ou l'acte de naissance ; beaucoup ne
+   l'ont pas sous la main, et personne ne doit rester bloqué à l'inscription pour autant. On accepte
+   donc les deux : la date quand elle est connue, l'âge approximatif sinon. La date, plus précise,
+   l'emporte, et l'âge se recalcule tout seul d'une année sur l'autre au lieu de vieillir faux. */
+function ageAu(iso, t) {
+  const d = new Date(iso + 'T00:00:00'), n = new Date(t);
+  let a = n.getFullYear() - d.getFullYear();
+  const m = n.getMonth() - d.getMonth();
+  if (m < 0 || (m === 0 && n.getDate() < d.getDate())) a--;
+  return a;
+}
+const estDateNaiss = v => typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v);
+const ageOf = m => {
+  if (!m) return null;
+  if (estDateNaiss(m.birthDate)) { const a = ageAu(m.birthDate, Date.now()); return a >= 0 && a <= 120 ? a : null; }
+  return m.birthYear ? new Date().getFullYear() - m.birthYear : null;
+};
+const birthLabel = m => (m && estDateNaiss(m.birthDate) ? fdate(fromIso(m.birthDate)) : null);
 const hasPhone = m => !!(m && m.phone && m.phone !== '—');
 
 /* Numéro congolais : 9 chiffres commençant par 8 ou 9, avec ou sans 0 ou +243. '' si vide, null si faux. */
@@ -20,12 +37,14 @@ function memberFormHtml(p, m = {}) {
   const opt = '<span class="opt">facultatif</span>';
   const act = m.activity && !ACTIVITIES.includes(m.activity) ? 'Autre' : (m.activity || '');
   return `<div class="stack">
+    ${photoChamp(p, m)}
     <div class="field"><label for="${p}Name">Nom complet</label><input id="${p}Name" class="input" value="${esc(m.name || '')}" autocomplete="off" placeholder="Ex. Kavira Mbusa"></div>
     <div class="field"><span class="flabel">Sexe</span><div class="choice" role="radiogroup" aria-label="Sexe">
       <label><input type="radio" name="${p}Sex" value="F" ${m.sex !== 'M' ? 'checked' : ''}><span>Femme</span></label>
       <label><input type="radio" name="${p}Sex" value="M" ${m.sex === 'M' ? 'checked' : ''}><span>Homme</span></label></div></div>
     <div class="grid2">
-      <div class="field"><label for="${p}Age">Âge ${opt}</label><input id="${p}Age" class="input num" inputmode="numeric" maxlength="3" value="${ageOf(m) || ''}" placeholder="Ex. 34" autocomplete="off"></div>
+      <div class="field"><label for="${p}Nai">Date de naissance ${opt}</label><input id="${p}Nai" type="date" class="input" value="${esc(m.birthDate || '')}" max="${isoDay(Date.now())}"></div>
+      <div class="field"><label for="${p}Age">Âge approximatif ${opt}</label><input id="${p}Age" class="input num" inputmode="numeric" maxlength="3" value="${m.birthDate ? '' : (ageOf(m) || '')}" placeholder="Ex. 34" autocomplete="off"></div>
       <div class="field"><label for="${p}Tel">Téléphone ${opt}</label><input id="${p}Tel" class="input" inputmode="tel" value="${esc(hasPhone(m) ? m.phone : '')}" placeholder="099 123 4567" autocomplete="off"></div>
     </div>
     <div class="field"><label for="${p}Act">Activité ${opt}</label><select id="${p}Act" class="input" data-in="actOther" data-p="${p}"><option value="">Choisir…</option>${ACTIVITIES.concat('Autre').map(a => `<option value="${a}" ${a === act ? 'selected' : ''}>${a}</option>`).join('')}</select></div>
@@ -40,8 +59,14 @@ function readMemberForm(p) {
   if (name.length < 3) return { error: 'Écrivez le nom complet du membre' };
   const sexEl = document.querySelector(`input[name="${p}Sex"]:checked`);
   const ageTxt = (fval(p + 'Age') || '').trim();
-  let birthYear = null;
-  if (ageTxt) {
+  const nai = (fval(p + 'Nai') || '').trim();
+  let birthYear = null, birthDate = '';
+  if (nai) {
+    if (!estDateNaiss(nai)) return { error: 'Date de naissance incomplète' };
+    const a = ageAu(nai, Date.now());
+    if (!(a >= 15 && a <= 100)) return { error: 'La date de naissance doit donner un âge entre 15 et 100 ans' };
+    birthDate = nai; birthYear = +nai.slice(0, 4);
+  } else if (ageTxt) {
     const a = parseInt(ageTxt.replace(/\D/g, ''), 10);
     if (!(a >= 15 && a <= 100)) return { error: 'L\'âge doit être entre 15 et 100 ans' };
     birthYear = new Date().getFullYear() - a;
@@ -50,7 +75,11 @@ function readMemberForm(p) {
   if (phone === null) return { error: 'Numéro de téléphone incorrect. Exemple : 099 123 4567' };
   let activity = fval(p + 'Act') || '';
   if (activity === 'Autre') activity = (fval(p + 'ActO') || '').trim();
-  return { data: { name, sex: sexEl ? sexEl.value : 'F', birthYear, phone: phone || '—', activity, address: (fval(p + 'Adr') || '').trim() } };
+  const data = { name, sex: sexEl ? sexEl.value : 'F', birthYear, birthDate, phone: phone || '—', activity, address: (fval(p + 'Adr') || '').trim() };
+  /* la photo n'est touchée que si on en a pris une, ou si on l'a retirée */
+  const ph = photoLue(p);
+  if (ph !== undefined) data.photo = ph || '';
+  return { data };
 }
 
 const memberBrief = m => [m.sex === 'M' ? 'Homme' : 'Femme', ageOf(m) ? ageOf(m) + ' ans' : '', m.activity || '', hasPhone(m) ? m.phone : ''].filter(Boolean).map(esc).join(' · ');
@@ -60,7 +89,7 @@ function memberInfo(m) {
   const row = (k, v) => `<div class="row between small"><span class="muted">${k}</span><b style="text-align:right">${v || none}</b></div>`;
   return `<section class="card stack" style="gap:8px"><h3>Informations</h3>
     ${row('Sexe', m.sex === 'M' ? 'Homme' : 'Femme')}
-    ${row('Âge', ageOf(m) ? ageOf(m) + ' ans' : '')}
+    ${row('Âge', ageOf(m) ? ageOf(m) + ' ans' + (birthLabel(m) ? ' · né' + (m.sex === 'M' ? '' : 'e') + ' le ' + birthLabel(m) : '') : '')}
     ${row('Téléphone', hasPhone(m) ? `<a href="tel:${esc(m.phone.replace(/\s/g, ''))}" style="color:var(--brand)">${esc(m.phone)}</a>` : '')}
     ${row('Activité', esc(m.activity || ''))}
     ${row('Adresse', esc(m.address || ''))}
@@ -69,6 +98,7 @@ function memberInfo(m) {
 
 ACT.editMemberSheet = d => {
   const { avec } = cur(); const x = memberOf(avec, d.id);
+  photoOublier('em');
   App.openSheet(`<h2>Modifier les informations</h2><p class="small muted">Seuls le nom et le sexe sont obligatoires.</p>
     ${memberFormHtml('em', x)}
     <button class="btn primary block xl" data-act="saveMemberInfo" data-id="${x.id}">${ic('check')} Enregistrer</button>`);
@@ -78,10 +108,14 @@ ACT.saveMemberInfo = d => {
   if (!isBureau(me) && me.id !== x.id) return App.toast('Seul le bureau ou le membre lui-même peut modifier cette fiche');
   const r = readMemberForm('em'); if (r.error) return App.toast(r.error);
   if (avec.members.some(m => m.id !== x.id && !m.left && m.name.toLowerCase() === r.data.name.toLowerCase())) return App.toast('Ce nom existe déjà dans le groupe');
+  const avant = JSON.parse(JSON.stringify(x));
   const changed = Object.keys(r.data).filter(k => String(x[k] == null ? '' : x[k]) !== String(r.data[k] == null ? '' : r.data[k]));
   Object.assign(x, r.data);
-  if (changed.length) secLog(avec, 'fiche modifiée', x.id, `${me.name} : ${changed.map(k => FIELD_LABEL[k]).join(', ')}`);
-  DB.save(); App.closeSheet(); App.toast('Informations enregistrées');
+  if (changed.length) secLog(avec, 'fiche modifiée', x.id, `${me.name} : ${changed.map(k => FIELD_LABEL[k] || k).join(', ')}`);
+  photoOublier('em');
+  /* une photo de trop et la mémoire du téléphone déborde : on le dit, et on remet la fiche comme avant */
+  if (!DB.save()) { Object.assign(x, avant); DB.save(); App.closeSheet(); return App.toast('Mémoire du téléphone pleine : la photo n\'a pas pu être gardée'); }
+  App.closeSheet(); App.toast('Informations enregistrées');
 };
 
 /* profil du groupe, pour l'animateur et l'organisation */

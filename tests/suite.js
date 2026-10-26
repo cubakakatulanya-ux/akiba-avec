@@ -714,5 +714,132 @@ window.__akibaTests = async function () {
     must(cleanXfer('AB3DEF7H et aussi ZZ9YXW8V') !== vrai, 'Akiba ne doit pas deviner entre deux codes');
     return formes.length + ' façons d’écrire le même code';
   });
+
+  /* ---------- W. le rêve d’un membre, et la projection ---------- */
+  await t("Le rêve se calcule sur le rythme réel, et ne ment pas", () => {
+    if (typeof reveAvance !== 'function') return 'sans objet';
+    const a = avecById(A);
+    const st = stats(a);
+    const x = activeM(a).find(m => st.mem[m.id] && st.mem[m.id].parts > 0);
+    must(x, 'aucun membre avec des parts');
+    const d = st.mem[x.id];
+    const valeur = Math.round(d.parts * st.shareValue);
+    /* un rêve déjà atteint doit le dire */
+    x.reve = { titre: 'Chevre', montant: Math.max(1, Math.round(valeur / 2)), cree: Date.now() };
+    let r = reveAvance(a, st, x);
+    eq(r.quand, 'fait', 'un rêve déjà couvert doit être annoncé atteint');
+    eq(r.reste, 0, 'il ne reste rien à épargner');
+    /* un rêve lointain : une date, et jamais dans le passé */
+    x.reve = { titre: 'Toit en toles', montant: valeur * 4, cree: Date.now() };
+    r = reveAvance(a, st, x);
+    must(r.reste > 0, 'il doit rester à épargner');
+    must(r.pct > 0 && r.pct < 1, 'l’avancement doit être entre 0 et 100 %');
+    must(typeof r.quand === 'number' && r.quand > Date.now(), 'la date estimée doit être dans le futur');
+    /* la projection s’appuie sur le rythme réel */
+    const p = projectionCycle(a, st, x);
+    must(p.rythme > 0, 'le rythme doit être calculé');
+    must(p.partsFin >= d.parts, 'la projection ne peut pas faire perdre des parts');
+    must(p.valeurFin >= p.valeurAujourdhui, 'la valeur projetée ne peut pas baisser');
+    /* un membre qui n'achète rien : aucune date inventée */
+    const st0 = JSON.parse(JSON.stringify({ parts: 0 }));
+    const faux = { id: x.id, reve: { titre: 'Moto', montant: 100000 } };
+    const stVide = Object.assign({}, st, { mem: Object.assign({}, st.mem, { [x.id]: Object.assign({}, d, { parts: 0 }) }) });
+    const r0 = reveAvance(a, stVide, faux);
+    must(r0.quand === null, 'sans parts achetées, aucune date ne doit être annoncée');
+    /* la ligne du reçu tient dans la bande */
+    x.reve = { titre: 'Toit en toles', montant: valeur * 4, cree: Date.now() };
+    const ligne = reveLigneRecu(a, st, x);
+    must(ligne && ligne.length <= RECU_W, 'la ligne du reçu dépasse la largeur du papier');
+    delete x.reve;
+    return 'rêve, projection et ligne de reçu vérifiés';
+  });
+
+  /* ---- le signe du groupe : reconnaissable, et il suit le groupe partout ---- */
+  t('Le signe du groupe se choisit, se garde et s’imprime', () => {
+    const a = avecById('avec1');
+    /* un groupe sans signe n’affiche pas une case vide : il reçoit le signe par défaut */
+    const sans = Object.assign({}, a); delete sans.embleme;
+    const d = emblemeDe(sans);
+    must(EMBLEMES[d.signe] && TEINTES[d.teinte], 'un groupe sans signe doit retomber sur le signe par défaut');
+    /* un signe inventé ne casse pas l’affichage */
+    const faux = emblemeDe({ embleme: { signe: 'licorne', teinte: 'rose' } });
+    eq(faux.signe, EMB_DEFAUT.signe, 'un signe inconnu doit retomber sur le défaut');
+    eq(faux.teinte, EMB_DEFAUT.teinte, 'une couleur inconnue doit retomber sur le défaut');
+    /* chaque signe est un dessin valable, et chaque couleur a son trait lisible */
+    Object.entries(EMBLEMES).forEach(([id, sg]) => {
+      must(sg.nom && sg.d.indexOf('<') === 0, 'le signe ' + id + ' doit être un dessin');
+    });
+    Object.entries(TEINTES).forEach(([id, c]) => {
+      must(/^#[0-9A-Fa-f]{6}$/.test(c.fond) && /^#[0-9A-Fa-f]{6}$/.test(c.trait), 'la couleur ' + id + ' doit être complète');
+    });
+    /* le badge se dessine sans image à charger : aucune requête réseau sur un téléphone hors réseau */
+    const h = emblemeHtml(a, 40);
+    must(h.indexOf('<svg') > 0 && h.indexOf('<img') < 0, 'le signe ne doit charger aucune image');
+    must(emblemeImprime(a, 22).indexOf('#000') > 0, 'la carte papier doit imprimer le signe en noir');
+    /* la grille de choix propose tous les signes et toutes les couleurs */
+    const g = emblemeChoix('cEmbleme', EMB_DEFAUT);
+    Object.keys(EMBLEMES).forEach(id => must(g.indexOf('data-signe="' + id + '"') > 0, 'le signe ' + id + ' manque dans la grille'));
+    Object.keys(TEINTES).forEach(id => must(g.indexOf('data-teinte="' + id + '"') > 0, 'la couleur ' + id + ' manque dans la grille'));
+    /* le changement par le bureau est tracé dans le journal de sécurité */
+    const avant = (a.security || []).length, garde = a.embleme;
+    K.session = { kind: 'avec', avecId: a.id, memberId: a.members.find(m => m.role === 'president').id };
+    App.embleme = { signe: 'epi', teinte: 'jaune' };
+    ACT.emblemeSave();
+    eq(a.embleme.signe, 'epi', 'le signe choisi doit être gardé');
+    must((a.security || []).length === avant + 1, 'le changement de signe doit être tracé');
+    a.embleme = garde; DB.save();
+    return 'signe par défaut, grille complète, impression noire et trace vérifiés';
+  });
+
+  /* ---- la date de naissance, et l’âge qui reste juste d’une année sur l’autre ---- */
+  t('L’âge se déduit de la date de naissance, et refuse l’impossible', () => {
+    const an = new Date().getFullYear();
+    /* un anniversaire déjà passé cette année, et un autre encore à venir */
+    eq(ageAu('2000-01-01', new Date(an, 11, 31).getTime()), an - 2000, 'anniversaire passé : l’âge est complet');
+    eq(ageAu(an - 30 + '-12-31', new Date(an, 0, 1).getTime()), 29, 'anniversaire à venir : une année de moins');
+    /* la date l’emporte sur l’année seule, et une date absente ne casse rien */
+    eq(ageOf({ birthDate: (an - 40) + '-06-15', birthYear: 1900 }), ageAu((an - 40) + '-06-15', Date.now()), 'la date doit l’emporter sur l’année');
+    eq(ageOf({ birthYear: an - 25 }), 25, 'sans date, l’âge se calcule sur l’année');
+    eq(ageOf({}), null, 'sans rien, aucun âge inventé');
+    eq(ageOf({ birthDate: '15 juin' }), null, 'une date mal écrite ne doit pas produire d’âge');
+    return 'date de naissance, âge dérivé et cas limites vérifiés';
+  });
+
+  /* ---- la photo : facultative, légère, et elle ne tient pas la mémoire en otage ---- */
+  t('La photo d’un membre reste facultative et légère', () => {
+    const a = avecById('avec1'), x = a.members.find(m => !m.left);
+    /* aucun membre de la graine n’a de photo : les initiales suffisent */
+    eq(photoDe(x), null, 'un membre sans photo ne doit pas en inventer une');
+    must(avatar(x).indexOf('<img') < 0, 'sans photo, l’avatar garde les initiales');
+    /* une valeur douteuse n’est jamais affichée comme une image */
+    eq(photoDe({ photo: 'javascript:alert(1)' }), null, 'seule une image enregistrée peut s’afficher');
+    eq(photoDe({ photo: '' }), null, 'une photo retirée ne doit plus s’afficher');
+    /* une photo présente apparaît dans l’avatar et sur la carte imprimée */
+    const faux = 'data:image/jpeg;base64,' + 'A'.repeat(64);
+    x.photo = faux;
+    must(avatar(x).indexOf('<img') > 0, 'avec photo, l’avatar doit la montrer');
+    must(carteHTML(a, x, a.tx.length).indexOf('class="photo"') > 0, 'la carte papier doit porter la photo');
+    /* le poids reste sous le plafond : trente-cinq membres doivent tenir dans la mémoire */
+    must(PHOTO_MAX * 35 < 1024 * 1024, 'trente-cinq photos doivent tenir dans un méga-octet');
+    delete x.photo;
+    must(carteHTML(a, x, a.tx.length).indexOf('class="photo"') < 0, 'sans photo, la carte n’en montre aucune');
+    DB.save();
+    return 'photo facultative, avatar, carte et plafond de poids vérifiés';
+  });
+
+  t('Un enregistrement impossible ne passe plus en silence', () => {
+    /* le cas qui faisait tout perdre : mémoire pleine, et l’application continuait comme si de rien n’était */
+    const vrai = localStorage.setItem.bind(localStorage);
+    let dit = '';
+    const toast = App.toast; App.toast = m => { dit = m; };
+    localStorage.setItem = () => { const e = new Error('quota'); e.name = 'QuotaExceededError'; throw e; };
+    DB.enPanne = false;
+    const r = DB.save();
+    localStorage.setItem = vrai; App.toast = toast; DB.enPanne = false;
+    eq(r, false, 'un enregistrement qui échoue doit le dire');
+    must(dit.indexOf('mémoire') > 0 || dit.indexOf('garder') > 0, 'l’utilisateur doit être prévenu');
+    eq(DB.save(), true, 'un enregistrement qui réussit doit rendre true');
+    return 'échec d’enregistrement signalé au lieu d’être avalé';
+  });
   return res;
 };
