@@ -486,6 +486,7 @@ SCREENS['a.more'] = () => {
       ${li('guide', 'book', 'Guide d\'utilisation', 'Tout sur l\'AVEC et l\'application')}
       ${li('', 'globe', 'Langue', I18N.name(), 'langSheet')}
       ${li('', 'eye', 'Apparence', THEMES[themeChoisi()], 'themeSheet')}
+      ${li('', sonActif() ? 'bell' : 'bellOff', 'Sons', sonActif() ? 'Une note à chaque écriture' : 'Coupés', 'sonSheet')}
       ${li('', 'cloud', 'Synchronisation', `${pending(avec)} écriture(s) à envoyer`, 'syncSheet')}
     </div>
     <section class="section"><h2>Règlement intérieur · cycle ${avec.cycle.n}</h2><div class="list">

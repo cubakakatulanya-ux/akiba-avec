@@ -491,6 +491,8 @@ ACT.saveClose = () => {
   });
   if (m.openExpected === undefined) { m.openExpected = m.openCount = st.cash; }
   DB.save();
+  /* la réunion est scellée : trois notes qui montent, que toute l’assemblée entend */
+  if (typeof jouerSon === 'function') { jouerSon('scelle'); vibrer([25, 60, 25, 60, 40]); }
   if (K.data.net.online) syncAvec(avec);
   App.go('a.receipt', { id: m.id });
 };

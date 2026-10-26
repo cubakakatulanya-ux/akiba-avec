@@ -841,5 +841,85 @@ window.__akibaTests = async function () {
     eq(DB.save(), true, 'un enregistrement qui réussit doit rendre true');
     return 'échec d’enregistrement signalé au lieu d’être avalé';
   });
+
+  /* ---- les sons : courts, reconnaissables, et jamais indispensables ---- */
+  t('Chaque message sonne ce qu’il veut dire', () => {
+    /* un refus descend, une réussite monte : on comprend sans lire */
+    eq(sonDuMessage('Enregistré'), 'ok', 'un message neutre sonne la réussite');
+    eq(sonDuMessage('Montant incorrect'), 'erreur', 'un refus doit sonner comme un refus');
+    eq(sonDuMessage('Réservé au bureau'), 'erreur', 'un accès refusé doit sonner comme un refus');
+    eq(sonDuMessage('Pas de réseau. Tout reste enregistré sur ce téléphone.'), 'erreur', 'un empêchement doit sonner comme tel');
+    eq(sonDuMessage('Écart de caisse : vérifiez le comptage'), 'alerte', 'une vérification à faire a son propre son');
+    /* aucun son ne dure plus d’un tiers de seconde : on accompagne, on ne sursaute pas */
+    Object.entries(SONS).forEach(([n, notes]) => {
+      const fin = Math.max.apply(null, notes.map(x => x[1] + x[2]));
+      must(fin <= 0.32, 'le son ' + n + ' est trop long (' + fin + 's)');
+      notes.forEach(x => must(x[3] <= 0.2, 'le son ' + n + ' est trop fort'));
+    });
+    /* un téléphone sans audio ne doit jamais faire échouer une écriture */
+    jouerSon('inconnu'); jouerSon('ok'); vibrer(10);   /* ne doit jamais lever */
+    eq(typeof jouerSon('ok'), 'undefined', 'jouer un son ne rend rien et ne bloque rien');
+    /* le réglage se coupe et se retrouve */
+    const av = sonActif();
+    sonActifSet(false); eq(sonActif(), false, 'les sons doivent pouvoir se couper');
+    sonActifSet(true); eq(sonActif(), true, 'les sons doivent pouvoir revenir');
+    sonActifSet(av);
+    return 'direction du son, durée, volume et absence d’audio vérifiés';
+  });
+
+  /* ---- la langue : une seule traduction doit couvrir toutes les lignes de même forme ---- */
+  t('Le motif réduit mille phrases presque identiques à une seule', () => {
+    const a = avecById('avec1'), x = a.members.find(m => !m.left);
+    /* un montant, une date, un nom : trois données, un seul motif */
+    eq(motifDe('Épargne 3 000 FC'), 'Épargne {n}', 'un montant doit devenir {n}');
+    eq(motifDe('Épargne 500 FC'), 'Épargne {n}', 'deux montants donnent le même motif');
+    eq(motifDe('Épargne (parts) · 5 parts'), 'Épargne (parts) · {n} parts', 'le mot qui suit le nombre doit rester');
+    eq(motifDe('Semaine 14 sur 17'), 'Semaine {n} sur {n}', 'deux nombres restent deux places');
+    eq(motifDe('e4b2ea7ca3 · non envoyé'), '{n} · non envoyé', 'une empreinte de journal n’est pas un mot');
+    /* les vrais mots ne doivent pas être pris pour des données */
+    eq(motifDe('Caisse sociale'), 'Caisse sociale', 'une phrase sans chiffre ne doit pas changer');
+    eq(motifDe('Bénéfice'), 'Bénéfice', 'un mot qui ressemble à de l’hexadécimal doit survivre');
+    /* et le motif se remplit à nouveau à l’affichage, nombre à sa place */
+    I18N.set('ln');
+    const dit = I18N.t('Épargne 7 500 FC');
+    must(dit.indexOf('7 500') > 0, 'le montant doit revenir dans la phrase traduite');
+    must(dit.indexOf('Épargne') < 0, 'la phrase doit bien être traduite');
+    I18N.set('fr');
+    return 'motif, empreintes, mots protégés et remise en place du nombre vérifiés';
+  });
+
+  t('La couverture annoncée est celle que l’utilisateur voit', () => {
+    /* Le défaut corrigé : la feuille de langue annonçait « Complète » pour le lingála en comptant
+       un dictionnaire de référence, alors que la plupart des écrans restaient en français. */
+    K.data.i18nVu = {}; K.data.i18nManque = {};
+    eq(I18N.reelle('ln'), null, 'sans rien avoir affiché, on n’annonce aucun pourcentage');
+    eq(I18N.reelle('fr'), 1, 'le français est toujours complet');
+    I18N.noter('ln', 100, 40, { 'Caisse sociale': 3, 'Bénéfice': 1 });
+    eq(I18N.reelle('ln'), 0.4, 'la couverture réelle est traduit / total');
+    const liste = I18N.aTraduire('ln');
+    eq(liste[0].k, 'Caisse sociale', 'la phrase la plus vue vient en premier');
+    eq(liste.length, 2, 'toutes les phrases manquantes sont proposées');
+    /* une phrase qui n’en est pas une ne doit jamais arriver jusqu’au traducteur */
+    must(!estPhrase('3 500 FC'), 'un montant n’est pas une phrase');
+    must(!estPhrase('KV'), 'des initiales ne sont pas une phrase');
+    must(!estPhrase(avecById('avec1').members[0].name), 'un nom de membre ne se traduit pas');
+    must(estPhrase('Caisse sociale'), 'une vraie phrase doit être proposée');
+    K.data.i18nVu = {}; K.data.i18nManque = {}; DB.save();
+    return 'couverture réelle, liste par fréquence et tri des non-phrases vérifiés';
+  });
+
+  t('Les dates se disent dans la langue choisie', () => {
+    const d = new Date(2026, 10, 1).getTime();   /* un dimanche */
+    must(/dim/.test(fdateL(d, 'fr')), 'en français, la date reste française');
+    eq(fdateL(d, 'sw'), 'jumapili 1 nov.', 'en kiswahili, le jour et le mois changent');
+    must(fdateL(d, 'ln').indexOf('eyenga') === 0, 'en lingála, dimanche se dit eyenga');
+    /* une langue sans calendrier garde le français plutôt qu’un mot inventé */
+    must(/dim/.test(fdateL(d, 'lua')), 'sans calendrier connu, la date reste en français');
+    /* et une date traduite ne doit pas revenir dans la liste à traduire */
+    I18N.set('sw');
+    eq(motifDe('jumapili 1 nov.'), '{n}', 'une date déjà traduite reste une date');
+    I18N.set('fr');
+    return 'dates en kiswahili et en lingála, repli honnête ailleurs';
+  });
   return res;
 };

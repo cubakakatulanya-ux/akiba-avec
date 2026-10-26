@@ -58,7 +58,8 @@ const grp = n => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
 const fc = n => (n < 0 ? '−' : '') + grp(Math.abs(n)) + ' FC';
 const fck = n => Math.abs(n) >= 1e6 ? (n / 1e6).toFixed(1).replace('.', ',') + ' M FC' : fc(n);
 const pct = x => Math.round(x * 100) + ' %';
-const fdate = ts => new Date(ts).toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' });
+/* la date suit la langue choisie quand Akiba sait la dire (voir CALENDRIER dans i18n.js) */
+const fdate = ts => (typeof fdateL === 'function' ? fdateL(ts) : new Date(ts).toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' }));
 /* Une échéance ne doit jamais tomber un jour où le groupe ne se réunit pas : personne ne peut
    rembourser ce jour-là, et le crédit passerait « en retard » un jour sans réunion. On reporte
    donc l'échéance au premier jour de réunion qui suit — jamais avant, pour ne pénaliser personne.
@@ -634,6 +635,8 @@ const App = {
   toast(msg) {
     const el = document.createElement('div');
     el.className = 'toast'; el.setAttribute('role', 'status'); el.textContent = typeof I18N !== 'undefined' ? I18N.t(msg) : msg;
+    /* le son dit ce que le message dit, pour qui ne regarde pas l'écran ou ne sait pas lire */
+    if (typeof jouerSon === 'function') { const s = sonDuMessage(msg); jouerSon(s); vibrer(s === 'erreur' ? [30, 50, 30] : 18); }
     document.body.appendChild(el);
     setTimeout(() => el.remove(), 2800);
   }
