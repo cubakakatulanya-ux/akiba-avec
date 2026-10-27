@@ -921,5 +921,148 @@ window.__akibaTests = async function () {
     I18N.set('fr');
     return 'dates en kiswahili et en lingála, repli honnête ailleurs';
   });
+
+  /* ---- le guide traduit section par section, et qui dit où il en est ---- */
+  t('Le guide se traduit par sections entières, sans mentir sur le reste', () => {
+    /* chaque section traduite doit avoir un titre ET un corps : un titre seul tromperait */
+    Object.entries(GUIDE_TR).forEach(([lang, d]) => {
+      Object.entries(d).forEach(([id, x]) => {
+        must(GUIDE.some(g => g.id === id), 'la section traduite ' + id + ' (' + lang + ') n’existe plus dans le guide');
+        must(x.t && x.t.length > 2, 'la section ' + id + ' (' + lang + ') n’a pas de titre');
+        must(x.b && x.b.length > 80, 'la section ' + id + ' (' + lang + ') n’a pas de corps');
+        must(x.b.indexOf('<') >= 0, 'le corps de ' + id + ' (' + lang + ') doit être de la prose mise en forme');
+        /* une balise ouverte et jamais refermée casserait la page entière */
+        ['p', 'ul', 'ol', 'li', 'b', 'h4', 'div'].forEach(b => {
+          const o = (x.b.match(new RegExp('<' + b + '[ >]', 'g')) || []).length;
+          const f = (x.b.match(new RegExp('</' + b + '>', 'g')) || []).length;
+          eq(o, f, 'balise <' + b + '> mal fermée dans ' + id + ' (' + lang + ')');
+        });
+      });
+    });
+    /* en français, le guide est toujours le guide */
+    I18N.set('fr');
+    const fr = guideSection(GUIDE[0]);
+    eq(fr.traduit, false, 'le français n’est pas une traduction');
+    eq(fr.t, GUIDE[0].t, 'en français, le titre d’origine est gardé');
+    eq(guideCouverture('fr', GUIDE), 1, 'le guide est complet en français');
+    /* en kiswahili, les sections écrites sont servies, les autres restent en français */
+    I18N.set('sw');
+    const sw = guideSection(GUIDE.find(g => g.id === 'reunion'));
+    eq(sw.traduit, true, 'la section réunion doit être traduite en kiswahili');
+    must(sw.b.indexOf('mkutano') > 0, 'le corps kiswahili doit être du kiswahili');
+    const staff = guideSection(GUIDE.find(g => g.id === 'organisation'));
+    eq(staff.traduit, false, 'une section de métier reste en français');
+    eq(staff.lang, 'sw', 'et la section sait dans quelle langue elle aurait dû être');
+    /* la couverture annoncée est comptée, pas devinée */
+    const c = guideCouverture('sw', GUIDE);
+    must(c > 0 && c < 1, 'le guide kiswahili doit être partiel, et le dire');
+    eq(Math.round(c * GUIDE.length), Object.keys(GUIDE_TR.sw).length, 'la couverture doit compter les sections écrites');
+    /* une langue sans guide ne doit pas afficher une page vide */
+    I18N.set('lua');
+    const lua = guideSection(GUIDE[0]);
+    eq(lua.traduit, false, 'sans traduction, on sert le français');
+    eq(lua.b, GUIDE[0].b, 'et le texte français est intact');
+    eq(guideCouverture('lua', GUIDE), 0, 'une langue sans guide annonce zéro');
+    I18N.set('fr');
+    return Object.keys(GUIDE_TR.sw).length + ' sections en kiswahili, ' + Object.keys(GUIDE_TR.ln).length + ' en lingála, balises et couverture vérifiées';
+  });
+
+  /* ---- la voix : respirer entre les phrases, et ralentir quand elle est mécanique ---- */
+  t('La lecture respire, et son débit suit la qualité de la voix', () => {
+    /* Le défaut qui faisait « robot » : un titre ou une ligne de liste sans point final
+       s'enchaînait au morceau suivant d'une seule traite, sans aucun silence. */
+    morceaux('Argent dans la caisse\nOuvrir la réunion').forEach(m => {
+      must(/[.!?;:,]$/.test(m), 'chaque morceau doit finir par une ponctuation : ' + JSON.stringify(m));
+    });
+    /* une ponctuation déjà là n'est pas doublée */
+    must(morceaux('Caisse juste.').every(m => !/\.\.$/.test(m)), 'le point ne doit pas être doublé');
+    /* les longues phrases restent coupées pour Chrome, et chaque bout respire */
+    const longue = morceaux('mot '.repeat(80));
+    must(longue.length > 1, 'une phrase trop longue doit être coupée');
+    longue.forEach(m => must(m.length <= 190, 'un morceau reste court : ' + m.length));
+    /* le débit : une voix naturelle garde le ton normal, une voix mécanique ralentit */
+    const bonne = { name: 'Google français Neural', lang: 'fr-FR' };
+    const robot = { name: 'eSpeak French', lang: 'fr-FR' };
+    eq(voixNaturelle(bonne), true, 'une voix neural doit être reconnue comme naturelle');
+    eq(voixNaturelle(robot), false, 'eSpeak n’est pas une voix naturelle');
+    eq(voixNaturelle({ name: 'Google espeak', lang: 'fr' }), false, 'le mot Google ne rachète pas eSpeak');
+    must(debitVoix(bonne, 'fr') > debitVoix(robot, 'fr'), 'une voix mécanique doit être lue plus lentement');
+    must(debitVoix(bonne, 'ln') < debitVoix(bonne, 'fr'), 'une langue lue par une voix d’emprunt ralentit encore');
+    must(debitVoix(robot, 'ln') >= 0.8, 'mais jamais au point de traîner');
+    eq(voixNaturelle(null), false, 'aucune voix n’est pas une voix naturelle');
+    return 'silences, découpe et débit selon la qualité de la voix vérifiés';
+  });
+
+  /* ---- un retard ou une absence qui a une raison ---- */
+  t('Un motif justifié enlève l’amende, et reste écrit', () => {
+    const a = avecById('avec1');
+    const chef = a.members.find(x => x.role === 'president' && !x.left);
+    K.session = { kind: 'avec', avecId: a.id, memberId: chef.id };
+    /* on ouvre une réunion pour travailler dessus */
+    let m = openMeeting(a);
+    const ouverte = !!m;
+    if (!m) { ACT.startMeeting(); m = openMeeting(a); }
+    must(!!m, 'il faut une réunion ouverte pour cet essai');
+    const x = a.members.find(y => !y.left && y.id !== chef.id);
+    const presAvant = m.presence[x.id], excAvant = JSON.parse(JSON.stringify(m.excuses || {}));
+
+    /* sans motif, l’absence est proposée à l’amende */
+    m.presence[x.id] = 'A';
+    delete (m.excuses || {})[x.id];
+    eq(estJustifie(m, x.id), false, 'sans motif, rien n’est justifié');
+    App.draftKey = null;
+    SCREENS['a.meet']({});
+    App.draftKey = null;
+
+    /* avec un motif, l’amende n’est plus proposée */
+    excuseEcrire(a, m, x, 'Deuil dans la famille', chef);
+    eq(estJustifie(m, x.id), true, 'le motif doit être enregistré');
+    eq(excuseDe(m, x.id).motif, 'Deuil dans la famille', 'le motif doit être celui choisi');
+    eq(excuseDe(m, x.id).par, chef.id, 'on doit savoir qui a justifié');
+    must((a.security || []).some(e => /justifi/i.test(e.type || '')), 'la justification doit laisser une trace');
+
+    /* le brouillon des amendes, reconstruit, ne propose plus celle-là */
+    App.draftKey = null;
+    const st = stats(a);
+    const late = activeM(a).filter(y => m.presence[y.id] && m.presence[y.id] !== 'P');
+    const dr = draft(m.id + ':fine', () => { const o = {}; late.forEach(y => { if (!estJustifie(m, y.id)) o[y.id] = true; }); return { on: o, pay: {}, pen: {} }; });
+    eq(!!dr.on[x.id], false, 'une absence justifiée ne doit pas être proposée à l’amende');
+    must(late.length <= 1 || Object.keys(dr.on).length === late.length - 1, 'les autres restent proposés à l’amende');
+
+    /* le motif part sur le journal de papier, dans la largeur de la bande */
+    const lignes = journalExcuses(a, m);
+    must(lignes.length >= 3, 'le journal doit porter le motif');
+    lignes.forEach(l => must(l.length <= RECU_W, 'ligne trop large pour le papier : ' + l));
+    must(lignes.join(' ').indexOf('Deuil') > 0, 'le motif doit être lisible sur le papier');
+    must(lignes.join(' ').indexOf(noAcc(x.name)) > 0, 'le nom doit accompagner le motif');
+
+    /* revenu présent, le motif disparaît : il n’a plus d’objet */
+    ACT.pres({ id: x.id, v: 'P' });
+    eq(estJustifie(m, x.id), false, 'présent, le motif ne doit plus traîner');
+
+    /* remise en état */
+    m.presence[x.id] = presAvant; m.excuses = excAvant;
+    if (!ouverte && openMeeting(a)) a.meetings = a.meetings.filter(y => y.id !== m.id);
+    App.draftKey = null; DB.save();
+    return 'motif gardé, amende non proposée, trace et journal de papier vérifiés';
+  });
+
+  t('Une phrase libre se replie sans perdre de lettres sur le papier', () => {
+    /* Le défaut corrigé : la découpe se faisait sur la lettre « s » au lieu des espaces, et tout
+       mot qui en contenait sortait amputé — « dans » devenait « dan » sur le journal imprimé. */
+    eq(rWrap('Deuil dans la famille').join('|'), 'Deuil dans la famille', 'une phrase courte ne doit pas être touchée');
+    eq(rWrap('sans cesse les mois passes').join(' '), 'sans cesse les mois passes', 'aucune lettre ne doit disparaître');
+    /* une phrase longue se coupe aux espaces, et chaque ligne tient dans la bande */
+    const long = rWrap('La tresoriere dit avoir laisse un billet a la maison ce matin la');
+    must(long.length > 1, 'une phrase longue doit être repliée');
+    long.forEach(l => must(l.length <= RECU_W, 'ligne trop large : ' + l.length));
+    eq(long.join(' ').replace(/ +/g, ' '), 'La tresoriere dit avoir laisse un billet a la maison ce matin la', 'le texte replié doit rester entier');
+    /* un mot plus long que la bande est coupé, pas perdu */
+    const enorme = rWrap('a'.repeat(50));
+    eq(enorme.length, 1, 'un mot trop long tient sur une ligne');
+    eq(enorme[0].length, RECU_W, 'et il est coupé à la largeur du papier');
+    eq(rWrap('').length, 0, 'une phrase vide ne produit rien');
+    return 'repli aux espaces, largeur et intégrité du texte vérifiés';
+  });
   return res;
 };

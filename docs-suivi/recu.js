@@ -23,7 +23,7 @@ const rRule = (c = '-', w = RECU_W) => c.repeat(w);
    soit-elle, ne peut déborder. */
 const rTicket = lignes => lignes.map(l => noAcc(String(l)).slice(0, RECU_W)).join(String.fromCharCode(10));
 function rWrap(texte, w = RECU_W) {
-  const mots = noAcc(String(texte || '')).split(/s+/).filter(Boolean);
+  const mots = noAcc(String(texte || '')).split(/\s+/).filter(Boolean);
   const out = []; let ligne = '';
   for (const mot of mots) {
     const m2 = mot.length > w ? mot.slice(0, w) : mot;
@@ -295,6 +295,19 @@ function journalText(avec, from, to) {
    ont été faites, avec les totaux, les trois clés et le sceau. C'est la pièce que le bureau
    garde dans la caisse et que l'animateur relit à sa visite — le procès-verbal de la séance,
    écrit par le logiciel plutôt qu'à la main. */
+/* les motifs de la réunion, sur le journal de papier : c'est la trace qui restera si le
+   téléphone se perd, et celle qu'on relit quand quelqu'un conteste une amende */
+function journalExcuses(avec, m) {
+  const e = Object.entries(m.excuses || {});
+  if (!e.length) return [];
+  const L = [rRule(), rCenter('MOTIFS JUSTIFIES')];
+  e.forEach(([id, x]) => {
+    const mem = avec.members.find(y => y.id === id);
+    L.push(noAcc((mem ? mem.name : '?') + ' (' + ((m.presence || {})[id] === 'A' ? 'absence' : 'retard') + ')'));
+    rWrap('  ' + noAcc(x.motif)).forEach(l => L.push(l));
+  });
+  return L;
+}
 function journalReunionText(avec, m) {
   const an = annulledSet(avec);
   const rows = avec.tx.filter(t => t.meetingId === m.id).map(t => Object.assign({ annulled: an.has(t.id) }, t));
@@ -322,6 +335,7 @@ function journalReunionText(avec, m) {
   });
   const sum = k => rows.filter(t => t.type === k && !t.annulled).reduce((a, t) => a + t.amount, 0);
   const kinds = [...new Set(rows.filter(t => !t.annulled && t.type !== 'ANNUL').map(t => t.type))];
+  journalExcuses(avec, m).forEach(l => L.push(l));
   L.push(rRule('='));
   L.push('TOTAUX DE LA SEANCE');
   kinds.forEach(k => L.push(rLine(' ' + (J_SHORT[k] || k), fc(sum(k)))));

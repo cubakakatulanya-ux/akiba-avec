@@ -164,6 +164,14 @@ function txRows(avec, list, empty) {
 const penMonths = (avec, loan) => avec.tx.filter(t => t.type === 'AMENDE' && t.ref === 'PENAL:' + loan.id).reduce((a, t) => Math.max(a, t.months || 0), 0);
 const doneBanner = txt => `<div class="alert good"><span style="width:22px;flex:none">${ic('check')}</span><div><b>Étape enregistrée</b><span class="small">${txt}</span></div></div>`;
 const presentMembers = (avec, m) => activeM(avec).filter(x => m.presence[x.id] && m.presence[x.id] !== 'A');
+
+/* ---------- retard ou absence justifiée ----------
+   Les raisons qu'on entend vraiment dans un groupe de village, proposées d'un toucher ; le
+   bureau peut toujours écrire autre chose. L'ordre suit la fréquence, pas l'alphabet. */
+const MOTIFS = ['Maladie', 'Deuil dans la famille', 'Enfant malade', 'Accouchement', 'Voyage',
+  'Travail aux champs', 'Marché éloigné', 'Convoqué ailleurs', 'Pluie / route coupée'];
+const excuseDe = (m, id) => (m && m.excuses ? m.excuses[id] : null) || null;
+const estJustifie = (m, id) => !!excuseDe(m, id);
 function gapHtml(v, exp, filled) {
   if (!filled) return '';
   const g = v - exp;
@@ -235,9 +243,10 @@ const STEP = {
     Object.values(m.presence).forEach(v => c[v]++);
     const locked = m.stepDone >= 6;
     return `${m.stepDone < 1 ? previousCard(avec, m, stats(avec)) : ''}<div><h2>Qui est là ?</h2><p class="muted">Touchez pour chaque membre. Les amendes d'absence et de retard seront proposées plus tard.</p></div>
-      <div class="list">${activeM(avec).filter(x => m.presence[x.id]).map(x => `<div class="mrow">${avatar(x)}<div class="grow"><b>${esc(x.name)}</b><span class="small muted">${roleLabel(x)}</span></div>
-        <div class="seg">${[['P', 'Là'], ['R', 'Retard'], ['A', 'Absent']].map(([k, l]) => `<button class="${k} ${m.presence[x.id] === k ? 'on' : ''}" data-act="pres" data-id="${x.id}" data-v="${k}" ${locked ? 'disabled' : ''} aria-pressed="${m.presence[x.id] === k}">${l}</button>`).join('')}</div></div>`).join('')}</div>
-      <div class="totals"><span>${c.P} là · ${c.R} en retard · ${c.A} absents</span></div>
+      <div class="list">${activeM(avec).filter(x => m.presence[x.id]).map(x => { const ex = excuseDe(m, x.id); return `<div class="mrow" style="flex-wrap:wrap">${avatar(x)}<div class="grow"><b>${esc(x.name)}</b><span class="small muted">${ex ? 'Justifié : ' + esc(ex.motif) : roleLabel(x)}</span></div>
+        <div class="seg">${[['P', 'Là'], ['R', 'Retard'], ['A', 'Absent']].map(([k, l]) => `<button class="${k} ${m.presence[x.id] === k ? 'on' : ''}" data-act="pres" data-id="${x.id}" data-v="${k}" ${locked ? 'disabled' : ''} aria-pressed="${m.presence[x.id] === k}">${l}</button>`).join('')}</div>
+        ${m.presence[x.id] !== 'P' && !locked ? `<button class="btn sm ${ex ? 'brand' : 'ghost'}" data-act="excuseSheet" data-id="${x.id}" style="flex-basis:100%;margin-top:2px">${ic(ex ? 'check' : 'book')} ${ex ? 'Motif : ' + esc(ex.motif) : 'Donner un motif (pas d’amende)'}</button>` : ''}</div>`; }).join('')}</div>
+      <div class="totals"><span>${c.P} là · ${c.R} en retard · ${c.A} absents${(() => { const n = Object.keys(m.excuses || {}).length; return n ? ' · ' + n + ' justifié' + (n > 1 ? 's' : '') : ''; })()}</span></div>
       ${nextBtn(0, m.stepDone >= 0 ? 'Suivant' : 'Valider les présences')}`;
   },
   ouverture(avec, m, st) {
@@ -316,15 +325,16 @@ const STEP = {
     const lateLoans = st.activeLoans.filter(l => l.penalty > 0 && m.presence[l.memberId] && m.presence[l.memberId] !== 'A')
       .map(l => { const done = penMonths(avec, l); return Object.assign({}, l, { doneMonths: done, dueMonths: l.monthsLate - done, penalty: Math.round(l.remaining * penRate(avec.settings) / 100 * (l.monthsLate - done) / 100) * 100 }); })
       .filter(l => l.dueMonths > 0 && l.penalty > 0);
-    const dr = draft(m.id + ':fine', () => { const o = {}, p = {}, pe = {}; late.forEach(x => o[x.id] = true); debtors.forEach(x => p[x.id] = true); lateLoans.forEach(l => pe[l.id] = true); return { on: o, pay: p, pen: pe }; });
+    /* une absence justifiée n'est pas proposée à l'amende : le bureau peut toujours la remettre */
+    const dr = draft(m.id + ':fine', () => { const o = {}, p = {}, pe = {}; late.forEach(x => { if (!estJustifie(m, x.id)) o[x.id] = true; }); debtors.forEach(x => p[x.id] = true); lateLoans.forEach(l => pe[l.id] = true); return { on: o, pay: p, pen: pe }; });
     if (!dr.pen) dr.pen = {};
     const penRows = lateLoans.map(l => { const x = memberOf(avec, l.memberId);
       return `<div class="mrow">${avatar(x)}<div class="grow"><b>${esc(x.name)}</b><span class="small muted">Crédit en retard de ${l.daysLate} j · pénalité ${fc(l.penalty)} (${penRate(avec.settings)} % × ${l.dueMonths} mois sur ${fc(l.remaining)})${l.doneMonths ? ` · ${l.doneMonths} mois déjà payés` : ''}</span></div>
         <button class="toggle ${dr.pen[l.id] ? 'on' : ''}" data-act="dToggle" data-k="pen" data-id="${l.id}" aria-label="Appliquer la pénalité" aria-pressed="${!!dr.pen[l.id]}"></button></div>`; }).join('');
     const others = meetTx(avec, m, ['AMENDE']);
     const tot = late.reduce((a, x) => a + (dr.on[x.id] && m.presence[x.id] === 'R' ? s.fineLate : 0), 0) + debtors.reduce((a, x) => a + (dr.pay[x.id] ? st.mem[x.id].fineDebt : 0), 0) + lateLoans.reduce((a, l) => a + (dr.pen[l.id] ? l.penalty : 0), 0);
-    return `<div><h2>Amendes</h2><p class="muted">Proposées selon les présences : absence ${fc(s.fineAbsent)}, retard ${fc(s.fineLate)}. Un absent ne paie pas aujourd'hui : son amende est notée comme dette et payée à son retour.</p></div>
-      <div class="list">${late.length ? late.map(x => { const a = m.presence[x.id] === 'A'; return `<div class="mrow">${avatar(x)}<div class="grow"><b>${esc(x.name)}</b><span class="small muted">${a ? 'Absence · dette de ' + fc(s.fineAbsent) : 'Retard · payé maintenant ' + fc(s.fineLate)}</span></div><button class="toggle ${dr.on[x.id] ? 'on' : ''}" data-act="dToggle" data-k="on" data-id="${x.id}" aria-label="Appliquer l'amende" aria-pressed="${!!dr.on[x.id]}"></button></div>`; }).join('') : '<div class="li muted">Tout le monde était à l\'heure</div>'}</div>
+    return `<div><h2>Amendes</h2><p class="muted">Proposées selon les présences : absence ${fc(s.fineAbsent)}, retard ${fc(s.fineLate)}. Un absent ne paie pas aujourd'hui : son amende est notée comme dette et payée à son retour. <b>Un motif justifié n'est pas proposé à l'amende</b> — l'assemblée peut toujours en décider autrement.</p></div>
+      <div class="list">${late.length ? late.map(x => { const a = m.presence[x.id] === 'A', ex = excuseDe(m, x.id); return `<div class="mrow">${avatar(x)}<div class="grow"><b>${esc(x.name)}</b><span class="small muted">${ex ? (a ? 'Absence justifiée' : 'Retard justifié') + ' : ' + esc(ex.motif) : a ? 'Absence · dette de ' + fc(s.fineAbsent) : 'Retard · payé maintenant ' + fc(s.fineLate)}</span></div><button class="toggle ${dr.on[x.id] ? 'on' : ''}" data-act="dToggle" data-k="on" data-id="${x.id}" aria-label="Appliquer l'amende" aria-pressed="${!!dr.on[x.id]}"></button></div>`; }).join('') : '<div class="li muted">Tout le monde était à l\'heure</div>'}</div>
       ${others.length ? `<div class="list">${txRows(avec, others, '')}</div>` : ''}
       ${penRows ? `<h3>Pénalités de retard sur les crédits</h3><p class="small muted">Taux de pénalité voté dans le règlement : ${penRate(s)} % par mois commencé, sur ce qui reste à rembourser. Un mois déjà payé ne l'est jamais deux fois.</p><div class="list">${penRows}</div>` : ''}
       ${debtors.length ? `<h3>Amendes dues des réunions passées</h3><div class="list">${debtors.map(x => `<div class="mrow">${avatar(x)}<div class="grow"><b>${esc(x.name)}</b><span class="small muted">Doit ${fc(st.mem[x.id].fineDebt)}</span></div><button class="toggle ${dr.pay[x.id] ? 'on' : ''}" data-act="dToggle" data-k="pay" data-id="${x.id}" aria-label="Paie sa dette" aria-pressed="${!!dr.pay[x.id]}"></button></div>`).join('')}</div>` : ''}
@@ -371,7 +381,56 @@ function updateCloseBtn() {
   if (b) b.disabled = !closeReady(cur().avec);
 }
 
-ACT.pres = d => { const { avec } = cur(); openMeeting(avec).presence[d.id] = d.v; DB.save(); render(); };
+ACT.pres = d => {
+  const { avec } = cur(); const m = openMeeting(avec);
+  m.presence[d.id] = d.v;
+  /* revenu présent : le motif n'a plus d'objet et ne doit pas traîner dans le journal */
+  if (d.v === 'P' && m.excuses && m.excuses[d.id]) delete m.excuses[d.id];
+  DB.save(); render();
+};
+ACT.excuseSheet = d => {
+  const { avec, me } = cur(); const m = openMeeting(avec); const x = memberOf(avec, d.id);
+  if (!isBureau(me)) return App.toast('Réservé au bureau');
+  const ex = excuseDe(m, d.id);
+  const absent = m.presence[d.id] === 'A';
+  App.openSheet(`<h2>${absent ? 'Absence' : 'Retard'} de ${esc(x.name.split(' ')[0])}</h2>
+    <p class="muted">Quelle est la raison de ${absent ? 'cette absence' : 'ce retard'} ? L'assemblée en décide à haute voix.
+      Avec un motif, l'amende n'est pas proposée, et la raison reste écrite dans le journal.</p>
+    <div class="row" style="flex-wrap:wrap;gap:6px">${MOTIFS.map(t => `<button class="btn sm ${ex && ex.motif === t ? 'brand' : 'ghost'}" data-act="excuseVite" data-id="${x.id}" data-m="${esc(t)}">${esc(t)}</button>`).join('')}</div>
+    <div class="field"><label for="exM">Autre motif</label><input id="exM" class="input" value="${esc(ex && MOTIFS.indexOf(ex.motif) < 0 ? ex.motif : '')}" autocomplete="off" placeholder="Ex. réunion à l’école"></div>
+    <button class="btn primary block xl" data-act="excuseSave" data-id="${x.id}">${ic('check')} Garder ce motif</button>
+    ${ex ? `<button class="btn ghost block" data-act="excuseEffacer" data-id="${x.id}">Retirer le motif (l’amende redevient due)</button>` : ''}`);
+};
+function excuseEcrire(avec, m, x, motif, par) {
+  m.excuses = m.excuses || {};
+  m.excuses[x.id] = { motif: motif.slice(0, 60), par: par.id, ts: Date.now() };
+  /* l'amende déjà proposée dans le brouillon doit suivre la décision */
+  if (App.draft && App.draft.on) delete App.draft.on[x.id];
+  secLog(avec, (m.presence[x.id] === 'A' ? 'Absence justifiée' : 'Retard justifié'), x.id, motif + ' · réunion n°' + m.n + ' · par ' + par.name);
+  DB.save();
+}
+ACT.excuseVite = d => {
+  const { avec, me } = cur(); const m = openMeeting(avec); const x = memberOf(avec, d.id);
+  if (!isBureau(me)) return App.toast('Réservé au bureau');
+  excuseEcrire(avec, m, x, d.m, me);
+  App.closeSheet(); render(); App.toast('Motif gardé : ' + d.m);
+};
+ACT.excuseSave = d => {
+  const { avec, me } = cur(); const m = openMeeting(avec); const x = memberOf(avec, d.id);
+  if (!isBureau(me)) return App.toast('Réservé au bureau');
+  const t = (fval('exM') || '').trim();
+  if (t.length < 3) return App.toast('Écrivez le motif, ou touchez l’un de ceux proposés');
+  excuseEcrire(avec, m, x, t, me);
+  App.closeSheet(); render(); App.toast('Motif gardé : ' + t);
+};
+ACT.excuseEffacer = d => {
+  const { avec, me } = cur(); const m = openMeeting(avec); const x = memberOf(avec, d.id);
+  if (!isBureau(me)) return App.toast('Réservé au bureau');
+  if (m.excuses) delete m.excuses[x.id];
+  if (App.draft && App.draft.on) App.draft.on[x.id] = true;
+  secLog(avec, 'Motif retiré', x.id, 'réunion n°' + m.n + ' · par ' + me.name);
+  DB.save(); App.closeSheet(); render(); App.toast('Motif retiré');
+};
 ACT.dToggle = d => { App.draft[d.k][d.id] = !App.draft[d.k][d.id]; render(); };
 ACT.parts = d => { const { avec } = cur(); const p = App.draft.parts; p[d.id] = Math.max(0, Math.min(avec.settings.maxParts, (p[d.id] || 0) + +d.d)); render(); };
 ACT.partsZero = () => { App.draft.parts = {}; App.draft.prefilled = false; render(); };

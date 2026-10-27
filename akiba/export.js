@@ -141,7 +141,8 @@ function exportSheets(avecs) {
       { h: 'AVEC', w: 24 }, { h: 'Réunion n°', w: 9, t: 'n' }, { h: 'Date', w: 12, t: 'd' }, { h: 'Type', w: 16 }, { h: 'Présents', w: 9, t: 'n' }, { h: 'Retards', w: 8, t: 'n' }, { h: 'Absents', w: 8, t: 'n' },
       { h: 'Épargne (FC)', w: 12, t: 'n' }, { h: 'Caisse sociale (FC)', w: 12, t: 'n' }, { h: 'Remboursements (FC)', w: 13, t: 'n' }, { h: 'Amendes (FC)', w: 11, t: 'n' },
       { h: 'Crédits accordés (FC)', w: 13, t: 'n' }, { h: 'Aides (FC)', w: 10, t: 'n' },
-      { h: 'Caisse attendue (FC)', w: 13, t: 'n' }, { h: 'Caisse comptée (FC)', w: 13, t: 'n' }, { h: 'Écart (FC)', w: 10, t: 'n' }, { h: 'Explication', w: 36 }
+      { h: 'Caisse attendue (FC)', w: 13, t: 'n' }, { h: 'Caisse comptée (FC)', w: 13, t: 'n' }, { h: 'Écart (FC)', w: 10, t: 'n' }, { h: 'Explication', w: 36 },
+      { h: 'Dont justifiés', w: 11, t: 'n' }, { h: 'Motifs', w: 40 }
     ],
     rows: rows.flatMap(({ a, st }) => {
       const an = new Set(a.tx.filter(t => t.type === 'ANNUL').map(t => t.ref));
@@ -152,7 +153,10 @@ function exportSheets(avecs) {
         return [a.name, m.n, m.date, m.kind === 'partage' ? 'Partage' : m.kind === 'reprise' ? 'Reprise du cahier' : 'Réunion',
           pr.filter(x => x === 'P').length, pr.filter(x => x === 'R').length, pr.filter(x => x === 'A').length,
           b.EPARGNE || 0, b.SOCIAL || 0, b.REMB || 0, b.AMENDE || 0, b.CREDIT || 0, b.AIDE || 0,
-          m.closeExpected, m.closeCount, (m.closeCount || 0) - (m.closeExpected || 0), m.note || ''];
+          m.closeExpected, m.closeCount, (m.closeCount || 0) - (m.closeExpected || 0), m.note || '',
+          /* un retard justifié n'est pas un retard négligent : l'organisation doit pouvoir les séparer */
+          Object.keys(m.excuses || {}).length,
+          Object.entries(m.excuses || {}).map(([id, e]) => ((a.members.find(x => x.id === id) || {}).name || '') + ' : ' + e.motif).join(' ; ')];
       });
     })
   };

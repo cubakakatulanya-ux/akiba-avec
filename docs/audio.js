@@ -52,6 +52,11 @@ const voixRetenir = (l, nom) => { try { nom ? localStorage.setItem(VOIX_STORE(l)
    quand il y a du réseau — jamais au point d'en dépendre : sans réseau, seule une voix
    embarquée parle, et elle repasse devant. */
 const NATUREL = /neural|natural|wavenet|studio|premium|enhanced|google/i;
+/* Les voix mécaniques des téléphones bon marché se reconnaissent aussi à leur nom : eSpeak et
+   Pico sont les moteurs d'origine d'Android, ceux qui donnent la voix de robot. Les repérer sert
+   à prévenir l'utilisateur qu'une voix bien plus humaine s'installe gratuitement en deux minutes. */
+const MECANIQUE = /espeak|pico|svox|robot/i;
+const voixNaturelle = v => !!v && NATUREL.test(v.name || '') && !MECANIQUE.test(v.name || '');
 function noteVoix(v, enLigne) {
   let n = 0;
   if (NATUREL.test(v.name || '')) n += 4;
@@ -89,25 +94,40 @@ function texteALire(brut, langue) {
   } else {
     t = t.replace(/\bFC\b/g, 'franc');                            // une voix non française épelle mal le reste
   }
-  t = t.replace(/\.{2,}/g, '.').replace(/,\s*,+/g, ',').replace(/\s+/g, ' ').trim();
+  /* On garde les retours à la ligne : pour l'oreille ils marquent une fin de phrase, et morceaux()
+     en fait un silence. Les écraser ici, comme on le faisait, collait un titre ou une ligne de liste
+     au texte suivant — et c'est cela, bien plus que le timbre, qui s'entend comme une voix de robot. */
+  t = t.replace(/\.{2,}/g, '.').replace(/,\s*,+/g, ',').replace(/[^\S\r\n]+/g, ' ').replace(/ ?[\r\n]+ ?/g, '\n').trim();
   return t;
 }
+/* Un morceau qui ne finit pas par un point s'enchaîne au suivant sans respirer : les titres et
+   les lignes de liste sortaient collés, d'une seule traite, et c'est surtout cela qui faisait
+   « robot ». Un point final suffit : tous les moteurs marquent le silence dessus. */
+const ponctue = p => (/[.!?;:,]$/.test(p) ? p : p + '.');
+
 /* phrases courtes : Chrome coupe les longues, et une virgule laisse respirer */
 function morceaux(t) {
   const sorties = [];
-  for (const phrase of (t.match(/[^.!?;:]+[.!?;:]*/g) || [t])) {
+  /* Un retour à la ligne est une fin de phrase : un titre, une ligne de liste, une étape de la
+     réunion. Sans cela, trois lignes sortaient collées d'une seule traite, sans reprendre son
+     souffle — c'est ce qui s'entend comme une voix de robot, bien avant le timbre lui-même. */
+  const phrases = [];
+  String(t).split(/[\r\n]+/).forEach(ligne => {
+    (ligne.match(/[^.!?;:]+[.!?;:]*/g) || [ligne]).forEach(x => phrases.push(x));
+  });
+  for (const phrase of phrases) {
     const p = phrase.trim();
     if (!p) continue;
-    if (p.length <= 180) { sorties.push(p); continue; }
+    if (p.length <= 180) { sorties.push(ponctue(p)); continue; }
     let reste = p;
     while (reste.length > 180) {
       let coupe = reste.lastIndexOf(',', 180);
       if (coupe < 60) coupe = reste.lastIndexOf(' ', 180);
       if (coupe < 60) coupe = 180;
-      sorties.push(reste.slice(0, coupe + 1).trim());
+      sorties.push(ponctue(reste.slice(0, coupe + 1).trim()));
       reste = reste.slice(coupe + 1);
     }
-    if (reste.trim()) sorties.push(reste.trim());
+    if (reste.trim()) sorties.push(ponctue(reste.trim()));
   }
   return sorties;
 }
@@ -126,6 +146,12 @@ function arreterVoix() {
   Voice.playing = null;
 }
 
+function debitVoix(v, lang) {
+  const naturelle = voixNaturelle(v);
+  if (lang === 'fr') return naturelle ? 1 : 0.92;
+  return naturelle ? 0.92 : 0.84;
+}
+
 async function speakText(text, id, langue) {
   if (!voiceOk()) return App.toast('La lecture à voix haute n\'est pas disponible. Installez « Services vocaux Google » depuis le Play Store.');
   const synth = window.speechSynthesis;
@@ -141,8 +167,11 @@ async function speakText(text, id, langue) {
   parts.forEach((p, i) => {
     const u = new SpeechSynthesisUtterance(p);
     if (v) { u.voice = v; u.lang = v.lang; } else u.lang = 'fr-FR';
-    u.rate = lang === 'fr' ? 0.95 : 0.85;                         // une langue lue par une voix d'emprunt gagne à être lente
-    u.pitch = 1;
+    /* Une voix moderne garde son naturel au débit normal ; une voix mécanique devient pénible
+       et il faut la ralentir pour qu'elle reste compréhensible. Et une langue lue par une voix
+       d'emprunt — le lingála dit par une voix kiswahili — gagne encore à être ralentie. */
+    u.rate = debitVoix(v, lang);
+    u.pitch = voixNaturelle(v) ? 1 : 1.02;                          // un rien plus haut casse le bourdon des voix mécaniques
     if (i === parts.length - 1) u.onend = () => { if (Voice.playing === id) { arreterVoix(); paintSpeak(); } };
     synth.speak(u);
   });
@@ -196,11 +225,16 @@ ACT.voixSheet = async () => {
   const autres = triees.filter(v => rang(v) === 99);
   const ligne = v => `<button class="li" data-act="voixPrendre" data-v="${esc(v.name)}">
     <span class="chk${choisie === v.name ? ' on' : ''}" aria-hidden="true">${choisie === v.name ? ic('check') : ''}</span>
-    <span class="grow"><b>${esc(v.name)}</b><span class="small muted">${esc(v.lang)}${v.localService ? ' · sans réseau' : ' · demande du réseau'}${NATUREL.test(v.name) ? ' · voix récente' : ''}${!choisie && auto && auto.name === v.name ? ' · choisie automatiquement' : ''}</span></span>
+    <span class="grow"><b>${esc(v.name)}</b><span class="small muted">${esc(v.lang)}${v.localService ? ' · sans réseau' : ' · demande du réseau'}${voixNaturelle(v) ? ' · voix naturelle' : MECANIQUE.test(v.name) ? ' · voix mécanique' : ''}${!choisie && auto && auto.name === v.name ? ' · choisie automatiquement' : ''}</span></span>
     <span class="btn sm ghost" data-act="voixEssai" data-v="${esc(v.name)}">${ic('volume')} Écouter</span></button>`;
   App.openSheet(`<h2>Voix de lecture</h2>
     <p class="muted">Langue affichée : <b>${LANG_NOM[lang] || lang}</b>. Touchez « Écouter » pour comparer, puis gardez celle qui sonne le mieux.</p>
     ${!voix.length ? `<div class="alert warn">${icSpan('alert')}<div><b>Aucune voix sur ce téléphone</b><span class="small">Installez « Services vocaux Google » depuis le Play Store, puis revenez.</span></div></div>` : ''}
+    ${voix.length && !triees.some(voixNaturelle) ? `<div class="alert warn">${icSpan('alert')}<div><b>Ce téléphone n'a qu'une voix mécanique</b>
+      <span class="small">Une voix bien plus humaine s'installe gratuitement, une seule fois, et parle ensuite <b>sans réseau</b> :
+      <b>Paramètres › Langues et saisie › Synthèse vocale › Services vocaux Google</b>, puis l'engrenage, puis
+      <b>Installer les données vocales</b>. Choisissez la langue, et prenez la voix marquée « haute qualité ».
+      Revenez ensuite ici : Akiba la prendra toute seule.</span></div></div>` : ''}
     ${utiles.length ? `<h3 class="surtitre">Convient à cette langue</h3><div class="list">${utiles.map(ligne).join('')}</div>` : ''}
     ${lang !== 'fr' ? `<div class="alert">${icSpan('globe')}<div><b>Pourquoi une voix kiswahili ?</b><span class="small">Aucun téléphone n'a de voix ${LANG_NOM[lang] || lang}. Le kiswahili, l'espagnol et l'italien ont les mêmes cinq voyelles : ils lisent le ${LANG_NOM[lang] || lang} bien mieux que le français. Ajoutez-les dans <b>Paramètres › Langues › Synthèse vocale › Google</b>, c'est gratuit.</span></div></div>` : ''}
     ${autres.length ? `<details class="g"><summary>Les autres voix du téléphone (${autres.length})</summary><div class="list">${autres.map(ligne).join('')}</div></details>` : ''}
@@ -215,7 +249,7 @@ ACT.voixEssai = async (d, el, e) => {
   if (!v || !voiceOk()) return App.toast('Voix indisponible');
   window.speechSynthesis.cancel();
   const u = new SpeechSynthesisUtterance(texteALire(VOIX_ESSAI[lang] || VOIX_ESSAI.fr, lang));
-  u.voice = v; u.lang = v.lang; u.rate = lang === 'fr' ? 0.95 : 0.85;
+  u.voice = v; u.lang = v.lang; u.rate = debitVoix(v, lang); u.pitch = voixNaturelle(v) ? 1 : 1.02;
   window.speechSynthesis.speak(u);
 };
 ACT.voixPrendre = d => {

@@ -226,6 +226,10 @@ const GUIDE = [
       <li><b>Absence</b> : le membre n'est pas là, il ne peut pas payer. Akiba note une <b>amende due</b>, sans compter d'argent dans la caisse. Elle est proposée au paiement dès sa prochaine présence.</li>
       <li><b>Autres amendes</b> (bavardage, téléphone, oubli) : bouton « Autre amende ».</li>
     </ul>
+    <h4>Un retard ou une absence justifiée</h4>
+    <p>Un deuil, une maladie, un accouchement, une route coupée : l'assemblée peut décider qu'il n'y a pas d'amende. À l'étape des <b>présences</b>, touchez <b>« Donner un motif »</b> sous le nom de la personne, choisissez la raison (ou écrivez-la), et l'amende <b>n'est plus proposée</b> à l'étape 7.</p>
+    <p>Le motif est écrit dans le journal scellé, imprimé sur le journal de la réunion, et compté à part dans l'export de l'organisation : un groupe qui a enterré deux des siens ne doit pas ressembler à un groupe négligent.</p>
+    <div class="tip">Le motif n'est pas une faveur du bureau : c'est l'assemblée qui décide, à haute voix. Le bureau peut toujours remettre l'amende, et Akiba garde trace de qui a justifié quoi.</div>
     <div class="tip">Une amende due qui n'est jamais payée est retirée de la part du membre au partage.</div>` },
   { id: 'securite', icon: 'lock', t: 'Sécurité et contrôle contre la fraude', b: `
     <ul>
@@ -465,6 +469,10 @@ SCREENS.guide = p => {
       <p class="sur">Guide d'utilisation</p>
       <h1>Comment utiliser Akiba</h1>
       <p class="lead">Touchez un titre pour l'ouvrir. Les mots en gras sont ceux que vous voyez à l'écran. Touchez « Écouter » pour que le téléphone lise à voix haute, même sans réseau.</p>
+      ${(() => { const l = I18N.cur(); if (l === 'fr') return ''; const c = guideCouverture(l, sections);
+        return `<p class="hint no-tr">${c >= 1 ? `Tout le guide est écrit en ${esc(I18N.name(l))}.`
+          : c > 0 ? `${Math.round(c * 100)} % du guide est écrit en ${esc(I18N.name(l))} ; le reste s'affiche en français.`
+            : `Le guide n'est pas encore écrit en ${esc(I18N.name(l))} : il s'affiche en français.`} Traduction à faire relire par des locuteurs de la zone.</p>`; })()}
     </header>
     <section class="docbloc"><h2 class="surtitre">Akiba en quatre étapes</h2>
       <ol class="etapes">
@@ -475,11 +483,16 @@ SCREENS.guide = p => {
       </ol>
     </section>
     <section class="docbloc"><h2 class="surtitre">Tout le guide</h2>
-      <div class="gtiles">${sections.map(x => `<button class="gtile" data-act="guideTo" data-s="${x.id}"><span class="gi">${ic(x.icon)}</span><b>${x.t}</b></button>`).join('')}</div>
+      <div class="gtiles">${sections.map(x => `<button class="gtile" data-act="guideTo" data-s="${x.id}"><span class="gi">${ic(x.icon)}</span><b>${guideSection(x).t}</b></button>`).join('')}</div>
     </section>
     <div class="row">${speakBtn('all', '.g summary, .g .gb p, .g .gb li, .g .gb h4, .g .gb .formula, .g .gb .tip', 'Écouter tout le guide')}</div>
-    ${sections.map(g => `<details class="g" id="g-${g.id}" ${g.id === open ? 'open' : ''}><summary><span class="gi">${ic(g.icon)}</span>${g.t}</summary><div class="gb">
-      <div>${speakBtn(g.id, `#g-${g.id} summary, #g-${g.id} .gb p, #g-${g.id} .gb li, #g-${g.id} .gb h4, #g-${g.id} .gb .formula, #g-${g.id} .gb .tip`, 'Écouter cette partie')}</div>${g.b}</div></details>`).join('')}
+    <!-- Le guide est de la prose : il se traduit section par section (guide-tr.js), pas mot à mot.
+         Le corps porte « no-tr » dans les deux cas : traduit, il ne doit pas être redécoupé ; en
+         français faute de traduction, il ne doit pas noyer la liste de travail du traducteur. -->
+    ${sections.map(g => { const x = guideSection(g); return `<details class="g" id="g-${g.id}" ${g.id === open ? 'open' : ''}><summary><span class="gi">${ic(g.icon)}</span>${esc(x.t)}</summary><div class="gb">
+      <div>${speakBtn(g.id, `#g-${g.id} summary, #g-${g.id} .gb p, #g-${g.id} .gb li, #g-${g.id} .gb h4, #g-${g.id} .gb .formula, #g-${g.id} .gb .tip`, 'Écouter cette partie')}</div>
+      ${x.traduit ? '' : `<p class="hint no-tr">Cette partie n\u2019est pas encore écrite en ${esc(I18N.name(x.lang))} : elle reste en français.</p>`}
+      <div class="no-tr">${x.b}</div></div></details>`; }).join('')}
     ${supportCard()}
   </main>${isAnim ? tabbar(N_TABS, 'guide') : ''}</div>`;
 };

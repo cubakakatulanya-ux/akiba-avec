@@ -598,8 +598,8 @@ h2,h3{font-weight:600;letter-spacing:-.005em}
 :root[data-theme="dark"] .topbar,:root[data-theme="dark"] .hero,:root[data-theme="dark"] .caisse{background:#123A2C}
 .ticket{font-family:var(--f-mono);font-size:.74rem;line-height:1.35;white-space:pre;overflow-x:auto;background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r);padding:10px;margin:0}
 @media print{.topbar,.tabbar,.tabspace,.appfoot,.btn,.linkbtn,.scrim{display:none!important}.ticket{border:0;background:#fff;font-size:11pt}}
-/* ---------- structure de lecture,inspirée des sites de formation (Académie FAO,Ubora Académie) :
-     un surtitre,un titre,une phrase d'introduction{display:flex;flex-wrap:wrap;justify-content:center;align-items:baseline;gap:4px 14px;margin:9px auto 0;max-width:430px}
+/* ---------- structure de lecture, inspirée des sites de formation (Académie FAO, Ubora Académie) :
+     un surtitre, un titre, une phrase d'introduction, puis des blocs nettement séparés ---------- */
 .docintro{margin-bottom:4px}
 .docintro .sur{font-family:var(--f-display);font-size:var(--t-2xs);font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--brand);margin:0 0 5px}
 .docintro h1{margin:0 0 7px}
@@ -617,7 +617,6 @@ h2,h3{font-weight:600;letter-spacing:-.005em}
 .gtile .gi{width:28px;height:28px;border-radius:8px;background:var(--brand-soft);color:var(--brand);display:grid;place-items:center;flex:none}
 .gtile .gi svg{width:16px;height:16px}
 .gtile:active{transform:translateY(1px)}
-@media (max-width:360px){}
 /* ---------- version ordinateur : l'application occupe tout l'écran, sans marges perdues ----------
    Rien ne change sur le téléphone : tout est enfermé dans la requête de largeur. */
 @media (min-width:1100px){
@@ -823,6 +822,15 @@ h2,h3{font-weight:600;letter-spacing:-.005em}
 .etat.cur>svg:first-child{opacity:1;color:var(--brand)}
 .aenvoyer{display:flex;align-items:center;justify-content:center;gap:7px;margin:0;color:var(--ink-2);font-size:var(--t-sm)}
 .aenvoyer svg{width:16px;height:16px;flex:none;opacity:.7}
+/* L'échange avec Ubora : trois temps numérotés, parce que deux codes de huit signes se
+   ressemblent et qu'on tapait le sien dans la case du leur. */
+.echange{list-style:none;margin:0;padding:0;display:grid;gap:12px}
+.echange li{display:flex;gap:12px;align-items:flex-start}
+.echange i{flex:none;width:28px;height:28px;border-radius:50%;background:var(--brand);color:var(--brand-ink);font-style:normal;font-family:var(--f-display);font-weight:700;font-size:var(--t-sm);display:grid;place-items:center;margin-top:1px}
+.echange li>div{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}
+.echange b{font-family:var(--f-display);font-size:var(--t-base);line-height:1.25}
+.echange li>div>span{color:var(--ink-2);font-size:var(--t-sm);line-height:1.35}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
 /* la photo du membre : facultative, et jamais plus grande que ce qu’elle sert à prouver */
 .photoline{display:flex;gap:12px;align-items:flex-start}
 .photovue{width:72px;height:72px;border-radius:14px;flex:none;display:grid;place-items:center;background:var(--surface-2);border:1.5px solid var(--line);overflow:hidden;color:var(--ink-2);font-weight:800;font-size:var(--t-lg)}
@@ -859,7 +867,7 @@ details.g.demo>:not(summary)+*{margin-top:8px}
 </style>
 <style>html,body{margin:0}</style>
 </head><body>
-<script>window.KITABU_PWA = true; window.KITABU_VERSION = 'akiba-202610262255'; window.AKIBA_CIBLE = 'suivi';</script>
+<script>window.KITABU_PWA = true; window.KITABU_VERSION = 'akiba-202610270637'; window.AKIBA_CIBLE = 'suivi';</script>
 
 <div id="app"></div>
 <script src="core.js"></script>
@@ -877,6 +885,7 @@ details.g.demo>:not(summary)+*{margin-top:8px}
 <script src="access.js"></script>
 <script src="setup.js"></script>
 <script src="install.js"></script>
+<script src="guide-tr.js"></script>
 <script src="guide.js"></script>
 <script src="audio.js"></script>
 <script src="i18n.js"></script>

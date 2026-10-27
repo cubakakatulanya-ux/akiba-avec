@@ -209,19 +209,41 @@ const demandText = d => d
     'Responsable : ' + d.boss, 'Téléphone : ' + d.phone, d.mail ? 'Courriel : ' + d.mail : '', '',
     'Code du téléphone : ' + devNu(deviceId())].filter(x => x !== '').join('\n')
   : `Bonjour Ubora, je demande un code de validation Akiba.\nCode du téléphone : ${devNu(deviceId())}\nOrganisation ou AVEC : `;
+ICONS.phone = '<path d="M6.5 3h3l1.5 4-2 1.5a12 12 0 0 0 6.5 6.5L17 13l4 1.5v3a2 2 0 0 1-2.2 2A16.5 16.5 0 0 1 4 5.2 2 2 0 0 1 6 3z"/>';
+ICONS.copy = '<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/>';
+
+/* Dicter huit signes au téléphone marche ; les recopier à la main dans un SMS se trompe. */
+ACT.licCopier = async () => {
+  const code = devNu(deviceId());
+  try { await navigator.clipboard.writeText(code); App.toast('Code du téléphone copié : ' + code); }
+  catch (e) { App.toast('Copie impossible : lisez le code à Ubora, ' + code); }
+};
 function validationPanel(opts = {}) {
   const r = App.licence || {};
   return `<section class="card stack">
     ${r.blocked ? `<div class="alert bad">${icSpan('lock')}<div><b>Accès bloqué</b><span class="small">${esc(r.why)}. Les données restent sur ce téléphone. Contactez Ubora si c'est une erreur.</span></div></div>` : ''}
     ${r.expired ? `<div class="alert bad">${icSpan('alert')}<div><b>${esc(r.why)}</b><span class="small">Les données restent sur ce téléphone. Demandez un nouveau code à Ubora.</span></div></div>` : ''}
     ${r.limited ? `<div class="alert warn">${icSpan('key')}<div><b>Téléphone d'AVEC</b><span class="small">Ce téléphone tient les réunions de l'AVEC reçue. Pour le reste, il faut un code de validation.</span></div></div>` : ''}
-    ${opts.intro === false ? '' : `<p class="muted">${APP_NOM()} est libre à installer et à découvrir. Pour les vraies opérations, Ubora donne un <b>code de validation</b> pour ce téléphone, une seule fois.</p>`}
-    <div class="devcode"><span class="label">Code de ce téléphone</span><b class="mono">${devNu(deviceId())}</b></div>
-    <a class="btn wa block xl" href="https://wa.me/${UBORA.wa}?text=${encodeURIComponent(demandText(opts.demande))}" target="_blank" rel="noopener">${ic('chat')} Demander le code sur WhatsApp</a>
-    <p class="small muted" style="text-align:center;margin-top:-4px">ou appelez Ubora au <a href="tel:${UBORA.tel}" style="color:var(--brand);font-weight:700">${UBORA.telShow}</a> et donnez le code de ce téléphone</p>
-    <div class="field"><label for="licS">Code de validation reçu</label><textarea id="licS" class="input mono" rows="2" autocomplete="off" spellcheck="false" autocapitalize="characters" placeholder="Les 8 signes dictés par Ubora, ou le code long collé"></textarea>
-      <span class="hint">Ubora peut vous le dire au téléphone : huit signes, comme le code ci-dessus. Ou vous l'envoyer en entier par WhatsApp.</span></div>
-    <button class="btn primary block xl" data-act="licSheetOk">${ic('key')} Valider ce téléphone</button>
+    ${opts.intro === false ? '' : `<p class="muted">${APP_NOM()} est libre à installer et à découvrir. Pour les vraies opérations, Ubora valide ce téléphone, une seule fois.</p>`}
+    <!-- Deux codes de huit signes se ressemblent : celui du téléphone, qu'on DONNE, et celui de
+         validation, qu'on REÇOIT. On numérote l'échange pour qu'on ne tape pas le sien dans la case. -->
+    <ol class="echange">
+      <li><i>1</i><div><b>Donnez ce code à Ubora</b>
+        <span>C'est le code de <b>ce téléphone-ci</b>. Envoyez-le par WhatsApp, ou lisez-le au téléphone à Ubora.</span>
+        <div class="devcode"><span class="label">Code de ce téléphone</span><b class="mono">${devNu(deviceId())}</b></div>
+        <div class="row" style="gap:8px;flex-wrap:wrap">
+          <a class="btn wa" href="https://wa.me/${UBORA.wa}?text=${encodeURIComponent(demandText(opts.demande))}" target="_blank" rel="noopener">${ic('chat')} Envoyer sur WhatsApp</a>
+          <a class="btn ghost" href="tel:${UBORA.tel}">${ic('phone')} Appeler ${UBORA.telShow}</a>
+          <button class="btn ghost" data-act="licCopier">${ic('copy')} Copier le code</button>
+        </div></div></li>
+      <li><i>2</i><div><b>Ubora vous répond avec le code de validation</b>
+        <span>C'est un <b>autre</b> code, huit signes lui aussi. Ubora le dicte au téléphone, ou l'envoie en entier par WhatsApp. Ce n'est pas le code ci-dessus.</span></div></li>
+      <li><i>3</i><div><b>Tapez ici le code reçu d'Ubora</b>
+        <div class="field" style="margin-top:6px"><label for="licS" class="sr-only">Code de validation reçu d'Ubora</label>
+          <textarea id="licS" class="input mono" rows="2" autocomplete="off" spellcheck="false" autocapitalize="characters" placeholder="Les 8 signes dictés par Ubora, ou le code long collé"></textarea>
+          <span class="hint">Avec ou sans tiret, en minuscules, ou le message WhatsApp collé en entier : Akiba y retrouve le code tout seul.</span></div>
+        <button class="btn primary block xl" data-act="licSheetOk">${ic('key')} Valider ce téléphone</button></div></li>
+    </ol>
   </section>`;
 }
 
