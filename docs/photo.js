@@ -16,7 +16,17 @@
 'use strict';
 
 const PHOTO_PX = 160;          /* le côté du carré gardé */
-const PHOTO_MAX = 24 * 1024;   /* le poids qu'une photo ne doit pas dépasser */
+/* 12 Ko par photo, et non 24 : un visage de 160 points en qualité moyenne pèse 6 à 9 Ko, le
+   plafond ne mord donc que sur les images chargées. Le calcul qui compte est celui du groupe
+   entier : trente-cinq photos à 24 Ko faisaient 840 Ko dans une mémoire de 5 Mo, et surtout un
+   fichier de transfert de 1,1 Mo à envoyer par WhatsApp depuis un village. À 12 Ko, 420 Ko. */
+const PHOTO_MAX = 12 * 1024;
+/* ce que pèsent les photos d'un groupe, pour le dire au lieu de le laisser découvrir */
+function photosPoids(avec) {
+  let n = 0, o = 0;
+  (avec.members || []).forEach(m => { const p = photoDe(m); if (p) { n++; o += p.length; } });
+  return { n, ko: Math.round(o / 1024) };
+}
 
 const photoDe = m => (m && typeof m.photo === 'string' && m.photo.indexOf('data:image') === 0 ? m.photo : null);
 
@@ -59,7 +69,7 @@ function photoChamp(p, m) {
         <span class="hint" style="margin:0">Demandez son accord. Elle sert à reconnaître la personne sur sa carte.</span>
       </div>
     </div>
-    <input type="file" id="${p}PhF" accept="image/*" capture="user" hidden data-in="photoFichier" data-p="${p}"></div>`;
+    <input type="file" id="${p}PhF" accept="image/*" capture="environment" hidden data-in="photoFichier" data-p="${p}"></div>`;
 }
 ACT.photoPrendre = d => { const el = document.getElementById(d.p + 'PhF'); if (el) { el.value = ''; el.click(); } };
 ACT.photoEffacer = d => {

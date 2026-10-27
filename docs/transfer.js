@@ -101,6 +101,9 @@ ACT.transferSheet = d => {
       <li>Sur le téléphone du groupe : ouvrir Akiba › <b>Recevoir une AVEC</b>, choisir le fichier, taper le code.</li>
       <li>Les membres se connectent avec leur nom et leur code secret.</li></ol>
     <div class="alert warn">${icSpan('alert')}<div><b>Un seul téléphone tient le cahier</b><span class="small">Après l'envoi, ce téléphone ne peut plus ouvrir de réunion pour cette AVEC. Il garde une copie à consulter.</span></div></div>
+    <!-- Les photos voyagent avec le reste : autant le dire avant, pas pendant l'envoi WhatsApp. -->
+    ${(() => { const p = typeof photosPoids === 'function' ? photosPoids(avec) : { n: 0 };
+      return p.n >= 10 ? `<p class="hint">Le fichier contient ${p.n} photos de membres, soit environ ${p.ko} Ko de plus. Par WhatsApp avec peu de réseau, l'envoi sera plus long ; par Bluetooth ou carte mémoire, cela ne change rien.</p>` : ''; })()}
     <button class="btn primary block xl" data-act="transferRun" data-id="${avec.id}">${ic('sync')} Créer le fichier</button>`);
 };
 ACT.transferRun = async d => {

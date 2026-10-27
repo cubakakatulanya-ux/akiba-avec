@@ -1064,5 +1064,75 @@ window.__akibaTests = async function () {
     eq(rWrap('').length, 0, 'une phrase vide ne produit rien');
     return 'repli aux espaces, largeur et intégrité du texte vérifiés';
   });
+
+  t('Le motif entre dans le journal scellé, et ne s’imprime pas comme une somme', () => {
+    const a = avecById('avec1');
+    const chef = a.members.find(x => x.role === 'president' && !x.left);
+    K.session = { kind: 'avec', avecId: a.id, memberId: chef.id };
+    let m = openMeeting(a);
+    const ouverte = !!m;
+    if (!m) { ACT.startMeeting(); m = openMeeting(a); }
+    const x = a.members.find(y => !y.left && y.id !== chef.id);
+    const presAvant = m.presence[x.id], excAvant = JSON.parse(JSON.stringify(m.excuses || {}));
+    m.presence[x.id] = 'A';
+
+    /* le motif décide si de l’argent est dû : il doit être aussi infalsifiable que l’amende */
+    const n = a.tx.length;
+    excuseEcrire(a, m, x, 'Deuil dans la famille', chef);
+    eq(a.tx.length, n + 1, 'le motif doit créer une écriture du journal');
+    const t = a.tx[a.tx.length - 1];
+    eq(t.type, 'EXCUSE', 'l’écriture doit être du bon type');
+    eq(t.amount, 0, 'un motif ne déplace aucun argent');
+    eq(t.memberId, x.id, 'on doit savoir de qui il s’agit');
+    must(/Deuil/.test(t.note || ''), 'la raison doit être dans l’écriture');
+    eq(verifyChain(a).ok, true, 'la chaîne du journal doit rester intacte');
+
+    /* une écriture sans argent ne doit pas s’imprimer dans la colonne des francs :
+       un zéro sur un journal de caisse se lit comme une erreur de saisie */
+    const lignes = journalReunionText(a, m).split(String.fromCharCode(10));
+    const ligne = lignes.find(l => /Motif justifie/.test(l));
+    must(ligne, 'le motif doit figurer sur le journal de papier');
+    must(!/\d/.test(ligne.replace(/^#\d+ /, '')), 'aucun montant ne doit suivre un motif : ' + JSON.stringify(ligne));
+    const iTot = lignes.findIndex(l => /TOTAUX/.test(l));
+    const totaux = lignes.slice(iTot, iTot + 10).join(' ');
+    must(!/Motif justifie/.test(totaux), 'un motif ne doit pas figurer dans les totaux');
+    must(!/Point GPS/.test(totaux), 'un point GPS non plus');
+
+    /* retirer le motif n’efface pas l’écriture : le journal ne s’efface jamais */
+    const n2 = a.tx.length;
+    ACT.excuseEffacer({ id: x.id });
+    eq(a.tx.length, n2 + 1, 'le retrait doit ajouter une écriture, pas en enlever une');
+    eq(verifyChain(a).ok, true, 'la chaîne doit encore tenir après le retrait');
+
+    m.presence[x.id] = presAvant; m.excuses = excAvant;
+    if (!ouverte && openMeeting(a)) a.meetings = a.meetings.filter(y => y.id !== m.id);
+    App.draftKey = null; DB.save();
+    return 'écriture scellée, chaîne intacte, impression sans faux zéro';
+  });
+
+  t('La photo reste légère pour tout un groupe, pas seulement une par une', () => {
+    const a = avecById('avec1');
+    /* Le calcul qui compte n’est pas celui d’une photo mais celui de trente-cinq : elles
+       voyagent toutes dans le fichier de transfert envoyé par WhatsApp depuis un village. */
+    must(PHOTO_MAX * 35 < 450 * 1024, 'trente-cinq photos doivent tenir sous 450 Ko, trouvé ' + Math.round(PHOTO_MAX * 35 / 1024) + ' Ko');
+    eq(photosPoids(a).n, 0, 'la démonstration ne porte aucune photo');
+    const faux = 'data:image/jpeg;base64,' + 'A'.repeat(4000);
+    const x = a.members.find(y => !y.left);
+    x.photo = faux;
+    eq(photosPoids(a).n, 1, 'le compte des photos doit suivre');
+    must(photosPoids(a).ko >= 3, 'le poids doit être annoncé en Ko');
+    delete x.photo;
+    /* et la photo se prend avec la caméra arrière : on photographie la personne en face */
+    must(photoChamp('t', {}).indexOf('capture="environment"') > 0, 'la caméra arrière doit être demandée');
+    return 'plafond du groupe, compte du poids et caméra arrière vérifiés';
+  });
+
+  t('Chaque groupe de la démonstration porte son propre signe', () => {
+    /* le signe ne sert à rien si tous les groupes se ressemblent */
+    const signes = new Set(K.data.avecs.map(a => emblemeDe(a).signe + '/' + emblemeDe(a).teinte));
+    must(signes.size > 1, 'la démonstration doit montrer des signes différents');
+    K.data.avecs.forEach(a => { const e = emblemeDe(a); must(EMBLEMES[e.signe] && TEINTES[e.teinte], 'signe inconnu sur ' + a.name); });
+    return signes.size + ' signes différents dans la démonstration';
+  });
   return res;
 };

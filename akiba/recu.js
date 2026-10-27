@@ -245,7 +245,7 @@ ACT.recuShare = async d => {
 
 /* ---------- journal d'une période, imprimé sur le même papier ---------- */
 const jDay = ts => new Date(ts).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' });
-const J_SHORT = { EPARGNE: 'Epargne', SOCIAL: 'Sociale', REMB: 'Rembours.', AMENDE: 'Amende', DETTE: 'Amende due', CREDIT: 'Credit', AIDE: 'Aide', PARTAGE: 'Partage', DEPART: 'Depart', ANNUL: 'Annulation', REPORT_IN: 'Report entree', REPORT_OUT: 'Report sortie', EXT_IN: 'Credit exterieur', EXT_FEE: 'Frais exterieur', EXT_GUAR: 'Garantie', EXT_REPAY: 'Remb. preteur' };
+const J_SHORT = { EPARGNE: 'Epargne', SOCIAL: 'Sociale', REMB: 'Rembours.', AMENDE: 'Amende', DETTE: 'Amende due', CREDIT: 'Credit', AIDE: 'Aide', PARTAGE: 'Partage', DEPART: 'Depart', ANNUL: 'Annulation', REPORT_IN: 'Report entree', REPORT_OUT: 'Report sortie', EXT_IN: 'Credit exterieur', EXT_FEE: 'Frais exterieur', EXT_GUAR: 'Garantie', EXT_REPAY: 'Remb. preteur', EXCUSE: 'Motif justifie', GEO: 'Point GPS' };
 function journalRows(avec, from, to) {
   const an = annulledSet(avec);
   return avec.tx.filter(t => t.ts >= from && t.ts <= to).map(t => Object.assign({ annulled: an.has(t.id) }, t));
@@ -270,7 +270,7 @@ function journalText(avec, from, to) {
     if (t.annulled) L.push('   (annulee)');
   });
   const sum = k => rows.filter(t => t.type === k && !t.annulled).reduce((a, t) => a + t.amount, 0);
-  const kinds = [...new Set(rows.filter(t => !t.annulled && t.type !== 'ANNUL').map(t => t.type))];
+  const kinds = [...new Set(rows.filter(t => !t.annulled && t.type !== 'ANNUL' && !(TX[t.type] && TX[t.type].in === null)).map(t => t.type))];
   L.push(rRule('='));
   L.push('TOTAUX DE LA PERIODE');
   kinds.forEach(k => L.push(rLine(' ' + (J_SHORT[k] || k), fc(sum(k)))));
@@ -327,14 +327,17 @@ function journalReunionText(avec, m) {
   if (!rows.length) L.push('Aucune ecriture pour cette seance.');
   rows.forEach(t => {
     const inFlow = TX[t.type] && TX[t.type].in;
-    const money = (t.type === 'ANNUL' || t.type === 'DETTE' ? '  ' : inFlow ? '+ ' : '- ') + grp(t.amount);
+    /* in === null : écriture sans argent (point GPS, motif justifié). Une colonne de francs qui
+       affiche « 0 » sur un journal de caisse se lit comme une erreur de saisie : on n'écrit rien. */
+    const sansArgent = TX[t.type] && TX[t.type].in === null;
+    const money = sansArgent ? '' : (t.type === 'ANNUL' || t.type === 'DETTE' ? '  ' : inFlow ? '+ ' : '- ') + grp(t.amount);
     L.push(rLine(`#${t.seq} ${J_SHORT[t.type] || t.type}`, money));
     const who = t.memberId ? (memberOf(avec, t.memberId) || {}).name : (t.note || '');
     if (who) L.push('   ' + noAcc(who).slice(0, RECU_W - 3));
     if (t.annulled) L.push('   (annulee)');
   });
   const sum = k => rows.filter(t => t.type === k && !t.annulled).reduce((a, t) => a + t.amount, 0);
-  const kinds = [...new Set(rows.filter(t => !t.annulled && t.type !== 'ANNUL').map(t => t.type))];
+  const kinds = [...new Set(rows.filter(t => !t.annulled && t.type !== 'ANNUL' && !(TX[t.type] && TX[t.type].in === null)).map(t => t.type))];
   journalExcuses(avec, m).forEach(l => L.push(l));
   L.push(rRule('='));
   L.push('TOTAUX DE LA SEANCE');

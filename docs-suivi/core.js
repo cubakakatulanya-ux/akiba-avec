@@ -105,6 +105,7 @@ const TX = {
   EXT_REPAY: { l: 'Remboursement au prêteur', in: false },
   EXT_GUAR: { l: 'Garantie retenue par le prêteur', in: false },
   GEO: { l: 'Point GPS du groupe', in: null },
+  EXCUSE: { l: 'Absence ou retard justifié', in: null },
   ANNUL: { l: 'Annulation', in: null }
 };
 
@@ -477,6 +478,10 @@ function seed() {
     const start = now - ((d.weeks - 1) * 7 + gap) * DAY;
     const avec = {
       id: 'avec' + ai, name: d.name, village: d.village, territoire: d.terr, orgId: d.org, animId: d.anim,
+      /* un signe différent par groupe : la démonstration doit montrer à quoi sert le signe,
+         et six arbres verts identiques ne montrent rien */
+      embleme: [{ signe: 'arbre', teinte: 'vert' }, { signe: 'epi', teinte: 'jaune' }, { signe: 'chevre', teinte: 'terre' },
+        { signe: 'poisson', teinte: 'ciel' }, { signe: 'soleil', teinte: 'grenat' }, { signe: 'panier', teinte: 'nuit' }][ai % 6],
       province: 'Nord-Kivu', entite: d.terr === 'Butembo' ? 'ville' : 'territoire', secteur: d.terr === 'Lubero' ? 'Bamate' : '', groupement: '',
       createdAt: start - 14 * DAY, cycle: { n: d.p === 'late' ? 2 : 1, start, end: start + (d.p === 'ecart' ? 4 : 12) * 30 * DAY },
       settings: { partValue: d.part, maxParts: 5, socialFee: d.social, rate: d.p === 'auto' ? 5 : 10, maxMult: 3, maxMonths: 3, fineAbsent: 500, fineLate: 200, cycleMonths: d.p === 'ecart' ? 4 : 12 },

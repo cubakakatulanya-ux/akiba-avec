@@ -403,10 +403,14 @@ ACT.excuseSheet = d => {
 };
 function excuseEcrire(avec, m, x, motif, par) {
   m.excuses = m.excuses || {};
+  const quoi = m.presence[x.id] === 'A' ? 'Absence justifiée' : 'Retard justifié';
   m.excuses[x.id] = { motif: motif.slice(0, 60), par: par.id, ts: Date.now() };
   /* l'amende déjà proposée dans le brouillon doit suivre la décision */
   if (App.draft && App.draft.on) delete App.draft.on[x.id];
-  secLog(avec, (m.presence[x.id] === 'A' ? 'Absence justifiée' : 'Retard justifié'), x.id, motif + ' · réunion n°' + m.n + ' · par ' + par.name);
+  /* Dans le journal scellé, et pas seulement dans le journal de sécurité : un motif décide si
+     de l'argent est dû, il doit être aussi infalsifiable que l'amende qu'il remplace. */
+  appendTx(avec, { type: 'EXCUSE', amount: 0, memberId: x.id, meetingId: m.id, by: par.id, note: quoi + ' : ' + motif.slice(0, 60) });
+  secLog(avec, quoi, x.id, motif + ' · réunion n°' + m.n + ' · par ' + par.name);
   DB.save();
 }
 ACT.excuseVite = d => {
@@ -428,6 +432,8 @@ ACT.excuseEffacer = d => {
   if (!isBureau(me)) return App.toast('Réservé au bureau');
   if (m.excuses) delete m.excuses[x.id];
   if (App.draft && App.draft.on) App.draft.on[x.id] = true;
+  /* on n'efface pas l'écriture d'origine — le journal ne s'efface jamais — on en ajoute une */
+  appendTx(avec, { type: 'EXCUSE', amount: 0, memberId: x.id, meetingId: m.id, by: me.id, note: 'Motif retiré, l’amende redevient due' });
   secLog(avec, 'Motif retiré', x.id, 'réunion n°' + m.n + ' · par ' + me.name);
   DB.save(); App.closeSheet(); render(); App.toast('Motif retiré');
 };
