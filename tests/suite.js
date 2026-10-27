@@ -1204,5 +1204,48 @@ window.__akibaTests = async function () {
     eq(verifyChain(avecById(A)).ok, true, 'le cahier doit être revenu comme avant l’essai');
     return avant.tx + ' écritures, signe, photo, naissance et motif arrivés entiers';
   });
+
+  /* ---------- U. une règle votée doit pouvoir être reconduite ---------- */
+  await t('Toute règle votée à la création peut être reconduite au cycle suivant', () => {
+    /* Un groupe vote son règlement une fois, puis le reconduit à chaque cycle. Si l'écran du
+       nouveau cycle ne propose pas une valeur que celui de la création proposait, le navigateur
+       retombe sur le premier choix de la liste : la part passe de 200 à 500 FC et l'intérêt de
+       2 à 5 % sans que l'assemblée l'ait décidé, ni que personne le voie. C'est arrivé. */
+    const avec = avecById(A);
+    const sauve = JSON.parse(JSON.stringify(avec.settings));
+    const sessionAvant = K.session;
+    const chef = avec.members.find(x => x.role === 'president' && !x.left);
+    K.session = { kind: 'avec', avecId: avec.id, memberId: chef.id };   /* l'écran est réservé au bureau */
+    const champs = { partValue: 'ncP', socialFee: 'ncS', rate: 'ncR', maxMonths: 'ncD',
+      cycleMonths: 'ncC', fineAbsent: 'ncF', fineLate: 'ncL', maxMult: 'ncX', maxParts: 'ncM', frequency: 'ncQ' };
+    const manquants = [];
+    try {
+      Object.keys(champs).forEach(cle => {
+        REGLES_CHOIX[cle].forEach(([valeur]) => {
+          avec.settings[cle] = valeur;
+          const html = SCREENS['a.newCycle']();
+          const sel = html.split('id="' + champs[cle] + '"')[1];
+          must(sel, 'le choix ' + champs[cle] + ' doit être sur l’écran du nouveau cycle');
+          const bloc = sel.split('</select>')[0];
+          if (bloc.indexOf('value="' + valeur + '" selected') < 0) manquants.push(cle + ' = ' + valeur);
+        });
+        avec.settings[cle] = sauve[cle];
+      });
+    } finally { avec.settings = sauve; K.session = sessionAvant; DB.save(); }
+    eq(manquants.length, 0, 'règles impossibles à reconduire : ' + manquants.join(', '));
+    return Object.keys(champs).length + ' règles, toutes reconductibles';
+  });
+
+  await t('Un choix n’efface jamais la valeur en cours du groupe', () => {
+    /* Filet pour les règlements venus d'une version plus ancienne, ou d'un cahier repris :
+       une valeur absente de la liste doit y être ajoutée, jamais remplacée en silence. */
+    const html = pickSel('essai', 'Essai', [[500, '500 FC'], [1000, '1 000 FC']], 777);
+    must(html.indexOf('value="777" selected') > 0, 'la valeur en cours doit rester sélectionnée : ' + html);
+    must(html.indexOf('value="500"') > 0 && html.indexOf('value="1000"') > 0, 'les autres choix restent proposés');
+    /* et une valeur connue ne doit pas être ajoutée deux fois */
+    const h2 = pickSel('essai', 'Essai', [[500, '500 FC'], [1000, '1 000 FC']], 500);
+    eq(h2.split('value="500"').length - 1, 1, 'une valeur connue ne doit apparaître qu’une fois');
+    return 'valeur hors liste gardée, valeur connue non dupliquée';
+  });
   return res;
 };

@@ -161,6 +161,23 @@ function ticker(items, opts = {}) {
 /* ---------- registre chaîné (append-only) ---------- */
 const payload = t => [t.seq, t.avecId, t.meetingId, t.type, t.memberId || '', t.amount, t.parts || 0, t.months || 0, t.rate || 0, t.ref || '', t.note || '', t.by || '', t.ts, t.cycle || 1, t.prev].join('|');
 
+/* Les choix du règlement, écrits une seule fois. Ils servent à la création du groupe et au
+   vote du cycle suivant : séparés, les deux écrans finissaient par ne plus proposer les mêmes
+   valeurs, et une règle votée à la création devenait impossible à reconduire. */
+const REGLES_CHOIX = {
+  partValue: [[200, '200 FC'], [500, '500 FC'], [1000, '1 000 FC'], [2000, '2 000 FC'], [5000, '5 000 FC']],
+  maxParts: [[3, '1 à 3 parts'], [5, '1 à 5 parts'], [10, '1 à 10 parts']],
+  socialFee: [[0, 'Aucune'], [200, '200 FC'], [300, '300 FC'], [500, '500 FC'], [1000, '1 000 FC']],
+  cycleMonths: [[6, '6 mois'], [9, '9 mois'], [12, '12 mois']],
+  rate: [[2, '2 % par mois'], [5, '5 % par mois'], [10, '10 % par mois']],
+  maxMult: [[2, '2 × l\'épargne'], [3, '3 × l\'épargne'], [4, '4 × l\'épargne']],
+  maxMonths: [[1, '1 mois'], [2, '2 mois'], [3, '3 mois'], [6, '6 mois']],
+  fineAbsent: [[200, '200 FC'], [500, '500 FC'], [1000, '1 000 FC']],
+  fineLate: [[100, '100 FC'], [200, '200 FC'], [500, '500 FC']],
+  penaltyRate: [[0, 'Aucune pénalité'], [2, '2 % par mois'], [5, '5 % par mois'], [10, '10 % par mois']],
+  frequency: [[7, 'Chaque semaine'], [14, 'Toutes les 2 semaines']],
+};
+
 function appendTx(avec, f) {
   const prev = avec.tx.length ? avec.tx[avec.tx.length - 1].hash : 'GENESE:' + avec.id;
   const t = Object.assign({ id: uid(), avecId: avec.id, ts: Date.now(), synced: false, cycle: avec.cycle.n }, f);

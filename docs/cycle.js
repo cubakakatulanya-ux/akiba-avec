@@ -225,7 +225,13 @@ function shareExecuter() {
 }
 
 /* ---------- nouveau cycle ---------- */
-const pickSel = (id, label, opts, v) => `<div class="field"><label for="${id}">${label}</label><select id="${id}" class="input">${opts.map(([val, l]) => `<option value="${val}" ${String(v) === String(val) ? 'selected' : ''}>${l}</option>`).join('')}</select></div>`;
+/* Si la valeur en cours n'est pas dans la liste, on l'ajoute au lieu de la perdre : sinon le
+   navigateur sélectionne le premier choix, et la règle du groupe change sans que personne ne
+   l'ait décidé. Cela protège aussi les règlements venus d'une version plus ancienne. */
+const pickSel = (id, label, opts, v) => {
+  const liste = (v === undefined || v === null || v === '' || opts.some(o => String(o[0]) === String(v))) ? opts : opts.concat([[v, String(v)]]).sort((a, b) => a[0] - b[0]);
+  return `<div class="field"><label for="${id}">${label}</label><select id="${id}" class="input">${liste.map(([val, l]) => `<option value="${val}" ${String(v) === String(val) ? 'selected' : ''}>${l}</option>`).join('')}</select></div>`;
+};
 function rolesForm(avec, p) {
   const list = activeM(avec);
   const keys = list.filter(m => m.key);
@@ -275,17 +281,17 @@ SCREENS['a.newCycle'] = () => {
     ${last ? `<div class="alert good"><span style="width:26px;flex:none">${ic('check')}</span><div><b>Cycle ${last.n} fermé</b><span class="small">${fck(last.distributed)} partagés entre ${last.members} membres · une part valait ${fc(last.value)}. Caisse de départ : ${fc(st.cash)}.</span></div></div>` : ''}
     <div><h2>Règles du nouveau cycle</h2><p class="muted">L'assemblée vote les règles et le bureau pour tout le cycle. Gardez-les ou changez-les ici.</p></div>
     <div class="card"><div class="grid2">
-      ${pickSel('ncP', 'Valeur d\'une part', [[500, '500 FC'], [1000, '1 000 FC'], [2000, '2 000 FC'], [5000, '5 000 FC']], s.partValue)}
-      ${pickSel('ncS', 'Caisse sociale', [[200, '200 FC'], [300, '300 FC'], [500, '500 FC'], [1000, '1 000 FC']], s.socialFee)}
-      ${pickSel('ncR', 'Intérêt par mois', [[5, '5 %'], [10, '10 %']], s.rate)}
-      ${pickSel('ncD', 'Durée max. du crédit', [[1, '1 mois'], [2, '2 mois'], [3, '3 mois'], [6, '6 mois']], s.maxMonths)}
-      ${pickSel('ncC', 'Durée du cycle', [[6, '6 mois'], [9, '9 mois'], [12, '12 mois']], s.cycleMonths || 12)}
-      ${pickSel('ncF', 'Amende d\'absence', [[200, '200 FC'], [500, '500 FC'], [1000, '1 000 FC']], s.fineAbsent)}
-      ${pickSel('ncL', 'Amende de retard', [[100, '100 FC'], [200, '200 FC'], [500, '500 FC']], s.fineLate)}
-      ${pickSel('ncPn', 'Pénalité si un crédit est en retard', [[0, 'Aucune pénalité'], [2, '2 % par mois'], [5, '5 % par mois'], [10, '10 % par mois']], penRate(s))}
-      ${pickSel('ncX', 'Crédit maximum', [[2, '2 × l\'épargne'], [3, '3 × l\'épargne'], [4, '4 × l\'épargne']], s.maxMult)}
-      ${pickSel('ncM', 'Parts par réunion', [[3, '1 à 3 parts'], [5, '1 à 5 parts'], [10, '1 à 10 parts']], s.maxParts)}
-      ${pickSel('ncQ', 'Rythme des réunions', [[7, 'Chaque semaine'], [14, 'Toutes les 2 semaines']], s.frequency || 7)}
+      ${pickSel('ncP', 'Valeur d\'une part', REGLES_CHOIX.partValue, s.partValue)}
+      ${pickSel('ncS', 'Caisse sociale', REGLES_CHOIX.socialFee, s.socialFee)}
+      ${pickSel('ncR', 'Intérêt par mois', REGLES_CHOIX.rate, s.rate)}
+      ${pickSel('ncD', 'Durée max. du crédit', REGLES_CHOIX.maxMonths, s.maxMonths)}
+      ${pickSel('ncC', 'Durée du cycle', REGLES_CHOIX.cycleMonths, s.cycleMonths || 12)}
+      ${pickSel('ncF', 'Amende d\'absence', REGLES_CHOIX.fineAbsent, s.fineAbsent)}
+      ${pickSel('ncL', 'Amende de retard', REGLES_CHOIX.fineLate, s.fineLate)}
+      ${pickSel('ncPn', 'Pénalité si un crédit est en retard', REGLES_CHOIX.penaltyRate, penRate(s))}
+      ${pickSel('ncX', 'Crédit maximum', REGLES_CHOIX.maxMult, s.maxMult)}
+      ${pickSel('ncM', 'Parts par réunion', REGLES_CHOIX.maxParts, s.maxParts)}
+      ${pickSel('ncQ', 'Rythme des réunions', REGLES_CHOIX.frequency, s.frequency || 7)}
     </div></div>
     <h2>Bureau et porte-clés</h2>${rolesForm(avec, 'nr')}
     ${approverFields(avec, me, 'nc')}

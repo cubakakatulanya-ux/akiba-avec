@@ -52,7 +52,7 @@ const C_RENDER = {
       <div class="field"><label for="cgN">Nom du groupe</label><input id="cgN" class="input" value="${esc(g.name)}" placeholder="Ex. Tuungane" autocomplete="off"></div>
       ${geoFields('cg', g)}
       ${d.from === 'org' ? pickSel('cgA', 'Animateur qui accompagne le groupe', anims.map(a => [a.id, esc(a.name)]), g.animId) : ''}
-      <div class="grid2">${pickSel('cgJ', 'Jour de réunion', DAYS.map(x => [x, x]), g.meetingDay)}${pickSel('cgQ', 'Rythme', [[7, 'Chaque semaine'], [14, 'Toutes les 2 semaines']], g.frequency)}</div>
+      <div class="grid2">${pickSel('cgJ', 'Jour de réunion', DAYS.map(x => [x, x]), g.meetingDay)}${pickSel('cgQ', 'Rythme', REGLES_CHOIX.frequency, g.frequency)}</div>
       <div class="field"><label for="cgO">Date de création du groupe</label><input id="cgO" type="date" class="input" value="${g.createdOn}"></div>
     </section>
     ${cGpsBloc(g)}
@@ -69,17 +69,17 @@ const C_RENDER = {
     const r = d.r;
     return `<section class="card stack"><h2>Règlement intérieur</h2><p class="muted small">Voté par l'assemblée. Il reste le même pendant tout le cycle.</p>
       <div class="grid2">
-        ${exSel('crP', 'Valeur d\'une part', [[200, '200 FC'], [500, '500 FC'], [1000, '1 000 FC'], [2000, '2 000 FC'], [5000, '5 000 FC']], r.partValue)}
-        ${pickSel('crX', 'Parts par réunion', [[3, '1 à 3 parts'], [5, '1 à 5 parts'], [10, '1 à 10 parts']], r.maxParts)}
-        ${pickSel('crS', 'Caisse sociale par réunion', [[0, 'Aucune'], [200, '200 FC'], [300, '300 FC'], [500, '500 FC'], [1000, '1 000 FC']], r.socialFee)}
-        ${pickSel('crC', 'Durée du cycle', [[6, '6 mois'], [9, '9 mois'], [12, '12 mois']], r.cycleMonths)}
-        ${exSel('crR', 'Intérêt du crédit', [[2, '2 % par mois'], [5, '5 % par mois'], [10, '10 % par mois']], r.rate)}
-        ${exSel('crM', 'Crédit maximum', [[2, '2 × l\'épargne'], [3, '3 × l\'épargne'], [4, '4 × l\'épargne']], r.maxMult)}
-        ${exSel('crD', 'Durée max. d\'un crédit', [[1, '1 mois'], [2, '2 mois'], [3, '3 mois'], [6, '6 mois']], r.maxMonths)}
+        ${exSel('crP', 'Valeur d\'une part', REGLES_CHOIX.partValue, r.partValue)}
+        ${pickSel('crX', 'Parts par réunion', REGLES_CHOIX.maxParts, r.maxParts)}
+        ${pickSel('crS', 'Caisse sociale par réunion', REGLES_CHOIX.socialFee, r.socialFee)}
+        ${pickSel('crC', 'Durée du cycle', REGLES_CHOIX.cycleMonths, r.cycleMonths)}
+        ${exSel('crR', 'Intérêt du crédit', REGLES_CHOIX.rate, r.rate)}
+        ${exSel('crM', 'Crédit maximum', REGLES_CHOIX.maxMult, r.maxMult)}
+        ${exSel('crD', 'Durée max. d\'un crédit', REGLES_CHOIX.maxMonths, r.maxMonths)}
         <div class="field"><label for="crB">Début du cycle</label><input id="crB" type="date" class="input" value="${r.cycleStart}"></div>
-        ${pickSel('crF', 'Amende d\'absence', [[200, '200 FC'], [500, '500 FC'], [1000, '1 000 FC']], r.fineAbsent)}
-        ${pickSel('crL', 'Amende de retard', [[100, '100 FC'], [200, '200 FC'], [500, '500 FC']], r.fineLate)}
-        ${pickSel('crPn', 'Pénalité si un crédit est en retard', [[0, 'Aucune pénalité'], [2, '2 % par mois'], [5, '5 % par mois'], [10, '10 % par mois']], r.penaltyRate != null ? r.penaltyRate : r.rate)}
+        ${pickSel('crF', 'Amende d\'absence', REGLES_CHOIX.fineAbsent, r.fineAbsent)}
+        ${pickSel('crL', 'Amende de retard', REGLES_CHOIX.fineLate, r.fineLate)}
+        ${pickSel('crPn', 'Pénalité si un crédit est en retard', REGLES_CHOIX.penaltyRate, r.penaltyRate != null ? r.penaltyRate : r.rate)}
       </div>
       <div class="tip" id="crEx">${exampleHtml(r)}</div>
     </section>`;
