@@ -1134,5 +1134,75 @@ window.__akibaTests = async function () {
     K.data.avecs.forEach(a => { const e = emblemeDe(a); must(EMBLEMES[e.signe] && TEINTES[e.teinte], 'signe inconnu sur ' + a.name); });
     return signes.size + ' signes différents dans la démonstration';
   });
+
+  /* ---------- T. le fichier qui passe d'une application à l'autre ---------- */
+  await t('Une AVEC envoyée par l’animateur arrive entière chez le groupe', async () => {
+    /* Recevoir une AVEC ajoute aussi son organisation et ses animateurs : cet essai touche donc
+       tout le cahier, pas une seule AVEC. On en garde une copie entière et on la remet à la fin,
+       sinon les écrans d'organisation vérifiés ensuite travaillent sur des données mélangées. */
+    const toutAvant = JSON.stringify(K.data);
+    const avec = avecById(A);
+    /* on charge l'AVEC de tout ce qui a été ajouté récemment : si l'un de ces champs
+       ne monte pas dans le fichier, le groupe perd le signe, les photos ou les motifs. */
+    const m = avec.members.filter(x => !x.left);
+    const r = avec.meetings[avec.meetings.length - 1];
+    avec.embleme = { signe: 'poisson', teinte: 'grenat' };
+    m[0].photo = 'data:image/jpeg;base64,' + 'A'.repeat(3000);
+    m[0].ne = '1979-04-12';
+    r.excuses = Object.assign({}, r.excuses, { [m[1].id]: { motif: 'Deuil dans la famille', par: m[0].id, ts: Date.now() } });
+    const avant = { tx: avec.tx.length, membres: avec.members.length, cash: stats(avec).cash,
+      signe: avec.embleme.signe, photo: m[0].photo.length, ne: m[0].ne, motif: r.excuses[m[1].id].motif };
+
+    const fichier = await buildTransfer(avec, 'ESSAI1234');
+    must(fichier.length > 1000, 'le fichier doit contenir quelque chose');
+    must(fichier.indexOf(avec.members[0].name) < 0, 'le fichier ne doit pas laisser lire les noms en clair');
+
+    /* le gardien de licence a ses propres essais : ici on vérifie le fichier, pas la porte */
+    const lic = App.licence;
+    App.licence = { ok: true, data: { id: 'ESSAI', name: 'Essai', kind: 'org' } };
+    const mode = K.data.mode;
+    try {
+      let e = await importTransfer(fichier, 'MAUVAIS999');
+      must(e && e.error && /code/i.test(e.error), 'un code faux doit être refusé : ' + JSON.stringify(e));
+
+      /* le téléphone du groupe n'a pas encore cette AVEC : sinon l'essai relirait sa propre copie */
+      K.data.avecs.splice(K.data.avecs.findIndex(x => x.id === avec.id), 1);
+      e = await importTransfer(fichier, 'essai 1234');          // code lu sans tenir compte des espaces
+      must(e && e.id === avec.id, 'l’AVEC doit arriver : ' + JSON.stringify(e));
+
+      const b = avecById(avec.id), bm = b.members.filter(x => !x.left);
+      const br = b.meetings[b.meetings.length - 1];
+      eq(verifyChain(b).ok, true, 'le journal doit arriver scellé');
+      eq(b.tx.length, avant.tx, 'toutes les écritures doivent arriver');
+      eq(b.members.length, avant.membres, 'tous les membres doivent arriver');
+      eq(stats(b).cash, avant.cash, 'la caisse doit afficher le même solde des deux côtés');
+      eq((b.embleme || {}).signe, avant.signe, 'le signe du groupe doit faire le voyage');
+      eq((bm[0].photo || '').length, avant.photo, 'la photo doit faire le voyage');
+      eq(bm[0].ne, avant.ne, 'la date de naissance doit faire le voyage');
+      eq(((br.excuses || {})[bm[1].id] || {}).motif, avant.motif, 'le motif justifié doit faire le voyage');
+
+      /* quelqu'un gonfle une épargne pendant que le fichier voyage */
+      const faux = JSON.parse(JSON.stringify(b));
+      const j = faux.tx.findIndex(x => x.amount > 0);
+      faux.tx[j].amount += 5000;
+      e = await importTransfer(await buildTransfer(faux, 'ESSAI1234'), 'ESSAI1234');
+      must(e && e.error && /alt/i.test(e.error), 'un journal trafiqué doit être refusé : ' + JSON.stringify(e));
+
+      /* et la même AVEC ne se reçoit pas deux fois : deux téléphones tiendraient le même cahier */
+      K.data.mode = 'prod';
+      e = await importTransfer(fichier, 'ESSAI1234');
+      must(e && e.error && /déjà/i.test(e.error), 'une AVEC déjà active doit être refusée : ' + JSON.stringify(e));
+
+    } finally {
+      /* recevoir une AVEC efface la démonstration en cours : le cahier revient comme il était,
+         même si un essai ci-dessus a échoué, sinon les écrans vérifiés ensuite partent faussés */
+      App.licence = lic;
+      K.data = JSON.parse(toutAvant); K.data.mode = mode;
+      Object.keys(_chain).forEach(k => delete _chain[k]);
+      DB.save();
+    }
+    eq(verifyChain(avecById(A)).ok, true, 'le cahier doit être revenu comme avant l’essai');
+    return avant.tx + ' écritures, signe, photo, naissance et motif arrivés entiers';
+  });
   return res;
 };
