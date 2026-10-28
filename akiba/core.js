@@ -95,6 +95,11 @@ const TX = {
   AMENDE: { l: 'Amende', in: true },
   CREDIT: { l: 'Crédit accordé', in: false },
   AIDE: { l: 'Aide sociale', in: false },
+  /* Les frais du groupe : cahier, stylos, encre de l'imprimante, transport du secrétaire.
+     Sans ce type, il fallait les coder en « aide sociale », ce qui débitait la caisse de
+     solidarité au nom d'un membre qui n'avait rien reçu. La dépense sort de la caisse
+     sociale, comme dans la pratique AVEC, mais elle s'appelle par son nom. */
+  DEPENSE: { l: 'Dépense du groupe', in: false },
   PARTAGE: { l: 'Partage fin de cycle', in: false },
   DEPART: { l: 'Remboursement de départ', in: false },
   DETTE: { l: 'Amende due (pas encore payée)', in: null },
@@ -106,6 +111,9 @@ const TX = {
   EXT_GUAR: { l: 'Garantie retenue par le prêteur', in: false },
   GEO: { l: 'Point GPS du groupe', in: null },
   EXCUSE: { l: 'Absence ou retard justifié', in: null },
+  /* Les arrivées et les départs de membres : aucun argent, mais la liste de ceux qui ont
+     droit à une part devient aussi infalsifiable que les sommes. */
+  MEMBRE: { l: 'Membre inscrit ou sorti', in: null },
   ANNUL: { l: 'Annulation', in: null }
 };
 
@@ -188,6 +196,23 @@ function appendTx(avec, f) {
   return t;
 }
 
+/* La liste des membres doit correspondre au journal. Elle n'était protégée par rien : un nom
+   ajouté directement dans les données restait invisible — journal valide, aucune trace — et
+   il entrait dans le décompte annoncé aux partenaires, pouvait porter une clé, et figurer
+   parmi ceux qui scellent une réunion. Chaque arrivée et chaque départ laisse maintenant une
+   écriture, et cette fonction compare les deux. */
+function verifyMembres(avec) {
+  const connus = new Set();
+  (avec.tx || []).forEach(t => { if (t.type === 'MEMBRE' && t.memberId) connus.add(t.memberId); });
+  if (!connus.size) return { ok: true, sansJournal: true };          // AVEC d'avant cette version
+  const intrus = (avec.members || []).filter(m => !connus.has(m.id));
+  return intrus.length
+    ? { ok: false, intrus: intrus.map(m => m.name), reason: intrus.length === 1
+        ? `« ${intrus[0].name} » ne figure pas dans le journal du groupe`
+        : `${intrus.length} membres ne figurent pas dans le journal du groupe` }
+    : { ok: true };
+}
+
 function verifyChain(avec) {
   let prev = 'GENESE:' + avec.id;
   for (let i = 0; i < avec.tx.length; i++) {
@@ -216,7 +241,11 @@ function stats(avec, opt = {}) {
   const act = txs.filter(t => t.type !== 'ANNUL' && !annulled.has(t.id));
   const mem = {};
   avec.members.forEach(x => mem[x.id] = { parts: 0, savings: 0, social: 0, fines: 0, fineDebt: 0, loans: [], left: !!x.left });
-  const sum = { EPARGNE: 0, SOCIAL: 0, REMB: 0, AMENDE: 0, CREDIT: 0, AIDE: 0, PARTAGE: 0, DEPART: 0, DETTE: 0, EXT_IN: 0, EXT_FEE: 0, EXT_REPAY: 0, EXT_GUAR: 0 };
+  /* Les totaux par type, initialisés depuis la table des types elle-même. En les écrivant à la
+     main, un type nouveau donnait undefined + montant, soit NaN — et le NaN se propageait
+     jusqu'à la caisse affichée. Le piège ne peut plus se reproduire. */
+  const sum = {};
+  Object.keys(TX).forEach(k => sum[k] = 0);
   const rep = { REPORT_IN: { social: 0, credit: 0 }, REPORT_OUT: { social: 0, credit: 0 } };
   const loans = {}, exts = {};
   let parts = 0;
@@ -259,7 +288,7 @@ function stats(avec, opt = {}) {
   const capitalOut = loanList.reduce((x, l) => x + l.principal, 0);
   const capitalBack = loanList.reduce((x, l) => x + Math.min(l.paid, l.principal), 0);
   const capitalDue = capitalOut - capitalBack;
-  const socialFund = sum.SOCIAL + rep.REPORT_IN.social - sum.AIDE - rep.REPORT_OUT.social;
+  const socialFund = sum.SOCIAL + rep.REPORT_IN.social - sum.AIDE - sum.DEPENSE - rep.REPORT_OUT.social;
   const extList = Object.values(exts).map(e => {
     // la garantie déjà retenue par le prêteur éteint la fin de la dette : il ne reste à payer que le solde
     e.netIn = e.principal - e.guar;                                  // argent réellement entré dans la caisse
@@ -326,6 +355,13 @@ function health(avec, st, chain) {
   const pending = avec.tx.filter(t => !t.synced).length;
   /* Le risque n'est pas « pas synchronisé » — il n'y a rien à synchroniser — mais « rien
      n'est sorti du téléphone » : si le téléphone disparaît, ces écritures disparaissent. */
+  /* Une caisse negative ne correspond a rien de reel : elle signale une reprise de cahier mal
+     saisie, ou une ecriture venue d ailleurs. Mieux vaut le dire que de l afficher comme un
+     solde. */
+  if (st.socialFund < 0) push('bad', 'Caisse sociale négative', fc(st.socialFund) + ' : il est sorti plus que ce qui est entré');
+  if (st.loanFund < 0) push('bad', 'Caisse de crédit négative', fc(st.loanFund) + ' : il est sorti plus que ce qui est entré');
+  const vm = verifyMembres(avec);
+  if (!vm.ok) push('bad', 'Liste des membres altérée', vm.reason);
   if (pending && daysAgo(avec.lastSync || 0) > 7)
     push('warn', 'Aucune sauvegarde récente', avec.lastSync ? `Dernière sortie du téléphone ${ago(avec.lastSync)} · ${pending} écriture(s) ne sont que sur ce téléphone`
       : `${pending} écriture(s) n'existent que sur ce téléphone, et nulle part ailleurs`);

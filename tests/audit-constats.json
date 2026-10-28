@@ -1,87 +1,92 @@
 [
   {
-    "lot": "L",
+    "lot": "D",
     "etat": "passe",
-    "quoi": "le telephone du tresorier avant sa perte",
-    "preuve": "1626 ecritures, 33 reunions, caisse 3 386 950 FC"
+    "quoi": "modifier une cotisation validee est detecte",
+    "preuve": "Écriture n°13 modifiée après enregistrement"
   },
   {
-    "lot": "L",
+    "lot": "D",
     "etat": "passe",
-    "quoi": "la copie que detient le president",
-    "preuve": "1490 ecritures, caisse 3 150 450 FC — il manque 136 ecritures, soit trois reunions"
+    "quoi": "supprimer un remboursement est detecte",
+    "preuve": "Le sceau de la réunion n°1 ne correspond plus"
   },
   {
-    "lot": "L",
+    "lot": "D",
     "etat": "passe",
-    "quoi": "le president travaille sur sa copie",
-    "preuve": "1490 ecritures, caisse 3 150 450 FC"
+    "quoi": "modifier un montant apres la cloture est detecte",
+    "preuve": "Écriture n°14 modifiée après enregistrement"
   },
   {
-    "lot": "L",
+    "lot": "D",
     "etat": "passe",
-    "quoi": "le cahier du president est coherent avec lui-meme",
-    "preuve": ""
+    "quoi": "refaire le hachage d une ecriture ne suffit pas a masquer la fraude",
+    "preuve": "Écriture n°16 modifiée après enregistrement"
   },
   {
-    "lot": "L",
-    "etat": "absent",
-    "quoi": "un pret a rembourser deux fois",
-    "preuve": "aucun credit en cours a ce moment du scenario"
-  },
-  {
-    "lot": "L",
-    "etat": "absent",
-    "quoi": "un membre endette a faire sortir",
-    "preuve": "aucun credit en cours a ce moment du scenario"
-  },
-  {
-    "lot": "L",
+    "lot": "D",
     "etat": "passe",
-    "quoi": "un journal altere empeche le partage",
-    "preuve": "Le journal est altéré : le partage est impossible. Écriture n°1 modifiée après enregistrement (chaine valide : false)"
+    "quoi": "le journal redevient valide quand on remet la valeur d origine",
+    "preuve": "les trois remises en etat sont propres"
   },
   {
-    "lot": "L",
-    "etat": "echoue",
-    "quoi": "une AVEC autonome ne peut pas produire le rapport Excel demande par un partenaire",
-    "preuve": "l export est reserve a une session d organisation ou d animateur : Cannot read properties of undefined (reading 'orgId')",
-    "gravite": "moyen"
-  },
-  {
-    "lot": "L",
+    "lot": "D",
     "etat": "passe",
-    "quoi": "ce que l application signale au comite",
-    "preuve": "niveau bad · warn : Fin du cycle dans 10 jours ; bad : Aucune réunion depuis 90 jours ; warn : Aucune sauvegarde récente"
+    "quoi": "un credit sans le code du deuxieme membre du bureau est refuse",
+    "preuve": "Code de Groupe incorrect"
   },
   {
-    "lot": "L",
+    "lot": "D",
     "etat": "passe",
-    "quoi": "le cahier garde la trace de sa provenance",
-    "preuve": "copie le 28/10/2026 a la reunion n°30, 1490 ecritures, caisse 3 150 450 FC"
+    "quoi": "un credit valide par quelqu un hors du bureau est refuse",
+    "preuve": "Choisissez un membre du bureau · propose dans la liste : false"
   },
   {
-    "lot": "L",
+    "lot": "D",
     "etat": "passe",
-    "quoi": "l accueil du groupe dit que le cahier vient d un autre telephone",
-    "preuve": "bandeau affiche : true"
+    "quoi": "changer le taux du groupe ne change pas un credit deja accorde",
+    "preuve": "a rembourser 12 000 FC avant, 12 000 FC apres · taux garde par le credit : 10 %"
   },
   {
-    "lot": "L",
+    "lot": "D",
     "etat": "passe",
-    "quoi": "le partage est refuse tant que personne n a verifie que ce cahier est le dernier",
-    "preuve": "Ce cahier vient d'un autre téléphone (copié à la réunion n°30) : vérifiez qu'il est bien le plus récent avant de partager"
+    "quoi": "un membre simple ne peut pas ouvrir une reunion",
+    "preuve": "Seul le bureau peut ouvrir une réunion"
   },
   {
-    "lot": "L",
+    "lot": "D",
     "etat": "passe",
-    "quoi": "apres confirmation du bureau, le partage redevient possible",
-    "preuve": "Expliquez l'écart : c'est obligatoire"
+    "quoi": "un faux membre ajoute dans les donnees est detecte",
+    "preuve": "« Faux Membre » ne figure pas dans le journal du groupe"
   },
   {
-    "lot": "L",
+    "lot": "D",
     "etat": "passe",
-    "quoi": "ce que le comite peut constater lui-meme",
-    "preuve": "la copie s arretait a la reunion n°30 ; il suffit de demander au porteur precedent ou il en etait pour voir l ecart"
+    "quoi": "l accueil signale la liste alteree",
+    "preuve": "alerte presente : true"
+  },
+  {
+    "lot": "D",
+    "etat": "passe",
+    "quoi": "le partage refuse tant que la liste des membres ne correspond pas au journal",
+    "preuve": "La liste des membres ne correspond pas au journal : « Faux Membre » ne figure pas dans le journal du groupe"
+  },
+  {
+    "lot": "D",
+    "etat": "passe",
+    "quoi": "le cahier d une autre AVEC ne s ouvre pas avec la session du premier groupe",
+    "preuve": "{\"fuite\":\"Groupe B\",\"ecran\":\"refus\"}"
+  },
+  {
+    "lot": "D",
+    "etat": "passe",
+    "quoi": "apres avoir vote les regles, le bouton Retour ne ramene pas au vote",
+    "preuve": "ecran atteint : a.meet · ecarte de l historique : true · regles intactes : true"
+  },
+  {
+    "lot": "D",
+    "etat": "note",
+    "quoi": "l ecran du reglement ne verifie pas lui-meme qu un vote est attendu",
+    "preuve": "il est hors historique, donc aucun chemin n y mene en cours de cycle ; la garde manque seulement en profondeur"
   }
 ]

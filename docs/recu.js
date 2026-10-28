@@ -245,7 +245,7 @@ ACT.recuShare = async d => {
 
 /* ---------- journal d'une période, imprimé sur le même papier ---------- */
 const jDay = ts => new Date(ts).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' });
-const J_SHORT = { EPARGNE: 'Epargne', SOCIAL: 'Sociale', REMB: 'Rembours.', AMENDE: 'Amende', DETTE: 'Amende due', CREDIT: 'Credit', AIDE: 'Aide', PARTAGE: 'Partage', DEPART: 'Depart', ANNUL: 'Annulation', REPORT_IN: 'Report entree', REPORT_OUT: 'Report sortie', EXT_IN: 'Credit exterieur', EXT_FEE: 'Frais exterieur', EXT_GUAR: 'Garantie', EXT_REPAY: 'Remb. preteur', EXCUSE: 'Motif justifie', GEO: 'Point GPS' };
+const J_SHORT = { EPARGNE: 'Epargne', SOCIAL: 'Sociale', REMB: 'Rembours.', AMENDE: 'Amende', DETTE: 'Amende due', CREDIT: 'Credit', AIDE: 'Aide', PARTAGE: 'Partage', DEPART: 'Depart', ANNUL: 'Annulation', REPORT_IN: 'Report entree', REPORT_OUT: 'Report sortie', EXT_IN: 'Credit exterieur', EXT_FEE: 'Frais exterieur', EXT_GUAR: 'Garantie', EXT_REPAY: 'Remb. preteur', EXCUSE: 'Motif justifie', GEO: 'Point GPS', DEPENSE: 'Depense', MEMBRE: 'Membre' };
 function journalRows(avec, from, to) {
   const an = annulledSet(avec);
   return avec.tx.filter(t => t.ts >= from && t.ts <= to).map(t => Object.assign({ annulled: an.has(t.id) }, t));

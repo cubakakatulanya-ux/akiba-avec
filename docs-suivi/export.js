@@ -69,6 +69,11 @@ function buildXlsx(sheets) {
 /* ---------- données exportées ---------- */
 const STATUS_TXT = { active: 'Active', pending: 'À valider', refused: 'Refusée' };
 function exportScope(p) {
+  /* le bureau d'une AVEC autonome n'exporte que son propre cahier */
+  if (!(K.session && K.session.userId)) {
+    const a = K.session && K.session.avecId ? avecById(K.session.avecId) : null;
+    return { u: null, avecs: a ? [a] : [] };
+  }
   const u = me_user();
   let avecs = myAvecs(u);
   if (p && p.anim) avecs = avecs.filter(a => a.animId === p.anim);
@@ -76,6 +81,7 @@ function exportScope(p) {
 }
 function exportSheets(avecs) {
   const animName = a => a.animId ? ((userById(a.animId) || {}).name || '—') : 'AVEC autonome';
+  /* appelé par l'organisation, par l'animateur, ou par le bureau d'une AVEC autonome */
   /* On additionne le journal, pas la part des écritures marquées « transmises ». Le filtre
      précédent donnait des rapports à zéro franc là où le cahier portait des millions, avec
      la mention « données envoyées par les AVEC » et aucun avertissement : un bailleur ne
@@ -85,11 +91,16 @@ function exportSheets(avecs) {
   const act = rows.filter(r => isActive(r.a));
   const T = f => act.reduce((s, r) => s + f(r), 0);
   const members = T(r => r.st.activeCount), women = T(r => r.st.women), outstanding = T(r => r.st.outstanding), late = T(r => r.st.lateAmt);
-  const org = orgOf(me_user().orgId);
+  /* L'export servait aussi à une AVEC autonome à qui un partenaire demande un rapport : il
+     n'y a alors ni organisation ni animateur, et me_user() n'existe pas. */
+  const moi = K.session && K.session.userId ? me_user() : null;
+  const groupe = !moi && K.session && K.session.avecId ? avecById(K.session.avecId) : null;
+  const parQui = moi ? moi.name : groupe ? ((memberOf(groupe, K.session.memberId) || {}).name || 'le bureau') + ' · ' + groupe.name : '—';
+  const org = moi ? orgOf(moi.orgId) : null;
   const synth = {
     name: 'Synthèse', cols: [{ h: 'Indicateur', w: 34 }, { h: 'Valeur', w: 22 }],
     rows: [
-      ['Organisation', org ? org.name : '—'], ['Exporté par', me_user().name], ['Date de l\'export', Date.now()],
+      ['Organisation', org ? org.name : 'AVEC autonome'], ['Exporté par', parQui], ['Date de l\'export', Date.now()],
       ['AVEC actives', act.length], ['AVEC à valider ou refusées', rows.length - act.length], ['Membres actifs', members], ['Dont femmes', members ? women / members : 0],
       ['Épargne du cycle en cours (FC)', T(r => r.st.sum.EPARGNE)], ['Crédits en cours (FC)', outstanding], ['Crédits en retard (FC)', late],
       ['Portefeuille à risque (PAR)', outstanding ? late / outstanding : 0], ['Caisses sociales (FC)', T(r => r.st.socialFund)], ['Argent en caisse (FC)', T(r => r.st.cash)],

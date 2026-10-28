@@ -267,7 +267,10 @@ const STEP = {
   },
   social(avec, m, st) {
     const aides = meetTx(avec, m, ['AIDE']);
-    const aideBtn = `<button class="btn ghost block" data-act="aideSheet">${ic('hand')} Donner une aide sociale</button>`;
+    /* La caisse sociale sert à deux choses : aider un membre, et payer ce que le groupe achète.
+       Les deux boutons sont côte à côte, parce que les deux sortent du même argent. */
+    const aideBtn = `<button class="btn ghost block" data-act="aideSheet">${ic('hand')} Donner une aide sociale</button>
+      <button class="btn ghost block" data-act="depenseSheet">${ic('clip')} Dépense du groupe (cahier, stylos…)</button>`;
     if (m.stepDone >= 2) return `${doneBanner('Cotisations sociales enregistrées.')}<div class="list">${txRows(avec, meetTx(avec, m, ['SOCIAL', 'AIDE']), 'Aucune cotisation')}</div>${aideBtn}${nextBtn(2, 'Suivant')}`;
     const here = presentMembers(avec, m);
     const dr = draft(m.id + ':social', () => { const o = {}; here.forEach(x => o[x.id] = true); return { paid: o }; });
@@ -630,6 +633,29 @@ ACT.aideSheet = () => {
     <div class="field"><label for="aiN">Raison</label><input id="aiN" class="input" placeholder="Maladie, deuil, incendie…"></div>
     ${approverFields(avec, me, 'ai')}
     <button class="btn primary block xl" data-act="saveAide">Donner l'aide</button>`);
+};
+/* Une dépense du groupe : le cahier, les stylos, l'encre, le transport du secrétaire. Elle
+   sort de la caisse sociale, comme le veut la pratique AVEC, et elle est validée par un
+   deuxième membre du bureau — c'est de l'argent commun qui s'en va. */
+ACT.depenseSheet = () => {
+  const { avec, me, st } = cur();
+  App.openSheet(`<h2>Dépense du groupe</h2>
+    <p class="muted">Pour ce que le groupe achète : un cahier, des stylos, de l'encre, le transport du secrétaire. L'argent sort de la caisse sociale : <b class="num">${fc(st.socialFund)}</b> disponibles.</p>
+    <div class="field"><label for="deA">Montant</label><input id="deA" class="input bignum num" inputmode="numeric" placeholder="0"></div>
+    <div class="field"><label for="deN">Pour quoi ?</label><input id="deN" class="input" placeholder="Cahier et stylos, encre, transport…"></div>
+    ${approverFields(avec, me, 'de')}
+    <button class="btn primary block xl" data-act="saveDepense">Enregistrer la dépense</button>`);
+};
+ACT.saveDepense = () => {
+  const { avec, me, st } = cur(); const m = openMeeting(avec);
+  if (!m) return App.toast('La dépense s\'enregistre pendant une réunion');
+  const amount = parseAmt(document.getElementById('deA').value), note = document.getElementById('deN').value.trim();
+  if (!amount) return App.toast('Écrivez le montant');
+  if (!note) return App.toast('Écrivez pour quoi le groupe a dépensé');
+  if (amount > st.socialFund) return App.toast(`La caisse sociale n'a que ${fc(st.socialFund)}`);
+  const ap = checkApprover(avec, 'de', null); if (!ap) return;
+  appendTx(avec, { meetingId: m.id, type: 'DEPENSE', memberId: null, amount, note: `${note} · validé par ${ap.name}`, by: me.id });
+  DB.save(); App.closeSheet(); App.toast('Dépense enregistrée');
 };
 ACT.saveAide = () => {
   const { avec, me, st } = cur(); const m = openMeeting(avec);

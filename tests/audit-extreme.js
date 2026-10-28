@@ -438,6 +438,9 @@ const CYCLER = `(avecId, semaines, opt) => {
       a.members.push({ id: a.id + '-faux', name: 'Faux Membre', sex: 'F', phone: '—', pin: '4321', joined: Date.now(), role: 'membre', key: false });
       DB.save();
       res.fauxMembre = { ajoute: a.members.length === avant5 + 1, chaineOk: verifyChain(a).ok,
+        listeOk: verifyMembres(a).ok, raison: verifyMembres(a).reason || '',
+        partageRefuse: (() => { K.session = { kind: 'avec', avecId: a.id, memberId: chef.id }; return sharePret(a, stats(a)) || 'aucune'; })(),
+        alerte: health(a, stats(a), verifyChain(a)).alerts.some(x => /membres/i.test(x.title)),
         traceSecurite: (a.security || []).some(s => /faux/i.test(JSON.stringify(s))),
         comptePourLePartage: sharePlan(a, stats(a)).rows.some(r => r.x.id === a.id + '-faux') };
       a.members = a.members.filter(x => x.id !== a.id + '-faux');
@@ -507,10 +510,13 @@ const CYCLER = `(avecId, semaines, opt) => {
       'a rembourser ' + fc(d.tauxRetroactif.dueAvant) + ' avant, ' + fc(d.tauxRetroactif.dueApres) + ' apres · taux garde par le credit : ' + d.tauxRetroactif.tauxDuCredit + ' %', 'bloquant');
     verifier(d.membreOuvreReunion.refuse, 'D', 'un membre simple ne peut pas ouvrir une reunion', d.membreOuvreReunion.message);
     /* le faux membre : ce que l application voit, et ce qu elle ne voit pas */
-    if (d.fauxMembre.ajoute && d.fauxMembre.chaineOk && d.fauxMembre.comptePourLePartage)
-      echoue('D', 'la liste des membres n est pas scellee : un faux membre passe inapercu',
-        'journal toujours valide, aucune trace de securite ; il recoit 0 FC au partage et ne change la part de personne, mais il gonfle le nombre de membres annonce aux partenaires et peut porter une cle', 'moyen');
-    else passe('D', 'un faux membre est detecte ou ecarte', JSON.stringify(d.fauxMembre));
+    /* La chaine ne couvre pas la liste des membres : c est verifyMembres qui la couvre, en la
+       comparant aux ecritures d inscription. Et le partage doit refuser. */
+    verifier(!d.fauxMembre.listeOk, 'D', 'un faux membre ajoute dans les donnees est detecte',
+      d.fauxMembre.raison, 'bloquant');
+    verifier(d.fauxMembre.alerte, 'D', 'l accueil signale la liste alteree', 'alerte presente : ' + d.fauxMembre.alerte);
+    verifier(/membres/i.test(d.fauxMembre.partageRefuse || ''), 'D',
+      'le partage refuse tant que la liste des membres ne correspond pas au journal', d.fauxMembre.partageRefuse, 'bloquant');
     /* acces a une autre AVEC */
     if (d.autreAvec.ecran === 'affiche B')
       echoue('D', 'un responsable peut ouvrir le cahier d une autre AVEC du meme telephone',

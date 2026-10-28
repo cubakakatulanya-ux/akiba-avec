@@ -381,6 +381,10 @@ ACT.cCreate = () => {
     avec.gps = g.gps;
     appendTx(avec, { type: 'GEO', amount: 0, lat: g.gps.lat, lon: g.gps.lon, acc: g.gps.acc, by: null, note: 'Point GPS à la création ' + gpsTexte(g.gps) + (g.gps.acc ? ' (' + gpsPrecision(g.gps) + ')' : '') });
   }
+  /* Les membres fondateurs entrent dans le journal : sans cela, la liste du premier jour ne
+     serait couverte par rien, et c'est précisément celle qui compte le plus. */
+  members.forEach(m => appendTx(avec, { type: 'MEMBRE', amount: 0, memberId: m.id, by: null,
+    note: 'Membre fondateur · ' + m.name + (m.role !== 'membre' ? ' · ' + ROLES[m.role] : '') }));
   if (d.mode === 'reprise') importCahier(avec, d);
   K.data.avecs.push(avec);
   if (d.from === 'login') K.session = { kind: 'avec', avecId: id, memberId: members.find(m => m.role === 'president').id };
