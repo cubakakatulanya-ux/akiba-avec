@@ -52,17 +52,30 @@ process.on('uncaughtException', e => { ligne('  ERREUR : ' + (e && e.message ? e
 function onglet(port) {
   let ws, n = 0; const attente = {};
   const envoyer = (method, params) => new Promise((ok, ko) => { const i = ++n; attente[i] = { ok, ko }; ws.send(JSON.stringify({ id: i, method, params })); });
+  /* Un délai de garde sur chaque appel au navigateur. Sans lui, un onglet que Chrome a tué —
+     faute de mémoire, par exemple — ne répond plus jamais, et l'essai reste figé pour toujours :
+     le compteur des secondes continue d'avancer, aucune semaine ne se termine, et rien ne dit
+     pourquoi. Mieux vaut échouer fort au bout de deux minutes que d'attendre la nuit. */
+  const GARDE = 120000;
   const js = async expression => {
-    const r = await envoyer('Runtime.evaluate', { expression, awaitPromise: true, returnByValue: true });
+    let minuteur;
+    const r = await Promise.race([
+      envoyer('Runtime.evaluate', { expression, awaitPromise: true, returnByValue: true }),
+      new Promise((_, ko) => { minuteur = setTimeout(() => ko(new Error('le navigateur du port ' + port + ' ne répond plus (onglet perdu ?)')), GARDE); }),
+    ]).finally(() => clearTimeout(minuteur));
     if (r.exceptionDetails) throw new Error(r.exceptionDetails.exception ? r.exceptionDetails.exception.description : r.exceptionDetails.text);
     return r.result.value;
   };
+  let cible = null;
   return {
     ouvrir: async () => {
       const c = await (await fetch('http://127.0.0.1:' + DEBUG + '/json/new?' + encodeURIComponent('http://127.0.0.1:' + port + '/'), { method: 'PUT' })).json();
+      cible = c.id;
       ws = new WebSocket(c.webSocketDebuggerUrl, { maxPayload: 256 * 1024 * 1024 });
       await new Promise(r => ws.onopen = r);
       ws.onmessage = e => { const d = JSON.parse(e.data); if (d.id && attente[d.id]) { d.error ? attente[d.id].ko(new Error(d.error.message)) : attente[d.id].ok(d.result); delete attente[d.id]; } };
+      ws.onclose = () => Object.keys(attente).forEach(i => { attente[i].ko(new Error('connexion au navigateur fermée')); delete attente[i]; });
+      ws.onerror = () => Object.keys(attente).forEach(i => { attente[i].ko(new Error('connexion au navigateur en erreur')); delete attente[i]; });
       await envoyer('Runtime.enable', {});
       /* Cinq pages s'ouvrent en même temps : attendre une durée fixe ne suffit pas. Tant que le
          démarrage n'a pas fini de résoudre la licence, il redessine l'écran — et effacerait
@@ -74,6 +87,13 @@ function onglet(port) {
       await dors(400);
     },
     js,
+    /* Refermer le téléphone dès que son groupe a fini. Une page gardée ouverte retient son
+       cahier d'un mégaoctet et son écran rendu : à cinq, la mémoire finit par manquer et Chrome
+       sacrifie un onglet au hasard — on perd alors un groupe au milieu de son cycle. */
+    fermer: async () => {
+      try { if (ws) ws.close(); } catch (e) { /* déjà fermé */ }
+      try { if (cible) await fetch('http://127.0.0.1:' + DEBUG + '/json/close/' + cible); } catch (e) { /* déjà parti */ }
+    },
     /* attendre qu'un écran soit réellement là avant d'y taper quoi que ce soit */
     attendre: async (expr, quoi) => {
       for (let i = 0; i < 150; i++) {
@@ -361,8 +381,12 @@ const REUNION = `async (avecId, sem, plan) => {
 const etat = GROUPES.map(() => 'attente');
 
 async function unGroupe(gi) {
-  const g = GROUPES[gi], plan = PLANS[gi], r = g.r, nom = g.nom;
   const T = onglet(PORT + gi); await T.ouvrir();   /* son propre port, donc son propre téléphone */
+  try { return await unCycle(gi, T); } finally { await T.fermer(); }
+}
+
+async function unCycle(gi, T) {
+  const g = GROUPES[gi], plan = PLANS[gi], r = g.r, nom = g.nom;
   const js = T.js, jsj = T.jsj;
   const horloge = t => js('window.__t = ' + t + ', 1');
 
@@ -688,8 +712,12 @@ async function unGroupe(gi) {
   verifier(s2.reglesGardees, 'cycle 2 ' + nom + ' : les règles reconduites sont inchangées');
   verifier(s2.chaine, 'cycle 2 ' + nom + ' : journal intact');
   /* un cycle qui ne prête pas ne prouve rien du crédit : on exige que l'argent ait circulé */
-  verifier(s2.credits >= Math.max(3, Math.round(SEMAINES / 6)), 'cycle 1 ' + nom + ' : le groupe a réellement prêté',
-    s2.credits + ' crédits pour ' + SEMAINES + ' semaines · ' + raisons.slice(0, 6).join(' ; '));
+  /* Le compte attendu suit la fenêtre où l'on prête : de la 4e semaine à la 44e. Sur un essai
+     court il n'y a que quelques semaines, et exiger un chiffre fixe donnerait un faux échec. */
+  const fenetre = Math.max(0, Math.min(SEMAINES, 44) - 3);
+  const attendus = Math.max(1, Math.round(fenetre * 0.3));
+  verifier(s2.credits >= attendus, 'cycle 1 ' + nom + ' : le groupe a réellement prêté',
+    s2.credits + ' crédits pour ' + fenetre + ' semaines de prêt, au moins ' + attendus + ' attendus · ' + raisons.slice(0, 6).join(' ; '));
   /* Un crédit d'un mois se rembourse en une fois : chez un groupe qui a voté « un mois au plus »,
      autant de remboursements que de crédits est le bon compte, pas un défaut. */
   verifier(r.maxMonths > 1 ? s2.remboursements > s2.credits : s2.remboursements >= s2.credits,
@@ -721,8 +749,21 @@ async function unGroupe(gi) {
     + '   [' + Math.round((Date.now() - t0) / 1000) + ' s]'), 400);
 
   let res;
-  try { res = await Promise.all(GROUPES.map((_, i) => i).filter(i => SEUL === null || i === SEUL).map(i => unGroupe(i))); }
-  finally { clearInterval(minuterie); }
+  /* Un téléphone à la fois, et on le referme avant d'ouvrir le suivant. Cinq pages ensemble,
+     chacune avec son cahier d'un mégaoctet et son écran rendu à chaque geste, finissaient par
+     faire sacrifier un onglet à Chrome quand la machine n'avait plus de mémoire : on perdait un
+     groupe au milieu de son cycle, sans savoir pourquoi.
+     AKIBA_PARALLELE=5 pour tout lancer d'un coup sur une machine qui a de la place. */
+  const aLaFois = Math.max(1, Math.min(5, +(process.env.AKIBA_PARALLELE || 1)));
+  const files = GROUPES.map((_, i) => i).filter(i => SEUL === null || i === SEUL);
+  res = [];
+  try {
+    for (let d = 0; d < files.length; d += aLaFois) {
+      const paquet = files.slice(d, d + aLaFois);
+      etat.forEach((_, i) => { if (!paquet.includes(i) && etat[i] === 'attente') etat[i] = 'en file'; });
+      res = res.concat(await Promise.all(paquet.map(i => unGroupe(i))));
+    }
+  } finally { clearInterval(minuterie); }
 
   ligne('  ' + '─'.repeat(Math.min(large - 2, 100)));
   ligne('  Bilan du cycle 1');
