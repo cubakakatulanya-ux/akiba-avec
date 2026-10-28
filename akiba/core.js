@@ -251,7 +251,14 @@ function stats(avec, opt = {}) {
   const outstanding = activeLoans.reduce((a, l) => a + l.remaining, 0);
   const lateAmt = activeLoans.filter(l => l.status === 'retard').reduce((a, l) => a + l.remaining, 0);
   const penaltyTot = activeLoans.reduce((a, l) => a + (l.penalty || 0), 0);
+  /* Capital et intérêts se suivent séparément. Un remboursement rend d'abord le capital,
+     l'intérêt ensuite : « encours » est donc la créance entière, tandis que « capital encore
+     dehors » est l'argent du groupe qui n'est pas rentré. Les deux chiffres ne disent pas la
+     même chose, et un auditeur comme une IMF ont besoin des deux. */
   const interest = loanList.reduce((a, l) => a + Math.max(0, l.paid - l.principal), 0);
+  const capitalOut = loanList.reduce((x, l) => x + l.principal, 0);
+  const capitalBack = loanList.reduce((x, l) => x + Math.min(l.paid, l.principal), 0);
+  const capitalDue = capitalOut - capitalBack;
   const socialFund = sum.SOCIAL + rep.REPORT_IN.social - sum.AIDE - rep.REPORT_OUT.social;
   const extList = Object.values(exts).map(e => {
     // la garantie déjà retenue par le prêteur éteint la fin de la dette : il ne reste à payer que le solde
@@ -273,7 +280,7 @@ function stats(avec, opt = {}) {
   const ecarts = meetings.filter(m => m.closeCount !== m.closeExpected);
   return {
     sum, rep, mem, parts: activeParts, fineDebt, cycleN: cyc, loanList, activeLoans, outstanding, lateAmt, penaltyTot, interest, socialFund, loanFund,
-    extList, extDebt, extActive: extList.filter(e => e.status !== 'solde'),
+    extList, extDebt, extActive: extList.filter(e => e.status !== 'solde'), capitalOut, capitalBack, capitalDue,
     cash: socialFund + loanFund, par: outstanding ? lateAmt / outstanding : 0,
     meetings, last: meetings[meetings.length - 1], attendance: slots ? pres / slots : 0, ecarts,
     women: active.filter(m => m.sex === 'F').length, activeCount: active.length,

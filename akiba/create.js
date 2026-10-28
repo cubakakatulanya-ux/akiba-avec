@@ -355,8 +355,9 @@ ACT.cCreate = () => {
   const r = d.r, g = d.g, R = d.roles;
   const id = 'avec-' + uid();
   const start = fromIso(r.cycleStart);
+  const pinsPris = [];
   const members = d.members.map(m => ({
-    id: id + '-' + m.id, name: m.name, sex: m.sex, phone: m.phone || '—', pin: newPin(), joined: Date.now(),
+    id: id + '-' + m.id, name: m.name, sex: m.sex, phone: m.phone || '—', pin: (() => { const p = newPinLibre(pinsPris); pinsPris.push(p); return p; })(), joined: Date.now(),
     birthYear: m.birthYear || null, birthDate: m.birthDate || '', photo: m.photo || '', activity: m.activity || '', address: m.address || '',
     role: m.id === R.P ? 'president' : m.id === R.S ? 'secretaire' : m.id === R.T ? 'tresorier' : (m.id === R.C1 || m.id === R.C2) ? 'compteur' : 'membre',
     key: [R.K1, R.K2, R.K3].includes(m.id)

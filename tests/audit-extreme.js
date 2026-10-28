@@ -312,7 +312,8 @@ const CYCLER = `(avecId, semaines, opt) => {
         depart, avant, cash: st.cash, social: st.socialFund, credit: st.loanFund,
         entrees, sorties, equation: entrees - sorties,
         nbRemb: rembs.length, sommeRemb: rembs.reduce((s, t) => s + t.amount, 0),
-        encours: st.outstanding, depenseFaite, typesSortie: Object.keys(TX).filter(k => TX[k].in === false),
+        encours: st.outstanding, capitalOut: st.capitalOut, capitalBack: st.capitalBack, capitalDue: st.capitalDue,
+        depenseFaite, typesSortie: Object.keys(TX).filter(k => TX[k].in === false),
         parts: st.parts, partsMembres: activeM(a).reduce((s, x) => s + st.mem[x.id].parts, 0),
         chaine: verifyChain(a).ok, id,
       };
@@ -326,8 +327,13 @@ const CYCLER = `(avecId, semaines, opt) => {
       fc(c.entrees) + ' moins ' + fc(c.sorties) + ' donne ' + fc(c.equation) + ' pour une caisse de ' + fc(c.cash), 'bloquant');
     verifier(c.nbRemb === 1 && c.sommeRemb === 180000, 'C', 'le remboursement n est compte qu une fois',
       c.nbRemb + ' ecriture, ' + fc(c.sommeRemb));
-    verifier(c.encours === 440000, 'C', 'encours = capital decaisse moins capital rembourse',
-      'obtenu ' + fc(c.encours) + ' pour 440 000 attendu');
+    /* Deux grandeurs differentes, qui doivent toutes deux etre justes et distinctes :
+       la creance entiere (capital + interets a venir) et le capital encore dehors. */
+    verifier(c.capitalDue === c.capitalOut - c.capitalBack && c.capitalDue === 400000, 'C',
+      'capital encore dehors = capital decaisse moins capital rembourse',
+      fc(c.capitalOut) + ' decaisses moins ' + fc(c.capitalBack) + ' rendus donne ' + fc(c.capitalDue), 'bloquant');
+    verifier(c.encours === 480000, 'C', 'la creance entiere ajoute les interets a venir au capital',
+      fc(c.encours) + ' de creance pour ' + fc(c.capitalDue) + ' de capital, soit ' + fc(c.encours - c.capitalDue) + ' d interets', 'bloquant');
     verifier(c.parts === c.partsMembres, 'C', 'total des parts du groupe = somme des parts des membres', c.parts + ' = ' + c.partsMembres);
     verifier(c.social + c.credit === c.cash, 'C', 'caisse sociale et caisse de credit se partagent exactement la caisse',
       fc(c.social) + ' sociale + ' + fc(c.credit) + ' credit = ' + fc(c.cash));
@@ -867,6 +873,20 @@ const CYCLER = `(avecId, semaines, opt) => {
           K.session = { kind: 'avec', avecId: a.id, memberId: chef.id };
           const genre = i % 5;
           let pose = '';
+          /* une séance de régularisation, ouverte puis scellée : écrire dans une réunion déjà
+             close est détecté par la vérification du journal, et c'est voulu. */
+          const ouvrir = () => {
+            const n = a.meetings.reduce((x, y) => Math.max(x, y.n), 0) + 1;
+            const mm = { id: a.id + '-reg' + n, n, cycle: a.cycle.n, date: Date.now(), status: 'open',
+              presence: {}, openedBy: chef.id, stepDone: 7, synced: false };
+            activeM(a).forEach(x => mm.presence[x.id] = 'P');
+            a.meetings.push(mm);
+            mm.openExpected = mm.openCount = stats(a).cash;
+            return mm;
+          };
+          const sceller = mm => { const st2 = stats(a); Object.assign(mm, { status: 'closed', closedAt: Date.now(),
+            closeExpected: st2.cash, closeCount: st2.cash, validators: keyHolders(a).slice(0, 3).map(h => h.id),
+            sealSeq: a.tx.length, seal: a.tx[a.tx.length - 1].hash }); };
           if (genre === 0) { pose = 'credit non rembourse'; }                 /* on laisse les credits en cours */
           if (genre === 1) {                                                  /* un membre part avec une dette */
             const st0 = stats(a);
@@ -874,17 +894,20 @@ const CYCLER = `(avecId, semaines, opt) => {
             if (endette) { endette.left = Date.now(); pose = 'membre sorti avec credit'; } else pose = 'aucun endette a sortir';
           }
           if (genre === 2) {                                                  /* amendes impayees */
-            activeM(a).slice(0, 5).forEach(x => appendTx(a, { meetingId: a.meetings[a.meetings.length - 1].id, type: 'DETTE', memberId: x.id, amount: 5000, note: 'Amende impayee', by: chef.id }));
+            const mm = ouvrir();
+            activeM(a).slice(0, 5).forEach(x => appendTx(a, { meetingId: mm.id, type: 'DETTE', memberId: x.id, amount: 5000, note: 'Amende impayee', by: chef.id }));
+            sceller(mm);
             pose = 'amendes impayees';
           }
           if (genre === 3) {                                                  /* ecart de caisse non explique */
             pose = 'ecart de caisse';
           }
           if (genre === 4) {                                                  /* tout est regle : le partage doit passer */
-            const st0 = stats(a);
-            st0.activeLoans.forEach(l => appendTx(a, { meetingId: a.meetings[a.meetings.length - 1].id, type: 'REMB', memberId: l.memberId, ref: l.id, amount: l.remaining, note: 'solde avant partage', by: chef.id }));
+            const mm = ouvrir();
+            stats(a).activeLoans.forEach(l => appendTx(a, { meetingId: mm.id, type: 'REMB', memberId: l.memberId, ref: l.id, amount: l.remaining, note: 'solde avant partage', by: chef.id }));
             const st1 = stats(a);
-            activeM(a).forEach(x => { const d = st1.mem[x.id].fineDebt; if (d > 0) appendTx(a, { meetingId: a.meetings[a.meetings.length - 1].id, type: 'AMENDE', ref: 'DETTE', memberId: x.id, amount: d, note: 'amendes payees', by: chef.id }); });
+            activeM(a).forEach(x => { const d = st1.mem[x.id].fineDebt; if (d > 0) appendTx(a, { meetingId: mm.id, type: 'AMENDE', ref: 'DETTE', memberId: x.id, amount: d, note: 'amendes payees', by: chef.id }); });
+            sceller(mm);
             pose = 'tout regle';
           }
           DB.save();
@@ -916,8 +939,16 @@ const CYCLER = `(avecId, semaines, opt) => {
         const chef0 = a0.members.find(x => x.role === 'president');
         K.session = { kind: 'avec', avecId: a0.id, memberId: chef0.id };
         const victime = activeM(a0)[7];
-        const m0 = a0.meetings[a0.meetings.length - 1];
-        appendTx(a0, { meetingId: m0.id, type: 'DETTE', memberId: victime.id, amount: 9000000, note: 'dette enorme', by: chef0.id });
+        const nD = a0.meetings.reduce((x, y) => Math.max(x, y.n), 0) + 1;
+        const mD = { id: a0.id + '-dette', n: nD, cycle: a0.cycle.n, date: Date.now(), status: 'open',
+          presence: {}, openedBy: chef0.id, stepDone: 7, synced: false };
+        activeM(a0).forEach(x => mD.presence[x.id] = 'P');
+        a0.meetings.push(mD);
+        mD.openExpected = mD.openCount = stats(a0).cash;
+        appendTx(a0, { meetingId: mD.id, type: 'DETTE', memberId: victime.id, amount: 9000000, note: 'dette enorme', by: chef0.id });
+        const stD = stats(a0);
+        Object.assign(mD, { status: 'closed', closedAt: Date.now(), closeExpected: stD.cash, closeCount: stD.cash,
+          validators: keyHolders(a0).slice(0, 3).map(h => h.id), sealSeq: a0.tx.length, seal: a0.tx[a0.tx.length - 1].hash });
         DB.save();
         App.draftKey = null; App.go('a.shareRun');
         App.draft.closeCount = String(stats(a0).cash);
@@ -999,11 +1030,32 @@ const CYCLER = `(avecId, semaines, opt) => {
       passe('I', 'lignes par feuille', i.colonnes.map(c => c.nom + ' ' + c.lignes).join(' · '));
       /* Le point decisif : exportSheets appelle stats(a, { syncedOnly: true }). Ce que l export
          additionne n est donc pas le journal, mais la part des ecritures marquees « envoyees ». */
-      if (i.marque.caisseEnvoyee !== i.marque.caisseTout)
-        echoue('I', 'les totaux exportes ne sont pas ceux du journal',
-          'l export ne compte que les ecritures marquees envoyees : caisse ' + fc(i.marque.caisseEnvoyee) + ' exportee contre ' + fc(i.marque.caisseTout)
-          + ' au journal, epargne ' + fc(i.marque.epargneEnvoyee) + ' contre ' + fc(i.marque.epargneTout) + ' · ' + i.marque.enAttente + ' ecritures en attente', 'bloquant');
-      else passe('I', 'les totaux exportes sont ceux du journal', fc(i.marque.caisseEnvoyee) + ' de caisse, ' + i.marque.enAttente + ' ecritures en attente');
+      /* On relit ce que l export produit reellement, feuille par feuille, au lieu de recalculer
+         un filtre : c est le fichier remis au partenaire qui doit coller au journal. */
+      const lu = await jsj(`(() => {
+        const f = exportSheets(K.data.avecs);
+        const feuille = n => f.find(x => x.name === n);
+        const valeur = (fe, li) => { const r = (fe.rows || []).find(r => String(r[0]).toLowerCase().indexOf(li) >= 0); if (!r) return null; const v = r[1]; return v && typeof v === 'object' ? v.v : v; };
+        const syn = feuille('Synthèse');
+        const colTotal = (nom, titre) => { const fe = feuille(nom); if (!fe) return null;
+          const k = (fe.cols || []).findIndex(c => String(c.h || c).toLowerCase().indexOf(titre) >= 0);
+          if (k < 0) return null;
+          return (fe.rows || []).reduce((s2, r) => { const v = r[k]; const n2 = v && typeof v === 'object' ? v.v : v; return s2 + (typeof n2 === 'number' ? n2 : 0); }, 0); };
+        return { synCaisse: valeur(syn, 'argent en caisse'), synEpargne: valeur(syn, 'épargne du cycle'),
+          synAttente: valeur(syn, 'pas encore transmises'), synSource: valeur(syn, 'source'),
+          avecCaisse: colTotal('AVEC', 'argent en caisse'), reunions: (feuille('Réunions').rows || []).length,
+          credits: (feuille('Crédits').rows || []).length };
+      })()`);
+      verifier(lu.synCaisse === i.reel.caisse, 'I', 'le total de caisse de la synthese egale le journal',
+        fc(lu.synCaisse) + ' exporte contre ' + fc(i.reel.caisse) + ' au journal', 'bloquant');
+      verifier(lu.synEpargne === i.reel.epargne, 'I', 'le total d epargne de la synthese egale le journal',
+        fc(lu.synEpargne) + ' contre ' + fc(i.reel.epargne), 'bloquant');
+      verifier(lu.avecCaisse === i.reel.caisse, 'I', 'la feuille AVEC se recoupe avec la synthese',
+        fc(lu.avecCaisse) + ' contre ' + fc(i.reel.caisse), 'bloquant');
+      verifier(lu.reunions > 0 && lu.credits > 0, 'I', 'les feuilles Reunions et Credits ne sont pas vides',
+        lu.reunions + ' reunions, ' + lu.credits + ' credits', 'bloquant');
+      verifier(typeof lu.synAttente === 'number', 'I', 'le fichier dit combien d ecritures ne sont pas encore transmises',
+        lu.synAttente + ' en attente · source annoncee : « ' + lu.synSource + ' »', 'bloquant');
       passe('I', 'totaux du journal, pour comparaison', 'caisse ' + fc(i.reel.caisse) + ' · epargne ' + fc(i.reel.epargne)
         + ' · credits ' + fc(i.reel.credits) + ' · remboursements ' + fc(i.reel.rembs) + ' · ' + i.reel.membres + ' membres · ' + i.reel.parts + ' parts');
       /* la comparaison ligne a ligne : on relit les feuilles et on resomme */

@@ -4,7 +4,11 @@
 const me_user = () => userById(K.session.userId);
 const orgOf = id => K.data.orgs.find(o => o.id === id);
 function sup(avec) {
-  const st = stats(avec, { syncedOnly: true });
+  /* Le tableau de bord de l animateur montre le cahier tel qu il est, pas la part des ecritures
+     marquees transmises : sinon un groupe tres actif mais jamais transmis apparait a zero franc,
+     et l animateur ne voit pas qu il doit aller le chercher. Le retard de transmission est dit
+     par ailleurs, par le compteur « en attente » et par l alerte de synchronisation. */
+  const st = stats(avec);
   const ch = chainOf(avec);
   return { avec, st, ch, h: health(avec, st, ch) };
 }

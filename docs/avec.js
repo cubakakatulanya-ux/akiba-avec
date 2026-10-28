@@ -309,6 +309,14 @@ const STEP = {
     const list = meetTx(avec, m, ['CREDIT']);
     return `<div><h2>Nouveaux crédits</h2><p class="muted">Un membre peut emprunter jusqu'à ${avec.settings.maxMult} fois son épargne, pour ${avec.settings.maxMonths} mois au plus, à ${avec.settings.rate} % par mois. L'assemblée écoute chaque demande.</p></div>
       <div class="card row between"><span class="label">Disponible pour prêter</span><b class="num" style="font-family:var(--f-display);font-size:1.4rem">${fc(st.loanFund)}</b></div>
+      <!-- Le capital à part des intérêts : « encours » est la créance entière, le capital est
+           l'argent du groupe encore dehors. Un auditeur et une IMF demandent les deux. -->
+      ${st.capitalDue ? `<div class="receipt stack" style="gap:4px">
+        <div class="row between small"><span class="muted">Capital prêté depuis le début du cycle</span><span class="num">${fc(st.capitalOut)}</span></div>
+        <div class="row between small"><span class="muted">Capital déjà rendu</span><span class="num">${fc(st.capitalBack)}</span></div>
+        <div class="row between"><span class="label">Capital encore dehors</span><b class="num">${fc(st.capitalDue)}</b></div>
+        <div class="row between small"><span class="muted">Dont intérêts à venir</span><span class="num">${fc(st.outstanding - st.capitalDue)}</span></div>
+      </div>` : ''}
       <div class="list">${txRows(avec, list, 'Aucun crédit accordé à cette réunion')}</div>
       ${waitBlock(avec, m, st)}
       <button class="btn brand block xl" data-act="creditSheet">${ic('plus')} Accorder un crédit</button>

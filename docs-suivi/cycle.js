@@ -134,7 +134,13 @@ SCREENS['a.shareRun'] = () => {
 /* Les contrôles qui empêchent un partage, rassemblés : ils sont posés deux fois,
    avant de demander confirmation, puis juste avant d'écrire — entre les deux, une
    réunion peut s'être ouverte sur un autre téléphone du groupe. */
-function sharePret(avec, st) {
+function sharePret(avec, st) {
+  /* D'abord l'intégrité. Le partage rend une année d'épargne et ferme le cycle : il ne doit
+     jamais s'appuyer sur un cahier que l'application elle-même sait altéré. L'alerte existait
+     à l'accueil, mais rien ne l'empêchait ici — c'était l'opération la plus irréversible de
+     l'application, et la seule à ne pas vérifier la chaîne. */
+  const ch = verifyChain(avec);
+  if (!ch.ok) return 'Le journal est altéré : le partage est impossible. ' + (ch.reason || '');
   if (openMeeting(avec)) return 'Fermez d\'abord la réunion en cours';
   const plan = sharePlan(avec, st);
   if (plan.blocked.length) return 'Des membres doivent rembourser avant le partage';
@@ -359,7 +365,15 @@ const codeSheet = (title, pin) => `<h2>${esc(title)}</h2>
   <div class="receipt" style="text-align:center"><span class="label">Code secret provisoire</span><div class="num" style="font-family:var(--f-display);font-size:2.6rem;letter-spacing:.25em">${pin}</div></div>
   <p class="hint">Donnez ce code en main propre, jamais par message. Le membre le changera dans « Mon carnet ».</p>
   <button class="btn primary block xl" data-act="closeSheet">C'est noté</button>`;
-const newPin = () => { let p; do { p = String(1000 + Math.floor(Math.random() * 9000)); } while (WEAK_PINS.includes(p)); return p; };
+const newPin = () => { let p; do { p = String(1000 + Math.floor(Math.random() * 9000)); } while (WEAK_PINS.includes(p)); return p; };
+/* Dans un groupe de vingt-cinq, deux codes tirés au hasard se ressemblent une fois sur trente :
+   mesuré, un groupe sur cent avait deux membres au même code. Or le code sert à confirmer une
+   clôture et à valider un crédit : deux membres au même code peuvent signer l'un pour l'autre. */
+const newPinLibre = pris => {
+  const deja = new Set((pris || []).map(String));
+  for (let i = 0; i < 500; i++) { const p = newPin(); if (!deja.has(p)) return p; }
+  return newPin();                                                 // 8 990 codes possibles : on n'arrive jamais ici
+};
 
 ACT.addMemberSheet = () => {
   const { avec, me } = cur();

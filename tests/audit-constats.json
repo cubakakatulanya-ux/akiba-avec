@@ -1,44 +1,50 @@
 [
   {
-    "lot": "K",
+    "lot": "F",
     "etat": "passe",
-    "quoi": "capacite reelle du stockage local de ce navigateur",
-    "preuve": "environ 5 Mo au total (123 Ko deja pris par les donnees)"
+    "quoi": "50 clotures examinees",
+    "preuve": "40 autorisees, 10 bloquees"
   },
   {
-    "lot": "K",
+    "lot": "F",
     "etat": "passe",
-    "quoi": "stockage occupe par les donnees avant saturation",
-    "preuve": "123 Ko"
+    "quoi": "motif de blocage rencontre",
+    "preuve": "Expliquez l'écart : c'est obligatoire (10 fois)"
   },
   {
-    "lot": "K",
+    "lot": "F",
     "etat": "passe",
-    "quoi": "remplissage force",
-    "preuve": "environ 5 Mo ajoutes jusqu au refus"
+    "quoi": "une AVEC dont tout est regle peut partager",
+    "preuve": "10 cas, fautes : aucune, aucune, aucune, aucune, aucune, aucune, aucune, aucune, aucune, aucune"
   },
   {
-    "lot": "K",
+    "lot": "F",
     "etat": "passe",
-    "quoi": "une sauvegarde impossible est annoncee a l utilisateur",
-    "preuve": "« Le téléphone n’arrive plus à garder les écritures : mémoire pleine. Exportez vos données. »"
+    "quoi": "la retenue sur la part egale exactement ce que le membre doit",
+    "preuve": "0 ecart(s) sur 50 clotures · 40 AVEC avec retenue, 2 979 500 FC retenus en tout"
   },
   {
-    "lot": "K",
+    "lot": "F",
     "etat": "passe",
-    "quoi": "la sauvegarde repart apres liberation du stockage",
-    "preuve": "DB.save rend true"
+    "quoi": "part inscrite = argent recu + dettes retenues",
+    "preuve": "0 ecart(s)"
   },
   {
-    "lot": "K",
+    "lot": "F",
     "etat": "passe",
-    "quoi": "le journal en memoire reste intact apres un refus de sauvegarde",
-    "preuve": "4135 ecritures en memoire"
+    "quoi": "un membre qui doit plus que sa part fait refuser le partage, et il est nomme",
+    "preuve": "Des membres doivent rembourser avant le partage · 1 membre(s) : Josephine Bisimwa"
   },
   {
-    "lot": "K",
+    "lot": "F",
     "etat": "passe",
-    "quoi": "l ecart entre la memoire et le stockage est annonce, non masque",
-    "preuve": "4000 ecritures presentes en memoire mais absentes du stockage, et l application le dit : « Le téléphone n’arrive plus à garder les écritures : mémoire pleine. Exportez vos données. »"
+    "quoi": "un ecart de caisse non explique bloque le partage",
+    "preuve": "10 cloture(s) refusee(s) sur 50"
+  },
+  {
+    "lot": "F",
+    "etat": "passe",
+    "quoi": "les fonds a distribuer ne depassent pas les liquidites",
+    "preuve": "2 605 350 FC a donner pour 2 956 850 FC en caisse"
   }
 ]
