@@ -37,7 +37,14 @@ async function buildTransfer(avec, code) {
   const ids = new Set([avec.animId].concat(avec.visits.map(v => v.by)).filter(Boolean));
   const users = K.data.users.filter(u => ids.has(u.id)).map(u => ({ id: u.id, role: u.role, orgId: u.orgId, name: u.name, zone: u.zone || '', phone: u.phone || '', pin: null, remote: true }));
   const copy = JSON.parse(JSON.stringify(avec)); copy.movedOut = null;
-  const body = { kind: TRANSFER_KIND, v: 1, created: Date.now(), avec: copy, org, users, licence: licGet(), i18n: K.data.i18n || {}, langs: K.data.langs || [] };
+  /* Le repère du cahier au moment de la copie. Sans lui, un cahier reçu est indiscernable
+     d'un cahier complet : il est cohérent avec lui-même, et c'est précisément le piège.
+     Avec lui, le groupe peut demander au porteur de l'autre téléphone : « tu en étais à
+     quelle réunion ? » et constater l'écart au lieu de le découvrir au partage. */
+  const derniere = avec.meetings.filter(m => m.status === 'closed').reduce((x, m) => Math.max(x, m.n), 0);
+  const repere = { quand: Date.now(), reunions: derniere, ecritures: avec.tx.length,
+    tete: avec.tx.length ? avec.tx[avec.tx.length - 1].hash : null, caisse: stats(avec).cash, par: whoName() };
+  const body = { kind: TRANSFER_KIND, v: 1, created: Date.now(), avec: copy, org, users, licence: licGet(), i18n: K.data.i18n || {}, langs: K.data.langs || [], repere };
   const salt = crypto.getRandomValues(new Uint8Array(16)), iv = crypto.getRandomValues(new Uint8Array(12));
   const cipher = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, await backupKey(cleanXfer(code), salt), new TextEncoder().encode(JSON.stringify(body)));
   return JSON.stringify({ app: TRANSFER_KIND, format: 1, name: avec.name, created: body.created, salt: b64enc(salt), iv: b64enc(iv), data: b64enc(cipher) });
@@ -69,7 +76,13 @@ async function importTransfer(text, code) {
   const old = avecById(a.id);
   if (old) K.data.avecs.splice(K.data.avecs.indexOf(old), 1);          // l'AVEC revient sur ce téléphone
   a.movedOut = null;
-  secLog(a, 'AVEC reçue sur ce téléphone', null, 'fichier de transfert');
+  /* La provenance reste attachée au cahier : c'est elle qui empêche de le présenter comme
+     complet. Elle ne s'effacera qu'au moment où le bureau confirmera, en assemblée, que
+     c'est bien la version la plus récente. */
+  if (body.repere) a.recuDe = Object.assign({}, body.repere, { recuLe: Date.now(), confirme: null });
+  secLog(a, 'AVEC reçue sur ce téléphone', null, body.repere
+    ? `fichier de transfert · copié le ${fdate(body.repere.quand)} à la réunion n°${body.repere.reunions}, ${body.repere.ecritures} écritures, caisse ${fc(body.repere.caisse)}`
+    : 'fichier de transfert (sans repère : version ancienne de l\'application)');
   K.data.avecs.push(a);
   if (body.org && !K.data.orgs.some(o => o.id === body.org.id)) K.data.orgs.push(body.org);
   (body.users || []).forEach(u => { if (!userById(u.id)) K.data.users.push(u); });
@@ -114,6 +127,7 @@ ACT.transferRun = async d => {
   const code = randCode(8);
   const file = await buildTransfer(avec, code);
   avec.movedOut = Date.now();
+  marquerSorti(avec, 'envoi vers un autre téléphone');
   secLog(avec, 'AVEC envoyée vers un autre téléphone', null, whoName());
   DB.save();
   App.lastTransfer = { code, file };

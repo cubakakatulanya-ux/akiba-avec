@@ -667,7 +667,13 @@ const CYCLER = `(avecId, semaines, opt) => {
       K.data.net.online = true;
       const enAttenteAvant = pending(a);
       window.__dit = ''; const vrai = App.toast; App.toast = function (t) { window.__dit = t; return vrai.apply(this, arguments); };
-      const rendu = syncAvec(a);
+      /* On ouvre la feuille de sauvegarde et on regarde ce qu elle affiche, sans produire de
+         fichier : rien ne doit laisser croire que le cahier est sorti du telephone. */
+      let plante = null, feuille = '';
+      try { ACT.syncSheet(); feuille = (document.body.innerHTML.match(/<h2>[^<]*<\\/h2>/) || [''])[0]; } catch (e) { plante = String(e.message || e); }
+      const texteFeuille = document.body.innerText || '';
+      App.closeSheet();
+      const rendu = typeof window.syncAvec === 'function';
       const message = window.__dit;
       App.toast = vrai;
       window.fetch = vraiFetch; window.XMLHttpRequest.prototype.open = vraiXHR;
@@ -678,13 +684,21 @@ const CYCLER = `(avecId, semaines, opt) => {
         sorties, beacons, dernierEnvoi: a.lastSync ? 'enregistre' : 'jamais',
         pastille: syncPill(a).replace(/<[^>]+>/g, ' ').replace(/\\s+/g, ' ').trim(),
         toutMarqueEnvoye: a.tx.every(t => t.synced),
+        ditPasDeServeur: /serveur/i.test(texteFeuille),
+        ditQueCaNExistePasAilleurs: /que sur ce t/i.test(texteFeuille),
+        plante, feuille,
       };
     })()`);
-    passe('G', 'ce que l application affiche apres « envoyer »', g0.message + ' · en attente : ' + g0.enAttenteAvant + ' puis ' + g0.enAttenteApres);
-    if (g0.sorties.length === 0 && g0.toutMarqueEnvoye)
-      echoue('G', 'l application annonce un envoi au serveur alors que rien ne quitte le telephone',
-        'aucune requete reseau (' + g0.sorties.length + ' observee), pourtant les ' + g0.enAttenteAvant + ' ecritures passent a « envoyees », « dernier envoi » est ' + g0.dernierEnvoi + ' et le compteur en attente tombe a ' + g0.enAttenteApres, 'bloquant');
-    else passe('G', 'l envoi au serveur correspond a une sortie reseau reelle', g0.sorties.join(', '));
+    verifier(!g0.plante, 'G', 'la feuille de sauvegarde s ouvre', g0.plante || g0.feuille);
+    verifier(g0.rendu === false, 'G', 'la fonction qui annoncait un envoi au serveur n existe plus',
+      'syncAvec encore present : ' + g0.rendu, 'bloquant');
+    verifier(g0.enAttenteApres === g0.enAttenteAvant && !g0.toutMarqueEnvoye, 'G',
+      'aucun geste ne fait croire que le cahier est a l abri sans fichier produit',
+      g0.enAttenteAvant + ' ecritures avant, ' + g0.enAttenteApres + ' apres · ' + g0.sorties.length + ' requete(s) reseau · derniere sortie : ' + g0.dernierEnvoi, 'bloquant');
+    verifier(g0.ditPasDeServeur && g0.ditQueCaNExistePasAilleurs, 'G',
+      'la feuille dit qu il n y a pas de serveur et que le cahier n existe que sur ce telephone',
+      'parle du serveur : ' + g0.ditPasDeServeur + ' · dit « que sur ce telephone » : ' + g0.ditQueCaNExistePasAilleurs, 'bloquant');
+    passe('G', 'ce que montre la pastille', g0.pastille);
 
     /* G1 — deux appareils tiennent la meme AVEC */
     const U = onglet(PORT + 1); await U.ouvrir();
@@ -1297,6 +1311,18 @@ const CYCLER = `(avecId, semaines, opt) => {
         tx: a.tx.length, caisse: stats(a).cash, chaine: ch.ok, doubleDetecte, depart, faute: faute || 'aucune', rapport, partageSurJournalAltere,
         alertes: h.alerts.map(x => x.lvl + ' : ' + x.title), niveau: h.level,
         enAttente: pending(a), derniereSync: a.lastSync ? 'enregistree' : 'jamais',
+        /* la provenance du cahier : c est elle qui doit empecher de le croire complet */
+        provenance: a.recuDe ? { reunions: a.recuDe.reunions, ecritures: a.recuDe.ecritures,
+          caisse: a.recuDe.caisse, quand: a.recuDe.quand, confirme: a.recuDe.confirme } : null,
+        bandeau: (() => { try { return /Cahier reçu d/.test(SCREENS['a.home']()); } catch (e) { return 'erreur'; } })(),
+        partageAvantVerif: sharePret(a, stats(a)) || 'aucune',
+        apresConfirmation: (() => {
+          if (!a.recuDe) return null;
+          a.recuDe.confirme = Date.now();
+          const f2 = sharePret(a, stats(a)) || 'aucune';
+          a.recuDe.confirme = null;
+          return f2;
+        })(),
       };
     })()`);
     if (l1.erreur) echoue('L', 'le president peut ouvrir sa copie', l1.erreur, 'bloquant');
@@ -1324,11 +1350,20 @@ const CYCLER = `(avecId, semaines, opt) => {
           'l export est reserve a une session d organisation ou d animateur : ' + l1.rapport.erreur, 'moyen');
       else passe('L', 'le rapport pour le partenaire se produit immediatement', JSON.stringify(l1.rapport));
       passe('L', 'ce que l application signale au comite', 'niveau ' + l1.niveau + ' · ' + (l1.alertes.join(' ; ') || 'aucune alerte'));
-      /* le point crucial : l application dit-elle que trois reunions manquent ? */
-      if (!l1.alertes.some(x => /manqu|retard de saisie|ecart|absente/i.test(x)))
-        echoue('L', 'rien ne signale que trois reunions tenues sur l autre telephone manquent au cahier',
-          'le cahier du president est coherent et se presente comme complet : ' + l1.tx + ' ecritures contre ' + l0.perdu.tx + ' reellement tenues. Aucune alerte, aucun numero de reunion manquant, et le compteur « en attente d envoi » affiche ' + l1.enAttente + '. Un partenaire recevant ce rapport ne peut pas savoir qu il est incomplet.', 'bloquant');
-      else passe('L', 'l application signale les reunions manquantes', l1.alertes.join(' ; '));
+      /* LE POINT CRUCIAL : un cahier recu se presente-t-il encore comme complet ? */
+      const pv = l1.provenance;
+      verifier(!!pv, 'L', 'le cahier garde la trace de sa provenance',
+        pv ? 'copie le ' + new Date(pv.quand).toLocaleDateString('fr-FR') + ' a la reunion n°' + pv.reunions
+          + ', ' + pv.ecritures + ' ecritures, caisse ' + fc(pv.caisse) : 'aucune provenance enregistree', 'bloquant');
+      verifier(l1.bandeau === true, 'L', 'l accueil du groupe dit que le cahier vient d un autre telephone',
+        'bandeau affiche : ' + l1.bandeau, 'bloquant');
+      verifier(/autre t|plus r/i.test(l1.partageAvantVerif), 'L',
+        'le partage est refuse tant que personne n a verifie que ce cahier est le dernier',
+        l1.partageAvantVerif, 'bloquant');
+      verifier(l1.apresConfirmation === 'aucune' || !/autre t/i.test(l1.apresConfirmation || ''), 'L',
+        'apres confirmation du bureau, le partage redevient possible', String(l1.apresConfirmation));
+      passe('L', 'ce que le comite peut constater lui-meme', 'la copie s arretait a la reunion n°' + (pv ? pv.reunions : '?')
+        + ' ; il suffit de demander au porteur precedent ou il en etait pour voir l ecart');
     }
     await V.fermer();
     trait();

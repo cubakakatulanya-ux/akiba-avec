@@ -133,8 +133,13 @@ ACT.backupRun = async () => {
     a.href = url; a.download = `akiba-sauvegarde-${isoDay(Date.now())}.akiba`;
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(url), 5000);
-    K.data.lastBackup = Date.now(); DB.save();
-    App.closeSheet(); App.toast('Sauvegarde enregistrée dans « Téléchargements »');
+    K.data.lastBackup = Date.now();
+    /* la sauvegarde contient tout : c'est le moment où les écritures sortent vraiment */
+    let sorties = 0;
+    K.data.avecs.forEach(a => { sorties += marquerSorti(a, 'sauvegarde'); });
+    DB.save();
+    App.closeSheet();
+    App.toast(sorties ? `Sauvegarde enregistrée dans « Téléchargements » · ${sorties} écriture${sorties > 1 ? 's' : ''} mise${sorties > 1 ? 's' : ''} à l'abri` : 'Sauvegarde enregistrée dans « Téléchargements »');
   } catch (e) { App.toast('La sauvegarde n\'a pas pu être créée : ' + e.message); }
 };
 ACT.restoreSheet = () => {
@@ -144,6 +149,8 @@ ACT.restoreSheet = () => {
   if (!canEncrypt()) return App.toast('Ce navigateur ne permet pas le déchiffrement. Mettez Chrome à jour.');
   App.openSheet(`<h2>Restaurer une sauvegarde</h2>
     <p class="muted">Pour remplacer un téléphone perdu, cassé ou effacé. Les données de démonstration de ce téléphone seront remplacées.</p>
+    <div class="alert warn">${icSpan('alert')}<div><b>Si une AVEC a été envoyée depuis cette sauvegarde</b>
+      <span class="small">La sauvegarde ne sait pas ce qui s'est passé après elle. Si le cahier a été envoyé à un autre téléphone entre-temps, la restauration en fera revivre une deuxième copie, et les deux se mettront à diverger. Chaque AVEC restaurée sera marquée « à vérifier » jusqu'à ce que le bureau confirme qu'elle est bien la plus récente.</span></div></div>
     <div class="field"><label for="rsF">Fichier de sauvegarde (.akiba)</label><input id="rsF" class="input" type="file" accept=".akiba,.kitabu,.json,application/json"></div>
     <div class="field"><label for="rsP">Mot de passe de sauvegarde</label><input id="rsP" class="input" type="password" autocomplete="off"></div>
     <button class="btn primary block xl" data-act="restoreRun">${ic('sync')} Restaurer</button>`);
@@ -163,8 +170,22 @@ ACT.restoreRun = async () => {
     const broken = data.avecs.find(a => !verifyChain(a).ok);
     if (broken) return App.toast(`Le journal de « ${broken.name} » est altéré : restauration refusée`);
     K.data = data; K.session = null;
+    /* Une sauvegarde ne sait pas ce qui s'est passé après elle. Si le cahier a été envoyé à un
+       autre téléphone entre-temps, la restauration en fait revivre une deuxième copie. On marque
+       donc chaque AVEC « à vérifier » : l'accueil le dira, et le partage refusera, jusqu'à ce
+       que le bureau confirme en assemblée qu'elle est bien la plus récente. */
+    const quand = box.created || Date.now();
+    data.avecs.forEach(a => {
+      const derniere = (a.meetings || []).filter(m => m.status === 'closed').reduce((x, m) => Math.max(x, m.n), 0);
+      a.movedOut = null;
+      a.recuDe = { quand, reunions: derniere, ecritures: (a.tx || []).length,
+        tete: a.tx && a.tx.length ? a.tx[a.tx.length - 1].hash : null,
+        caisse: stats(a).cash, par: 'sauvegarde restaurée', recuLe: Date.now(), confirme: null };
+      secLog(a, 'AVEC restaurée depuis une sauvegarde', null,
+        `sauvegarde du ${fdate(quand)} · réunion n°${derniere} · à vérifier avant tout partage`);
+    });
     Object.keys(_chain).forEach(k => delete _chain[k]);
-    DB.save(); App.go('login'); App.toast(`${data.avecs.length} AVEC restaurée${data.avecs.length > 1 ? 's' : ''}. Connectez-vous.`);
+    DB.save(); App.go('login'); App.toast(`${data.avecs.length} AVEC restaurée${data.avecs.length > 1 ? 's' : ''}. Vérifiez avec le bureau qu'elles sont bien les plus récentes.`);
   } catch (e) { App.toast('Restauration impossible : ' + e.message); }
 };
 

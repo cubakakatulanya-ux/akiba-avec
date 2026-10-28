@@ -1,50 +1,87 @@
 [
   {
-    "lot": "F",
+    "lot": "L",
     "etat": "passe",
-    "quoi": "50 clotures examinees",
-    "preuve": "40 autorisees, 10 bloquees"
+    "quoi": "le telephone du tresorier avant sa perte",
+    "preuve": "1626 ecritures, 33 reunions, caisse 3 386 950 FC"
   },
   {
-    "lot": "F",
+    "lot": "L",
     "etat": "passe",
-    "quoi": "motif de blocage rencontre",
-    "preuve": "Expliquez l'écart : c'est obligatoire (10 fois)"
+    "quoi": "la copie que detient le president",
+    "preuve": "1490 ecritures, caisse 3 150 450 FC — il manque 136 ecritures, soit trois reunions"
   },
   {
-    "lot": "F",
+    "lot": "L",
     "etat": "passe",
-    "quoi": "une AVEC dont tout est regle peut partager",
-    "preuve": "10 cas, fautes : aucune, aucune, aucune, aucune, aucune, aucune, aucune, aucune, aucune, aucune"
+    "quoi": "le president travaille sur sa copie",
+    "preuve": "1490 ecritures, caisse 3 150 450 FC"
   },
   {
-    "lot": "F",
+    "lot": "L",
     "etat": "passe",
-    "quoi": "la retenue sur la part egale exactement ce que le membre doit",
-    "preuve": "0 ecart(s) sur 50 clotures · 40 AVEC avec retenue, 2 979 500 FC retenus en tout"
+    "quoi": "le cahier du president est coherent avec lui-meme",
+    "preuve": ""
   },
   {
-    "lot": "F",
-    "etat": "passe",
-    "quoi": "part inscrite = argent recu + dettes retenues",
-    "preuve": "0 ecart(s)"
+    "lot": "L",
+    "etat": "absent",
+    "quoi": "un pret a rembourser deux fois",
+    "preuve": "aucun credit en cours a ce moment du scenario"
   },
   {
-    "lot": "F",
-    "etat": "passe",
-    "quoi": "un membre qui doit plus que sa part fait refuser le partage, et il est nomme",
-    "preuve": "Des membres doivent rembourser avant le partage · 1 membre(s) : Josephine Bisimwa"
+    "lot": "L",
+    "etat": "absent",
+    "quoi": "un membre endette a faire sortir",
+    "preuve": "aucun credit en cours a ce moment du scenario"
   },
   {
-    "lot": "F",
+    "lot": "L",
     "etat": "passe",
-    "quoi": "un ecart de caisse non explique bloque le partage",
-    "preuve": "10 cloture(s) refusee(s) sur 50"
+    "quoi": "un journal altere empeche le partage",
+    "preuve": "Le journal est altéré : le partage est impossible. Écriture n°1 modifiée après enregistrement (chaine valide : false)"
   },
   {
-    "lot": "F",
+    "lot": "L",
+    "etat": "echoue",
+    "quoi": "une AVEC autonome ne peut pas produire le rapport Excel demande par un partenaire",
+    "preuve": "l export est reserve a une session d organisation ou d animateur : Cannot read properties of undefined (reading 'orgId')",
+    "gravite": "moyen"
+  },
+  {
+    "lot": "L",
     "etat": "passe",
-    "quoi": "les fonds a distribuer ne depassent pas les liquidites",
-    "preuve": "2 605 350 FC a donner pour 2 956 850 FC en caisse"
+    "quoi": "ce que l application signale au comite",
+    "preuve": "niveau bad · warn : Fin du cycle dans 10 jours ; bad : Aucune réunion depuis 90 jours ; warn : Aucune sauvegarde récente"
+  },
+  {
+    "lot": "L",
+    "etat": "passe",
+    "quoi": "le cahier garde la trace de sa provenance",
+    "preuve": "copie le 28/10/2026 a la reunion n°30, 1490 ecritures, caisse 3 150 450 FC"
+  },
+  {
+    "lot": "L",
+    "etat": "passe",
+    "quoi": "l accueil du groupe dit que le cahier vient d un autre telephone",
+    "preuve": "bandeau affiche : true"
+  },
+  {
+    "lot": "L",
+    "etat": "passe",
+    "quoi": "le partage est refuse tant que personne n a verifie que ce cahier est le dernier",
+    "preuve": "Ce cahier vient d'un autre téléphone (copié à la réunion n°30) : vérifiez qu'il est bien le plus récent avant de partager"
+  },
+  {
+    "lot": "L",
+    "etat": "passe",
+    "quoi": "apres confirmation du bureau, le partage redevient possible",
+    "preuve": "Expliquez l'écart : c'est obligatoire"
+  },
+  {
+    "lot": "L",
+    "etat": "passe",
+    "quoi": "ce que le comite peut constater lui-meme",
+    "preuve": "la copie s arretait a la reunion n°30 ; il suffit de demander au porteur precedent ou il en etait pour voir l ecart"
   }
 ]

@@ -140,7 +140,12 @@ function sharePret(avec, st) {
      à l'accueil, mais rien ne l'empêchait ici — c'était l'opération la plus irréversible de
      l'application, et la seule à ne pas vérifier la chaîne. */
   const ch = verifyChain(avec);
-  if (!ch.ok) return 'Le journal est altéré : le partage est impossible. ' + (ch.reason || '');
+  if (!ch.ok) return 'Le journal est altéré : le partage est impossible. ' + (ch.reason || '');
+  /* Un cahier reçu d'un autre téléphone peut être amputé des réunions tenues là-bas après la
+     copie. On ne partage pas une année d'épargne sur un cahier dont personne n'a vérifié
+     qu'il est le dernier. */
+  if (avec.recuDe && !avec.recuDe.confirme)
+    return `Ce cahier vient d'un autre téléphone (copié à la réunion n°${avec.recuDe.reunions}) : vérifiez qu'il est bien le plus récent avant de partager`;
   if (openMeeting(avec)) return 'Fermez d\'abord la réunion en cours';
   const plan = sharePlan(avec, st);
   if (plan.blocked.length) return 'Des membres doivent rembourser avant le partage';
@@ -226,7 +231,7 @@ function shareExecuter() {
   avec.cycle = { n: next, start: now, end: now + (avec.settings.cycleMonths || 12) * 30 * DAY, rulesPending: true };
   avec.waitlist = [];                    // les demandes de crédit non servies ne traversent pas le partage : l'assemblée repart à neuf
   DB.save();
-  if (K.data.net.online) syncAvec(avec);
+  /* le partage ne sort pas le cahier du téléphone : seule une sauvegarde le fait */
   App.go('a.newCycle');
 }
 
@@ -507,7 +512,7 @@ SCREENS['a.more'] = () => {
       ${li('', 'globe', 'Langue', I18N.name(), 'langSheet')}
       ${li('', 'eye', 'Apparence', THEMES[themeChoisi()], 'themeSheet')}
       ${li('', sonActif() ? 'bell' : 'bellOff', 'Sons', sonActif() ? 'Une note à chaque écriture' : 'Coupés', 'sonSheet')}
-      ${li('', 'cloud', 'Synchronisation', `${pending(avec)} écriture(s) à envoyer`, 'syncSheet')}
+      ${li('', 'shield', 'Sauvegarde', pending(avec) ? `${pending(avec)} écriture(s) ne sont que sur ce téléphone` : 'tout est sorti du téléphone', 'syncSheet')}
     </div>
     <section class="section"><h2>Règlement intérieur · cycle ${avec.cycle.n}</h2><div class="list">
       ${[['Valeur d\'une part', fc(s.partValue)], ['Parts par réunion', '1 à ' + s.maxParts], ['Caisse sociale', fc(s.socialFee) + ' par réunion'], ['Intérêt du crédit', s.rate + ' % par mois'], ['Crédit maximum', s.maxMult + ' × l\'épargne'], ['Durée maximum du crédit', s.maxMonths + ' mois'], ['Amende absence / retard', fc(s.fineAbsent) + ' / ' + fc(s.fineLate)], ['Pénalité de retard de crédit', penRate(s) ? penRate(s) + ' % par mois' : 'aucune'], ['Durée du cycle', (s.cycleMonths || 12) + ' mois'], ['Réunions', (s.meetingDay ? s.meetingDay + ', ' : '') + ((s.frequency || 7) === 14 ? 'toutes les 2 semaines' : 'chaque semaine')]]

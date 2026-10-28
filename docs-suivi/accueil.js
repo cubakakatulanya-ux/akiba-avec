@@ -57,6 +57,13 @@ function etatBloc(avec) {
 
 function envoiBloc(avec) {
   const n = pending(avec);
-  if (!n) return '';
-  return `<p class="aenvoyer">${ic('sync')} <span>${n} écriture${n > 1 ? 's' : ''} à envoyer à l'animateur</span></p>`;
+  /* Un cahier reçu d'un autre téléphone n'est peut-être pas le dernier : on le dit tant que
+     le bureau ne l'a pas vérifié auprès du porteur précédent. */
+  const venu = avec.recuDe && !avec.recuDe.confirme ? avec.recuDe : null;
+  /* Le bandeau de provenance passe avant tout le reste : un cahier reçu se présente comme
+     complet, et c'est le seul endroit où l'application peut dire qu'il ne l'est peut-être pas. */
+  const bandeau = venu ? `<button class="alert warn" style="width:100%;text-align:left;border-top:0;border-right:0;border-bottom:0" data-act="recuSheet">
+    <span style="width:22px;flex:none">${ic('alert')}</span><span style="flex:1;min-width:0"><b>Cahier reçu d'un autre téléphone</b><span class="small">Copié le ${fdate(venu.quand)}, à la réunion n°${venu.reunions}. Des réunions tenues là-bas après cette date n'y sont pas. À vérifier avant de partager.</span></span>${ic('chev')}</button>` : '';
+  if (!n) return bandeau;
+  return bandeau + `<p class="aenvoyer">${ic('shield')} <span>${n} écriture${n > 1 ? 's' : ''} qui n'${n > 1 ? 'existent' : 'existe'} que sur ce téléphone</span></p>`;
 }
