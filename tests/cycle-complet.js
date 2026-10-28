@@ -41,6 +41,14 @@ const profil = path.join(require('os').tmpdir(), 'akiba-cycle-' + Date.now());
 const chrome = spawn(CHROME, ['--headless=new', '--disable-gpu', '--no-first-run', '--mute-audio',
   '--remote-debugging-port=' + DEBUG, '--user-data-dir=' + profil, 'about:blank'], { stdio: 'ignore' });
 
+/* Ctrl-C au milieu d'un essai laissait le navigateur sans fenêtre tourner en arrière-plan, et
+   la machine ralentissait sans qu'on voie pourquoi. On le referme dans tous les cas. */
+let ferme = false;
+const refermer = () => { if (!ferme) { ferme = true; try { chrome.kill(); } catch (e) { /* déjà parti */ } } };
+['SIGINT', 'SIGTERM', 'SIGHUP', 'SIGBREAK'].forEach(s => process.on(s, () => { refermer(); process.exit(130); }));
+process.on('exit', refermer);
+process.on('uncaughtException', e => { ligne('  ERREUR : ' + (e && e.message ? e.message : e)); refermer(); process.exit(3); });
+
 function onglet(port) {
   let ws, n = 0; const attente = {};
   const envoyer = (method, params) => new Promise((ok, ko) => { const i = ++n; attente[i] = { ok, ko }; ws.send(JSON.stringify({ id: i, method, params })); });
@@ -146,6 +154,10 @@ function listeMembres(n) {
 }
 const MEMBRES = GROUPES.map(g => listeMembres(g.n - 1));           // un de plus sera ajouté par la fiche détaillée
 
+/* De quoi essayer vite une seule AVEC sur quelques semaines pendant qu'on met au point le
+   scénario : AKIBA_SEMAINES=12 AKIBA_GROUPE=4 node tests/cycle-complet.js */
+const SEMAINES = Math.max(1, Math.min(52, +(process.env.AKIBA_SEMAINES || 52)));
+const SEUL = process.env.AKIBA_GROUPE === undefined ? null : +process.env.AKIBA_GROUPE;
 const SEMAINE = 7 * 24 * 3600 * 1000;
 const depart = new Date('2026-01-10T09:00:00').getTime();          // un samedi
 
@@ -245,30 +257,38 @@ const REUNION = `async (avecId, sem, plan) => {
   App.go('a.meet', { step: '5' });
   st = stats(a);
   let credits = 0, refuses = 0;
-  if (sem >= 4 && sem <= 44) {
+  const pourquoi = [];                                            /* pourquoi une demande n'a pas abouti */
+  /* on ne prête pas l'argent la veille de le partager : à la dernière réunion, aucun crédit */
+  if (!plan.derniere && sem >= 4 && sem <= 44) {
     const candidats = presentMembers(a, m).filter(x => !st.mem[x.id].loans.some(l => l.status !== 'solde'));
     const combien = Math.min(plan.credits, candidats.length);
     for (let k = 0; k < combien; k++) {
       const x = candidats[(sem * 3 + k * 5) % candidats.length];
-      if (!x) continue;
+      if (!x) { pourquoi.push('aucun candidat'); continue; }
       const lim = loanLimit(a, stats(a), x.id);
-      if (!lim.max) continue;
+      if (!lim.max) { pourquoi.push('plafond nul : ' + lim.why); continue; }
       const mois = Math.min(a.settings.maxMonths, 2 + (k % 2));
-      if (Date.now() + mois * 28 * 24 * 3600 * 1000 > a.cycle.end) continue;
+      if (Date.now() + mois * 28 * 24 * 3600 * 1000 > a.cycle.end) { pourquoi.push('durée au-delà de la fin du cycle'); continue; }
       const montant = Math.floor(lim.max * 0.8 / 500) * 500;
-      if (montant < 1000) continue;
+      if (montant < 1000) { pourquoi.push('montant trop petit : ' + montant); continue; }
       ACT.creditSheet({});
       document.getElementById('crM').value = x.id;
       document.getElementById('crA').value = String(montant);
       document.getElementById('crD').value = String(mois);
       document.getElementById('crP').value = 'petit commerce';
       /* un crédit demande la validation d'un deuxième membre du bureau, qui tape son code */
-      const ap = bureauOf(a).find(y => y.id !== x.id);
+      /* La liste du deuxième validateur exclut celui qui tient le téléphone : il faut donc
+         quelqu'un du bureau qui ne soit ni le président connecté ni le bénéficiaire. Choisir
+         le président faisait refuser presque toutes les demandes — l'étape des crédits était
+         testée en apparence seulement. */
+      const ap = bureauOf(a).find(y => y.id !== x.id && y.id !== chef.id);
       document.getElementById('crAp').value = ap.id;
       document.getElementById('crPin').value = ap.pin;
       const avant = a.tx.length;
+      window.__dernierDit = '';
       ACT.saveCredit();
       if (a.tx.length > avant) credits++;
+      else pourquoi.push('refus: ' + lire());
       App.closeSheet();
     }
     /* et une demande au-dessus du plafond doit être refusée, avec la raison dite */
@@ -279,7 +299,7 @@ const REUNION = `async (avecId, sem, plan) => {
     document.getElementById('crA').value = String((lim.max || 1000) * 10 + 5000);
     document.getElementById('crD').value = '1';
     document.getElementById('crP').value = 'essai au-dessus du plafond';
-    const ap2 = bureauOf(a).find(y => y.id !== x.id);
+    const ap2 = bureauOf(a).find(y => y.id !== x.id && y.id !== chef.id);
     document.getElementById('crAp').value = ap2.id;
     document.getElementById('crPin').value = ap2.pin;
     const avant2 = a.tx.length;
@@ -327,7 +347,7 @@ const REUNION = `async (avecId, sem, plan) => {
   const mf = a.meetings[a.meetings.length - 1];
   const apres = stats(a);
   return {
-    ouvOk, trop, sociaux, partsTotal, rembourse, credits, refuses, amendes, remplacements,
+    ouvOk, trop, sociaux, partsTotal, rembourse, credits, refuses, amendes, remplacements, pourquoi,
     presents: presents.length, retards: retard.length, absents: absent.length, justifies: justifie.length,
     justifiesProposes, pret, ferme, scelle: mf.status === 'closed' && !!mf.seal,
     ecart: mf.closeCount - mf.closeExpected, cles: (mf.validators || []).length, clesDraft: cles, dit: lire(), boum,
@@ -475,11 +495,11 @@ async function unGroupe(gi) {
   /* ===== 2. LES 52 RÉUNIONS ===== */
   const id = faite.id;
   const b = { reunions: 0, parts: 0, credits: 0, refuses: 0, amendes: 0, absents: 0, retards: 0, justifies: 0, remb: 0, ecarts: 0, remplacements: 0 };
-  const jalons = [];
-  for (let sem = 1; sem <= 52; sem++) {
+  const jalons = [], raisons = [];
+  for (let sem = 1; sem <= SEMAINES; sem++) {
     etat[gi] = 's' + sem;
     await horloge(depart + sem * SEMAINE);
-    const consignes = Object.assign({}, plan, { derniere: sem === 52 });
+    const consignes = Object.assign({}, plan, { derniere: sem === SEMAINES });
     const x = await jsj(`(${REUNION})(${JSON.stringify(id)}, ${sem}, ${JSON.stringify(consignes)})`);
     if (x.erreur) { verifier(false, 'semaine ' + sem + ' · ' + nom, x.erreur); continue; }
     b.reunions++; b.parts += x.partsTotal; b.credits += x.credits; b.refuses += x.refuses;
@@ -497,6 +517,10 @@ async function unGroupe(gi) {
     verifier(x.ecart === 0, q + 'la caisse comptée est celle du cahier', fc(x.ecart));
     verifier(x.chaine, q + 'journal intact');
     /* un repère qui reste à l'écran tous les trois mois : la ligne vivante, elle, s'efface */
+    /* Une demande qui n'aboutit pas est normale — le membre a déjà un crédit, ou l'échéance
+       dépasserait la fin du cycle. On garde la raison pour l'afficher seulement si le groupe
+       n'a finalement presque rien prêté, ce qui voudrait dire que l'essai se trompe. */
+    if (x.pourquoi && x.pourquoi.length) raisons.push('s' + sem + ' ' + x.pourquoi.join(' | '));
     if (sem % 13 === 0) {
       jalons.push('s' + sem + ' ' + fc(x.caisse));
       ligne('    ' + nom.padEnd(20) + ' semaine ' + String(sem).padStart(2) + ' · caisse ' + fc(x.caisse).padStart(13)
@@ -650,13 +674,33 @@ async function unGroupe(gi) {
       reglesGardees: JSON.stringify(z.settings) === avantRegles,
       caisse: stats(z).cash, report: stats(z).socialFund,
       tx: z.tx.length, reunions: z.meetings.length,
-      poids: Math.round((localStorage.getItem('kitabu.avec.v4') || '').length / 1024) };
+      poids: Math.round((localStorage.getItem('kitabu.avec.v4') || '').length / 1024),
+      /* Ce qui dit que le cycle a vraiment fonctionné, et pas seulement tourné : de l'argent a
+         été prêté, il est revenu par échéances, et les retards ont coûté ce qu'ils doivent coûter.
+         Sans ces comptes, une faute dans l'essai peut faire refuser tous les crédits sans que
+         rien n'échoue — c'est arrivé : l'étape des crédits n'était testée qu'en apparence. */
+      credits: z.tx.filter(t => t.type === 'CREDIT').length,
+      prete: z.tx.filter(t => t.type === 'CREDIT').reduce((s, t) => s + t.amount, 0),
+      remboursements: z.tx.filter(t => t.type === 'REMB').length,
+      penalites: z.tx.filter(t => t.type === 'AMENDE' && String(t.ref || '').indexOf('PENAL:') === 0).length };
   })()`);
   verifier(!s2.enAttente, 'cycle 2 ' + nom + ' : le règlement est voté, le groupe peut reprendre');
   verifier(s2.reglesGardees, 'cycle 2 ' + nom + ' : les règles reconduites sont inchangées');
   verifier(s2.chaine, 'cycle 2 ' + nom + ' : journal intact');
+  /* un cycle qui ne prête pas ne prouve rien du crédit : on exige que l'argent ait circulé */
+  verifier(s2.credits >= Math.max(3, Math.round(SEMAINES / 6)), 'cycle 1 ' + nom + ' : le groupe a réellement prêté',
+    s2.credits + ' crédits pour ' + SEMAINES + ' semaines · ' + raisons.slice(0, 6).join(' ; '));
+  /* Un crédit d'un mois se rembourse en une fois : chez un groupe qui a voté « un mois au plus »,
+     autant de remboursements que de crédits est le bon compte, pas un défaut. */
+  verifier(r.maxMonths > 1 ? s2.remboursements > s2.credits : s2.remboursements >= s2.credits,
+    'cycle 1 ' + nom + ' : les crédits sont revenus par échéances',
+    s2.remboursements + ' remboursements pour ' + s2.credits + ' crédits (' + r.maxMonths + ' mois au plus)');
+  /* Un crédit n'est en retard qu'après son échéance : sur une douzaine de semaines, peu arrivent
+     à terme. Et un groupe qui a voté « aucune pénalité » n'en aura jamais, par décision. */
+  if (SEMAINES >= 26 && r.penaltyRate > 0)
+    verifier(s2.penalites > 0, 'cycle 1 ' + nom + ' : un retard de crédit a coûté une pénalité', String(s2.penalites));
   ligne('  ✓ ' + nom.padEnd(20) + ' cycle 2 ouvert · caisse de départ ' + fc(s2.caisse)
-    + ' (dont sociale ' + fc(s2.report) + ') · ' + s2.tx + ' écritures · ' + s2.poids + ' Ko');
+    + ' (dont sociale ' + fc(s2.report) + ') · ' + s2.tx + ' écritures · ' + s2.poids + ' Ko · ' + s2.credits + ' crédits (' + fc(s2.prete) + ' prêtés), ' + s2.penalites + ' pénalités');
 
   etat[gi] = 'fini';
   return { nom, b, p, s2 };
@@ -677,7 +721,7 @@ async function unGroupe(gi) {
     + '   [' + Math.round((Date.now() - t0) / 1000) + ' s]'), 400);
 
   let res;
-  try { res = await Promise.all(GROUPES.map((_, i) => unGroupe(i))); }
+  try { res = await Promise.all(GROUPES.map((_, i) => i).filter(i => SEUL === null || i === SEUL).map(i => unGroupe(i))); }
   finally { clearInterval(minuterie); }
 
   ligne('  ' + '─'.repeat(Math.min(large - 2, 100)));
@@ -696,5 +740,5 @@ async function unGroupe(gi) {
   ligne(mauvais ? '  RÉSULTAT : ' + bons + ' vérifications passées, ' + mauvais + ' ÉCHEC(S)'
                 : '  RÉSULTAT : ' + bons + ' vérifications passées, aucun échec');
   ligne('');
-  chrome.kill(); process.exit(mauvais ? 1 : 0);
-})().catch(e => { ligne('  ÉCHEC DU LANCEUR : ' + (e && e.message ? e.message : e)); chrome.kill(); process.exit(2); });
+  refermer(); process.exit(mauvais ? 1 : 0);
+})().catch(e => { ligne('  ÉCHEC DU LANCEUR : ' + (e && e.message ? e.message : e)); refermer(); process.exit(2); });
