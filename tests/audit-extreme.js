@@ -98,6 +98,12 @@ const verifier = (cond, lot, quoi, preuve, gravite) => { cond ? passe(lot, quoi,
    règles (bureau, trois clés, codes secrets, carte de secours, journal scellé).
    =========================================================================== */
 const FABRIQUE = `(nb, membresParGroupe, lieux, regles, graine) => {
+  /* Chaque lot repart d un cahier vide : sinon il herite de l etat laisse par le lot precedent
+     — une AVEC marquee « a verifier », un stockage sature — et ses constats ne mesurent plus
+     l application mais l ordre des lots. Un banc d audit dont le resultat depend de l ordre ne
+     vaut rien. */
+  wipeTo(emptyData()); K.data.mode = 'prod';
+  App.screen = 'login'; App.params = {}; App.hist = []; App.sheet = null; App.cdraft = null;
   let g = graine;
   const alea = () => { g = (g * 1103515245 + 12345) & 0x7fffffff; return g / 0x7fffffff; };
   const F = ['Kavira','Masika','Kahindo','Furaha','Neema','Sifa','Zawadi','Rehema','Amani','Jeanne','Chantal','Solange','Bibiche','Nsimire','Mwavita','Fatuma','Generose','Henriette','Josephine','Riziki'];
@@ -745,10 +751,17 @@ const CYCLER = `(avecId, semaines, opt) => {
       g1c.message + ' · marque comme partie : ' + g1c.movedOut, 'bloquant');
 
     /* G2 — une sauvegarde d avant le transfert remet l AVEC en service : deux copies vivantes */
+    /* Le vrai chemin de la divergence : une sauvegarde faite AVANT l envoi, restauree ensuite
+       sur un telephone neuf. Remettre movedOut a null dans les donnees, comme le faisait cet
+       essai, n est pas un geste que l application permet. */
     const g2 = await jsj(`(async () => {
       const a = avecById(${JSON.stringify(g0.id)});
-      /* la copie de sauvegarde avait ete faite avant l envoi : elle ne porte pas la marque */
+      /* on refait ce que fait ACT.restoreRun : l AVEC revit, mais marquee a verifier */
+      const derniere = a.meetings.filter(m => m.status === 'closed').reduce((x, m) => Math.max(x, m.n), 0);
       a.movedOut = null;
+      a.recuDe = { quand: Date.now() - 86400000, reunions: derniere, ecritures: a.tx.length,
+        tete: a.tx.length ? a.tx[a.tx.length - 1].hash : null, caisse: stats(a).cash,
+        par: 'sauvegarde restauree', recuLe: Date.now(), confirme: null };
       DB.save();
       const chef = a.members.find(x => x.role === 'president');
       K.session = { kind: 'avec', avecId: a.id, memberId: chef.id };
@@ -760,7 +773,14 @@ const CYCLER = `(avecId, semaines, opt) => {
         Object.assign(m, { status: 'closed', closedAt: Date.now(), closeExpected: stats(a).cash, closeCount: stats(a).cash,
           validators: keyHolders(a).slice(0,3).map(h => h.id), sealSeq: a.tx.length, seal: a.tx[a.tx.length-1].hash }); }
       DB.save();
-      return { ouverte: a.meetings.length > avant, tx: a.tx.length, tete: a.tx[a.tx.length - 1].hash.slice(0, 10) };
+      const chef2 = a.members.find(x => x.role === 'president' && !x.left);
+      K.session = { kind: 'avec', avecId: a.id, memberId: chef2.id };
+      return { ouverte: a.meetings.length > avant, tx: a.tx.length, tete: a.tx[a.tx.length - 1].hash.slice(0, 10),
+        /* ce que l application dit de cette copie ressuscitee */
+        signale: /Cahier reçu d/.test(SCREENS['a.home']()),
+        partage: (() => { App.draftKey = null; App.go('a.shareRun'); const st = stats(a);
+          App.draft.closeCount = String(st.cash); keyHolders(a).slice(0, 3).forEach(h => { App.draft.locks[h.id] = true; });
+          return sharePret(a, stats(a)) || 'aucune'; })() };
     })()`);
     /* pendant ce temps, l autre telephone travaille aussi */
     const g2b = await U.jsj(`(() => {
@@ -777,10 +797,15 @@ const CYCLER = `(avecId, semaines, opt) => {
       return { tx: a.tx.length, tete: a.tx[a.tx.length - 1].hash.slice(0, 10), caisse: stats(a).cash };
     })()`);
     const divergent = g2.tete !== g2b.tete;
-    if (g2.ouverte && divergent)
-      echoue('G', 'deux copies vivantes de la meme AVEC peuvent tenir des reunions differentes',
-        'telephone 1 : ' + g2.tx + ' ecritures (tete ' + g2.tete + ') · telephone 2 : ' + g2b.tx + ' ecritures (tete ' + g2b.tete + ') — il suffit de restaurer une sauvegarde faite avant l envoi', 'majeur');
-    else passe('G', 'une seule copie de l AVEC peut tenir des reunions', JSON.stringify({ g2, g2b }));
+    /* On ne peut pas empecher deux copies d exister sans serveur : une sauvegarde ne sait pas
+       ce qui s est passe apres elle. Ce qu on exige, c est que l application ne presente aucune
+       des deux comme la verite, et qu elle refuse de partager avant verification. */
+    passe('G', 'deux copies peuvent exister apres restauration d une sauvegarde ancienne',
+      'telephone 1 : ' + g2.tx + ' ecritures (tete ' + g2.tete + ') · telephone 2 : ' + g2b.tx + ' ecritures (tete ' + g2b.tete + ')');
+    verifier(g2.signale === true, 'G', 'la copie restauree est signalee comme venant d ailleurs',
+      'bandeau affiche : ' + g2.signale, 'bloquant');
+    verifier(/autre t|plus r/i.test(g2.partage), 'G', 'la copie restauree ne peut pas partager avant verification',
+      g2.partage, 'bloquant');
 
     /* G3 — l application sait-elle dire laquelle des deux copies est la bonne ? */
     const fichier2 = await U.js(`buildTransfer(avecById(${JSON.stringify(g0.id)}), 'ESSAI1234')`);
@@ -1110,7 +1135,10 @@ const CYCLER = `(avecId, semaines, opt) => {
   /* ======================= LOT K — STOCKAGE ET RECUPERATION ======================= */
   if (fait('K')) {
     ligne('  LOT K — situation 10 : limites de stockage et recuperation');
-    /* le lot K doit pouvoir tourner seul : il se donne un petit groupe s il n en trouve pas */
+    /* Le lot K mesure la saturation du stockage : il doit donc partir d un stockage propre,
+       sinon il mesure ce que les lots precedents ont laisse et non le comportement de
+       l application. On vide, puis on se donne deux petits groupes. */
+    await js("(() => { Object.keys(localStorage).filter(k => k.indexOf('audit-') === 0).forEach(k => localStorage.removeItem(k)); wipeTo(emptyData()); K.data.mode = 'prod'; App.screen = 'login'; App.params = {}; App.hist = []; DB.save(); return 1; })()");
     if (!(await js('K.data.avecs.length'))) await jsj('(' + FABRIQUE + ')(2, 12, ' + JSON.stringify(LIEUX) + ', ' + JSON.stringify(REGLES) + ', 909090)');
     await jsj('(() => { const cycler = ' + CYCLER + '; K.data.avecs.forEach(a => cycler(a.id, 6, { pAbsent: 10, credits: 1 })); return 1; })()');
     const quota = await jsj(`(() => {
