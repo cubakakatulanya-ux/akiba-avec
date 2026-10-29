@@ -698,7 +698,9 @@ async function unCycle(gi, T) {
       reglesGardees: JSON.stringify(z.settings) === avantRegles,
       caisse: stats(z).cash, report: stats(z).socialFund,
       tx: z.tx.length, reunions: z.meetings.length,
-      poids: Math.round((localStorage.getItem('kitabu.avec.v4') || '').length / 1024),
+      /* le poids du cahier lui-même : depuis qu'IndexedDB le porte, le mesurer dans localStorage
+         ne donnait plus que zéro — et un zéro affiché est pire qu'un chiffre absent */
+      poids: Math.round(JSON.stringify(K.data).length / 1024),
       /* Ce qui dit que le cycle a vraiment fonctionné, et pas seulement tourné : de l'argent a
          été prêté, il est revenu par échéances, et les retards ont coûté ce qu'ils doivent coûter.
          Sans ces comptes, une faute dans l'essai peut faire refuser tous les crédits sans que
@@ -720,7 +722,9 @@ async function unCycle(gi, T) {
     s2.credits + ' crédits pour ' + fenetre + ' semaines de prêt, au moins ' + attendus + ' attendus · ' + raisons.slice(0, 6).join(' ; '));
   /* Un crédit d'un mois se rembourse en une fois : chez un groupe qui a voté « un mois au plus »,
      autant de remboursements que de crédits est le bon compte, pas un défaut. */
-  verifier(r.maxMonths > 1 ? s2.remboursements > s2.credits : s2.remboursements >= s2.credits,
+  /* Un credit de plusieurs mois ne rend plusieurs echeances que si le cycle en laisse le temps :
+     sur un essai court, la derniere reunion solde tout en une fois, et exiger plus serait faux. */
+  verifier(r.maxMonths > 1 && SEMAINES >= 26 ? s2.remboursements > s2.credits : s2.remboursements >= s2.credits,
     'cycle 1 ' + nom + ' : les crédits sont revenus par échéances',
     s2.remboursements + ' remboursements pour ' + s2.credits + ' crédits (' + r.maxMonths + ' mois au plus)');
   /* Un crédit n'est en retard qu'après son échéance : sur une douzaine de semaines, peu arrivent

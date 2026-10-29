@@ -1,5 +1,358 @@
 [
   {
+    "lot": "A",
+    "etat": "passe",
+    "quoi": "100 AVEC et 2 500 membres créés",
+    "preuve": "100 AVEC · 2500 membres · {\"Gemena\":34,\"Budjala\":33,\"Kimbanseke\":33}"
+  },
+  {
+    "lot": "A",
+    "etat": "passe",
+    "quoi": "chaque AVEC porte un nom distinct",
+    "preuve": "100 noms"
+  },
+  {
+    "lot": "A",
+    "etat": "passe",
+    "quoi": "les 25 codes secrets d un groupe sont tous differents",
+    "preuve": "minimum observe : 25"
+  },
+  {
+    "lot": "A",
+    "etat": "passe",
+    "quoi": "trois porte-cles dans chaque groupe"
+  },
+  {
+    "lot": "A",
+    "etat": "passe",
+    "quoi": "les 100 journaux sont scelles des la creation",
+    "preuve": "0 altere(s)"
+  },
+  {
+    "lot": "A",
+    "etat": "passe",
+    "quoi": "poids du stockage a la creation",
+    "preuve": "0 Ko pour 100 AVEC vides"
+  },
+  {
+    "lot": "A",
+    "etat": "passe",
+    "quoi": "duree de creation",
+    "preuve": "3 s pour 100 AVEC"
+  },
+  {
+    "lot": "A",
+    "etat": "passe",
+    "quoi": "l accueil d un groupe reste utilisable a cette echelle",
+    "preuve": "10 ms"
+  },
+  {
+    "lot": "A",
+    "etat": "passe",
+    "quoi": "la liste des 25 membres reste utilisable",
+    "preuve": "2 ms"
+  },
+  {
+    "lot": "C",
+    "etat": "passe",
+    "quoi": "caisse avant la reunion de l enonce",
+    "preuve": "850 000 FC"
+  },
+  {
+    "lot": "C",
+    "etat": "passe",
+    "quoi": "le solde apres la reunion est celui du cahier",
+    "preuve": "obtenu 850 000 FC pour 850 000 FC attendu"
+  },
+  {
+    "lot": "C",
+    "etat": "passe",
+    "quoi": "caisse finale = entrees reelles moins sorties reelles",
+    "preuve": "1 440 000 FC moins 590 000 FC donne 850 000 FC pour une caisse de 850 000 FC"
+  },
+  {
+    "lot": "C",
+    "etat": "passe",
+    "quoi": "le remboursement n est compte qu une fois",
+    "preuve": "1 ecriture, 180 000 FC"
+  },
+  {
+    "lot": "C",
+    "etat": "passe",
+    "quoi": "capital encore dehors = capital decaisse moins capital rembourse",
+    "preuve": "560 000 FC decaisses moins 160 000 FC rendus donne 400 000 FC"
+  },
+  {
+    "lot": "C",
+    "etat": "passe",
+    "quoi": "la creance entiere ajoute les interets a venir au capital",
+    "preuve": "480 000 FC de creance pour 400 000 FC de capital, soit 80 000 FC d interets"
+  },
+  {
+    "lot": "C",
+    "etat": "passe",
+    "quoi": "total des parts du groupe = somme des parts des membres",
+    "preuve": "1260 = 1260"
+  },
+  {
+    "lot": "C",
+    "etat": "passe",
+    "quoi": "caisse sociale et caisse de credit se partagent exactement la caisse",
+    "preuve": "-30 000 FC sociale + 880 000 FC credit = 850 000 FC"
+  },
+  {
+    "lot": "C",
+    "etat": "passe",
+    "quoi": "journal intact apres ces operations",
+    "preuve": ""
+  },
+  {
+    "lot": "D",
+    "etat": "passe",
+    "quoi": "modifier une cotisation validee est detecte",
+    "preuve": "Écriture n°13 modifiée après enregistrement"
+  },
+  {
+    "lot": "D",
+    "etat": "passe",
+    "quoi": "supprimer un remboursement est detecte",
+    "preuve": "Le sceau de la réunion n°1 ne correspond plus"
+  },
+  {
+    "lot": "D",
+    "etat": "passe",
+    "quoi": "modifier un montant apres la cloture est detecte",
+    "preuve": "Écriture n°14 modifiée après enregistrement"
+  },
+  {
+    "lot": "D",
+    "etat": "passe",
+    "quoi": "refaire le hachage d une ecriture ne suffit pas a masquer la fraude",
+    "preuve": "Écriture n°16 modifiée après enregistrement"
+  },
+  {
+    "lot": "D",
+    "etat": "passe",
+    "quoi": "le journal redevient valide quand on remet la valeur d origine",
+    "preuve": "les trois remises en etat sont propres"
+  },
+  {
+    "lot": "D",
+    "etat": "passe",
+    "quoi": "un credit sans le code du deuxieme membre du bureau est refuse",
+    "preuve": "Code de Groupe incorrect"
+  },
+  {
+    "lot": "D",
+    "etat": "passe",
+    "quoi": "un credit valide par quelqu un hors du bureau est refuse",
+    "preuve": "Choisissez un membre du bureau · propose dans la liste : false"
+  },
+  {
+    "lot": "D",
+    "etat": "passe",
+    "quoi": "changer le taux du groupe ne change pas un credit deja accorde",
+    "preuve": "a rembourser 12 000 FC avant, 12 000 FC apres · taux garde par le credit : 10 %"
+  },
+  {
+    "lot": "D",
+    "etat": "passe",
+    "quoi": "un membre simple ne peut pas ouvrir une reunion",
+    "preuve": "Seul le bureau peut ouvrir une réunion"
+  },
+  {
+    "lot": "D",
+    "etat": "passe",
+    "quoi": "un faux membre ajoute dans les donnees est detecte",
+    "preuve": "« Faux Membre » ne figure pas dans le journal du groupe"
+  },
+  {
+    "lot": "D",
+    "etat": "passe",
+    "quoi": "l accueil signale la liste alteree",
+    "preuve": "alerte presente : true"
+  },
+  {
+    "lot": "D",
+    "etat": "passe",
+    "quoi": "le partage refuse tant que la liste des membres ne correspond pas au journal",
+    "preuve": "La liste des membres ne correspond pas au journal : « Faux Membre » ne figure pas dans le journal du groupe"
+  },
+  {
+    "lot": "D",
+    "etat": "passe",
+    "quoi": "le cahier d une autre AVEC ne s ouvre pas avec la session du premier groupe",
+    "preuve": "{\"fuite\":\"Groupe B\",\"ecran\":\"refus\"}"
+  },
+  {
+    "lot": "D",
+    "etat": "passe",
+    "quoi": "apres avoir vote les regles, le bouton Retour ne ramene pas au vote",
+    "preuve": "ecran atteint : a.meet · ecarte de l historique : true · regles intactes : true"
+  },
+  {
+    "lot": "D",
+    "etat": "note",
+    "quoi": "l ecran du reglement ne verifie pas lui-meme qu un vote est attendu",
+    "preuve": "il est hors historique, donc aucun chemin n y mene en cours de cycle ; la garde manque seulement en profondeur"
+  },
+  {
+    "lot": "E",
+    "etat": "passe",
+    "quoi": "500 credits enregistres",
+    "preuve": "500 credits · 1270 ecritures"
+  },
+  {
+    "lot": "E",
+    "etat": "passe",
+    "quoi": "l interet est calcule selon le taux et la duree de chaque credit",
+    "preuve": "0 ecart(s) "
+  },
+  {
+    "lot": "E",
+    "etat": "passe",
+    "quoi": "le reste a payer suit les remboursements partiels",
+    "preuve": "0 ecart(s)"
+  },
+  {
+    "lot": "E",
+    "etat": "passe",
+    "quoi": "l etat du credit (solde, en cours, en retard) est juste",
+    "preuve": "0 ecart(s) sur 500"
+  },
+  {
+    "lot": "E",
+    "etat": "passe",
+    "quoi": "un credit en retard porte une penalite",
+    "preuve": "0 retard(s) sans penalite"
+  },
+  {
+    "lot": "E",
+    "etat": "passe",
+    "quoi": "repartition des 500 credits",
+    "preuve": "200 soldes · 117 en cours · 183 en retard"
+  },
+  {
+    "lot": "E",
+    "etat": "passe",
+    "quoi": "capital rembourse et interets percus se distinguent et se recomposent",
+    "preuve": "4 342 000 FC de capital + 503 905 FC d interets = 4 845 905 FC recu"
+  },
+  {
+    "lot": "E",
+    "etat": "passe",
+    "quoi": "l interet annonce par l application est celui des credits",
+    "preuve": "503 905 FC contre 503 905 FC"
+  },
+  {
+    "lot": "E",
+    "etat": "passe",
+    "quoi": "encours annonce par l application",
+    "preuve": "3 978 480 FC (capital et interets restant dus)"
+  },
+  {
+    "lot": "E",
+    "etat": "passe",
+    "quoi": "capital encore dehors",
+    "preuve": "3 204 000 FC sur 7 546 000 FC decaisses"
+  },
+  {
+    "lot": "E",
+    "etat": "passe",
+    "quoi": "journal intact apres 500 credits et leurs remboursements",
+    "preuve": ""
+  },
+  {
+    "lot": "G",
+    "etat": "passe",
+    "quoi": "la feuille de sauvegarde s ouvre",
+    "preuve": "<h2>Sauvegarde</h2>"
+  },
+  {
+    "lot": "G",
+    "etat": "passe",
+    "quoi": "la fonction qui annoncait un envoi au serveur n existe plus",
+    "preuve": "syncAvec encore present : false"
+  },
+  {
+    "lot": "G",
+    "etat": "passe",
+    "quoi": "aucun geste ne fait croire que le cahier est a l abri sans fichier produit",
+    "preuve": "24 ecritures avant, 24 apres · 0 requete(s) reseau · derniere sortie : jamais"
+  },
+  {
+    "lot": "G",
+    "etat": "passe",
+    "quoi": "la feuille dit qu il n y a pas de serveur et que le cahier n existe que sur ce telephone",
+    "preuve": "parle du serveur : true · dit « que sur ce telephone » : true"
+  },
+  {
+    "lot": "G",
+    "etat": "passe",
+    "quoi": "ce que montre la pastille",
+    "preuve": "24 à sauvegarder"
+  },
+  {
+    "lot": "G",
+    "etat": "passe",
+    "quoi": "l envoi marque l AVEC comme partie et laisse une trace",
+    "preuve": "marquee : true · trace de securite : true"
+  },
+  {
+    "lot": "G",
+    "etat": "passe",
+    "quoi": "le deuxieme telephone recoit l AVEC par le fichier de transfert",
+    "preuve": "24 ecritures recues"
+  },
+  {
+    "lot": "G",
+    "etat": "passe",
+    "quoi": "le telephone qui a envoye l AVEC ne peut plus ouvrir de reunion",
+    "preuve": "Cette AVEC est sur un autre téléphone : la réunion se tient là-bas · marque comme partie : true"
+  },
+  {
+    "lot": "G",
+    "etat": "passe",
+    "quoi": "deux copies peuvent exister apres restauration d une sauvegarde ancienne",
+    "preuve": "telephone 1 : 25 ecritures (tete ed5559ea93) · telephone 2 : 25 ecritures (tete ab64c6e8c3)"
+  },
+  {
+    "lot": "G",
+    "etat": "passe",
+    "quoi": "la copie restauree est signalee comme venant d ailleurs",
+    "preuve": "bandeau affiche : true"
+  },
+  {
+    "lot": "G",
+    "etat": "passe",
+    "quoi": "la copie restauree ne peut pas partager avant verification",
+    "preuve": "Ce cahier vient d'un autre téléphone (copié à la réunion n°1) : vérifiez qu'il est bien le plus récent avant de partager"
+  },
+  {
+    "lot": "G",
+    "etat": "passe",
+    "quoi": "recevoir la copie divergente de l autre telephone est refuse",
+    "preuve": "Cette AVEC est déjà active sur ce téléphone"
+  },
+  {
+    "lot": "G",
+    "etat": "absent",
+    "quoi": "une fusion des deux cahiers divergents",
+    "preuve": "l application n a aucun mecanisme de rapprochement : elle refuse ou remplace, elle ne reconcilie pas"
+  },
+  {
+    "lot": "G",
+    "etat": "passe",
+    "quoi": "trente jours de reunions hors ligne restent scelles",
+    "preuve": "90 nouvelles ecritures, 6 reunions"
+  },
+  {
+    "lot": "G",
+    "etat": "passe",
+    "quoi": "tout reste en attente d envoi tant qu il n y a pas de reseau",
+    "preuve": "115 ecritures en attente"
+  },
+  {
     "lot": "B",
     "etat": "passe",
     "quoi": "les quatre equations tiennent sur les 20 AVEC",
@@ -58,5 +411,263 @@
     "etat": "passe",
     "quoi": "les fonds a distribuer ne depassent pas les liquidites",
     "preuve": "2 605 350 FC a donner pour 2 956 850 FC en caisse"
+  },
+  {
+    "lot": "I",
+    "etat": "passe",
+    "quoi": "feuilles produites",
+    "preuve": "8 feuilles : Synthèse, AVEC, Membres, Réunions, Crédits, Crédits extérieurs, Formation, Alertes"
+  },
+  {
+    "lot": "I",
+    "etat": "passe",
+    "quoi": "duree de l export",
+    "preuve": "1650 ms pour 12 AVEC"
+  },
+  {
+    "lot": "I",
+    "etat": "passe",
+    "quoi": "le fichier Excel se construit",
+    "preuve": "383 Ko"
+  },
+  {
+    "lot": "I",
+    "etat": "passe",
+    "quoi": "lignes par feuille",
+    "preuve": "Synthèse 16 · AVEC 12 · Membres 240 · Réunions 192 · Crédits 120 · Crédits extérieurs 0 · Formation 12 · Alertes 12"
+  },
+  {
+    "lot": "I",
+    "etat": "passe",
+    "quoi": "le total de caisse de la synthese egale le journal",
+    "preuve": "14 216 000 FC exporte contre 14 216 000 FC au journal"
+  },
+  {
+    "lot": "I",
+    "etat": "passe",
+    "quoi": "le total d epargne de la synthese egale le journal",
+    "preuve": "11 196 000 FC contre 11 196 000 FC"
+  },
+  {
+    "lot": "I",
+    "etat": "passe",
+    "quoi": "la feuille AVEC se recoupe avec la synthese",
+    "preuve": "14 216 000 FC contre 14 216 000 FC"
+  },
+  {
+    "lot": "I",
+    "etat": "passe",
+    "quoi": "les feuilles Reunions et Credits ne sont pas vides",
+    "preuve": "192 reunions, 120 credits"
+  },
+  {
+    "lot": "I",
+    "etat": "passe",
+    "quoi": "le fichier dit combien d ecritures ne sont pas encore transmises",
+    "preuve": "7692 en attente · source annoncee : « Cahiers des AVEC tels qu'ils sont sur ce téléphone, transmis ou non »"
+  },
+  {
+    "lot": "I",
+    "etat": "passe",
+    "quoi": "totaux du journal, pour comparaison",
+    "preuve": "caisse 14 216 000 FC · epargne 11 196 000 FC · credits 4 876 000 FC · remboursements 5 980 800 FC · 240 membres · 9428 parts"
+  },
+  {
+    "lot": "I",
+    "etat": "note",
+    "quoi": "colonnes des feuilles",
+    "preuve": "[{\"nom\":\"Synthèse\",\"cols\":[{\"h\":\"Indicateur\",\"w\":34},{\"h\":\"Valeur\",\"w\":22}]},{\"nom\":\"AVEC\",\"cols\":[{\"h\":\"AVEC\",\"w\":26},{\"h\":\"Statut\",\"w\":11},{\"h\":\"Animateur\",\"w\":22},{\"h\":\"Province\",\"w\":14},{\"h\":\"Territoire / ville\",\"w\":18},{\"h\":\"Village / quartier\",\"w\":18},{\"h\":\"Latitude\",\"w\":12,\"t\":\"n\"},{\"h\":\"Longitude\",\"w\":12,\"t\":\"n\"},{\"h\":\"Précision GPS (m)\",\"w\":11,\"t\":\"n\"},{\"h\":\"Jour de réunion\",\"w\":14},{\"h\":\"Cycle n°\",\"w\":9,\"t\":\"n\"},{\"h\":\"Début du cycle\",\"w\":13,\"t\":\"d\"},{\"h\":\"Fin prévue\",\"w\":13,\"t\":\"d\"},{\"h\":\"Membres actifs\",\"w\":10,\"t\":\"n\"},{\"h\":\"Femmes\",\"w\":9,\"t\":\"n\"},{\"h\":\"Réunions tenues\",\"w\":10,\"t\":\""
+  },
+  {
+    "lot": "I",
+    "etat": "absent",
+    "quoi": "un dossier de financement pour une institution financiere",
+    "preuve": "a verifier dans l ecran IMF : non mesure par cet audit"
+  },
+  {
+    "lot": "K",
+    "etat": "passe",
+    "quoi": "capacite reelle du stockage local de ce navigateur",
+    "preuve": "environ 4.9 Mo au total (0 Ko deja pris par les donnees)"
+  },
+  {
+    "lot": "K",
+    "etat": "passe",
+    "quoi": "stockage occupe par les donnees avant saturation",
+    "preuve": "0 Ko"
+  },
+  {
+    "lot": "K",
+    "etat": "passe",
+    "quoi": "remplissage force",
+    "preuve": "environ 5 Mo ajoutes jusqu au refus"
+  },
+  {
+    "lot": "K",
+    "etat": "note",
+    "quoi": "le stockage n a pas pu etre sature dans ce navigateur",
+    "preuve": "DB.save a reussi ; le comportement en cas de quota depasse n est donc pas mesure ici"
+  },
+  {
+    "lot": "K",
+    "etat": "passe",
+    "quoi": "la sauvegarde repart apres liberation du stockage",
+    "preuve": "DB.save rend true"
+  },
+  {
+    "lot": "K",
+    "etat": "passe",
+    "quoi": "le journal en memoire reste intact apres un refus de sauvegarde",
+    "preuve": "4147 ecritures en memoire"
+  },
+  {
+    "lot": "J",
+    "etat": "absent",
+    "quoi": "un module d intelligence artificielle",
+    "preuve": "aucun n existe dans l application : pas d appel a un modele, pas de cle, pas d ecran"
+  },
+  {
+    "lot": "J",
+    "etat": "passe",
+    "quoi": "a la place, des alertes calculees par des regles explicites",
+    "preuve": "niveau warn, 1 alertes · warn : Aucune sauvegarde récente"
+  },
+  {
+    "lot": "J",
+    "etat": "passe",
+    "quoi": "aucune decision automatique de credit, d exclusion ou de modification financiere",
+    "preuve": "il n y a aucun automate qui deciderait a la place de l assemblee"
+  },
+  {
+    "lot": "L",
+    "etat": "passe",
+    "quoi": "le telephone du tresorier avant sa perte",
+    "preuve": "1651 ecritures, 33 reunions, caisse 3 386 950 FC"
+  },
+  {
+    "lot": "L",
+    "etat": "passe",
+    "quoi": "la copie que detient le president",
+    "preuve": "1515 ecritures, caisse 3 150 450 FC — il manque 136 ecritures, soit trois reunions"
+  },
+  {
+    "lot": "L",
+    "etat": "passe",
+    "quoi": "le president travaille sur sa copie",
+    "preuve": "1515 ecritures, caisse 3 150 450 FC"
+  },
+  {
+    "lot": "L",
+    "etat": "passe",
+    "quoi": "le cahier du president est coherent avec lui-meme",
+    "preuve": ""
+  },
+  {
+    "lot": "L",
+    "etat": "absent",
+    "quoi": "un pret a rembourser deux fois",
+    "preuve": "aucun credit en cours a ce moment du scenario"
+  },
+  {
+    "lot": "L",
+    "etat": "absent",
+    "quoi": "un membre endette a faire sortir",
+    "preuve": "aucun credit en cours a ce moment du scenario"
+  },
+  {
+    "lot": "L",
+    "etat": "passe",
+    "quoi": "un journal altere empeche le partage",
+    "preuve": "Le journal est altéré : le partage est impossible. Écriture n°26 modifiée après enregistrement (chaine valide : false)"
+  },
+  {
+    "lot": "L",
+    "etat": "passe",
+    "quoi": "le rapport pour le partenaire se produit immediatement",
+    "preuve": "{\"feuilles\":8,\"lignes\":114}"
+  },
+  {
+    "lot": "L",
+    "etat": "passe",
+    "quoi": "ce que l application signale au comite",
+    "preuve": "niveau bad · warn : Fin du cycle dans 10 jours ; bad : Aucune réunion depuis 90 jours ; warn : Aucune sauvegarde récente"
+  },
+  {
+    "lot": "L",
+    "etat": "passe",
+    "quoi": "le cahier garde la trace de sa provenance",
+    "preuve": "copie le 29/10/2026 a la reunion n°30, 1515 ecritures, caisse 3 150 450 FC"
+  },
+  {
+    "lot": "L",
+    "etat": "passe",
+    "quoi": "l accueil du groupe dit que le cahier vient d un autre telephone",
+    "preuve": "bandeau affiche : true"
+  },
+  {
+    "lot": "L",
+    "etat": "passe",
+    "quoi": "le partage est refuse tant que personne n a verifie que ce cahier est le dernier",
+    "preuve": "Ce cahier vient d'un autre téléphone (copié à la réunion n°30) : vérifiez qu'il est bien le plus récent avant de partager"
+  },
+  {
+    "lot": "L",
+    "etat": "passe",
+    "quoi": "apres confirmation du bureau, le partage redevient possible",
+    "preuve": "Expliquez l'écart : c'est obligatoire"
+  },
+  {
+    "lot": "L",
+    "etat": "passe",
+    "quoi": "ce que le comite peut constater lui-meme",
+    "preuve": "la copie s arretait a la reunion n°30 ; il suffit de demander au porteur precedent ou il en etait pour voir l ecart"
+  },
+  {
+    "lot": "N",
+    "etat": "nonfait",
+    "quoi": "un cycle de 52 semaines sur les 100 AVEC",
+    "preuve": "duree : environ 25 minutes pour 5 AVEC par les vrais gestes. Mesure ici : 20 AVEC sur 20 semaines et 50 AVEC sur 44 semaines, reunions ecrites par appendTx."
+  },
+  {
+    "lot": "N",
+    "etat": "nonfait",
+    "quoi": "les 2 500 membres passes par les huit etapes de reunion a l ecran",
+    "preuve": "tests/cycle-complet.js le fait pour 5 AVEC et 265 reunions ; cet audit-ci ecrit les reunions dans le journal sans passer par les ecrans."
+  },
+  {
+    "lot": "N",
+    "etat": "nonfait",
+    "quoi": "1 000 utilisateurs connectes, les API et les permissions cote serveur",
+    "preuve": "Akiba n a ni serveur ni API ni base de donnees : tout vit dans le telephone. Il n y a donc rien a eprouver de ce cote, et c est aussi ce qui limite la synchronisation."
+  },
+  {
+    "lot": "N",
+    "etat": "nonfait",
+    "quoi": "la lecture audio en francais et en langues locales",
+    "preuve": "la voix est couverte par tests/suite.js (debit, silences, qualite de voix) mais sa prononciation reelle en lingala, kiswahili, kikongo et tshiluba ne peut pas etre jugee par une machine."
+  },
+  {
+    "lot": "N",
+    "etat": "nonfait",
+    "quoi": "le carnet du membre confronte au registre pendant une correction",
+    "preuve": "non mesure : demande deux sessions simultanees sur le meme telephone, ce que l application ne permet pas."
+  },
+  {
+    "lot": "N",
+    "etat": "nonfait",
+    "quoi": "le dossier de financement pour une institution financiere",
+    "preuve": "l ecran IMF existe ; son contenu n a pas ete confronte au journal dans cet audit."
+  },
+  {
+    "lot": "N",
+    "etat": "nonfait",
+    "quoi": "telephones Android peu performants, batterie, consommation de donnees",
+    "preuve": "non mesurable depuis un navigateur sans fenetre sur un ordinateur."
+  },
+  {
+    "lot": "N",
+    "etat": "nonfait",
+    "quoi": "un pret a rembourser deux fois et un membre endette a faire sortir, dans le scenario de crise",
+    "preuve": "le scenario a fini avec tous les credits soldes ; ces deux cas sont couverts separement par les lots E et F."
   }
 ]
