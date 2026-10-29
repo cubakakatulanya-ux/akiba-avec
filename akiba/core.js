@@ -412,7 +412,86 @@ function estDemoSemee(d) {
   if (!d.avecs.every(a => DEMO_IDS.includes(a.id))) return false;
   return (d.orgs || []).every(o => o.id === 'org1') && (d.users || []).every(u => /^u-(org|a\d)$/.test(u.id));
 }
+/* ---------- le magasin : IndexedDB s'il existe, localStorage sinon ----------
+   Une seule base, un seul enregistrement, dont le nom est la clé historique. Rien d'autre n'y
+   est rangé : si demain il faut y mettre autre chose, ce sera un autre magasin. */
+const IDB = {
+  nom: 'akiba', magasin: 'cahier', base: null, dispo: null, enCours: null,
+  ouvrir() {
+    if (this.base) return Promise.resolve(this.base);
+    if (this.dispo === false) return Promise.resolve(null);        // réponse ferme : pas de base ici
+    if (this.enCours) return this.enCours;                         // une ouverture suffit pour tout le monde
+    this.enCours = new Promise(resolve => {
+      let rendu = false;
+      /* Deux pièges, appris en essayant.
+         1. Un simple délai dépassé ne doit PAS conclure qu'il n'y a pas de base : sur une machine
+            chargée, le téléphone basculerait pour toute la session sur un stockage plafonné à
+            5 Mo. On laisse alors « dispo » à null — « on ne sait pas encore » — et le prochain
+            enregistrement réessaiera.
+         2. Une base qui finit par s'ouvrir après le délai ne doit pas être perdue : on la garde
+            quand elle arrive, même si l'appelant est déjà reparti sans elle. */
+      const rendre = (v, ferme) => {
+        if (v) this.base = v;
+        if (ferme) this.dispo = !!v;
+        if (!rendu) { rendu = true; resolve(v); }
+      };
+      setTimeout(() => rendre(null, false), 8000);
+      let d;
+      try { d = indexedDB.open(this.nom, 1); } catch (e) { this.enCours = null; return rendre(null, true); }
+      d.onupgradeneeded = () => { try { d.result.createObjectStore(this.magasin); } catch (e) { /* déjà là */ } };
+      d.onsuccess = () => rendre(d.result, true);
+      d.onerror = () => { this.enCours = null; rendre(null, true); };
+      d.onblocked = () => { this.enCours = null; rendre(null, true); };
+    });
+    return this.enCours;
+  },
+  async lire(cle) {
+    const b = await this.ouvrir();
+    if (!b) return undefined;
+    return new Promise(resolve => {
+      try {
+        const r = b.transaction(this.magasin, 'readonly').objectStore(this.magasin).get(cle);
+        r.onsuccess = () => resolve(r.result);
+        r.onerror = () => resolve(undefined);
+      } catch (e) { resolve(undefined); }
+    });
+  },
+  async ecrire(cle, valeur) {
+    const b = await this.ouvrir();
+    if (!b) return false;
+    return new Promise(resolve => {
+      try {
+        const t = b.transaction(this.magasin, 'readwrite');
+        t.objectStore(this.magasin).put(valeur, cle);
+        t.oncomplete = () => resolve(true);
+        t.onerror = () => resolve(false);
+        t.onabort = () => resolve(false);
+      } catch (e) { resolve(false); }
+    });
+  },
+};
+
 const DB = {
+  /* Le démarrage attend d'avoir réellement lu les données avant que quoi que ce soit
+     s'affiche : un écran juste après un écran faux vaut moins qu'un écran qui attend. */
+  async pret() {
+    let brut;
+    try { brut = await IDB.lire(STORE); } catch (e) { brut = undefined; }
+    if (brut) {
+      try { K.data = typeof brut === 'string' ? JSON.parse(brut) : brut; } catch (e) { K.data = null; }
+    }
+    /* Rien dans la base : soit c'est un téléphone neuf, soit il vient d'une version qui
+       rangeait tout dans localStorage. Dans ce cas on reprend ses données et on les recopie. */
+    if (!K.data || !K.data.avecs) {
+      this.load();
+      if (IDB.dispo && K.data && K.data.avecs) { K.reprisLocal = true; await IDB.ecrire(STORE, JSON.stringify(K.data)); }
+    } else {
+      migrate(K.data);
+      try { K.session = JSON.parse(localStorage.getItem(STORE + '.s') || 'null'); } catch (e) { K.session = null; }
+    }
+    DB.confirme = Date.now();
+    return K.data;
+  },
   load() {
     try { const raw = localStorage.getItem(STORE); if (raw) K.data = JSON.parse(raw); } catch (e) { K.data = null; }
     if (!K.data || !K.data.avecs) {
@@ -440,10 +519,30 @@ const DB = {
      privée — laissait jusqu'ici l'application tourner en mémoire sans rien dire, et tout se perdait
      à la fermeture. On le dit une fois, et l'appelant qui peut revenir en arrière le fait. */
   save() {
+    const texte = JSON.stringify(K.data);
+    /* la session reste dans localStorage : elle est minuscule, et l'autre onglet doit la voir */
+    try { localStorage.setItem(STORE + '.s', JSON.stringify(K.session)); } catch (e) { /* sans importance */ }
+    /* IDB.dispo vaut null tant que l ouverture de la base n a pas abouti. Retomber sur
+       localStorage dans ce cas-la, c est decider sur une information qu on n a pas encore : la
+       premiere ecriture d une session partait vers un stockage plafonne a 5 Mo alors que la base
+       l aurait acceptee. On ne retombe donc que lorsqu on SAIT qu il n y a pas de base. */
+    if (IDB.dispo !== false) {
+      /* Les écritures sont sérialisées : la dernière demande attend la précédente, pour que
+         deux enregistrements rapprochés ne se croisent pas dans le désordre. */
+      DB.enVol = (DB.enVol || Promise.resolve()).then(() => IDB.ecrire(STORE, texte)).then(ok => {
+        if (ok) { DB.confirme = Date.now(); DB.enPanne = false; }
+        else if (!DB.enPanne) { DB.enPanne = true; if (typeof App !== 'undefined' && App.toast) App.toast('Le téléphone n’arrive plus à garder les écritures. Exportez vos données.'); }
+        return ok;
+      });
+      /* un témoin pour l'onglet voisin : lui seul passe par localStorage */
+      try { localStorage.setItem(STORE + '.t', String(Date.now())); } catch (e) { /* sans importance */ }
+      return !DB.enPanne;
+    }
+    /* Pas d'IndexedDB : on garde l'ancien comportement, plafond compris, et on le dit. */
     try {
-      localStorage.setItem(STORE, JSON.stringify(K.data));
-      localStorage.setItem(STORE + '.s', JSON.stringify(K.session));
+      localStorage.setItem(STORE, texte);
       DB.enPanne = false;
+      DB.confirme = Date.now();
       return true;
     } catch (e) {
       if (!DB.enPanne && typeof App !== 'undefined' && App.toast) App.toast('Le téléphone n’arrive plus à garder les écritures : mémoire pleine. Exportez vos données.');
@@ -451,6 +550,9 @@ const DB = {
       return false;
     }
   },
+  /* Attendre que tout ce qui a été demandé soit réellement écrit. Appelé quand l'application
+     passe à l'arrière-plan, et par les essais qui vérifient ce qui est sur le disque. */
+  async vide() { await (DB.enVol || Promise.resolve()); return DB.confirme; },
   /* la graine passe par migrate() comme toute donnée chargée : mêmes valeurs par défaut, mêmes règles */
   reset() { K.data = seed(); migrate(K.data); K.session = null; DB.save(); }
 };
@@ -715,6 +817,11 @@ const App = {
   }
 };
 function render() {
+  /* Tant que le cahier n'est pas lu, il n'y a rien de vrai à montrer. La lecture passe par
+     IndexedDB, donc elle n'est plus instantanée, et quelques événements du navigateur —
+     l'invite d'installation, le retour de réseau, le service worker — peuvent demander un
+     dessin avant. On ne dessine pas : le premier écran viendra du démarrage. */
+  if (!K.data) return;
   // libre à installer et à découvrir ; un téléphone avec de vraies données doit être validé
   const locked = typeof licenceRequired === 'function' && licenceRequired() && K.data.mode === 'prod' && !(App.licence && App.licence.ok);
   const fn = locked && !/^adm\./.test(App.screen) ? SCREENS['lic.gate'] : (SCREENS[App.screen] || SCREENS.login);

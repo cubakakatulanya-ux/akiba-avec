@@ -16,8 +16,21 @@ window.__akibaTests = async function () {
 
   /* ---------- A. démarrage ---------- */
   await t("Le logiciel se charge", () => { must(typeof App === 'object' && typeof SCREENS === 'object' && typeof K === 'object'); });
-  await t("La clé de stockage reste kitabu.avec.v4", () => {
-    must(Object.keys(localStorage).indexOf('kitabu.avec.v4') >= 0, 'clés présentes : ' + Object.keys(localStorage).join(','));
+  await t("La clé de stockage reste kitabu.avec.v4", async () => {
+    /* L'engagement est que le nom sous lequel les vraies données sont rangées ne change jamais.
+       Depuis qu'IndexedDB porte le cahier, ce nom est celui de l'enregistrement dans la base ;
+       sur un navigateur sans IndexedDB, il reste la clé de localStorage. On vérifie là où les
+       données sont réellement, pas là où elles étaient autrefois. */
+    eq(STORE, 'kitabu.avec.v4', 'le nom du cahier');
+    if (IDB.dispo) {
+      const brut = await IDB.lire(STORE);
+      must(brut, 'le cahier doit être dans IndexedDB sous « ' + STORE + ' »');
+      const relu = typeof brut === "string" ? JSON.parse(brut) : brut;
+      must(Array.isArray(relu.avecs), 'l’enregistrement doit contenir les AVEC');
+      return 'IndexedDB · enregistrement « ' + STORE + ' » · ' + relu.avecs.length + ' AVEC';
+    }
+    must(Object.keys(localStorage).indexOf(STORE) >= 0, 'clés présentes : ' + Object.keys(localStorage).join(','));
+    return 'localStorage · clé « ' + STORE + ' »';
   });
   await t("Les données de démonstration sont chargées", () => {
     must(K.data.avecs.length >= 3, 'seulement ' + K.data.avecs.length + ' AVEC');
@@ -322,10 +335,15 @@ window.__akibaTests = async function () {
   });
 
   /* ---------- J. sauvegarde ---------- */
-  await t("La sauvegarde relit ce qu'elle écrit", () => {
+  await t("La sauvegarde relit ce qu'elle écrit", async () => {
     DB.save();
-    const relu = JSON.parse(localStorage.getItem('kitabu.avec.v4'));
+    await DB.vide();                                   // l’écriture dans la base est confirmée avant de relire
+    const brut = IDB.dispo ? await IDB.lire(STORE) : localStorage.getItem(STORE);
+    must(brut, 'rien n’a été écrit');
+    const relu = typeof brut === "string" ? JSON.parse(brut) : brut;
     eq(relu.avecs.length, K.data.avecs.length, 'nombre d’AVEC');
+    eq(relu.avecs[0].tx.length, K.data.avecs[0].tx.length, 'écritures du premier groupe');
+    return (IDB.dispo ? 'IndexedDB' : 'localStorage') + ' · ' + relu.avecs.length + ' AVEC relues';
   });
 
   /* ---------- K. langues ---------- */
@@ -827,19 +845,35 @@ window.__akibaTests = async function () {
     return 'photo facultative, avatar, carte et plafond de poids vérifiés';
   });
 
-  t('Un enregistrement impossible ne passe plus en silence', () => {
-    /* le cas qui faisait tout perdre : mémoire pleine, et l’application continuait comme si de rien n’était */
-    const vrai = localStorage.setItem.bind(localStorage);
+  await t('Un enregistrement impossible ne passe plus en silence', async () => {
+    /* Le cas qui faisait tout perdre : le stockage refuse, et l’application continuait comme si
+       de rien n’était. On fait échouer le stockage réellement utilisé, et on exige que l’échec
+       soit dit — c’est le cœur de la règle « ne jamais masquer une perte de données ». */
     let dit = '';
     const toast = App.toast; App.toast = m => { dit = m; };
-    localStorage.setItem = () => { const e = new Error('quota'); e.name = 'QuotaExceededError'; throw e; };
     DB.enPanne = false;
-    const r = DB.save();
-    localStorage.setItem = vrai; App.toast = toast; DB.enPanne = false;
+    let r;
+    if (IDB.dispo) {
+      const vrai = IDB.ecrire;
+      IDB.ecrire = async () => false;                    // la base refuse
+      DB.save();
+      await DB.vide();
+      r = !DB.enPanne;
+      IDB.ecrire = vrai;
+    } else {
+      const vrai = localStorage.setItem.bind(localStorage);
+      localStorage.setItem = () => { const e = new Error('quota'); e.name = 'QuotaExceededError'; throw e; };
+      r = DB.save();
+      localStorage.setItem = vrai;
+    }
+    App.toast = toast;
     eq(r, false, 'un enregistrement qui échoue doit le dire');
-    must(dit.indexOf('mémoire') > 0 || dit.indexOf('garder') > 0, 'l’utilisateur doit être prévenu');
-    eq(DB.save(), true, 'un enregistrement qui réussit doit rendre true');
-    return 'échec d’enregistrement signalé au lieu d’être avalé';
+    must(/mémoire|garder/.test(dit), 'l’utilisateur doit être prévenu, message obtenu : « ' + dit + ' »');
+    DB.enPanne = false;
+    DB.save();
+    await DB.vide();
+    eq(DB.enPanne, false, 'un enregistrement qui réussit ne doit pas laisser l’application en panne');
+    return 'échec signalé sur ' + (IDB.dispo ? 'IndexedDB' : 'localStorage') + ', puis reprise';
   });
 
   /* ---- les sons : courts, reconnaissables, et jamais indispensables ---- */
@@ -1246,6 +1280,89 @@ window.__akibaTests = async function () {
     const h2 = pickSel('essai', 'Essai', [[500, '500 FC'], [1000, '1 000 FC']], 500);
     eq(h2.split('value="500"').length - 1, 1, 'une valeur connue ne doit apparaître qu’une fois');
     return 'valeur hors liste gardée, valeur connue non dupliquée';
+  });
+
+  /* ---------- V. le stockage : plus de plafond, et rien de perdu en chemin ---------- */
+  await t('Un portefeuille d’animateur dépasse les cinq mégaoctets et se relit entier', async () => {
+    /* localStorage ne garde que cinq mégaoctets. Un groupe tient dans ce plafond pour une année,
+       mais un animateur qui suit vingt AVEC, non : c'était la limite qui interdisait le passage
+       à l'échelle. On écrit donc gros, et on exige de tout relire au franc. */
+    if (!IDB.dispo) return 'ce navigateur n’a pas IndexedDB : le plafond de 5 Mo reste, et l’application le dit';
+    const sauve = K.data;
+    const txAvant = K.data.avecs[0].tx.length, reunionsAvant = K.data.avecs[0].meetings.length;
+    try {
+      /* On gonfle le volume par de vraies écritures : dupliquer une AVEC en changeant son
+         identifiant casserait sa chaîne, et l application a raison de le refuser. Une réunion
+         ouverte reçoit donc des milliers d écritures régulières, hachées comme les autres. */
+      const gros = K.data;
+      const a1 = gros.avecs[0];
+      const chef1 = a1.members.find(x => x.role === 'president' && !x.left);
+      const mGros = { id: a1.id + '-volume', n: a1.meetings.reduce((x, y) => Math.max(x, y.n), 0) + 1,
+        cycle: a1.cycle.n, date: Date.now(), status: 'open', presence: {}, openedBy: chef1.id, stepDone: 0, synced: false };
+      activeM(a1).forEach(x => mGros.presence[x.id] = 'P');
+      a1.meetings.push(mGros);
+      const membres1 = activeM(a1);
+      let poids = JSON.stringify(gros).length;
+      while (poids < 6 * 1024 * 1024) {
+        for (let i = 0; i < 2000; i++)
+          appendTx(a1, { meetingId: mGros.id, type: 'EPARGNE', memberId: membres1[i % membres1.length].id,
+            parts: 1, amount: a1.settings.partValue, by: chef1.id, note: 'volume ' + i });
+        poids = JSON.stringify(gros).length;
+      }
+      must(poids > 5 * 1024 * 1024, 'il faut dépasser le plafond pour que l’essai prouve quelque chose : ' + Math.round(poids / 1048576) + ' Mo');
+      /* l’ancien stockage refuserait : on le vérifie, pour que l’essai dise bien ce qu’il prouve */
+      let refusAncien = false;
+      try { localStorage.setItem('essai-plafond', JSON.stringify(gros)); localStorage.removeItem('essai-plafond'); }
+      catch (e) { refusAncien = true; }
+      must(refusAncien, 'localStorage devrait refuser ce volume : l’essai ne prouverait rien sinon');
+      DB.enPanne = false;
+      DB.save();
+      await DB.vide();
+      must(!DB.enPanne, 'le stockage doit accepter ' + Math.round(poids / 1048576) + ' Mo');
+      const brut = await IDB.lire(STORE);
+      const relu = typeof brut === 'string' ? JSON.parse(brut) : brut;
+      eq(relu.avecs.length, gros.avecs.length, 'nombre d’AVEC relues');
+      eq(relu.avecs.reduce((x, y) => x + y.tx.length, 0), gros.avecs.reduce((x, y) => x + y.tx.length, 0), 'écritures relues');
+      eq(relu.avecs.filter(y => !verifyChain(y).ok).length, 0, 'journaux altérés après relecture');
+      return Math.round(poids / 1048576 * 10) / 10 + ' Mo gardés et relus · ' + relu.avecs.length + ' AVEC · '
+        + relu.avecs.reduce((x, y) => x + y.tx.length, 0) + ' écritures · là où localStorage refuse';
+    } finally {
+      /* On rend le cahier exactement comme on l a trouvé : les écritures de volume vivaient
+         dans une réunion non scellée, les retirer ne touche aucun sceau. */
+      const a1 = K.data.avecs[0];
+      a1.tx.length = txAvant; a1.meetings.length = reunionsAvant;
+      Object.keys(_chain).forEach(k => delete _chain[k]);
+      K.data = sauve; DB.enPanne = false; DB.save(); await DB.vide();
+    }
+  });
+
+  await t('Un téléphone qui vient de l’ancienne version retrouve tout son cahier', async () => {
+    /* Les téléphones déjà en service rangent tout dans localStorage sous « kitabu.avec.v4 ».
+       Au premier démarrage de la nouvelle version, leurs données doivent être reprises sans
+       que personne n'ait rien à faire — et recopiées dans la base, pour que la fois suivante
+       n'ait plus de plafond. */
+    if (!IDB.dispo) return 'sans IndexedDB il n’y a rien à reprendre : le stockage ne change pas';
+    const sauve = K.data, sessionSauve = K.session;
+    const avant = { avecs: K.data.avecs.length, tx: K.data.avecs.reduce((s2, a0) => s2 + a0.tx.length, 0),
+      caisse: K.data.avecs.reduce((s2, a0) => s2 + stats(a0).cash, 0), nom: K.data.avecs[0].name };
+    try {
+      localStorage.setItem(STORE, JSON.stringify(K.data));
+      const b = await IDB.ouvrir();
+      await new Promise(r => { const tr = b.transaction(IDB.magasin, 'readwrite'); tr.objectStore(IDB.magasin).delete(STORE); tr.oncomplete = r; tr.onerror = r; });
+      eq(await IDB.lire(STORE), undefined, 'la base doit être vide pour que l’essai ait un sens');
+      K.data = null;
+      await DB.pret();                                   // ce que fait le démarrage
+      must(K.data && K.data.avecs, 'le cahier doit avoir été retrouvé');
+      eq(K.data.avecs.length, avant.avecs, 'AVEC retrouvées');
+      eq(K.data.avecs.reduce((s2, a0) => s2 + a0.tx.length, 0), avant.tx, 'écritures retrouvées');
+      eq(K.data.avecs.reduce((s2, a0) => s2 + stats(a0).cash, 0), avant.caisse, 'caisse retrouvée');
+      eq(K.data.avecs[0].name, avant.nom, 'premier groupe');
+      eq(K.data.avecs.filter(y => !verifyChain(y).ok).length, 0, 'journaux altérés après reprise');
+      const dans = await IDB.lire(STORE);
+      const r2 = typeof dans === 'string' ? JSON.parse(dans) : dans;
+      must(r2 && r2.avecs.length === avant.avecs, 'les données doivent être recopiées dans la base');
+      return avant.avecs + ' AVEC, ' + avant.tx + ' écritures et ' + fc(avant.caisse) + ' repris de l’ancien stockage, puis recopiés dans la base';
+    } finally { K.data = sauve; K.session = sessionSauve; DB.save(); await DB.vide(); }
   });
   return res;
 };

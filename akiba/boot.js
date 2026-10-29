@@ -1,11 +1,23 @@
 /* Akiba AVEC — démarrage */
 'use strict';
-DB.load();
-DB.save();
+/* Le démarrage attend d'avoir lu le cahier avant que l'écran existe : avec IndexedDB la
+   lecture n'est plus instantanée, et mieux vaut un instant d'attente qu'un écran faux. */
+const demarre = DB.pret().then(() => { DB.save(); });
 window.addEventListener('online', () => { K.data.net.online = true; DB.save(); render(); });
 window.addEventListener('offline', () => { K.data.net.online = false; DB.save(); render(); });
 // Affichage en direct : quand un autre onglet (une AVEC, un animateur) enregistre, cet écran se met à jour tout seul.
-window.addEventListener('storage', e => {
+window.addEventListener('storage', async e => {
+  /* Deux chemins : l'ancien, où le cahier lui-même passait par localStorage, et le nouveau,
+     où seul un témoin horodaté y passe et où le cahier se relit dans la base. */
+  if (e.key === STORE + '.t') {
+    const brut = await IDB.lire(STORE);
+    if (!brut) return;
+    try { K.data = typeof brut === 'string' ? JSON.parse(brut) : brut; } catch (err) { return; }
+    Object.keys(_chain).forEach(k => delete _chain[k]);
+    App.liveAt = Date.now();
+    render();
+    return;
+  }
   if (e.key !== STORE || !e.newValue) return;
   try { K.data = JSON.parse(e.newValue); } catch (err) { return; }
   Object.keys(_chain).forEach(k => delete _chain[k]);
@@ -15,6 +27,11 @@ window.addEventListener('storage', e => {
   render();
 });
 setInterval(() => { if (K.session && /^(o|n)\./.test(App.screen) && !App.sheet) render(); }, 30000);
+/* Une écriture dans IndexedDB est confirmée un instant après avoir été demandée. Si le téléphone
+   se verrouille ou si l'application passe en arrière-plan juste à ce moment-là, on laisse la
+   dernière écriture finir plutôt que de la perdre en silence. */
+document.addEventListener('visibilitychange', () => { if (document.hidden) DB.vide(); });
+window.addEventListener('pagehide', () => DB.vide());
 // Version hébergée (dist/) : l'application reste dans le téléphone et s'ouvre sans réseau.
 // Mises à jour : le téléphone vérifie la nouvelle version à chaque ouverture avec réseau, puis toutes les 30 minutes.
 // La nouvelle version s'installe par-dessus l'ancienne ; les données restent dans le téléphone.
@@ -37,7 +54,10 @@ if (window.KITABU_PWA && 'serviceWorker' in navigator) {
   });
 }
 if (K.recovered) setTimeout(() => App.toast('Vos données ont été retrouvées après la mise à jour'), 800);
-(function start() {
+/* Le premier écran attend la lecture du cahier. Avant, DB.load() rendait la main tout de suite
+   et start() pouvait décider de l écran sur des données déjà là ; maintenant la lecture passe
+   par IndexedDB, donc on attend — quelques dizaines de millisecondes, et aucun écran faux. */
+demarre.then(function start() {
   const s = K.session;
   if (s && s.kind === 'avec' && avecById(s.avecId) && memberOf(avecById(s.avecId), s.memberId)) App.screen = 'a.home';
   else if (s && s.kind === 'anim' && userById(s.userId)) App.screen = 'n.home';
@@ -62,4 +82,4 @@ if (K.recovered) setTimeout(() => App.toast('Vos données ont été retrouvées 
     window.addEventListener('online', refreshBlocklist);
     setInterval(refreshBlocklist, 6 * 3600e3);
   })();
-})();
+});
