@@ -1,1 +1,62 @@
-[]
+[
+  {
+    "lot": "B",
+    "etat": "passe",
+    "quoi": "les quatre equations tiennent sur les 20 AVEC",
+    "preuve": "19740 ecritures, 360 credits verifies"
+  },
+  {
+    "lot": "B",
+    "etat": "passe",
+    "quoi": "poids du cahier apres 20 cycles partiels",
+    "preuve": "8427 Ko pour 20 AVEC de 25 membres sur 20 semaines, dans IndexedDB"
+  },
+  {
+    "lot": "F",
+    "etat": "passe",
+    "quoi": "50 clotures examinees",
+    "preuve": "40 autorisees, 10 bloquees"
+  },
+  {
+    "lot": "F",
+    "etat": "passe",
+    "quoi": "motif de blocage rencontre",
+    "preuve": "Expliquez l'écart : c'est obligatoire (10 fois)"
+  },
+  {
+    "lot": "F",
+    "etat": "passe",
+    "quoi": "une AVEC dont tout est regle peut partager",
+    "preuve": "10 cas, fautes : aucune, aucune, aucune, aucune, aucune, aucune, aucune, aucune, aucune, aucune"
+  },
+  {
+    "lot": "F",
+    "etat": "passe",
+    "quoi": "la retenue sur la part egale exactement ce que le membre doit",
+    "preuve": "0 ecart(s) sur 50 clotures · 40 AVEC avec retenue, 2 979 500 FC retenus en tout"
+  },
+  {
+    "lot": "F",
+    "etat": "passe",
+    "quoi": "part inscrite = argent recu + dettes retenues",
+    "preuve": "0 ecart(s)"
+  },
+  {
+    "lot": "F",
+    "etat": "passe",
+    "quoi": "un membre qui doit plus que sa part fait refuser le partage, et il est nomme",
+    "preuve": "Des membres doivent rembourser avant le partage · 1 membre(s) : Josephine Bisimwa"
+  },
+  {
+    "lot": "F",
+    "etat": "passe",
+    "quoi": "un ecart de caisse non explique bloque le partage",
+    "preuve": "10 cloture(s) refusee(s) sur 50"
+  },
+  {
+    "lot": "F",
+    "etat": "passe",
+    "quoi": "les fonds a distribuer ne depassent pas les liquidites",
+    "preuve": "2 605 350 FC a donner pour 2 956 850 FC en caisse"
+  }
+]

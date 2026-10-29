@@ -893,11 +893,11 @@ const CYCLER = `(avecId, semaines, opt) => {
         });
         return { n: K.data.avecs.length, ecarts, tx: K.data.avecs.reduce((s, a) => s + a.tx.length, 0),
           credits: sorties.reduce((s, x) => s + x.credits, 0),
-          poids: Math.round((localStorage.getItem('kitabu.avec.v4') || '').length / 1024) };
+          poids: Math.round(JSON.stringify(K.data).length / 1024), moteur: IDB.dispo === false ? 'localStorage' : 'IndexedDB' };
       })()`);
       verifier(bb.ecarts.length === 0, 'B', 'les quatre equations tiennent sur les 20 AVEC',
         bb.ecarts.length ? bb.ecarts.slice(0, 4).join(' | ') : bb.tx + ' ecritures, ' + bb.credits + ' credits verifies', 'bloquant');
-      passe('B', 'poids du stockage apres 20 cycles partiels', bb.poids + ' Ko pour 20 AVEC de 25 membres sur 20 semaines');
+      passe('B', 'poids du cahier apres 20 cycles partiels', bb.poids + ' Ko pour 20 AVEC de 25 membres sur 20 semaines, dans ' + bb.moteur);
     }
     trait();
   }

@@ -472,6 +472,7 @@ const IDB = {
 };
 
 const DB = {
+  aEcrire: null, enVol: null, confirme: 0, enPanne: false,
   /* Le démarrage attend d'avoir réellement lu les données avant que quoi que ce soit
      s'affiche : un écran juste après un écran faux vaut moins qu'un écran qui attend. */
   async pret() {
@@ -527,13 +528,22 @@ const DB = {
        premiere ecriture d une session partait vers un stockage plafonne a 5 Mo alors que la base
        l aurait acceptee. On ne retombe donc que lorsqu on SAIT qu il n y a pas de base. */
     if (IDB.dispo !== false) {
-      /* Les écritures sont sérialisées : la dernière demande attend la précédente, pour que
-         deux enregistrements rapprochés ne se croisent pas dans le désordre. */
-      DB.enVol = (DB.enVol || Promise.resolve()).then(() => IDB.ecrire(STORE, texte)).then(ok => {
-        if (ok) { DB.confirme = Date.now(); DB.enPanne = false; }
-        else if (!DB.enPanne) { DB.enPanne = true; if (typeof App !== 'undefined' && App.toast) App.toast('Le téléphone n’arrive plus à garder les écritures. Exportez vos données.'); }
-        return ok;
-      });
+      /* Une seule valeur en attente, la plus récente, et une seule transaction à la fois : deux
+         enregistrements rapprochés ne peuvent pas se croiser dans le désordre, et mille
+         enregistrements d'affilée n'empilent pas mille copies du cahier en mémoire. */
+      DB.aEcrire = texte;
+      if (!DB.enVol) {
+        DB.enVol = (async () => {
+          while (DB.aEcrire !== null) {
+            const t = DB.aEcrire;
+            DB.aEcrire = null;
+            const ok = await IDB.ecrire(STORE, t);
+            if (ok) { DB.confirme = Date.now(); DB.enPanne = false; }
+            else if (!DB.enPanne) { DB.enPanne = true; if (typeof App !== 'undefined' && App.toast) App.toast('Le téléphone n’arrive plus à garder les écritures. Exportez vos données.'); }
+          }
+          DB.enVol = null;
+        })();
+      }
       /* un témoin pour l'onglet voisin : lui seul passe par localStorage */
       try { localStorage.setItem(STORE + '.t', String(Date.now())); } catch (e) { /* sans importance */ }
       return !DB.enPanne;
@@ -552,7 +562,12 @@ const DB = {
   },
   /* Attendre que tout ce qui a été demandé soit réellement écrit. Appelé quand l'application
      passe à l'arrière-plan, et par les essais qui vérifient ce qui est sur le disque. */
-  async vide() { await (DB.enVol || Promise.resolve()); return DB.confirme; },
+  async vide() {
+    /* la boucle peut relancer un tour pendant qu'on l'attend : on attend jusqu'à ce qu'il ne
+       reste plus rien ni en vol ni en attente */
+    for (let i = 0; i < 1000 && (DB.enVol || DB.aEcrire !== null && DB.aEcrire !== undefined); i++) await (DB.enVol || Promise.resolve());
+    return DB.confirme;
+  },
   /* la graine passe par migrate() comme toute donnée chargée : mêmes valeurs par défaut, mêmes règles */
   reset() { K.data = seed(); migrate(K.data); K.session = null; DB.save(); }
 };
