@@ -577,6 +577,13 @@ SCREENS['a.imprimante'] = () => {
       </div>
     </section>
 
+    <section class="card stack"><h2>Ce que le terminal héberge</h2>
+      <p class="small muted" style="margin:0">Akiba a demandé au terminal quels services d’impression connus il porte. C’est cette liste qui permet de brancher l’imprimante intégrée d’un modèle encore inconnu.</p>
+      ${(d.services || []).length
+        ? `<div class="list">${d.services.map(v => `<div class="li"><span class="grow"><b>${esc(v.paquet)}</b><span class="small muted">${esc(v.classe || v.par)}</span></span></div>`).join('')}</div>`
+        : `<div class="alert warn">${icSpan('alert')}<div><b>Aucun service d’impression connu</b><span class="small">Ce terminal n’héberge aucune des interfaces répandues. S’il a une imprimante intégrée, elle passe par un logiciel propre au fabricant, et il faudra sa documentation.</span></div></div>`}
+    </section>
+
     <section class="card stack"><h2>Ce terminal</h2>
       <div class="row between small"><span>Modèle</span><b>${esc(d.modele)}</b></div>
       <div class="row between small"><span>Fabricant</span><b>${esc(d.fabricant)}</b></div>
@@ -608,7 +615,8 @@ ACT.imprCopier = () => {
   if (!d) return App.toast('Rien à copier hors de l’application');
   const t = ['Terminal : ' + d.marque + ' ' + d.modele, 'Fabricant : ' + d.fabricant, 'Appareil : ' + d.appareil,
     'Produit : ' + d.produit, 'Android : ' + d.android + ' (niveau ' + d.niveau + ')',
-    'Voies : ' + (d.voies || []).map(v => v.nom + '=' + (v.disponible ? 'oui' : 'non')).join(', ')].join('\n');
+    'Voies : ' + (d.voies || []).map(v => v.nom + '=' + (v.disponible ? 'oui' : 'non')).join(', '),
+    'Services : ' + ((d.services || []).map(v => v.paquet + (v.classe ? '/' + v.classe : '')).join(', ') || 'aucun')].join('\n');
   try { navigator.clipboard.writeText(t); App.toast('Copié : collez-le dans un message'); }
   catch (e) { App.openSheet('<h2>Renseignements du terminal</h2><pre class="ticket">' + esc(t) + '</pre><button class="btn ghost block" data-act="closeSheet">Fermer</button>'); }
 };

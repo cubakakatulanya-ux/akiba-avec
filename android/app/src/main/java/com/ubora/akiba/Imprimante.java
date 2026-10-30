@@ -6,6 +6,9 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.print.PrintAttributes;
 import android.print.PrintManager;
+import android.content.pm.ResolveInfo;
+
+import java.util.List;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -128,6 +131,61 @@ final class Imprimante {
    * Ce que ce terminal sait faire, pour que le bureau puisse le lire à l'écran et nous le dire.
    * Sans câble et sans outil de développeur, c'est la seule façon de savoir à quoi on a affaire.
    */
+  /* Les services d'impression connus des terminaux de caisse. La plupart des terminaux chinois
+     se partagent quelques interfaces : celle d'iPos en couvre beaucoup à elle seule, Sunmi a la
+     sienne. Akiba demande seulement lesquelles existent ici — elle ne s'y branche pas à
+     l'aveugle, parce qu'une interface devinée de travers ferait n'importe quoi avec le rouleau,
+     et qu'un reçu faux est pire qu'un reçu absent.
+
+     Cette liste doit rester la même que le bloc <queries> du manifeste : sans la déclaration,
+     Android répond non à tout. */
+  private static final String[] SERVICES = {
+      "com.iposprinter.iposprinterservice.IPosPrinterService",
+      "woyou.aidlservice.jiuiv5.IWoyouService",
+      "com.sunmi.extprinterservice.ExtPrinterService",
+      "com.telpo.tps550.api.printer.PrinterService",
+      "com.pos.sdk.printer.IPrinterService",
+      "com.ubx.usdk.PrinterService",
+      "net.posprinter.service.PosprinterService",
+      "com.senraise.printer.PrinterService",
+      "com.senraise.sdk.PrinterService",
+      "android.printservice.PrintService"
+  };
+  private static final String[] PAQUETS = {
+      "com.iposprinter.iposprinterservice", "woyou.aidlservice.jiuiv5", "com.sunmi.printerservice",
+      "com.senraise.printer", "com.senraise.sdk", "com.senraise.printservice",
+      "com.android.bips", "ru.a402d.rawbtprinter"
+  };
+
+  /** Quels services d'impression ce terminal héberge-t-il ? Chacun est nommé précisément :
+   *  c'est ce nom-là qui permettra d'écrire la liaison directe vers l'imprimante intégrée. */
+  static JSONArray servicesTrouves(Activity a) {
+    JSONArray t = new JSONArray();
+    PackageManager pm = a.getPackageManager();
+    for (String action : SERVICES) {
+      try {
+        List<ResolveInfo> l = pm.queryIntentServices(new Intent(action), 0);
+        for (ResolveInfo r : l) {
+          JSONObject o = new JSONObject();
+          o.put("par", action);
+          o.put("paquet", r.serviceInfo.packageName);
+          o.put("classe", r.serviceInfo.name);
+          t.put(o);
+        }
+      } catch (Exception e) { /* un service de moins, pas un diagnostic de moins */ }
+    }
+    for (String q : PAQUETS) {
+      try {
+        pm.getPackageInfo(q, 0);
+        JSONObject o = new JSONObject();
+        o.put("par", "application installée");
+        o.put("paquet", q);
+        t.put(o);
+      } catch (Exception e) { /* absente */ }
+    }
+    return t;
+  }
+
   static String diagnostic(Activity a) {
     JSONObject d = new JSONObject();
     try {
@@ -144,6 +202,7 @@ final class Imprimante {
       voies.put(voie("systeme", systemeDImpression(a), "la fenêtre d'impression d'Android, rien à installer"));
       voies.put(voie("partage", true, "envoyer le reçu par WhatsApp ou SMS"));
       d.put("voies", voies);
+      d.put("services", servicesTrouves(a));
     } catch (Exception e) { /* un diagnostic incomplet vaut mieux qu'une application qui s'arrête */ }
     return d.toString();
   }

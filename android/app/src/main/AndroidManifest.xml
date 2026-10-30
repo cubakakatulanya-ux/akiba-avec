@@ -5,14 +5,37 @@
        Le cahier vit dans le terminal, et rien n'en sort sans un geste du bureau. C'est aussi ce
        qui rend l'installation hors Play Store acceptable : il n'y a rien à accorder. -->
 
-  <!-- Depuis Android 11, une application ne voit pas les autres sans le déclarer. Akiba a besoin
-       de savoir une seule chose : si RawBT est installée, pour ne pas proposer au bureau une voie
-       d'impression qui n'existe pas sur ce terminal. Rien d'autre n'est demandé. -->
+  <!-- Depuis Android 11, une application ne voit pas les autres sans le déclarer. Akiba déclare
+       ici les seules questions qu'elle pose, toutes au sujet de l'impression : telle application
+       ou tel service d'imprimante est-il présent sur ce terminal ? La réponse sert à ne pas
+       proposer au bureau une voie qui n'existe pas, et à reconnaître l'imprimante intégrée d'un
+       modèle qu'on ne connaît pas encore. Akiba ne voit rien d'autre du téléphone. -->
   <queries>
     <intent>
       <action android:name="android.intent.action.VIEW" />
       <data android:scheme="rawbt" />
     </intent>
+    <!-- Les services d'impression connus des terminaux de caisse. Akiba demande seulement s'ils
+         existent, pour pouvoir dire au bureau ce que son terminal héberge. Cette liste doit
+         rester la même que celle d'Imprimante.java. -->
+    <intent><action android:name="com.iposprinter.iposprinterservice.IPosPrinterService" /></intent>
+    <intent><action android:name="woyou.aidlservice.jiuiv5.IWoyouService" /></intent>
+    <intent><action android:name="com.sunmi.extprinterservice.ExtPrinterService" /></intent>
+    <intent><action android:name="com.telpo.tps550.api.printer.PrinterService" /></intent>
+    <intent><action android:name="com.pos.sdk.printer.IPrinterService" /></intent>
+    <intent><action android:name="com.ubx.usdk.PrinterService" /></intent>
+    <intent><action android:name="net.posprinter.service.PosprinterService" /></intent>
+    <intent><action android:name="com.senraise.printer.PrinterService" /></intent>
+    <intent><action android:name="com.senraise.sdk.PrinterService" /></intent>
+    <intent><action android:name="android.printservice.PrintService" /></intent>
+    <package android:name="com.iposprinter.iposprinterservice" />
+    <package android:name="woyou.aidlservice.jiuiv5" />
+    <package android:name="com.sunmi.printerservice" />
+    <package android:name="com.senraise.printer" />
+    <package android:name="com.senraise.sdk" />
+    <package android:name="com.senraise.printservice" />
+    <package android:name="com.android.bips" />
+    <package android:name="ru.a402d.rawbtprinter" />
   </queries>
 
   <application
