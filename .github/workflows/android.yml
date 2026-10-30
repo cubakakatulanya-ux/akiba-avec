@@ -43,9 +43,26 @@ jobs:
 
       # Le numéro de version suit le numéro de fabrication : chaque installation remplace la
       # précédente au lieu de s'ajouter à côté d'elle sur le terminal.
+      # La clé qui prouve qu'une Akiba vient bien d'Ubora. Elle ne vit que le temps de la
+      # fabrication, dans un fichier effacé aussitôt après. Sans elle, on s'arrête : mieux vaut
+      # pas d'application qu'une application que personne ne peut authentifier.
+      - name: Poser la clé de signature
+        env:
+          CLE: ${{ secrets.ANDROID_KEYSTORE_B64 }}
+        run: |
+          if [ -z "$CLE" ]; then echo "::error::la clé de signature manque dans les secrets du dépôt"; exit 1; fi
+          printf %s "$CLE" | base64 -d > "${{ github.workspace }}/signature.p12"
+
       - name: Compiler
         working-directory: android
+        env:
+          AKIBA_MAGASIN: ${{ github.workspace }}/signature.p12
+          AKIBA_MOTDEPASSE: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
         run: gradle --no-daemon assembleRelease -PversionCode=${{ github.run_number }}
+
+      - name: Retirer la clé
+        if: always()
+        run: rm -f "${{ github.workspace }}/signature.p12"
 
       - name: Déposer sur le site
         run: |

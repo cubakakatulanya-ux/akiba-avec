@@ -7,3 +7,4 @@ serve.js
 *.pem
 Kitabu-admin/
 registre-licences.csv
+signature.p12

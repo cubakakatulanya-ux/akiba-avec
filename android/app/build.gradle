@@ -23,10 +23,30 @@ android {
     }
   }
 
+  /* La signature. Elle prouve qu'une Akiba installée sur un terminal vient bien d'Ubora, et
+     c'est elle qui permet à une mise à jour de s'installer par-dessus la précédente.
+
+     La clé n'est pas ici et n'y sera jamais : la fabrique la reçoit des secrets du dépôt. Sur
+     un ordinateur qui ne les a pas, la construction retombe sur la clé de développement — ce
+     qui dépanne pour essayer, mais ne doit pas sortir du bureau : cette clé-là est publique et
+     partagée par tous les projets Android du monde, donc elle ne prouve rien. */
+  signingConfigs {
+    ubora {
+      def magasin = System.getenv("AKIBA_MAGASIN")
+      if (magasin) {
+        storeFile file(magasin)
+        storeType "PKCS12"
+        storePassword System.getenv("AKIBA_MOTDEPASSE")
+        keyAlias "akiba"
+        keyPassword System.getenv("AKIBA_MOTDEPASSE")
+      }
+    }
+  }
+
   buildTypes {
     release {
       minifyEnabled false               // il n'y a presque pas de code Java : rien à réduire
-      signingConfig signingConfigs.debug   // signature de développement, suffisante hors Play Store
+      signingConfig System.getenv("AKIBA_MAGASIN") ? signingConfigs.ubora : signingConfigs.debug
     }
   }
 
