@@ -182,14 +182,45 @@ function escposBytes(text) {
 }
 const b64Bytes = u8 => { let s = ''; u8.forEach(b => s += String.fromCharCode(b)); return btoa(s); };
 
-/* envoi à l'imprimante : terminal POS d'abord, puis RawBT */
+/* envoi à l'imprimante : on essaie les voies dans l'ordre, de la plus directe à la plus
+   bricolée, et on ne prétend jamais avoir imprimé quand rien n'est sorti. */
 function posAvailable() { return !!(window.AkibaPOS && typeof window.AkibaPOS.print === 'function'); }
-async function printReceipt(text, copies = 1) {
-  if (posAvailable()) {                                              // application Android : imprimante integree du terminal
-    try { await window.AkibaPOS.print({ text: noAcc(text), escpos: b64Bytes(escposBytes(text)), copies }); return 'pos'; }
-    catch (e) { /* on essaie la voie suivante */ }
+
+/* Ce que le terminal dit savoir faire. Relu à chaque fois : une application d'impression peut
+   être installée entre deux réunions, et le bureau ne devrait pas avoir à redémarrer Akiba. */
+function posDiagnostic() {
+  try {
+    if (!window.AkibaPOS || !window.AkibaPOS.diagnostic) return null;
+    const d = JSON.parse(window.AkibaPOS.diagnostic());
+    d.voie = {};
+    (d.voies || []).forEach(v => d.voie[v.nom] = !!v.disponible);
+    return d;
+  } catch (e) { return null; }
+}
+
+async function printReceipt(text, copies = 1, voie = '') {
+  const t = noAcc(text);
+  if (posAvailable()) {
+    const d = posDiagnostic() || { voie: {} };
+    const parLeSysteme = () => {
+      try { return window.AkibaPOS.imprimerSysteme(JSON.stringify({ text: t, signs: RECU_W })) ? 'systeme' : ''; }
+      catch (e) { return ''; }
+    };
+    /* Si le terminal n'a pas RawBT, inutile de lancer une intention dans le vide : on passe
+       directement à la fenêtre d'Android, qui, elle, existe toujours ou n'existe pas. */
+    if (voie === 'systeme' || (!voie && !d.voie.rawbt && d.voie.systeme)) {
+      const r = parLeSysteme();
+      if (r) return r;
+    }
+    try {
+      const r = await window.AkibaPOS.print({ text: t, escpos: b64Bytes(escposBytes(text)), copies });
+      if (r) return r;                                   // 'pos' ou 'rawbt', selon ce qui a marché
+    } catch (e) { /* on essaie la voie suivante */ }
+    /* quand le bureau a demandé une voie précise, on ne lui en substitue pas une autre : il
+       est en train de chercher ce qui marche sur son terminal, et un succès déguisé l'égare */
+    return voie === 'pos' ? '' : parLeSysteme();
   }
-  try { window.location.href = 'rawbt:' + encodeURIComponent(noAcc(text)); return 'rawbt'; } catch (e) { return ''; }
+  try { window.location.href = 'rawbt:' + encodeURIComponent(t); return 'rawbt'; } catch (e) { return ''; }
 }
 
 /* ---------- écrans ---------- */
@@ -204,6 +235,8 @@ SCREENS['a.receipts'] = p => {
   return `<div class="shell">${topbar('Reçus des membres', `Réunion n°${m.n} · ${fdate(m.date)}`, backBtn('a.receipt', `data-id="${m.id}"`), syncPill(avec))}<main class="main">
     <p class="muted">Un reçu par membre présent : épargne du jour, crédit, amendes, et le sceau de la réunion. Imprimez sur le terminal, ou partagez le texte par WhatsApp.</p>
     ${posAvailable() ? '' : '<div class="tip row" style="align-items:flex-start">' + icSpan('alert') + '<div><b>Aucune imprimante détectée</b><span class="small">Sur un terminal POS, ouvrez Akiba depuis l\'application Android. Sinon, installez RawBT pour une imprimante Bluetooth, ou partagez le reçu.</span></div></div>'}
+    ${posAvailable() ? `<button class="li" data-act="go" data-to="a.imprimante" style="border:1px solid var(--line);border-radius:var(--r);margin-bottom:10px">
+      ${rowIc('clip')}<span class="grow"><b>Imprimante du terminal</b><span class="small muted">Voir ce que ce terminal sait faire, et essayer chaque voie</span></span>${ic('chev')}</button>` : ''}
     <div class="list">${rows.map(({ x, r }) => `<button class="li" data-act="recuSheet" data-m="${m.id}" data-id="${x.id}">${avatar(x)}
       <span class="grow"><b>${esc(x.name)}</b><span class="small muted">Épargne ${fc(r.epargne)}${r.remb ? ' · remb. ' + fc(r.remb) : ''}${r.credit ? ' · crédit ' + fc(r.credit) : ''}</span></span>${ic('chev')}</button>`).join('') || '<div class="li muted">Aucun membre présent à cette réunion</div>'}</div>
     ${rows.length ? `<button class="btn primary block xl" data-act="recuPrintAll" data-m="${m.id}">${ic('clip')} Imprimer les ${rows.length} reçus</button>
@@ -483,4 +516,99 @@ ACT.journalShare = async () => {
     if (navigator.share) await navigator.share({ title: `Journal ${avec.name}`, text });
     else { await navigator.clipboard.writeText(text); App.toast('Journal copié : collez-le où vous voulez'); }
   } catch (e) { /* partage annulé */ }
+};
+
+/* ---------- l'imprimante du terminal ----------
+
+   Un terminal de caisse ne dit pas ce qu'il a dans le ventre, et il n'est pas toujours possible
+   de le brancher à un ordinateur pour l'interroger. Cet écran le fait depuis l'application :
+   il montre de quel appareil il s'agit, quelles voies d'impression existent réellement, et
+   permet d'essayer chacune avec un vrai ticket. Le bureau lit ce qui s'affiche et peut le
+   rapporter — c'est ce qui permet de brancher l'imprimante intégrée d'un modèle inconnu. */
+
+const VOIES_NOM = {
+  fabricant: 'Imprimante intégrée du terminal',
+  rawbt: 'RawBT',
+  systeme: 'Fenêtre d’impression d’Android',
+  partage: 'Partager le texte'
+};
+
+function ticketEssai() {
+  return rTicket([
+    rCenter('AKIBA'),
+    rCenter('essai d impression'),
+    rRule(),
+    rLine('Largeur', recuMm() + ' mm'),
+    rLine('Signes', String(RECU_W)),
+    rLine('Date', new Date().toLocaleDateString('fr-FR')),
+    rRule(),
+    rCenter('si vous lisez ceci'),
+    rCenter('l imprimante marche'),
+    '', '', ''
+  ]);
+}
+
+SCREENS['a.imprimante'] = () => {
+  const d = posDiagnostic();
+  const essai = App.impressionEssai;
+  if (!d) return `<div class="shell">${topbar('Imprimante du terminal', 'Hors de l’application Android', backBtn('a.receipt'))}<main class="main">
+    <div class="tip row" style="align-items:flex-start">${icSpan('alert')}<div><b>Akiba est ouvert dans un navigateur</b>
+      <span class="small">Cet écran interroge le terminal lui-même : il n’a de sens que depuis l’application Android. Les reçus se partagent par WhatsApp ou SMS, comme d’habitude.</span></div></div>
+  </main></div>`;
+
+  const ligne = (nom, dispo, quoi, voie) => `<div class="li" style="align-items:flex-start">
+    ${rowIc(dispo ? 'check' : 'alert')}<span class="grow"><b>${esc(VOIES_NOM[nom] || nom)}</b>
+      <span class="small muted">${esc(quoi)}</span></span>
+    <span class="chip ${dispo ? 'good' : 'warn'}">${dispo ? 'présente' : 'absente'}</span></div>
+    ${voie ? `<button class="btn ghost block" data-act="imprEssai" data-voie="${voie}" style="margin:-4px 0 10px">${ic('clip')} Essayer cette voie</button>` : ''}`;
+
+  return `<div class="shell">${topbar('Imprimante du terminal', esc(d.marque + ' ' + d.modele), backBtn('a.receipt'))}<main class="main">
+    <p class="muted">Ce que ce terminal sait faire. Essayez les voies dans l’ordre : la première qui sort un ticket est la bonne, et c’est celle qu’Akiba prendra ensuite toute seule.</p>
+
+    ${essai ? `<div class="alert ${essai.ok ? 'good' : 'bad'}">${icSpan(essai.ok ? 'check' : 'alert')}<div><b>${esc(essai.titre)}</b>
+      <span class="small">${esc(essai.detail)}</span></div></div>` : ''}
+
+    <section class="card stack"><h2>Les voies d’impression</h2>
+      <div class="list">
+        ${ligne('fabricant', d.voie.fabricant, 'Le logiciel du vendeur du terminal. Il faut la documentation du vendeur pour le brancher. Les renseignements à lui transmettre sont plus bas.', 'pos')}
+        ${ligne('rawbt', d.voie.rawbt, d.voie.rawbt ? 'Installée sur ce terminal : Akiba peut lui passer les tickets.' : 'Pas installée. À prendre dans le Play Store si le terminal en a un.', d.voie.rawbt ? 'pos' : '')}
+        ${ligne('systeme', d.voie.systeme, d.voie.systeme ? 'Android ouvre sa propre fenêtre : l’imprimante du terminal y apparaît si le fabricant en a déclaré une, et l’enregistrement en PDF est toujours proposé.' : 'Ce terminal n’a pas de système d’impression.', d.voie.systeme ? 'systeme' : '')}
+        ${ligne('partage', true, 'Toujours possible : le reçu part en texte par WhatsApp ou SMS, et le membre le garde dans son téléphone.', '')}
+      </div>
+    </section>
+
+    <section class="card stack"><h2>Ce terminal</h2>
+      <div class="row between small"><span>Modèle</span><b>${esc(d.modele)}</b></div>
+      <div class="row between small"><span>Fabricant</span><b>${esc(d.fabricant)}</b></div>
+      <div class="row between small"><span>Marque</span><b>${esc(d.marque)}</b></div>
+      <div class="row between small"><span>Appareil</span><b>${esc(d.appareil)}</b></div>
+      <div class="row between small"><span>Produit</span><b>${esc(d.produit)}</b></div>
+      <div class="row between small"><span>Android</span><b>${esc(d.android)} (niveau ${d.niveau})</b></div>
+      <div class="row between small"><span>Papier réglé sur</span><b>${recuMm()} mm · ${RECU_W} signes</b></div>
+      <p class="hint" style="margin:0">Si aucune voie ne sort de ticket, envoyez ces six lignes à Ubora : elles suffisent à reconnaître le terminal et à brancher son imprimante intégrée.</p>
+      <button class="btn ghost block" data-act="imprCopier">${ic('clip')} Copier ces renseignements</button>
+    </section>
+  </main></div>`;
+};
+
+ACT.imprEssai = async d => {
+  App.impressionEssai = null;
+  const voie = d.voie === 'systeme' ? 'systeme' : 'pos';
+  const r = await printReceipt(ticketEssai(), 1, voie);
+  App.impressionEssai = r
+    ? { ok: true, titre: 'Envoyé par « ' + (VOIES_NOM[r === 'pos' ? 'fabricant' : r === 'rawbt' ? 'rawbt' : 'systeme'] || r) + ' »',
+        detail: 'Regardez le rouleau : si le ticket est sorti, cette voie est la bonne. Si rien ne sort, essayez la suivante — le terminal a accepté la demande, mais le papier n’a pas bougé.' }
+    : { ok: false, titre: 'Cette voie n’a pas abouti',
+        detail: 'Le terminal n’a pas pu prendre la demande. Essayez une autre voie, ou partagez le reçu par WhatsApp.' };
+  render();
+};
+
+ACT.imprCopier = () => {
+  const d = posDiagnostic();
+  if (!d) return App.toast('Rien à copier hors de l’application');
+  const t = ['Terminal : ' + d.marque + ' ' + d.modele, 'Fabricant : ' + d.fabricant, 'Appareil : ' + d.appareil,
+    'Produit : ' + d.produit, 'Android : ' + d.android + ' (niveau ' + d.niveau + ')',
+    'Voies : ' + (d.voies || []).map(v => v.nom + '=' + (v.disponible ? 'oui' : 'non')).join(', ')].join('\n');
+  try { navigator.clipboard.writeText(t); App.toast('Copié : collez-le dans un message'); }
+  catch (e) { App.openSheet('<h2>Renseignements du terminal</h2><pre class="ticket">' + esc(t) + '</pre><button class="btn ghost block" data-act="closeSheet">Fermer</button>'); }
 };

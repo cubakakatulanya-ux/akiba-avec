@@ -125,4 +125,30 @@ public class PontPOS {
       return "";
     }
   }
+
+  /**
+   * Ce que ce terminal sait faire, en clair. Sans câble ni outil de développeur, c'est la seule
+   * façon de savoir à quoi on a affaire : le bureau ouvre l'écran « Imprimante du terminal »,
+   * lit ce qui s'affiche, et le dit.
+   */
+  @JavascriptInterface
+  public String diagnostic() {
+    return Imprimante.diagnostic(activite);
+  }
+
+  /**
+   * Imprimer par la fenêtre d'Android. Rien à installer : y apparaissent l'imprimante du
+   * terminal si le fabricant en a déclaré une, et toujours l'enregistrement en PDF.
+   */
+  @JavascriptInterface
+  public String imprimerSysteme(String demandeJson) {
+    try {
+      JSONObject d = new JSONObject(demandeJson);
+      String texte = d.optString("text", "");
+      int signes = d.optInt("signs", 32);
+      return Imprimante.imprimerParLeSysteme(activite, texte, signes) ? "systeme" : "";
+    } catch (Exception e) {
+      return "";
+    }
+  }
 }

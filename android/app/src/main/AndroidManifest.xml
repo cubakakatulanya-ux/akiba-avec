@@ -5,6 +5,16 @@
        Le cahier vit dans le terminal, et rien n'en sort sans un geste du bureau. C'est aussi ce
        qui rend l'installation hors Play Store acceptable : il n'y a rien à accorder. -->
 
+  <!-- Depuis Android 11, une application ne voit pas les autres sans le déclarer. Akiba a besoin
+       de savoir une seule chose : si RawBT est installée, pour ne pas proposer au bureau une voie
+       d'impression qui n'existe pas sur ce terminal. Rien d'autre n'est demandé. -->
+  <queries>
+    <intent>
+      <action android:name="android.intent.action.VIEW" />
+      <data android:scheme="rawbt" />
+    </intent>
+  </queries>
+
   <application
       android:allowBackup="false"
       android:icon="@mipmap/ic_launcher"
