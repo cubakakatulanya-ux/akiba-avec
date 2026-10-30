@@ -128,17 +128,21 @@ SCREENS.login = () => {
      un bureau qui a fini d'apprendre ne la retrouve plus.
 
      Le passage au réel efface les groupes inventés : c'est écrit avant, pas après. */
+  /* La salle d’essai : un seul groupe inventé, une seule porte pour y entrer, et la sortie
+     vers le vrai cahier. Elle disait trois fois qu’elle était une démonstration et répétait
+     ce que la fenêtre de sortie explique déjà ; elle le dit une fois. */
+  const demoAvec = K.data.mode === 'prod' ? null : (K.data.avecs || [])[0];
   const demo = K.data.mode === 'prod' ? ''
     : `<section class="card stack demo-bloc">
         <div class="row" style="align-items:flex-start;gap:10px">${icSpan('alert')}<div style="flex:1;min-width:0">
-          <b>Ceci est une démonstration</b>
-          <span class="small muted" style="display:block">Les groupes, les membres et les montants sont inventés. Rien ici n'appartient à un vrai groupe, et rien n'y est en jeu : essayez tout.</span></div></div>
+          <b>Démonstration</b>
+          <span class="small muted" style="display:block">Un groupe, des membres et des montants inventés. Rien n’est en jeu : essayez tout.</span></div></div>
+        ${demoAvec ? `<button class="vignette neuve" data-act="go" data-to="l.member" data-id="${demoAvec.id}">${ic('users')}<span class="nm">Ouvrir la démonstration</span></button>
+          <div class="row between small"><span>Codes secrets</span><b class="mono">1234</b></div>
+          <div class="row between small"><span>Carte de secours</span><b class="mono">2468-1357</b></div>` : ''}
         ${licKind() === 'demo'
-          ? '<p class="hint" style="margin:0">Licence de démonstration : le passage aux vraies données demande une licence délivrée par l\'Entreprise Sociale Ubora.</p>'
-          : `<button class="btn primary block xl" data-act="goLive">${ic('check')} Passer au vrai cahier de notre AVEC</button>
-             <p class="hint" style="margin:0">Les groupes de démonstration seront effacés de ce téléphone. Les traductions sont gardées.</p>`}
-        <div class="row between small"><span>Codes secrets de la démonstration</span><b class="mono">1234</b></div>
-        <div class="row between small"><span>Carte de secours</span><b class="mono">2468-1357</b></div>
+          ? '<p class="hint" style="margin:0">Le passage aux vraies données demande une licence délivrée par l\x27Entreprise Sociale Ubora.</p>'
+          : `<button class="btn ghost block" data-act="goLive">${ic('check')} Passer au vrai cahier de notre AVEC</button>`}
         <button class="linkbtn" data-act="resetDemo">Remettre la démonstration à zéro</button>
       </section>`;
   return `<div class="shell home">
@@ -156,17 +160,16 @@ SCREENS.login = () => {
          fait l'application : il veut savoir ce qui se passe maintenant, et entrer. L'écran
          répond dans cet ordre, et la promesse ne reste que sur un téléphone encore vierge.
          Aucun montant ici : il s'affiche avant qu'on ait tapé le moindre code. -->
-    ${blocMaintenant()}
-    ${grilleAvecs()}
-    ${enAvant ? envoiBloc(enAvant) : ''}
+    <!-- En démonstration, les vignettes laisseraient croire à un vrai cahier et feraient
+         double emploi avec la porte de la salle d’essai, plus bas. -->
+    ${K.data.mode === 'prod' ? blocMaintenant() + grilleAvecs() + (enAvant ? envoiBloc(enAvant) : '') : ''}
     ${K.data.avecs.length ? ''
       : ticker([{ icon: 'shield', label: "Journal scellé, impossible à modifier" }, { icon: 'sync', label: "Tout fonctionne sans réseau" }, { icon: 'calendar', label: "La réunion guidée en 8 étapes" }, { icon: 'coins', label: "Épargne, crédits, amendes, partage" }, { icon: 'users', label: "Le carnet de chaque membre" }, { icon: 'globe', label: "Français, lingala, swahili, tshiluba, kikongo" }, { icon: 'chart', label: "Export Excel pour l'organisation" }], { aria: "Ce que fait Akiba" })}
     <!-- les gestes secondaires. Commencer et recevoir une AVEC sont désormais des vignettes,
          parce qu'on les cherche là où sont les groupes : il ne reste ici que le guide. -->
     <nav class="liens" aria-label="Autres gestes">
-      ${K.data.avecs.length ? '' : canCreate ? `<button data-act="createAvec">${ic('plus')}<span>Commencer notre AVEC</span></button>` : ''}
-      ${K.data.avecs.length ? '' : `<button data-act="receiveSheet">${ic('sync')}<span>Recevoir une AVEC</span></button>`}
-      ${K.data.avecs.length ? `<button data-act="receiveSheet">${ic('sync')}<span>Recevoir une autre AVEC</span></button>` : ''}
+      ${K.data.mode === 'prod' && !K.data.avecs.length && canCreate ? `<button data-act="createAvec">${ic('plus')}<span>Commencer notre AVEC</span></button>` : ''}
+      <button data-act="receiveSheet">${ic('sync')}<span>Recevoir ${K.data.mode === 'prod' && K.data.avecs.length ? 'une autre' : 'notre'} AVEC</span></button>
       <button data-act="go" data-to="guide">${ic('book')}<span>Guide</span></button>
     </nav>
     ${demo}

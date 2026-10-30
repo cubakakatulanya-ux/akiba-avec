@@ -585,8 +585,12 @@ const DB = {
   /* Rend true quand le téléphone a bien gardé l'écriture. Un échec — mémoire pleine, navigation
      privée — laissait jusqu'ici l'application tourner en mémoire sans rien dire, et tout se perdait
      à la fermeture. On le dit une fois, et l'appelant qui peut revenir en arrière le fait. */
+  /* Mettre le cahier en texte est, et de loin, le plus cher de l'enregistrement : sur un
+     terminal de caisse, 473 ms pour le texte contre 53 ms pour l'écriture elle-même. La base
+     sait recopier un objet sans qu'on en fabrique le texte, et elle le fait en code natif —
+     167 ms pour le même cahier. On ne fabrique donc plus le texte que lorsqu'il faut vraiment :
+     pour localStorage, qui ne sait rien garder d'autre. */
   save() {
-    const texte = JSON.stringify(K.data);
     /* la session reste dans localStorage : elle est minuscule, et l'autre onglet doit la voir */
     try { localStorage.setItem(STORE + '.s', JSON.stringify(K.session)); } catch (e) { /* sans importance */ }
     /* IDB.dispo vaut null tant que l ouverture de la base n a pas abouti. Retomber sur
@@ -597,13 +601,19 @@ const DB = {
       /* Une seule valeur en attente, la plus récente, et une seule transaction à la fois : deux
          enregistrements rapprochés ne peuvent pas se croiser dans le désordre, et mille
          enregistrements d'affilée n'empilent pas mille copies du cahier en mémoire. */
-      DB.aEcrire = texte;
+      DB.aEcrire = K.data;
       if (!DB.enVol) {
         DB.enVol = (async () => {
           while (DB.aEcrire !== null) {
             const t = DB.aEcrire;
             DB.aEcrire = null;
-            const ok = await IDB.ecrire(STORE, t);
+            /* La base recopie l'objet au moment même où on le lui remet : ce qui est écrit est
+               donc bien l'état de cet instant, même si le cahier change juste après. */
+            let ok = await IDB.ecrire(STORE, t);
+            /* Si la base refuse de recopier l'objet — un jour, une valeur qu'elle ne sait pas
+               cloner s'y serait glissée — on repasse par le texte plutôt que de perdre
+               l'écriture. Le texte, lui, ne garde que ce qui est du JSON. */
+            if (!ok) { try { ok = await IDB.ecrire(STORE, JSON.stringify(t)); } catch (e) { ok = false; } }
             if (ok) { DB.confirme = Date.now(); DB.enPanne = false; }
             else if (!DB.enPanne) { DB.enPanne = true; if (typeof App !== 'undefined' && App.toast) App.toast('Le téléphone n’arrive plus à garder les écritures. Exportez vos données.'); }
           }
@@ -614,9 +624,11 @@ const DB = {
       try { localStorage.setItem(STORE + '.t', String(Date.now())); } catch (e) { /* sans importance */ }
       return !DB.enPanne;
     }
-    /* Pas d'IndexedDB : on garde l'ancien comportement, plafond compris, et on le dit. */
+    /* Pas d'IndexedDB : on garde l'ancien comportement, plafond compris, et on le dit.
+       C'est le seul chemin qui a encore besoin du texte, parce que localStorage ne sait
+       garder que cela. */
     try {
-      localStorage.setItem(STORE, texte);
+      localStorage.setItem(STORE, JSON.stringify(K.data));
       DB.enPanne = false;
       DB.confirme = Date.now();
       return true;
@@ -704,7 +716,17 @@ function seed() {
     { name: 'Amani Kwetu', village: 'Bingi', terr: 'Beni', org: 'org1', anim: 'u-a2', n: 15, weeks: 18, part: 2000, social: 500, p: 'late' },
     { name: 'Tushikamane', village: 'Vulamba, Butembo', terr: 'Butembo', org: null, anim: null, n: 12, weeks: 9, part: 1000, social: 500, p: 'auto' }
   ];
+  /* Un téléphone de village porte le cahier d’un seul groupe : c’est le sien. La démonstration
+     en montrait six, ce qui ne ressemble à rien de réel et noyait l’écran d’accueil. Elle n’en
+     montre plus qu’un — celui qui connaît un écart de caisse, parce qu’un groupe qui apprend a
+     plus besoin de voir ce qui cloche que ce qui va bien.
+
+     Les autres descriptions restent écrites au-dessus : elles servent à reconstituer une
+     situation précise le jour où l’on veut l’éprouver. Le numéro conserve sa place d’origine
+     dans la liste, pour que l’identifiant du groupe ne change pas sous les essais. */
+  const DEMO = 1;
   defs.forEach((d, ai) => {
+    if (ai !== DEMO) return;
     const r = rng(97 + ai * 131);
     const pick = arr => arr[Math.floor(r() * arr.length)];
     const used = new Set();
@@ -822,6 +844,11 @@ function seed() {
     }
     if (d.anim) avec.visits.push({ id: uid(), by: d.anim, ts: start + 5 * 7 * DAY, note: d.p === 'late' ? 'Rappel des règles de crédit. Trois membres ne remboursent pas, suivi à la prochaine visite.' : 'Réunion bien tenue, comptage public respecté, cahier du secrétaire à jour.', score: d.p === 'late' ? 2 : 3 });
   });
+  /* Une deuxième AVEC, en attente de validation, montrait le circuit animateur → organisation.
+     Elle appartenait au décor d’Akiba Suivi, pas au téléphone d’un groupe, et la démonstration
+     s’en tient désormais à un seul groupe. Le code reste, inemployé, pour qui voudrait
+     reconstituer cette situation. */
+  if (false) {                                        // eslint-disable-line no-constant-condition
   // une AVEC créée par un animateur, qui attend la validation de l'organisation
   const pm = ['Bahati Kavugho', 'Furaha Masika', 'Neema Kahindo', 'Sifa Mbambu', 'Riziki Kasoki', 'Faida Katungu', 'Paluku Muhesi', 'Kambale Siviri', 'Mwamini Vihamba', 'Solange Lwanzo', 'Jeanine Kombi', 'Espérance Maliro']
     .map((name, i) => ({ id: 'mp-' + i, name, sex: /^(Paluku|Kambale)/.test(name) ? 'M' : 'F', pin: '1234', phone: '+243 99 ' + (401 + i) + ' 20 ' + (10 + i), role: ['president', 'secretaire', 'tresorier', 'compteur', 'compteur'][i] || 'membre', key: i >= 5 && i <= 7 }));
@@ -832,6 +859,7 @@ function seed() {
     members: pm, meetings: [], tx: [], visits: [], lastSync: now - 2 * DAY,
     status: 'pending', requestCode: 'TW7K3M', rescue: RESCUE_DEMO.map(c => ({ h: hashCode(c), used: false })), security: []
   });
+  }
   return data;
 }
 

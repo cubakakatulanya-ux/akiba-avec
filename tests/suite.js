@@ -32,9 +32,16 @@ window.__akibaTests = async function () {
     must(Object.keys(localStorage).indexOf(STORE) >= 0, 'clés présentes : ' + Object.keys(localStorage).join(','));
     return 'localStorage · clé « ' + STORE + ' »';
   });
+  /* Un téléphone de village porte le cahier d’un seul groupe : la démonstration en montre un,
+     pas une collection. Ce qu’on vérifie, c’est qu’elle est bien là et qu’elle a de quoi servir
+     — des membres, des réunions tenues, des écritures — et non qu’elle en montre beaucoup. */
   await t("Les données de démonstration sont chargées", () => {
-    must(K.data.avecs.length >= 3, 'seulement ' + K.data.avecs.length + ' AVEC');
-    return K.data.avecs.length + ' AVEC, ' + K.data.avecs.reduce((a, x) => a + x.members.length, 0) + ' membres';
+    must(K.data.avecs.length === 1, K.data.avecs.length + ' AVEC au lieu d’une seule');
+    const a = K.data.avecs[0];
+    must(a.members.length >= 10, 'seulement ' + a.members.length + ' membres');
+    must(a.meetings.length >= 5, 'seulement ' + a.meetings.length + ' réunions');
+    must(a.tx.length >= 100, 'seulement ' + a.tx.length + ' écritures');
+    return a.name + ' · ' + a.members.length + ' membres, ' + a.meetings.length + ' réunions, ' + a.tx.length + ' écritures';
   });
   await t("La migration ne casse pas les données", () => {
     const copie = JSON.parse(JSON.stringify(K.data));
