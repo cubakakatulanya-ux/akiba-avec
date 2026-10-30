@@ -64,6 +64,11 @@ jobs:
         if: always()
         run: rm -f "${{ github.workspace }}/signature.p12"
 
+      # On ne publie rien sans avoir regardé qui a signé. Une construction qui retomberait sur
+      # la clé de développement s'arrête ici, avant que le fichier n'arrive sur le site.
+      - name: Vérifier la signature
+        run: node tests/signature-apk.js android/app/build/outputs/apk/release/app-release.apk
+
       - name: Déposer sur le site
         run: |
           set -e
