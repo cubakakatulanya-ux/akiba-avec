@@ -38,7 +38,7 @@ ACT.avecStart = () => {
   App.openSheet(`<h2>Mon AVEC</h2><p class="muted">Ce téléphone ne contient encore aucune AVEC.</p>
     <div class="list">
       ${row('receiveSheet', 'sync', 'Recevoir mon AVEC', 'L\'animateur ou l\'ancien téléphone du groupe vous a envoyé un fichier et un code')}
-      ${canCreate ? row('createAvec', 'plus', 'Créer une nouvelle AVEC', 'Avec l\'assemblée réunie : groupe, règlement, membres, bureau') : ''}
+      ${canCreate ? row('createAvec', 'plus', 'Commencer notre AVEC', 'Avec l\'assemblée réunie : groupe, règlement, membres, bureau') : ''}
     </div>
     ${canCreate ? '' : '<p class="hint">Votre organisation crée les AVEC : demandez à l\'animateur de vous envoyer le fichier.</p>'}
     <button class="btn ghost block" data-act="closeSheet">Fermer</button>`);
@@ -122,36 +122,51 @@ SCREENS.login = () => {
   const canCreate = !(K.data.mode === 'prod' && K.data.orgs.length);
   /* l'AVEC mise en avant : c'est elle qui décide si l'accueil explique ou s'il informe */
   const enAvant = typeof avecEnAvant === 'function' ? avecEnAvant() : null;
-  /* La démonstration est un détail de découverte, pas le sujet de l'écran : une ligne repliée,
-     qui ne vient pas disputer la place au seul bouton qui compte. */
+  /* La démonstration n'est qu'une salle d'essai : des groupes, des membres et des montants
+     inventés, pour apprendre sans rien risquer. Elle doit donc dire clairement qu'elle n'est
+     pas le vrai cahier, et montrer la sortie — pas se replier derrière un petit triangle où
+     un bureau qui a fini d'apprendre ne la retrouve plus.
+
+     Le passage au réel efface les groupes inventés : c'est écrit avant, pas après. */
   const demo = K.data.mode === 'prod' ? ''
-    : `<details class="g demo"><summary><span><b>Démonstration</b> · codes secrets <b class="mono">1234</b></span></summary>
-        <p class="small muted" style="margin:0">Groupes, membres et montants fictifs, livrés pour apprendre. Carte de secours <b class="mono">2468-1357</b>.</p>
-        ${licKind() === 'demo' ? '<p class="hint" style="margin:0">Licence de démonstration : les vraies données ne sont pas disponibles.</p>' : `<button class="btn primary block" data-act="goLive">${ic('check')} Commencer avec mes vraies données</button>`}
-        <button class="linkbtn" data-act="resetDemo">Remettre la démo à zéro</button>
-      </details>`;
+    : `<section class="card stack demo-bloc">
+        <div class="row" style="align-items:flex-start;gap:10px">${icSpan('alert')}<div style="flex:1;min-width:0">
+          <b>Ceci est une démonstration</b>
+          <span class="small muted" style="display:block">Les groupes, les membres et les montants sont inventés. Rien ici n'appartient à un vrai groupe, et rien n'y est en jeu : essayez tout.</span></div></div>
+        ${licKind() === 'demo'
+          ? '<p class="hint" style="margin:0">Licence de démonstration : le passage aux vraies données demande une licence délivrée par l\'Entreprise Sociale Ubora.</p>'
+          : `<button class="btn primary block xl" data-act="goLive">${ic('check')} Passer au vrai cahier de notre AVEC</button>
+             <p class="hint" style="margin:0">Les groupes de démonstration seront effacés de ce téléphone. Les traductions sont gardées.</p>`}
+        <div class="row between small"><span>Codes secrets de la démonstration</span><b class="mono">1234</b></div>
+        <div class="row between small"><span>Carte de secours</span><b class="mono">2468-1357</b></div>
+        <button class="linkbtn" data-act="resetDemo">Remettre la démonstration à zéro</button>
+      </section>`;
   return `<div class="shell home">
-  <header class="hero tight${enAvant ? ' connu' : ''}">
+  <header class="hero tight${K.data.avecs.length ? ' connu' : ''}">
     <button class="langbtn pastille2" data-act="themeSheet" aria-label="Choisir l’apparence">${ic("eye")}</button><button class="langbtn" data-act="langSheet" aria-label="Choisir la langue">${ic('globe')}<span class="no-tr">${esc(I18N.name())}</span></button>
     <svg class="ledger" viewBox="0 0 200 200" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><rect x="30" y="20" width="140" height="170" rx="10"/>${[55, 80, 105, 130, 155].map(y => `<path d="M50 ${y}h100"/>`).join('')}<path d="M80 20v170"/></svg>
     <img class="hubmark no-tr" src="ubora-hub.png" width="512" height="512" alt="Logo Ubora" decoding="async">
     <div class="label" style="color:inherit;opacity:.85">Épargne et crédit villageois</div>
     <h1>Akiba</h1>
-    ${enAvant ? '' : '<p>Le cahier de l\'AVEC dans le téléphone, même sans réseau.</p>'}
+    ${K.data.avecs.length ? '' : '<p>Le cahier de l\'AVEC dans le téléphone, même sans réseau.</p>'}
   </header>
   <main class="main login">
     ${licenceBanner()}
-    ${avecCard()}
-    <!-- Un groupe qui ouvre Akiba trois fois par semaine n'a pas besoin qu'on lui redise ce que fait
-         l'application : il veut savoir ce qui se passe maintenant. La promesse ne reste donc affichée
-         que sur un téléphone encore vierge. Et aucun montant ici : l'écran s'affiche avant tout code. -->
-    ${enAvant ? etatBloc(enAvant) + envoiBloc(enAvant)
-      : K.data.avecs.length ? ''
+    <!-- Un groupe qui ouvre Akiba trois fois par semaine n'a pas besoin qu'on lui redise ce que
+         fait l'application : il veut savoir ce qui se passe maintenant, et entrer. L'écran
+         répond dans cet ordre, et la promesse ne reste que sur un téléphone encore vierge.
+         Aucun montant ici : il s'affiche avant qu'on ait tapé le moindre code. -->
+    ${blocMaintenant()}
+    ${grilleAvecs()}
+    ${enAvant ? envoiBloc(enAvant) : ''}
+    ${K.data.avecs.length ? ''
       : ticker([{ icon: 'shield', label: "Journal scellé, impossible à modifier" }, { icon: 'sync', label: "Tout fonctionne sans réseau" }, { icon: 'calendar', label: "La réunion guidée en 8 étapes" }, { icon: 'coins', label: "Épargne, crédits, amendes, partage" }, { icon: 'users', label: "Le carnet de chaque membre" }, { icon: 'globe', label: "Français, lingala, swahili, tshiluba, kikongo" }, { icon: 'chart', label: "Export Excel pour l'organisation" }], { aria: "Ce que fait Akiba" })}
-    <!-- les gestes secondaires : des liens sobres, comme sur Akiba Suivi. Une seule porte visible. -->
+    <!-- les gestes secondaires. Commencer et recevoir une AVEC sont désormais des vignettes,
+         parce qu'on les cherche là où sont les groupes : il ne reste ici que le guide. -->
     <nav class="liens" aria-label="Autres gestes">
-      ${canCreate ? `<button data-act="createAvec">${ic('plus')}<span>Créer une AVEC</span></button>` : ''}
-      <button data-act="receiveSheet">${ic('sync')}<span>Recevoir une AVEC</span></button>
+      ${K.data.avecs.length ? '' : canCreate ? `<button data-act="createAvec">${ic('plus')}<span>Commencer notre AVEC</span></button>` : ''}
+      ${K.data.avecs.length ? '' : `<button data-act="receiveSheet">${ic('sync')}<span>Recevoir une AVEC</span></button>`}
+      ${K.data.avecs.length ? `<button data-act="receiveSheet">${ic('sync')}<span>Recevoir une autre AVEC</span></button>` : ''}
       <button data-act="go" data-to="guide">${ic('book')}<span>Guide</span></button>
     </nav>
     ${demo}
@@ -161,10 +176,17 @@ ACT.resetDemo = () => App.openSheet(`<h2>Remettre la démo à zéro ?</h2><p cla
   <button class="btn danger block xl" data-act="resetDemoOk">Effacer et recharger</button><button class="btn ghost block" data-act="closeSheet">Garder mes données</button>`);
 ACT.resetDemoOk = () => { DB.reset(); Object.keys(_chain).forEach(k => delete _chain[k]); App.go('login'); App.toast('Démo rechargée'); };
 
+/* Choisir son AVEC : les mêmes vignettes que sur l’accueil. Un bureau reconnaît son groupe
+   à son emblème avant d’en lire le nom, et l’écran reste le même d’un bout à l’autre. */
 SCREENS['l.avec'] = () => `<div class="shell">${topbar('Choisir mon AVEC', 'Sur ce téléphone', backBtn('login'))}<main class="main">
-  <div class="list">${K.data.avecs.map(a => `<button class="li" data-act="go" data-to="l.member" data-id="${a.id}">${emblemeHtml(a, 42)}
-    <span class="grow"><b>${esc(a.name)}</b><span class="small muted">${esc(a.village)} · ${a.members.length} membres</span></span>
-    ${a.status === 'pending' ? '<span class="chip warn">À valider</span>' : a.status === 'refused' ? '<span class="chip bad">Refusée</span>' : `<span class="chip ${a.orgId ? 'brand' : ''}">${a.orgId ? 'Suivie' : 'Autonome'}</span>`}</button>`).join('') || '<div class="li muted">Aucune AVEC sur ce téléphone. Créez-en une depuis l\'accueil.</div>'}</div>
+  ${K.data.avecs.length ? `<div class="grille-avec">${K.data.avecs.map(a => {
+    const etat = a.status === 'pending' ? '<span class="chip warn">À valider</span>'
+      : a.status === 'refused' ? '<span class="chip bad">Refusée</span>'
+      : a.orgId ? '<span class="chip brand">Suivie</span>' : '';
+    return `<button class="vignette" data-act="go" data-to="l.member" data-id="${a.id}">
+      ${etat}${emblemeHtml(a, 56)}<span class="nm">${esc(a.name)}</span>
+      <span class="vl">${esc(a.village)} · ${a.members.length} membres</span></button>`;
+  }).join('')}</div>` : '<div class="li muted">Aucune AVEC sur ce téléphone. Commencez la vôtre depuis l\x27accueil.</div>'}
   <button class="linkbtn" data-act="receiveSheet">Recevoir une autre AVEC (fichier envoyé par l'animateur)</button></main></div>`;
 SCREENS['l.member'] = p => {
   const a = avecById(p.id);
@@ -174,7 +196,8 @@ SCREENS['l.member'] = p => {
   if (!p.list) return `<div class="shell">${topbar(a.name, esc(a.village), backBtn('l.avec'))}<main class="main">
     <section class="section"><h2>${open ? `Continuer la réunion n°${open.n}` : 'Tenir la réunion'}</h2>
       <p class="muted">Le responsable présent touche son nom et tape son code.</p>
-      <div class="stack" style="gap:10px">${bureau.map(m => `<button class="who" data-act="loginMember" data-avec="${a.id}" data-id="${m.id}">${avatar(m)}<span><b>${esc(m.name)}</b><span class="small muted">${roleLabel(m)}</span></span></button>`).join('') || '<div class="card muted">Aucun membre du bureau dans ce groupe.</div>'}</div>
+      <!-- les mêmes vignettes que pour les groupes : on touche un visage, pas une ligne de texte -->
+      <div class="grille-avec">${bureau.map(m => `<button class="vignette perso" data-act="loginMember" data-avec="${a.id}" data-id="${m.id}">${avatar(m)}<span class="nm">${esc(m.name)}</span><span class="vl">${roleLabel(m)}</span></button>`).join('') || '<div class="card muted">Aucun membre du bureau dans ce groupe.</div>'}</div>
     </section>
     <section class="section"><h2>Voir mon carnet</h2>
       <button class="who" data-act="go" data-to="l.member" data-id="${a.id}" data-list="1"><span class="ic" style="background:var(--maize-soft);color:var(--warn)">${ic('book')}</span><span><b>Tous les membres</b><span class="small muted">Touchez votre nom : épargne, crédits, amendes</span></span></button>

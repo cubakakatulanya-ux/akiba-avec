@@ -66,7 +66,7 @@ const TR = {
   'Journal protégé': { ln: 'Buku ebatelami', sw: 'Daftari limelindwa' },
   'Qui êtes-vous ?': { ln: 'Ozali nani?', sw: 'Wewe ni nani?', kg: 'Nge kele nani?', lua: 'Wewe udi nganyi?' },
   'Membre d\'une AVEC': { ln: 'Moto ya lisanga AVEC', sw: 'Mwanachama wa AVEC', kg: 'Muntu ya kimvuka AVEC' },
-  'Créer une AVEC': { ln: 'Kosala lisanga', sw: 'Kuunda AVEC' },
+  'Commencer notre AVEC': { ln: 'Kobanda lisanga na biso', sw: 'Kuanza AVEC yetu' },
   'Tenir la réunion': { ln: 'Kosala likita', sw: 'Kufanya mkutano' },
   'Voir mon carnet': { ln: 'Tala kaye na ngai', sw: 'Ona kitabu changu' },
   'Tous les membres': { ln: 'Bato nyonso ya lisanga', sw: 'Wanachama wote' },

@@ -67,3 +67,58 @@ function envoiBloc(avec) {
   if (!n) return bandeau;
   return bandeau + `<p class="aenvoyer">${ic('shield')} <span>${n} écriture${n > 1 ? 's' : ''} qui n'${n > 1 ? 'existent' : 'existe'} que sur ce téléphone</span></p>`;
 }
+
+/* ---------- l'accueil refondu ----------
+
+   Deux questions, dans cet ordre : qu'est-ce qui se passe maintenant, et dans quel groupe
+   est-ce que j'entre ? Le reste descend.
+
+   Toujours aucun montant ici : l'écran s'affiche avant qu'on ait tapé le moindre code, sur un
+   téléphone qui traîne sur une natte. La date d'une réunion est connue de tout le village ;
+   la caisse, non. */
+
+const URGENCE = { cur: 0, today: 1 };
+
+/* Le seul bandeau qui compte, pris sur l'ensemble des groupes du téléphone : une réunion
+   ouverte passe avant une réunion du jour, qui passe avant une date lointaine. Avant, cette
+   ligne n'apparaissait que si un groupe était « mis en avant » — donc jamais sur un téléphone
+   qui en porte plusieurs sans en avoir ouvert un récemment. */
+function blocMaintenant() {
+  const list = K.data.avecs || [];
+  let choisi = null;
+  for (const a of list) {
+    const e = etatAvec(a);
+    if (!e) continue;
+    const rang = URGENCE[e.ton] !== undefined ? URGENCE[e.ton] : 2;
+    if (!choisi || rang < choisi.rang) choisi = { a, e, rang };
+  }
+  if (!choisi) return '';
+  const ouverte = !!openMeeting(choisi.a);
+  /* on ne nomme le groupe que s'il y en a plusieurs : sinon la ligne se répète avec la vignette */
+  const qui = list.length > 1 ? esc(choisi.a.name) + ' · ' : '';
+  return `<button class="etat ${choisi.e.ton}" ${ouverte ? `data-act="go" data-to="l.member" data-id="${choisi.a.id}"` : 'disabled'}>
+    ${ic(choisi.e.icone)}<span><b>${esc(choisi.e.titre)}</b><span class="small">${qui}${esc(choisi.e.sous)}</span></span>${ouverte ? ic('chev') : ''}</button>`;
+}
+
+/* Les groupes du téléphone, en vignettes. On touche son emblème : un bureau reconnaît son
+   AVEC à son image avant d'en lire le nom, et tout le monde au bureau ne lit pas couramment.
+   La vignette porte la couleur de ce qui s'y passe, pour que l'écran dise quoi faire. */
+function grilleAvecs() {
+  const list = K.data.avecs || [];
+  if (!list.length) return avecCard();                  // téléphone vierge : la grande porte
+  const canCreate = !(K.data.mode === 'prod' && K.data.orgs.length);
+  const vignette = a => {
+    const e = etatAvec(a);
+    const ton = e && e.ton === 'cur' ? 'ouverte' : e && e.ton === 'today' ? 'aujourdhui' : '';
+    const chip = e && e.ton === 'cur' ? '<span class="chip brand">en cours</span>'
+      : e && e.ton === 'today' ? '<span class="chip warn">aujourd’hui</span>' : '';
+    return `<button class="vignette ${ton}" data-act="go" data-to="l.member" data-id="${a.id}">
+      ${chip}${emblemeHtml(a, 56)}<span class="nm">${esc(a.name)}</span><span class="vl">${esc(a.village)}</span></button>`;
+  };
+  /* une vignette de plus, en pointillé : ajouter un groupe est un geste rare, mais il doit
+     se trouver là où on cherche les groupes, pas dans un menu */
+  const ajout = canCreate
+    ? `<button class="vignette neuve" data-act="createAvec">${ic('plus')}<span class="nm">Commencer notre AVEC</span></button>`
+    : `<button class="vignette neuve" data-act="receiveSheet">${ic('sync')}<span class="nm">Recevoir une AVEC</span></button>`;
+  return `<div class="grille-avec">${list.map(vignette).join('')}${ajout}</div>`;
+}

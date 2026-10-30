@@ -801,6 +801,33 @@ h2,h3{font-weight:600;letter-spacing:-.005em}
 .appfoot .vsn{opacity:.6;font-size:.78em}
 /* l'invitation à installer : une ligne sobre, qui disparaît une fois l'application installée */
 /* l'état du groupe sur l'accueil : ce qui se passe maintenant, jamais un montant */
+/* Les groupes du téléphone, en vignettes. Un bureau reconnaît son AVEC à son emblème avant
+   de lire son nom : c’est voulu, parce que tout le monde au bureau ne lit pas couramment.
+   La vignette change de couleur quand il se passe quelque chose, pour que l’écran dise ce
+   qu’il y a à faire sans qu’on ait à le chercher. */
+/* La salle d’essai. Elle se voit — un bureau doit savoir qu’il n’est pas dans son vrai
+   cahier — mais elle reste au bas de l’écran, après les groupes. */
+.demo-bloc{border:1.5px dashed var(--line);background:transparent}
+.demo-bloc>.row>span:first-child svg{color:var(--warn)}
+.grille-avec{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.vignette{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;min-height:140px;padding:18px 10px 15px;border:1.5px solid var(--line);border-radius:20px;background:var(--surface);color:var(--ink);text-align:center;overflow:hidden;touch-action:manipulation}
+.vignette:active{transform:scale(.97)}
+.vignette .nm{font-family:var(--f-display);font-weight:800;font-size:var(--t-md);line-height:1.15;overflow-wrap:anywhere}
+.vignette .vl{font-size:var(--t-xs);opacity:.68;line-height:1.2}
+.vignette>.chip{position:absolute;top:9px;right:9px}
+.vignette .embleme{box-shadow:0 8px 18px -10px rgba(0,0,0,.55)}
+.vignette.ouverte{border-color:var(--brand);background:var(--brand-soft)}
+.vignette.aujourdhui{border-color:var(--maize);background:var(--maize-soft)}
+/* Commencer une AVEC n’est pas un geste de second rang : c’est le premier que fait un groupe.
+   La vignette prend donc toute la largeur et la couleur de l’application. */
+.vignette.neuve{grid-column:1/-1;flex-direction:row;justify-content:center;gap:10px;min-height:0;padding:17px 14px;border-color:transparent;background:var(--maize);color:var(--maize-ink)}
+.vignette.neuve .nm{font-size:var(--t-lg)}
+.vignette.neuve svg{width:24px;height:24px;flex:none;opacity:1}
+/* les mêmes vignettes pour choisir une personne : on touche un visage, pas une ligne de texte */
+.vignette .av{width:56px;height:56px;font-size:var(--t-lg)}
+.vignette.perso{min-height:128px}
+.vignette.perso .vl{font-weight:700;opacity:.8}
+@media (min-width:460px){.grille-avec{grid-template-columns:repeat(3,1fr)}}
 .etat{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:13px 15px;border-radius:var(--r);border:1.5px solid var(--line);background:var(--surface);color:var(--ink)}
 .etat>svg:first-child{width:22px;height:22px;flex:none;opacity:.7}
 .etat>span{flex:1;min-width:0;line-height:1.3}
@@ -843,7 +870,7 @@ h2,h3{font-weight:600;letter-spacing:-.005em}
 /* le haut de page se resserre dès qu'un groupe est sur le téléphone : il sait déjà ce qu'est Akiba */
 .hero.tight.connu{padding-top:16px;padding-bottom:16px}
 .hero.tight.connu h1{font-size:clamp(1.5rem,4.6vh,2rem);margin-bottom:0}
-.hero.tight.connu .ledger,.hero.tight.connu .hubmark{display:none}
+.hero.tight.connu .ledger,.hero.tight.connu .hubmark,.hero.tight.connu .label{display:none}
 .hero.tight.connu .label{font-size:var(--t-2xs);margin-bottom:2px}
 /* case à cocher d'une liste : assez grande pour le pouce, visible d'un coup d'oeil */
 .chk{width:24px;height:24px;flex:none;border:1.6px solid var(--line);border-radius:7px;display:grid;place-items:center;color:var(--brand-ink);background:var(--surface)}
@@ -859,7 +886,7 @@ details.g.demo>:not(summary)+*{margin-top:8px}
 </style>
 <style>html,body{margin:0}</style>
 </head><body>
-<script>window.KITABU_PWA = true; window.KITABU_VERSION = 'akiba-202610302142'; window.AKIBA_CIBLE = 'avec';</script>
+<script>window.KITABU_PWA = true; window.KITABU_VERSION = 'akiba-202610302200'; window.AKIBA_CIBLE = 'avec';</script>
 
 <div id="app"></div>
 <script src="core.js"></script>

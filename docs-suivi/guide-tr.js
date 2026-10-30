@@ -47,7 +47,7 @@ const GUIDE_TR = {
     debut: {
       t: 'Kuunda AVEC na kuanza',
       b: `
-      <p>Gusa <b>Créer une AVEC</b> kwenye ukurasa wa mwanzo. Mara ya kwanza, Akiba inaomba <b>namba ya uthibitisho</b> inayotolewa na Entreprise Sociale Ubora. Kila kitu kinatayarishwa katika <b>hatua 5</b>, na mkutano mkuu ukiwa pamoja. Panga saa moja hivi, na usiikatishe.</p>
+      <p>Gusa <b>Commencer notre AVEC</b> kwenye ukurasa wa mwanzo. Mara ya kwanza, Akiba inaomba <b>namba ya uthibitisho</b> inayotolewa na Entreprise Sociale Ubora. Kila kitu kinatayarishwa katika <b>hatua 5</b>, na mkutano mkuu ukiwa pamoja. Panga saa moja hivi, na usiikatishe.</p>
       <ol>
         <li><b>Kikundi</b> : jina, kisha mahali — mkoa, wilaya au mji, sekta, kijiji. Kisha <b>siku ya mkutano</b> na mwendo (kila wiki au kila wiki mbili). Siku hii ndiyo itakayotumika pia kwa tarehe za kulipa mikopo.</li>
         <li><b>Alama ya kikundi</b> : chagua alama na rangi ambayo kila mtu anaitambua, hata asiyejua kusoma. Itaonekana kwenye ukurasa wa mwanzo wa simu na kwenye kadi za wanachama.</li>
