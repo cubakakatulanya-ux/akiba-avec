@@ -110,7 +110,6 @@ function accueilSuivi() {
     <nav class="liens" aria-label="Autres gestes">
       <button data-act="go" data-to="guide">${ic('book')}<span>Guide d’utilisation</span></button>
     </nav>
-    ${installCarte()}
     ${K.data.mode === 'prod' || !K.data.avecs.length ? '' : `<div class="demo"><p class="small"><b>Démonstration</b> · codes secrets <b class="mono">1234</b></p>
       ${licKind() === 'demo' ? '<p class="hint">Licence de démonstration : les vraies données ne sont pas disponibles.</p>' : `<button class="btn ghost block" data-act="goLive">${ic('check')} Commencer avec mes vraies données</button>`}</div>`}
     <!-- l'administration ne concerne qu'Ubora : un lien effacé, en bas, plutôt qu'une porte dans la liste -->
@@ -147,6 +146,7 @@ SCREENS.login = () => {
          l'application : il veut savoir ce qui se passe maintenant. La promesse ne reste donc affichée
          que sur un téléphone encore vierge. Et aucun montant ici : l'écran s'affiche avant tout code. -->
     ${enAvant ? etatBloc(enAvant) + envoiBloc(enAvant)
+      : K.data.avecs.length ? ''
       : ticker([{ icon: 'shield', label: "Journal scellé, impossible à modifier" }, { icon: 'sync', label: "Tout fonctionne sans réseau" }, { icon: 'calendar', label: "La réunion guidée en 8 étapes" }, { icon: 'coins', label: "Épargne, crédits, amendes, partage" }, { icon: 'users', label: "Le carnet de chaque membre" }, { icon: 'globe', label: "Français, lingala, swahili, tshiluba, kikongo" }, { icon: 'chart', label: "Export Excel pour l'organisation" }], { aria: "Ce que fait Akiba" })}
     <!-- les gestes secondaires : des liens sobres, comme sur Akiba Suivi. Une seule porte visible. -->
     <nav class="liens" aria-label="Autres gestes">
@@ -154,7 +154,6 @@ SCREENS.login = () => {
       <button data-act="receiveSheet">${ic('sync')}<span>Recevoir une AVEC</span></button>
       <button data-act="go" data-to="guide">${ic('book')}<span>Guide</span></button>
     </nav>
-    ${installCarte()}
     ${demo}
   </main></div>`;
 };

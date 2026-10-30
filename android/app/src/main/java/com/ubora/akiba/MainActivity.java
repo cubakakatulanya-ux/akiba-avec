@@ -86,6 +86,17 @@ public class MainActivity extends AppCompatActivity {
     vue.loadUrl("https://" + DOMAINE + "/index.html");
   }
 
+  /**
+   * Au retour d'un écran du téléphone — celui qui accorde la protection contre la suppression —
+   * la page doit se redessiner, sinon elle montre encore l'état d'avant. On ne redessine que
+   * l'écran « Installer et protéger » : ailleurs, une saisie pourrait être en cours.
+   */
+  @Override protected void onResume() {
+    super.onResume();
+    if (vue != null) vue.evaluateJavascript(
+        "typeof App !== 'undefined' && App.screen === 'dev.backup' && typeof render === 'function' && render()", null);
+  }
+
   /** Laisser le cahier finir d'écrire avant que l'application s'efface de la mémoire. */
   @Override protected void onPause() {
     if (vue != null) vue.evaluateJavascript("typeof DB !== 'undefined' && DB.vide && DB.vide()", null);

@@ -44,13 +44,13 @@
     "lot": "A",
     "etat": "passe",
     "quoi": "l accueil d un groupe reste utilisable a cette echelle",
-    "preuve": "10 ms"
+    "preuve": "7 ms"
   },
   {
     "lot": "A",
     "etat": "passe",
     "quoi": "la liste des 25 membres reste utilisable",
-    "preuve": "2 ms"
+    "preuve": "1 ms"
   },
   {
     "lot": "C",
@@ -314,7 +314,7 @@
     "lot": "G",
     "etat": "passe",
     "quoi": "deux copies peuvent exister apres restauration d une sauvegarde ancienne",
-    "preuve": "telephone 1 : 25 ecritures (tete ed5559ea93) · telephone 2 : 25 ecritures (tete ab64c6e8c3)"
+    "preuve": "telephone 1 : 25 ecritures (tete 32cc286588) · telephone 2 : 25 ecritures (tete 65ff81564b)"
   },
   {
     "lot": "G",
@@ -422,7 +422,7 @@
     "lot": "I",
     "etat": "passe",
     "quoi": "duree de l export",
-    "preuve": "1650 ms pour 12 AVEC"
+    "preuve": "681 ms pour 12 AVEC"
   },
   {
     "lot": "I",
@@ -596,7 +596,7 @@
     "lot": "L",
     "etat": "passe",
     "quoi": "le cahier garde la trace de sa provenance",
-    "preuve": "copie le 29/10/2026 a la reunion n°30, 1515 ecritures, caisse 3 150 450 FC"
+    "preuve": "copie le 30/10/2026 a la reunion n°30, 1515 ecritures, caisse 3 150 450 FC"
   },
   {
     "lot": "L",

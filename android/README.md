@@ -70,6 +70,32 @@ gradle assembleRelease
 
 Le fichier sort dans `android/app/build/outputs/apk/release/`.
 
+## La suppression par erreur
+
+Android ne laisse aucune application refuser sa propre désinstallation. La seule prise réelle est
+le statut d'« application d'administration » : tant qu'Akiba l'a, le téléphone refuse de le
+supprimer, et il faut d'abord venir retirer ce statut dans l'application. Une suppression reste
+possible — mais plus d'un seul geste, et c'est tout ce qu'une application peut honnêtement
+promettre.
+
+Le bureau l'active lui-même, dans **Installer et protéger**. `GardeSuppression.java` ne réclame
+aucun pouvoir en échange : la liste des pouvoirs, dans `res/xml/garde_suppression.xml`, est vide.
+Akiba n'impose pas de mot de passe, n'efface rien à distance et ne surveille rien. C'est aussi
+pourquoi le téléphone n'affiche aucune demande d'autorisation à l'installation : rien n'est réclamé
+tant que le bureau ne le demande pas.
+
+### Pour un parc de terminaux
+
+Une organisation qui prépare ses terminaux peut aller plus loin : faire d'Akiba le *propriétaire de
+l'appareil*. Le blocage devient alors impossible à défaire depuis les réglages du téléphone. Sur un
+terminal remis à zéro et sans compte Google ajouté :
+
+```bash
+adb shell dpm set-device-owner com.ubora.akiba/.GardeSuppression
+```
+
+Akiba s'en aperçoit tout seul et bloque la désinstallation sans rien demander.
+
 ## L'imprimante
 
 `Imprimante.java` essaie deux voies, dans cet ordre :

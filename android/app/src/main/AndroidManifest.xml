@@ -25,5 +25,23 @@
         <category android:name="android.intent.category.LAUNCHER" />
       </intent-filter>
     </activity>
+
+    <!-- Le verrou contre la suppression par erreur. Tant que le bureau l'a activé, le
+         téléphone refuse de supprimer Akiba : il faut d'abord retirer la protection, ce qui
+         ne se fait pas sans le vouloir. Aucun pouvoir n'est réclamé — la liste, dans
+         res/xml/garde_suppression.xml, est vide. -->
+    <receiver
+        android:name=".GardeSuppression"
+        android:label="@string/garde_nom"
+        android:description="@string/garde_explication"
+        android:permission="android.permission.BIND_DEVICE_ADMIN"
+        android:exported="true">
+      <meta-data
+          android:name="android.app.device_admin"
+          android:resource="@xml/garde_suppression" />
+      <intent-filter>
+        <action android:name="android.app.action.DEVICE_ADMIN_ENABLED" />
+      </intent-filter>
+    </receiver>
   </application>
 </manifest>

@@ -223,6 +223,8 @@ ${apkPresent ? `<a class="bouton" href="akiba.apk" download>Télécharger l'appl
 
 <div class="avis"><b>L'application ne demande aucune autorisation</b>Ni réseau, ni position, ni contacts, ni photos. Tout reste dans le téléphone, et rien n'en sort sans un geste du bureau.</div>
 
+<div class="avis"><b>Contre la suppression par erreur</b>Une fois installée, ouvrez <b>Installer et protéger</b> dans l'application et activez <b>Empêcher la suppression</b>. Le téléphone refusera alors de supprimer ${P.court} : il faudra d'abord revenir retirer la protection. Une suppression reste possible, mais plus par mégarde.</div>
+
 <div class="avis"><b>Pour imprimer les reçus</b>Sur un terminal avec imprimante, installez aussi <b>RawBT</b> depuis le Play Store : ${P.court} lui passe les tickets. Sans elle, les reçus se partagent par WhatsApp ou par SMS, comme avant.</div>
 
 <h2>Si l'installation est refusée</h2>

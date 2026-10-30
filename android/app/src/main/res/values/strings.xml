@@ -1,4 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
   <string name="app_name">Akiba</string>
+
+  <!-- Le verrou contre la suppression par erreur. Les textes sont lus par le bureau du groupe :
+       ils disent ce qui se passe, sans vocabulaire technique. -->
+  <string name="garde_nom">Protection d\'Akiba</string>
+  <string name="garde_active">Akiba est protégé : le téléphone refusera de le supprimer.</string>
+  <string name="garde_retiree">La protection est retirée : Akiba peut maintenant être supprimé.</string>
+  <string name="garde_avertissement">Sans cette protection, Akiba peut être supprimé d\'un seul geste, avec le cahier du groupe. Faites une sauvegarde avant.</string>
+  <string name="garde_explication">Akiba ne demande aucun pouvoir sur le téléphone. Cette autorisation sert uniquement à ce que le cahier du groupe ne soit pas supprimé par erreur.</string>
 </resources>

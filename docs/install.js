@@ -31,16 +31,45 @@ function protectStorage() {
 }
 protectStorage();
 
-/* Carte d'installation posée, en bas d'un accueil : elle propose sans crier, contrairement au bandeau
-   d'alerte qui, lui, volait la vedette à la vraie action de la page. */
-function installCarte() {
-  if (!window.KITABU_PWA || isInstalled()) return '';
-  /* une ligne sobre, pas une carte : l'invitation ne doit pas peser plus que la porte d'entrée.
-     Elle disparaît dès que l'application est installée, et ne revient pas. */
-  return `<button class="instal-ligne" data-act="go" data-to="dev.backup">
-    ${ic('home')}<span>Installer <b>${APP_NOM()}</b> sur cet appareil<span class="small">Une icône sur l'écran d'accueil, et tout s'ouvre sans réseau</span></span>${ic('chev')}
-  </button>`;
+/* Le verrou contre la suppression par erreur.
+   Il n'existe que dans l'application Android : une page web ne peut rien contre la suppression
+   de l'icône. Tant qu'il est posé, le téléphone refuse de désinstaller Akiba — il faut d'abord
+   venir le retirer ici. Une suppression reste possible, mais plus par mégarde, et c'est tout ce
+   qu'une application peut honnêtement promettre. */
+function gardePOS() {
+  try { return window.AkibaPOS && AkibaPOS.protection ? JSON.parse(AkibaPOS.protection()) : null; }
+  catch (e) { return null; }
 }
+function gardeBloc() {
+  const g = gardePOS();
+  if (!g) return '';
+  return `<div class="row between small"><span>Suppression de ${APP_NOM()}</span>${g.actif ? '<span class="chip good">Bloquée</span>' : '<span class="chip warn">Possible d\'un geste</span>'}</div>
+    ${g.actif
+      ? `<p class="small muted" style="margin:0">Le téléphone refuse maintenant de supprimer ${APP_NOM()}. Le jour où le groupe veut vraiment désinstaller, retirez la protection ici d'abord.</p>
+         ${g.proprietaire ? '<p class="small muted" style="margin:0">Ce terminal est préparé par l\'organisation : la protection ne peut pas être défaite depuis les réglages du téléphone.</p>' : ''}
+         <button class="btn ghost block" data-act="gardeRetirer">Retirer la protection</button>`
+      : `<button class="btn primary block xl" data-act="gardeMettre">${ic('shield')} Empêcher la suppression de ${APP_NOM()}</button>
+         <p class="hint">Le téléphone vous demandera votre accord. ${APP_NOM()} ne réclame aucun pouvoir sur l'appareil : cette autorisation sert uniquement à ce que le cahier du groupe ne parte pas d'un geste.</p>`}`;
+}
+ACT.gardeMettre = () => {
+  const r = (() => { try { return AkibaPOS.protegerSuppression(); } catch (e) { return ''; } })();
+  if (!r) return App.toast('Ce téléphone ne sait pas bloquer la suppression');
+  if (r === 'deja') { render(); return App.toast(`${APP_NOM()} est protégé`); }
+  /* l'écran du téléphone a pris la main : on rafraîchira au retour */
+};
+ACT.gardeRetirer = () => App.openSheet(`<h2>Retirer la protection ?</h2>
+  <p class="muted">${APP_NOM()} pourra de nouveau être supprimé, et le cahier du groupe partirait avec lui. Faites une sauvegarde avant.</p>
+  <button class="btn danger block xl" data-act="gardeRetirerOk">Retirer la protection</button>
+  <button class="btn ghost block" data-act="closeSheet">Garder la protection</button>`);
+ACT.gardeRetirerOk = () => {
+  try { AkibaPOS.retirerProtection(); } catch (e) {}
+  App.closeSheet(); render(); App.toast('Protection retirée');
+};
+
+/* L'accueil ne propose plus l'installation. Elle se fait désormais autrement — par l'application
+   Android, ou par le menu du navigateur — et elle n'a pas à occuper la page que le bureau ouvre
+   trois fois par semaine pour tenir une réunion. Tout reste à sa place, dans « Installer et
+   protéger ». */
 ACT.install = () => {
   const ev = App.installEvt;
   if (!ev) return App.toast('Utilisez le menu du navigateur : « Ajouter à l\'écran d\'accueil »');
@@ -89,7 +118,8 @@ SCREENS['dev.backup'] = () => {
     </section>
 
     <section class="card stack"><h2>Éviter une désinstallation par erreur</h2>
-      <p class="small muted">Aucune application ne peut interdire totalement sa désinstallation : c'est le téléphone qui décide. Voici comment protéger Akiba et surtout ses données.</p>
+      <p class="small muted">Aucune application ne peut interdire totalement sa désinstallation : c'est le téléphone qui décide. Voici comment rendre la suppression délibérée, et protéger surtout les données.</p>
+      ${gardeBloc()}
       <div class="row between small"><span>Données protégées contre l'effacement automatique</span>${App.persisted ? '<span class="chip good">Oui</span>' : '<span class="chip warn">Pas encore</span>'}</div>
       <ol class="small" style="margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:7px">
         <li><b>Mettez l'icône dans un dossier « AVEC »</b>, loin des applications que l'on supprime souvent.</li>
