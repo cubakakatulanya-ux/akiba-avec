@@ -3,12 +3,24 @@
 
 const parseAmt = s => parseInt(String(s ?? '').replace(/\D/g, ''), 10) || 0;
 const _chain = {};
-function chainOf(avec) {
-  const key = avec.tx.length + ':' + (K.data.tamperV || 0);
+/* chainOf(avec) donne l'état du journal. Il vérifie tout la première fois, puis seulement ce
+   qui a été ajouté depuis — et il garde la date de la dernière vérification complète, que
+   l'écran affiche. chainOf(avec, true) force une vérification entière : c'est ce que font le
+   démarrage, la clôture d'une réunion, la réception d'un cahier, le partage et le bouton
+   « Vérifier maintenant ». La raison de ce partage est écrite dans le journal de ce fichier :
+   trois mille hachages prennent huit secondes sur le processeur d'un terminal POS. */
+function chainOf(avec, forcer) {
+  const tamper = K.data.tamperV || 0;
   const c = _chain[avec.id];
-  if (c && c.key === key) return c.res;
+  if (!forcer && c && c.tamper === tamper && c.res.ok && avec.tx.length >= c.n) {
+    if (avec.tx.length === c.n) return c.res;
+    const suite = verifyDepuis(avec, c.n);
+    if (!suite.ok) { _chain[avec.id] = { n: avec.tx.length, tamper, quand: c.quand, res: suite }; return suite; }
+    _chain[avec.id] = { n: avec.tx.length, tamper, quand: c.quand, res: Object.assign({}, c.res, { n: avec.tx.length, head: suite.head }) };
+    return _chain[avec.id].res;
+  }
   const res = verifyChain(avec);
-  _chain[avec.id] = { key, res };
+  _chain[avec.id] = { n: avec.tx.length, tamper, quand: Date.now(), res };
   return res;
 }
 function cur() {
@@ -606,6 +618,7 @@ ACT.saveClose = () => {
     sealSeq: avec.tx.length, seal: avec.tx.length ? avec.tx[avec.tx.length - 1].hash : 'GENESE:' + avec.id, stepDone: 7
   });
   if (m.openExpected === undefined) { m.openExpected = m.openCount = st.cash; }
+  chainOf(avec, true);                                               // la clôture engage : on vérifie tout le journal
   DB.save();
   /* la réunion est scellée : trois notes qui montent, que toute l’assemblée entend */
   if (typeof jouerSon === 'function') { jouerSon('scelle'); vibrer([25, 60, 25, 60, 40]); }
@@ -914,7 +927,10 @@ SCREENS['a.journal'] = p => {
     ${!p.all && avec.tx.length > limit ? `<button class="btn ghost block" data-act="go" data-to="a.journal" data-all="1">Voir les ${avec.tx.length} écritures</button>` : ''}
   </main>${tabbar(A_TABS, 'a.journal')}</div>`;
 };
-ACT.verifyNow = () => { const { avec } = cur(); delete _chain[avec.id]; const r = chainOf(avec); render(); App.toast(r.ok ? `Vérifié : ${r.n} écritures intactes` : 'Attention : ' + r.reason); };
+/* Depuis quand le journal a-t-il été vérifié en entier ? L'écran de sécurité le dit : une
+   vérification qui date de la semaine dernière ne vaut pas celle d'il y a une minute. */
+const chainQuand = avec => (_chain[avec.id] || {}).quand || 0;
+ACT.verifyNow = () => { const { avec } = cur(); const r = chainOf(avec, true); render(); App.toast(r.ok ? `Vérifié : ${r.n} écritures intactes` : 'Attention : ' + r.reason); };
 ACT.tamper = () => {
   if (K.data.mode === 'prod') return;   // démonstration seulement
   const { avec } = cur();

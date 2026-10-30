@@ -139,7 +139,7 @@ function sharePret(avec, st) {
      jamais s'appuyer sur un cahier que l'application elle-même sait altéré. L'alerte existait
      à l'accueil, mais rien ne l'empêchait ici — c'était l'opération la plus irréversible de
      l'application, et la seule à ne pas vérifier la chaîne. */
-  const ch = verifyChain(avec);
+  const ch = chainOf(avec, true);                                    // le partage engage une année d'épargne
   if (!ch.ok) return 'Le journal est altéré : le partage est impossible. ' + (ch.reason || '');
   /* Un cahier reçu d'un autre téléphone peut être amputé des réunions tenues là-bas après la
      copie. On ne partage pas une année d'épargne sur un cahier dont personne n'a vérifié

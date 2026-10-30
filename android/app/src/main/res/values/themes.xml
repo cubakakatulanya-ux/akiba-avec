@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <!-- Le vert d'Akiba, dès l'écran de démarrage : l'application ne clignote pas en blanc
+       avant d'afficher le cahier. -->
+  <style name="AkibaTheme" parent="Theme.AppCompat.NoActionBar">
+    <item name="android:windowBackground">@color/akiba_vert</item>
+    <item name="android:statusBarColor">@color/akiba_vert</item>
+    <item name="android:navigationBarColor">@color/akiba_vert</item>
+  </style>
+</resources>

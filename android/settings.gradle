@@ -1,0 +1,11 @@
+/* Akiba — une seule application, pas de bibliothèque séparée : le code Android tient en
+   trois classes, et tout le reste est la page web déjà écrite. */
+pluginManagement {
+  repositories { google(); mavenCentral(); gradlePluginPortal() }
+}
+dependencyResolutionManagement {
+  repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+  repositories { google(); mavenCentral() }
+}
+rootProject.name = 'Akiba'
+include ':app'

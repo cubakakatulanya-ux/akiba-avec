@@ -1,0 +1,72 @@
+# Fabriquer l'application Android et la poser sur le site.
+#
+# Rien à installer sur l'ordinateur du bureau : c'est GitHub qui compile, avec Java, Gradle et le
+# nécessaire Android déjà présents sur ses machines. Le fichier obtenu est déposé dans docs/,
+# c'est-à-dire sur le site lui-même — un animateur le prend depuis akiba.uborardc.com/akiba.apk,
+# sans compte, sans boutique, avec le téléphone du groupe.
+#
+# Se déclenche à la main (onglet Actions, bouton « Run workflow »), ou quand la page change.
+name: Application Android
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'android/**'
+      - 'docs/**'
+      - '.github/workflows/android.yml'
+
+permissions:
+  contents: write          # pour reposer le fichier fabriqué dans docs/
+
+concurrency:
+  group: android
+  cancel-in-progress: true
+
+jobs:
+  construire:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+
+      # Le numéro de version suit le numéro de fabrication : chaque installation remplace la
+      # précédente au lieu de s'ajouter à côté d'elle sur le terminal.
+      - name: Compiler
+        working-directory: android
+        run: gradle --no-daemon assembleRelease -PversionCode=${{ github.run_number }}
+
+      - name: Déposer sur le site
+        run: |
+          set -e
+          cp android/app/build/outputs/apk/release/app-release.apk docs/akiba.apk
+          taille=$(du -h docs/akiba.apk | cut -f1)
+          date -u '+%Y-%m-%d' > docs/akiba-apk.txt
+          echo "$taille" >> docs/akiba-apk.txt
+          git config user.name 'Fabrique Akiba'
+          git config user.email 'actions@users.noreply.github.com'
+          git add docs/akiba.apk docs/akiba-apk.txt
+          if git diff --cached --quiet; then
+            echo "l'application n'a pas changé : rien à publier"
+          else
+            git commit -m "L'application Android, fabriquée le $(date -u '+%d/%m/%Y')"
+            git push
+          fi
+
+      # Une copie à part, pour pouvoir revenir à une version précédente si celle-ci pose problème.
+      - uses: actions/upload-artifact@v4
+        with:
+          name: akiba-apk
+          path: android/app/build/outputs/apk/release/app-release.apk
+          retention-days: 90

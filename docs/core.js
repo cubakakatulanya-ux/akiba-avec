@@ -201,6 +201,26 @@ function appendTx(avec, f) {
    il entrait dans le décompte annoncé aux partenaires, pouvait porter une clé, et figurer
    parmi ceux qui scellent une réunion. Chaque arrivée et chaque départ laisse maintenant une
    écriture, et cette fonction compare les deux. */
+/* Vérifier seulement la suite du journal, à partir d'une écriture déjà vérifiée. Sert entre
+   deux vérifications complètes, pour les écritures que l'application vient d'ajouter. Les
+   sceaux des réunions closes sont tous revus : ils se comptent en dizaines, pas en milliers. */
+function verifyDepuis(avec, depuis) {
+  let prev = depuis > 0 ? avec.tx[depuis - 1].hash : 'GENESE:' + avec.id;
+  for (let i = depuis; i < avec.tx.length; i++) {
+    const t = avec.tx[i];
+    if (t.seq !== i + 1 || t.prev !== prev || sha256(payload(t)) !== t.hash)
+      return { ok: false, index: i, tx: t, reason: 'Écriture n°' + (i + 1) + ' modifiée après enregistrement' };
+    prev = t.hash;
+  }
+  for (const m of avec.meetings) {
+    if (m.status !== 'closed') continue;
+    const scelle = avec.tx[m.sealSeq - 1];
+    if (m.sealSeq > 0 && (!scelle || scelle.hash !== m.seal))
+      return { ok: false, reason: 'Le sceau de la réunion n°' + m.n + ' ne correspond plus' };
+  }
+  return { ok: true, n: avec.tx.length, head: prev };
+}
+
 function verifyMembres(avec) {
   const connus = new Set();
   (avec.tx || []).forEach(t => { if (t.type === 'MEMBRE' && t.memberId) connus.add(t.memberId); });

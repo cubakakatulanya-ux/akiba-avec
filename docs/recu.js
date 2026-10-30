@@ -8,7 +8,23 @@
    Tout fonctionne hors réseau. */
 'use strict';
 
-const RECU_W = 32;                                                   // signes par ligne (papier 58 mm)
+/* La largeur du papier. Elle était figée à 58 mm : sur un terminal à rouleau de 80 mm, le ticket
+   sortait étroit avec une grande marge, et rien ne permettait de le dire à l application. Le
+   réglage se fait depuis l écran des reçus, devant le terminal, parce que c est là qu on voit
+   le papier. On garde une variable et non une constante : toutes les fonctions du ticket la
+   lisent au moment où elles dessinent. */
+const RECU_PAPIER_STORE = 'kitabu.papier';
+const RECU_SIGNES = { 58: 32, 80: 48 };
+const recuMm = () => { try { return +localStorage.getItem(RECU_PAPIER_STORE) === 80 ? 80 : 58; } catch (e) { return 58; } };
+let RECU_W = RECU_SIGNES[recuMm()];
+const recuLargeur = () => RECU_W;
+ACT.recuPapier = () => {
+  const mm = recuMm() === 58 ? 80 : 58;
+  try { localStorage.setItem(RECU_PAPIER_STORE, String(mm)); } catch (e) { /* rien */ }
+  RECU_W = RECU_SIGNES[mm];
+  render();
+  App.toast('Papier ' + mm + ' mm : ' + RECU_W + ' signes par ligne');
+};
 /* les imprimantes thermiques bon marché ne connaissent pas les accents : on les enlève du ticket */
 const noAcc = s => String(s == null ? '' : s).normalize('NFD').replace(/[̀-ͯ]/g, '')
   .replace(/[«»]/g, '"').replace(/[’‘]/g, "'").replace(/[—–]/g, '-').replace(/[·•]/g, '-').replace(/ | /g, ' ');
@@ -198,6 +214,11 @@ SCREENS['a.receipts'] = p => {
             ? 'Le nécessaire et le sceau, sur ' + Math.round(receiptText(avec, m, rows[0].x, rows[0].r, true).split(String.fromCharCode(10)).length * 0.4) + ' cm environ. Touchez pour le détail complet.'
             : 'Tout le détail, sur ' + Math.round(receiptText(avec, m, rows[0].x, rows[0].r, false).split(String.fromCharCode(10)).length * 0.4) + ' cm environ. Touchez pour économiser le papier.'}</span></span>
         <span class="chip ${recuCourt() ? 'good' : 'warn'}">${recuCourt() ? 'économe' : 'complet'}</span></button>
+      <!-- La largeur du rouleau : on la règle devant le terminal, parce que c est là qu on voit le papier. -->
+      <button class="li" data-act="recuPapier" style="border:1px solid var(--line);border-radius:var(--r);margin-top:8px">
+        ${rowIc('clip')}<span class="grow"><b>Papier ${recuMm()} mm</b>
+          <span class="small muted">${RECU_W} signes par ligne. Touchez pour passer en ${recuMm() === 58 ? '80' : '58'} mm si le rouleau du terminal est plus ${recuMm() === 58 ? 'large' : 'étroit'}.</span></span>
+        <span class="chip">${recuMm()} mm</span></button>
       <button class="btn ghost block" data-act="recuVerifier">${ic('shield')} Vérifier un reçu contesté</button>` : ''}
   </main></div>`;
 };

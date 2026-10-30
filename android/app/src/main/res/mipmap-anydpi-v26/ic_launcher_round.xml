@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- L'icône telle qu'Android 8 et au-delà la demandent : un fond et un premier plan séparés, que
+     le lanceur recadre à sa façon. Sans ce fichier, certains lanceurs — dont ceux des terminaux
+     de caisse — n'affichent rien du tout sur l'écran d'accueil. -->
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+  <background android:drawable="@color/ic_launcher_background" />
+  <foreground android:drawable="@drawable/ic_launcher_foreground" />
+  <monochrome android:drawable="@drawable/ic_launcher_foreground" />
+</adaptive-icon>

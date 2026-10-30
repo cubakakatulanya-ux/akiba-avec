@@ -1,0 +1,51 @@
+plugins { id 'com.android.application' }
+
+/* Les fichiers d'Akiba ne sont pas recopiés dans ce dossier : ils sont pris dans docs/, qui est
+   exactement la version en ligne. Une seule version à tenir à jour, et l'application ne peut pas
+   diverger du site. */
+android {
+  namespace 'com.ubora.akiba'
+  compileSdk 34
+
+  defaultConfig {
+    applicationId 'com.ubora.akiba'
+    minSdk 24                           // Android 7 : les terminaux POS les plus anciens encore en service
+    targetSdk 34
+    /* Le numéro de fabrication, passé par GitHub. Il monte à chaque fabrication, ce qui fait
+       qu'une installation remplace la précédente sur le terminal au lieu d'être refusée. */
+    versionCode project.hasProperty('versionCode') ? project.versionCode.toInteger() : 1
+    versionName '1.0.' + (project.hasProperty('versionCode') ? project.versionCode : '0')
+  }
+
+  sourceSets {
+    main {
+      assets.srcDirs += ['../../docs']  // la page web, telle qu'elle est en ligne
+    }
+  }
+
+  buildTypes {
+    release {
+      minifyEnabled false               // il n'y a presque pas de code Java : rien à réduire
+      signingConfig signingConfigs.debug   // signature de développement, suffisante hors Play Store
+    }
+  }
+
+  compileOptions {
+    sourceCompatibility JavaVersion.VERSION_17
+    targetCompatibility JavaVersion.VERSION_17
+  }
+
+  androidResources {
+    /* Ce qui est sur le site mais n'a rien à faire dans l'application. En tête : le fichier de
+       l'application lui-même, déposé dans docs/ par la fabrique — sans cette ligne, chaque
+       nouvelle version embarquerait la précédente et doublerait de taille à chaque fois. */
+    ignoreAssetsPattern '!.svn:!.git:!.ds_store:!*.scc:!CVS:!thumbs.db:!akiba.apk:!akiba-apk.txt:!sitemap.xml:!robots.txt:!CNAME:!LANCER.md'
+  }
+}
+
+dependencies {
+  implementation 'androidx.appcompat:appcompat:1.7.0'
+  /* WebViewAssetLoader : sert les fichiers embarqués sous l'adresse du site, pour que
+     l'application et la page web partagent la même origine — donc les mêmes données. */
+  implementation 'androidx.webkit:webkit:1.11.0'
+}

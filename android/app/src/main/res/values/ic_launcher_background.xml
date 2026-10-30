@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <!-- Le fond de l'icône. Le lanceur le recadre dans la forme qu'il veut — cercle, carré arrondi,
+       goutte — et il doit donc rester uni : un dessin posé là se ferait couper. -->
+  <color name="ic_launcher_background">#0F4D3A</color>
+</resources>

@@ -91,6 +91,7 @@ async function importTransfer(text, code) {
   K.data.i18nV = (K.data.i18nV || 0) + 1;
   migrate(K.data);
   Object.keys(_chain).forEach(k => delete _chain[k]);
+  chainOf(a, true);                                                  // un cahier qui arrive est vérifié en entier
   DB.save();
   return { id: a.id, name: a.name };
 }

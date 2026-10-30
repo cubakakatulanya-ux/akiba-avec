@@ -23,8 +23,15 @@ const PROFILS = {
 };
 const P = PROFILS[CIBLE];
 if (!P) throw new Error('cible inconnue : ' + CIBLE + " (avec ou suivi)");
+/* Le dossier est refait à neuf à chaque construction. L'application Android, elle, n'est pas
+   fabriquée ici : c'est GitHub qui la compile et la dépose dans ce même dossier. On la met donc
+   de côté le temps du ménage, sinon chaque construction la ferait disparaître du site. */
+const APK = ['akiba.apk', 'akiba-apk.txt'];
+const gardes = {};
+APK.forEach(f => { const c = path.join(out, f); if (fs.existsSync(c)) gardes[f] = fs.readFileSync(c); });
 fs.rmSync(out, { recursive: true, force: true });
 fs.mkdirSync(out, { recursive: true });
+Object.keys(gardes).forEach(f => fs.writeFileSync(path.join(out, f), gardes[f]));
 
 const html = fs.readFileSync(path.join(src, 'index.html'), 'utf8');
 const scripts = [...html.matchAll(/<script src="([^"]+)"><\/script>/g)].map(m => m[1]).filter(f => !P.sansFichiers.includes(f));
@@ -161,10 +168,75 @@ fs.writeFileSync(path.join(out, '.nojekyll'), '');
    ou « il existe plus récent », au lieu de le deviner. */
 fs.writeFileSync(path.join(out, 'version.txt'), version + '\n');
 
+/* La page qui explique comment installer l'application Android.
+   Akiba marche déjà dans le navigateur, et pour la plupart des téléphones cela suffit. Mais sur
+   les terminaux de caisse, « Ajouter à l'écran d'accueil » ne pose souvent aucune icône : le
+   secrétaire ne retrouve plus le cahier. L'application résout cela, et ouvre l'imprimante du
+   terminal. Elle lit exactement les mêmes données : même adresse, même cahier. */
+const apkPresent = fs.existsSync(path.join(out, 'akiba.apk'));
+const apkNote = apkPresent && fs.existsSync(path.join(out, 'akiba-apk.txt'))
+  ? fs.readFileSync(path.join(out, 'akiba-apk.txt'), 'utf8').trim().split('\n') : [];
+const jourFr = d => { const [a, m, j] = d.split('-'); return j + '/' + m + '/' + a; };
+/* seul Akiba AVEC a une application Android : c'est elle qui tourne sur les terminaux */
+if (CIBLE === 'avec') fs.writeFileSync(path.join(out, 'android.html'), `<!doctype html>
+<html lang="fr"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Installer ${P.nom} sur un téléphone Android · Ubora</title>
+<meta name="description" content="Comment installer l'application ${P.nom} sur un téléphone ou un terminal Android, pas à pas.">
+<meta name="robots" content="${P.robots}">
+<link rel="icon" href="icon.svg">
+<style>
+  :root { color-scheme: light }
+  body { margin: 0; padding: 24px 18px 56px; font: 17px/1.6 system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+         color: #16221c; background: #f6f8f7; max-width: 640px; margin-inline: auto }
+  h1 { font-size: 25px; line-height: 1.25; margin: 18px 0 6px }
+  h2 { font-size: 19px; margin: 32px 0 8px }
+  .chapeau { color: #4a5a52 }
+  a.bouton { display: block; text-align: center; background: ${P.teinte.fond}; color: #fff; text-decoration: none;
+             padding: 18px; border-radius: 14px; font-weight: 600; font-size: 19px; margin: 24px 0 8px }
+  .sous { text-align: center; color: #4a5a52; font-size: 15px }
+  ol { padding-left: 22px } li { margin: 12px 0 }
+  .avis { background: #fff; border: 1px solid #dde6e1; border-radius: 14px; padding: 14px 16px; margin: 20px 0 }
+  .avis b { display: block; margin-bottom: 4px }
+  footer { margin-top: 40px; color: #6b7a73; font-size: 15px }
+  img.logo { width: 72px; height: 72px; display: block }
+</style>
+</head><body>
+<img class="logo" src="icon.svg" alt="">
+<h1>Installer ${P.nom} sur un téléphone Android</h1>
+<p class="chapeau">${P.nom} marche déjà dans le navigateur, sans rien installer. Cette application sert surtout aux terminaux de caisse, où l'icône n'apparaît pas toujours sur l'écran d'accueil, et où l'on veut imprimer les reçus.</p>
+
+${apkPresent ? `<a class="bouton" href="akiba.apk" download>Télécharger l'application</a>
+<p class="sous">${apkNote[1] ? apkNote[1] + ' · ' : ''}${apkNote[0] ? 'version du ' + jourFr(apkNote[0]) : ''}</p>`
+  : '<div class="avis"><b>L\'application n\'est pas encore prête</b>Elle est en cours de fabrication. En attendant, ouvrez <a href="./">' + P.domaine + '</a> dans le navigateur du téléphone : le cahier y fonctionne entièrement, y compris sans réseau.</div>'}
+
+<h2>Pas à pas</h2>
+<ol>
+  <li>Appuyez sur <b>Télécharger l'application</b>. Le téléphone enregistre un fichier nommé <b>akiba.apk</b>.</li>
+  <li>Ouvrez ce fichier, depuis la barre des notifications ou depuis le dossier <b>Téléchargements</b>.</li>
+  <li>Le téléphone demande l'autorisation d'installer depuis cette source. Appuyez sur <b>Paramètres</b>, puis activez <b>Autoriser cette source</b>, puis revenez en arrière.</li>
+  <li>Appuyez sur <b>Installer</b>, puis sur <b>Ouvrir</b>.</li>
+  <li>L'icône ${P.court} reste sur l'écran d'accueil. C'est elle qu'on ouvre aux réunions.</li>
+</ol>
+
+<div class="avis"><b>Vos données sont conservées</b>Si le cahier était déjà ouvert dans le navigateur de ce téléphone, l'application retrouve les mêmes groupes, les mêmes membres et les mêmes réunions : c'est la même adresse, donc le même cahier.</div>
+
+<div class="avis"><b>L'application ne demande aucune autorisation</b>Ni réseau, ni position, ni contacts, ni photos. Tout reste dans le téléphone, et rien n'en sort sans un geste du bureau.</div>
+
+<div class="avis"><b>Pour imprimer les reçus</b>Sur un terminal avec imprimante, installez aussi <b>RawBT</b> depuis le Play Store : ${P.court} lui passe les tickets. Sans elle, les reçus se partagent par WhatsApp ou par SMS, comme avant.</div>
+
+<h2>Si l'installation est refusée</h2>
+<p>Certains terminaux demandent d'activer l'autorisation à l'avance : <b>Paramètres</b> › <b>Applications</b> › <b>Accès spécial</b> › <b>Installer des applications inconnues</b>, puis choisissez le navigateur et autorisez-le.</p>
+
+<footer><a href="./">Retour à ${P.nom}</a> · Entreprise Sociale Ubora</footer>
+</body></html>
+`);
+
 // Référencement : les moteurs de recherche lisent ces deux fichiers à la racine du site.
 const indexable = P.robots.startsWith('index');   // Akiba Suivi est un outil de travail : il ne s'indexe pas
 fs.writeFileSync(path.join(out, 'robots.txt'), indexable
   ? 'User-agent: *\nAllow: /\n\nSitemap: https://' + P.domaine + '/sitemap.xml\n'
   : 'User-agent: *\nDisallow: /\n');
-if (indexable) fs.writeFileSync(path.join(out, 'sitemap.xml'), '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <url><loc>https://' + P.domaine + '/</loc><lastmod>' + new Date().toISOString().slice(0, 10) + '</lastmod></url>\n</urlset>\n');
+if (indexable) fs.writeFileSync(path.join(out, 'sitemap.xml'), '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <url><loc>https://' + P.domaine + '/</loc><lastmod>' + new Date().toISOString().slice(0, 10) + '</lastmod></url>\n' +
+  '  <url><loc>https://' + P.domaine + '/android.html</loc><lastmod>' + new Date().toISOString().slice(0, 10) + '</lastmod></url>\n</urlset>\n');
 console.log('dist/ prêt :', fs.readdirSync(out).join(', '), '· cache', version);
