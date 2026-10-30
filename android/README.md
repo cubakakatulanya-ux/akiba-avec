@@ -47,12 +47,17 @@ la version déjà en ligne. Il n'y a donc jamais deux versions à tenir à jour.
 
 ### Sans rien installer, par GitHub
 
-Le dépôt contient `.github/workflows/android.yml`. À chaque étiquette de version (`v1.0.0`,
-`v1.0.1`…), GitHub compile l'application et attache le fichier `.apk` à la publication.
+Le dépôt contient `.github/workflows/android.yml`. Il part tout seul dès que la page ou le dossier
+`android/` changent, et se lance aussi à la main : onglet **Actions** du dépôt, *Application
+Android*, bouton **Run workflow**.
 
-```bash
-git tag v1.0.0 && git push origin v1.0.0
-```
+GitHub compile, puis dépose le fichier dans `docs/akiba.apk` — c'est-à-dire sur le site lui-même.
+L'animateur le prend donc depuis **akiba.uborardc.com/android.html**, avec le téléphone du groupe,
+sans compte et sans boutique. Une copie est aussi gardée dans l'onglet Actions pendant trois mois,
+pour pouvoir revenir en arrière si une version pose problème.
+
+Le numéro de version suit le numéro de fabrication : chaque installation remplace la précédente sur
+le terminal au lieu d'être refusée.
 
 ### Sur un ordinateur
 
@@ -60,7 +65,7 @@ Il faut Java 17 et le SDK Android (Android Studio les installe tous les deux).
 
 ```bash
 cd android
-./gradlew assembleRelease
+gradle assembleRelease
 ```
 
 Le fichier sort dans `android/app/build/outputs/apk/release/`.

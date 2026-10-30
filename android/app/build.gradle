@@ -48,4 +48,13 @@ dependencies {
   /* WebViewAssetLoader : sert les fichiers embarqués sous l'adresse du site, pour que
      l'application et la page web partagent la même origine — donc les mêmes données. */
   implementation 'androidx.webkit:webkit:1.11.0'
+
+  /* Akiba n'écrit pas une ligne de Kotlin, mais les bibliothèques androidx en apportent la
+     base commune — et deux d'entre elles n'en demandent pas la même version. Les mêmes classes
+     arrivent alors deux fois et la construction s'arrête. On fixe donc une version unique. */
+  constraints {
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib:1.8.22'
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.22'
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.22'
+  }
 }
