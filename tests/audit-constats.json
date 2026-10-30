@@ -38,19 +38,19 @@
     "lot": "A",
     "etat": "passe",
     "quoi": "duree de creation",
-    "preuve": "3 s pour 100 AVEC"
+    "preuve": "2 s pour 100 AVEC"
   },
   {
     "lot": "A",
     "etat": "passe",
     "quoi": "l accueil d un groupe reste utilisable a cette echelle",
-    "preuve": "7 ms"
+    "preuve": "6 ms"
   },
   {
     "lot": "A",
     "etat": "passe",
     "quoi": "la liste des 25 membres reste utilisable",
-    "preuve": "1 ms"
+    "preuve": "2 ms"
   },
   {
     "lot": "C",
@@ -314,7 +314,7 @@
     "lot": "G",
     "etat": "passe",
     "quoi": "deux copies peuvent exister apres restauration d une sauvegarde ancienne",
-    "preuve": "telephone 1 : 25 ecritures (tete 32cc286588) · telephone 2 : 25 ecritures (tete 65ff81564b)"
+    "preuve": "telephone 1 : 25 ecritures (tete c55a7939f8) · telephone 2 : 25 ecritures (tete e7e78c15a6)"
   },
   {
     "lot": "G",
@@ -422,7 +422,7 @@
     "lot": "I",
     "etat": "passe",
     "quoi": "duree de l export",
-    "preuve": "681 ms pour 12 AVEC"
+    "preuve": "171 ms pour 12 AVEC"
   },
   {
     "lot": "I",
