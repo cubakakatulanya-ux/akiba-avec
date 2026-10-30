@@ -152,7 +152,7 @@ SCREENS.login = () => {
     <img class="hubmark no-tr" src="ubora-hub.png" width="512" height="512" alt="Logo Ubora" decoding="async">
     <div class="label" style="color:inherit;opacity:.85">Épargne et crédit villageois</div>
     <h1>Akiba</h1>
-    ${K.data.avecs.length ? '' : '<p>Le cahier de l\'AVEC dans le téléphone, même sans réseau.</p>'}
+    ${K.data.mode === 'prod' && K.data.avecs.length ? '' : '<p>Le cahier de l\'AVEC dans le téléphone, même sans réseau.</p>'}
   </header>
   <main class="main login">
     ${licenceBanner()}
@@ -160,9 +160,10 @@ SCREENS.login = () => {
          fait l'application : il veut savoir ce qui se passe maintenant, et entrer. L'écran
          répond dans cet ordre, et la promesse ne reste que sur un téléphone encore vierge.
          Aucun montant ici : il s'affiche avant qu'on ait tapé le moindre code. -->
-    <!-- En démonstration, les vignettes laisseraient croire à un vrai cahier et feraient
-         double emploi avec la porte de la salle d’essai, plus bas. -->
-    ${K.data.mode === 'prod' ? blocMaintenant() + grilleAvecs() + (enAvant ? envoiBloc(enAvant) : '') : ''}
+    <!-- En démonstration, les vignettes laisseraient croire à un vrai cahier : la salle d’essai
+         prend leur place, avec sa porte unique. Un téléphone encore vierge, lui, garde la
+         promesse sous le titre et la liste de ce que fait Akiba, plus bas. -->
+    ${K.data.mode === 'prod' ? blocMaintenant() + grilleAvecs() + (enAvant ? envoiBloc(enAvant) : '') : demo}
     ${K.data.avecs.length ? ''
       : ticker([{ icon: 'shield', label: "Journal scellé, impossible à modifier" }, { icon: 'sync', label: "Tout fonctionne sans réseau" }, { icon: 'calendar', label: "La réunion guidée en 8 étapes" }, { icon: 'coins', label: "Épargne, crédits, amendes, partage" }, { icon: 'users', label: "Le carnet de chaque membre" }, { icon: 'globe', label: "Français, lingala, swahili, tshiluba, kikongo" }, { icon: 'chart', label: "Export Excel pour l'organisation" }], { aria: "Ce que fait Akiba" })}
     <!-- les gestes secondaires. Commencer et recevoir une AVEC sont désormais des vignettes,
@@ -172,7 +173,6 @@ SCREENS.login = () => {
       <button data-act="receiveSheet">${ic('sync')}<span>Recevoir ${K.data.mode === 'prod' && K.data.avecs.length ? 'une autre' : 'notre'} AVEC</span></button>
       <button data-act="go" data-to="guide">${ic('book')}<span>Guide</span></button>
     </nav>
-    ${demo}
   </main></div>`;
 };
 ACT.resetDemo = () => App.openSheet(`<h2>Remettre la démo à zéro ?</h2><p class="muted">Toutes les réunions ajoutées sur ce téléphone seront effacées et les données fictives rechargées.</p>

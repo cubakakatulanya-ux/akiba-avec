@@ -868,6 +868,11 @@ h2,h3{font-weight:600;letter-spacing:-.005em}
 .lock.absent{border-color:var(--warn);background:var(--warn-soft,transparent)}
 .lock.absent svg{color:var(--warn)}
 /* le haut de page se resserre dès qu'un groupe est sur le téléphone : il sait déjà ce qu'est Akiba */
+/* Sur un téléphone qui porte déjà des groupes, le bandeau est une barre de titre, pas une
+   image : il garde la hauteur de son contenu. La règle qui le faisait grandir pour remplir
+   l’écran appartenait à l’ancien accueil, où il était le sujet de la page ; ici elle laissait
+   278 pixels de vert vide au-dessus de ce qu’on vient chercher. */
+.shell.home .hero.tight.connu{flex:0 0 auto;max-height:none}
 .hero.tight.connu{padding-top:16px;padding-bottom:16px}
 .hero.tight.connu h1{font-size:clamp(1.5rem,4.6vh,2rem);margin-bottom:0}
 .hero.tight.connu .ledger,.hero.tight.connu .hubmark,.hero.tight.connu .label{display:none}
@@ -886,7 +891,7 @@ details.g.demo>:not(summary)+*{margin-top:8px}
 </style>
 <style>html,body{margin:0}</style>
 </head><body>
-<script>window.KITABU_PWA = true; window.KITABU_VERSION = 'akiba-202610302255'; window.AKIBA_CIBLE = 'suivi';</script>
+<script>window.KITABU_PWA = true; window.KITABU_VERSION = 'akiba-202610302307'; window.AKIBA_CIBLE = 'suivi';</script>
 
 <div id="app"></div>
 <script src="core.js"></script>
