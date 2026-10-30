@@ -76,6 +76,7 @@ SCREENS['dev.backup'] = () => {
         : App.installEvt ? `<button class="btn primary block xl" data-act="install">${ic('home')} Installer ${APP_NOM()}</button><p class="hint">Une icône verte apparaît sur l'écran d'accueil.</p>`
         : isIOS() ? `<ol class="small" style="margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:6px">${step(1, 'Ouvrez ' + APP_NOM() + ' dans Safari.')}${step(2, 'Touchez le bouton Partager (carré avec une flèche).')}${step(3, 'Choisissez « Sur l\'écran d\'accueil », puis « Ajouter ».')}</ol>`
         : `<ol class="small" style="margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:6px">${step(1, 'Ouvrez ' + APP_NOM() + ' dans Chrome.')}${step(2, 'Touchez le menu ⋮ en haut à droite.')}${step(3, 'Choisissez « Installer l\'application » ou « Ajouter à l\'écran d\'accueil ».')}</ol>`}
+      ${window.KITABU_PWA && !window.AkibaPOS ? `<p class="small muted" style="margin:8px 0 0">Sur un terminal de caisse, l'icône n'apparaît pas toujours sur l'écran d'accueil. Dans ce cas, <a href="android.html">installez l'application Android</a> : c'est le même cahier et les mêmes données.</p>` : ''}
     </section>
 
     ${licenceCard()}
