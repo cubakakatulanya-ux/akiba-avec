@@ -44,7 +44,7 @@
     "lot": "A",
     "etat": "passe",
     "quoi": "l accueil d un groupe reste utilisable a cette echelle",
-    "preuve": "5 ms"
+    "preuve": "8 ms"
   },
   {
     "lot": "A",
@@ -314,7 +314,7 @@
     "lot": "G",
     "etat": "passe",
     "quoi": "deux copies peuvent exister apres restauration d une sauvegarde ancienne",
-    "preuve": "telephone 1 : 25 ecritures (tete 9747691ea2) · telephone 2 : 25 ecritures (tete 797023ac60)"
+    "preuve": "telephone 1 : 25 ecritures (tete d60d198145) · telephone 2 : 25 ecritures (tete 85fa12ddce)"
   },
   {
     "lot": "G",
@@ -422,7 +422,7 @@
     "lot": "I",
     "etat": "passe",
     "quoi": "duree de l export",
-    "preuve": "223 ms pour 12 AVEC"
+    "preuve": "152 ms pour 12 AVEC"
   },
   {
     "lot": "I",
@@ -590,7 +590,7 @@
     "lot": "L",
     "etat": "passe",
     "quoi": "ce que l application signale au comite",
-    "preuve": "niveau bad · warn : Fin du cycle dans 10 jours ; bad : Aucune réunion depuis 90 jours ; warn : Aucune sauvegarde récente"
+    "preuve": "niveau bad · warn : Fin du cycle dans 10 jours ; bad : Aucune réunion depuis 89 jours ; warn : Aucune sauvegarde récente"
   },
   {
     "lot": "L",

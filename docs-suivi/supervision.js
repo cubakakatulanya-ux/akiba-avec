@@ -21,28 +21,6 @@ const alertHtml = (a, to) => `<button class="alert ${a.lvl}" style="border-top:0
 const LAST_AVEC = 'kitabu.lastAvec';
 const lastAvecId = () => { try { return localStorage.getItem(LAST_AVEC) || ''; } catch (e) { return ''; } };
 const rememberAvec = id => { try { localStorage.setItem(LAST_AVEC, id); } catch (e) { /* rien */ } };
-/* le grand bouton « AVEC » : une seule AVEC (ou la dernière utilisée) = un toucher jusqu'à la liste des noms */
-function avecCard() {
-  const list = K.data.avecs;
-  const inner = (name, sub, avec) => `<span class="ic">${avec ? emblemeHtml(avec, 44) : ic('users')}</span><span class="t"><b>AVEC</b><span class="nm">${name}</span><span class="sub">${sub}</span></span>${ic('chev')}`;
-  if (!list.length) return `<button class="avec-main" data-act="avecStart">${inner('Entrer mon AVEC', 'Touchez pour recevoir ou créer votre AVEC')}</button>`;
-  const pick = list.length === 1 ? list[0] : list.find(a => a.id === lastAvecId());
-  if (pick) return `<button class="avec-main" data-act="go" data-to="l.member" data-id="${pick.id}">${inner(esc(pick.name), esc(pick.village) + ' · touchez pour entrer', pick)}</button>
-    ${list.length > 1 ? `<button class="linkbtn" data-act="go" data-to="l.avec">Autre AVEC sur ce téléphone (${list.length})</button>` : ''}`;
-  return `<button class="avec-main" data-act="go" data-to="l.avec">${inner('Choisir mon AVEC', list.length + ' AVEC sur ce téléphone')}</button>`;
-}
-/* téléphone encore vide : le bouton AVEC propose de recevoir l'AVEC (fichier de l'animateur) ou de la créer */
-ACT.avecStart = () => {
-  const canCreate = !(K.data.mode === 'prod' && K.data.orgs.length);
-  const row = (act, icon, title, sub) => `<button class="li" data-act="${act}"><span class="xl-ic">${ic(icon)}</span><span class="grow"><b>${title}</b><span class="small muted">${sub}</span></span>${ic('chev')}</button>`;
-  App.openSheet(`<h2>Mon AVEC</h2><p class="muted">Ce téléphone ne contient encore aucune AVEC.</p>
-    <div class="list">
-      ${row('receiveSheet', 'sync', 'Recevoir mon AVEC', 'L\'animateur ou l\'ancien téléphone du groupe vous a envoyé un fichier et un code')}
-      ${canCreate ? row('createAvec', 'plus', 'Commencer notre AVEC', 'Avec l\'assemblée réunie : groupe, règlement, membres, bureau') : ''}
-    </div>
-    ${canCreate ? '' : '<p class="hint">Votre organisation crée les AVEC : demandez à l\'animateur de vous envoyer le fichier.</p>'}
-    <button class="btn ghost block" data-act="closeSheet">Fermer</button>`);
-};
 INP.findName = el => {
   const q = el.value.trim().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
   document.querySelectorAll('.li[data-name]').forEach(li => { li.hidden = !!q && !li.dataset.name.includes(q); });
@@ -117,70 +95,17 @@ function accueilSuivi() {
   </main></div>`;
 }
 
-SCREENS.login = () => {
-  if (estSuivi()) return accueilSuivi();
-  const canCreate = !(K.data.mode === 'prod' && K.data.orgs.length);
-  /* l'AVEC mise en avant : c'est elle qui décide si l'accueil explique ou s'il informe */
-  const enAvant = typeof avecEnAvant === 'function' ? avecEnAvant() : null;
-  /* La démonstration n'est qu'une salle d'essai : des groupes, des membres et des montants
-     inventés, pour apprendre sans rien risquer. Elle doit donc dire clairement qu'elle n'est
-     pas le vrai cahier, et montrer la sortie — pas se replier derrière un petit triangle où
-     un bureau qui a fini d'apprendre ne la retrouve plus.
+/* L'accueil d'Akiba, c'est la couverture du cahier : un seul écran, d'un bord à l'autre, bâti
+   dans accueil.js. Il n'y a plus de bandeau vert posé sur une page à moitié vide. */
+SCREENS.login = () => estSuivi() ? accueilSuivi() : `<div class="shell home">${couverture()}</div>`;
 
-     Le passage au réel efface les groupes inventés : c'est écrit avant, pas après. */
-  /* La salle d’essai : un seul groupe inventé, une seule porte pour y entrer, et la sortie
-     vers le vrai cahier. Elle disait trois fois qu’elle était une démonstration et répétait
-     ce que la fenêtre de sortie explique déjà ; elle le dit une fois. */
-  const demoAvec = K.data.mode === 'prod' ? null : (K.data.avecs || [])[0];
-  const demo = K.data.mode === 'prod' ? ''
-    : `<section class="card stack demo-bloc">
-        <div class="row" style="align-items:flex-start;gap:10px">${icSpan('alert')}<div style="flex:1;min-width:0">
-          <b>Démonstration</b>
-          <span class="small muted" style="display:block">Un groupe, des membres et des montants inventés. Rien n’est en jeu : essayez tout.</span></div></div>
-        ${demoAvec ? `<button class="vignette neuve" data-act="go" data-to="l.member" data-id="${demoAvec.id}">${ic('users')}<span class="nm">Ouvrir la démonstration</span></button>
-          <div class="row between small"><span>Codes secrets</span><b class="mono">1234</b></div>
-          <div class="row between small"><span>Carte de secours</span><b class="mono">2468-1357</b></div>` : ''}
-        ${licKind() === 'demo'
-          ? '<p class="hint" style="margin:0">Le passage aux vraies données demande une licence délivrée par l\x27Entreprise Sociale Ubora.</p>'
-          : `<button class="btn ghost block" data-act="goLive">${ic('check')} Passer au vrai cahier de notre AVEC</button>`}
-        <button class="linkbtn" data-act="resetDemo">Remettre la démonstration à zéro</button>
-      </section>`;
-  return `<div class="shell home">
-  <header class="hero tight${K.data.avecs.length ? ' connu' : ''}">
-    <button class="langbtn pastille2" data-act="themeSheet" aria-label="Choisir l’apparence">${ic("eye")}</button><button class="langbtn" data-act="langSheet" aria-label="Choisir la langue">${ic('globe')}<span class="no-tr">${esc(I18N.name())}</span></button>
-    <svg class="ledger" viewBox="0 0 200 200" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><rect x="30" y="20" width="140" height="170" rx="10"/>${[55, 80, 105, 130, 155].map(y => `<path d="M50 ${y}h100"/>`).join('')}<path d="M80 20v170"/></svg>
-    <img class="hubmark no-tr" src="ubora-hub.png" width="512" height="512" alt="Logo Ubora" decoding="async">
-    <div class="label" style="color:inherit;opacity:.85">Épargne et crédit villageois</div>
-    <h1>Akiba</h1>
-    ${K.data.mode === 'prod' && K.data.avecs.length ? '' : '<p>Le cahier de l\'AVEC dans le téléphone, même sans réseau.</p>'}
-  </header>
-  <main class="main login">
-    ${licenceBanner()}
-    <!-- Un groupe qui ouvre Akiba trois fois par semaine n'a pas besoin qu'on lui redise ce que
-         fait l'application : il veut savoir ce qui se passe maintenant, et entrer. L'écran
-         répond dans cet ordre, et la promesse ne reste que sur un téléphone encore vierge.
-         Aucun montant ici : il s'affiche avant qu'on ait tapé le moindre code. -->
-    <!-- En démonstration, les vignettes laisseraient croire à un vrai cahier : la salle d’essai
-         prend leur place, avec sa porte unique. Un téléphone encore vierge, lui, garde la
-         promesse sous le titre et la liste de ce que fait Akiba, plus bas. -->
-    ${K.data.mode === 'prod' ? blocMaintenant() + grilleAvecs() + (enAvant ? envoiBloc(enAvant) : '') : demo}
-    ${K.data.avecs.length ? ''
-      : ticker([{ icon: 'shield', label: "Journal scellé, impossible à modifier" }, { icon: 'sync', label: "Tout fonctionne sans réseau" }, { icon: 'calendar', label: "La réunion guidée en 8 étapes" }, { icon: 'coins', label: "Épargne, crédits, amendes, partage" }, { icon: 'users', label: "Le carnet de chaque membre" }, { icon: 'globe', label: "Français, lingala, swahili, tshiluba, kikongo" }, { icon: 'chart', label: "Export Excel pour l'organisation" }], { aria: "Ce que fait Akiba" })}
-    <!-- les gestes secondaires. Commencer et recevoir une AVEC sont désormais des vignettes,
-         parce qu'on les cherche là où sont les groupes : il ne reste ici que le guide. -->
-    <nav class="liens" aria-label="Autres gestes">
-      ${K.data.mode === 'prod' && !K.data.avecs.length && canCreate ? `<button data-act="createAvec">${ic('plus')}<span>Commencer notre AVEC</span></button>` : ''}
-      <button data-act="receiveSheet">${ic('sync')}<span>Recevoir ${K.data.mode === 'prod' && K.data.avecs.length ? 'une autre' : 'notre'} AVEC</span></button>
-      <button data-act="go" data-to="guide">${ic('book')}<span>Guide</span></button>
-    </nav>
-  </main></div>`;
-};
 ACT.resetDemo = () => App.openSheet(`<h2>Remettre la démo à zéro ?</h2><p class="muted">Toutes les réunions ajoutées sur ce téléphone seront effacées et les données fictives rechargées.</p>
   <button class="btn danger block xl" data-act="resetDemoOk">Effacer et recharger</button><button class="btn ghost block" data-act="closeSheet">Garder mes données</button>`);
 ACT.resetDemoOk = () => { DB.reset(); Object.keys(_chain).forEach(k => delete _chain[k]); App.go('login'); App.toast('Démo rechargée'); };
 
-/* Choisir son AVEC : les mêmes vignettes que sur l’accueil. Un bureau reconnaît son groupe
-   à son emblème avant d’en lire le nom, et l’écran reste le même d’un bout à l’autre. */
+/* Choisir son AVEC, quand le téléphone en porte plusieurs : des vignettes à emblème, comme la
+   rangée du bas de la couverture. Un bureau reconnaît son groupe à son signe avant d’en lire
+   le nom, et l’écran reste le même d’un bout à l’autre. */
 SCREENS['l.avec'] = () => `<div class="shell">${topbar('Choisir mon AVEC', 'Sur ce téléphone', backBtn('login'))}<main class="main">
   ${K.data.avecs.length ? `<div class="grille-avec">${K.data.avecs.map(a => {
     const etat = a.status === 'pending' ? '<span class="chip warn">À valider</span>'

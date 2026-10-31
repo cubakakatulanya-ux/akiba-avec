@@ -868,15 +868,69 @@ h2,h3{font-weight:600;letter-spacing:-.005em}
 .lock.absent{border-color:var(--warn);background:var(--warn-soft,transparent)}
 .lock.absent svg{color:var(--warn)}
 /* le haut de page se resserre dès qu'un groupe est sur le téléphone : il sait déjà ce qu'est Akiba */
-/* Sur un téléphone qui porte déjà des groupes, le bandeau est une barre de titre, pas une
-   image : il garde la hauteur de son contenu. La règle qui le faisait grandir pour remplir
-   l’écran appartenait à l’ancien accueil, où il était le sujet de la page ; ici elle laissait
-   278 pixels de vert vide au-dessus de ce qu’on vient chercher. */
-.shell.home .hero.tight.connu{flex:0 0 auto;max-height:none}
-.hero.tight.connu{padding-top:16px;padding-bottom:16px}
-.hero.tight.connu h1{font-size:clamp(1.5rem,4.6vh,2rem);margin-bottom:0}
-.hero.tight.connu .ledger,.hero.tight.connu .hubmark,.hero.tight.connu .label{display:none}
-.hero.tight.connu .label{font-size:var(--t-2xs);margin-bottom:2px}
+/* ---------- l’accueil d’Akiba : la couverture du cahier ----------
+
+   L’écran entier devient la couverture du cahier qu’Akiba remplace : le papier ligné en
+   filigrane, l’emblème du groupe gravé en médaillon, le nom en grand, et une seule barre dorée
+   pour entrer. La page est pleine d’un bord à l’autre — c’est ce qui manquait à l’ancien
+   accueil, qui s’arrêtait au tiers de l’écran et laissait un trou jusqu’au pied de page.
+
+   Le dégradé et les lignes de cahier sont rendus ici au lieu d’être éteints comme sur les
+   autres bandeaux : cet écran n’est pas une barre de titre, c’est une couverture, et une
+   couverture plate ne ressemble à rien. */
+.couv{flex:1;display:flex;flex-direction:column;align-items:center;position:relative;overflow:hidden;
+  color:#EAF4EE;padding:58px 20px 0;border-radius:0 0 26px 26px;
+  background:radial-gradient(120% 70% at 50% -8%,rgba(242,183,5,.16),transparent 60%),linear-gradient(170deg,var(--brand-2),var(--brand) 52%,var(--brand-deep))}
+.couv::before{content:"";position:absolute;inset:0;pointer-events:none;
+  background:repeating-linear-gradient(180deg,transparent 0 31px,rgba(255,255,255,.055) 31px 32px)}
+.couv>*{position:relative}
+.couv-haut{position:absolute;top:12px;left:12px;right:12px;z-index:2;display:flex;justify-content:space-between;gap:8px}
+.couv-haut .langbtn{position:static}
+.couv-centre{flex:1;width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:8px 0 16px}
+.couv-centre .embleme{box-shadow:0 0 0 7px rgba(255,255,255,.1),0 26px 46px -24px rgba(0,0,0,.8)}
+.couv-marque{width:104px;height:104px;border-radius:50%;background:#fff;box-shadow:0 0 0 7px rgba(255,255,255,.1)}
+.couv-nom{font-size:clamp(1.7rem,6.4vw,2.2rem);font-weight:700;letter-spacing:-.01em;margin-top:20px;max-width:16ch;overflow-wrap:anywhere}
+.couv-lieu{font-size:var(--t-md);opacity:.78;margin:6px 0 0}
+/* l’état du groupe : la seule chose que l’écran doit dire avant le code secret */
+.couv-etat,.couv-marquage{display:inline-flex;align-items:center;gap:8px;margin-top:16px;border-radius:999px;
+  padding:8px 15px;font-family:var(--f-display);font-weight:600;font-size:var(--t-sm);background:rgba(255,255,255,.14)}
+.couv-etat svg,.couv-marquage svg{width:17px;height:17px;flex:none}
+.couv-etat.today{background:var(--maize);color:var(--maize-ink)}
+.couv-etat.cur{background:#EAF4EE;color:#093325}
+.couv-marquage{background:none;border:1.5px solid rgba(245,194,46,.55);color:var(--maize);
+  text-transform:uppercase;letter-spacing:.07em;font-size:var(--t-xs)}
+.couv-codes{font-size:var(--t-sm);opacity:.8;margin:14px 0 0}
+.couv-codes b{letter-spacing:.08em}
+.couv-centre .aenvoyer{color:inherit;opacity:.78;margin-top:14px}
+.couv-centre .alert{margin-top:18px;text-align:left}
+.couv-promesses{display:flex;flex-direction:column;gap:10px;margin-top:26px;text-align:left;max-width:31ch}
+.couv-promesses div{display:flex;align-items:center;gap:10px;font-size:var(--t-sm);opacity:.85}
+.couv-promesses svg{width:18px;height:18px;flex:none}
+/* le bas : la barre dorée, puis les gestes rares en liens clairs */
+.couv-bas{width:100%;display:flex;flex-direction:column;gap:8px;padding-bottom:14px}
+.barre-or{display:flex;align-items:center;justify-content:center;gap:11px;width:100%;border:0;border-radius:18px;
+  padding:17px;background:var(--maize);color:var(--maize-ink);font-family:var(--f-display);font-weight:700;
+  font-size:var(--t-xl);box-shadow:0 18px 32px -20px rgba(0,0,0,.9);touch-action:manipulation}
+.barre-or:active{transform:scale(.985)}
+.barre-or svg{width:23px;height:23px;flex:none}
+.couv .liens button{color:#EAF4EE;opacity:.8}
+.couv .liens button:hover,.couv .liens button:focus-visible{color:#fff;opacity:1;background:rgba(255,255,255,.12)}
+.couv .couv-discret{color:#EAF4EE;opacity:.6}
+/* les autres groupes du téléphone : une rangée d’emblèmes, lue plus vite qu’une liste de noms */
+.couv-autres{display:flex;flex-direction:column;gap:8px;margin-bottom:4px}
+.couv-autres-t{font-size:var(--t-2xs);text-transform:uppercase;letter-spacing:.1em;font-weight:700;opacity:.6;text-align:center}
+.couv-rang{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.couv-petit{display:flex;flex-direction:column;align-items:center;gap:5px;width:90px;padding:4px;background:none;border:0;color:inherit}
+.couv-petit span{font-size:var(--t-2xs);line-height:1.2;opacity:.8;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.couv-petit.cur .embleme{box-shadow:0 0 0 3px #EAF4EE}
+.couv-petit.today .embleme{box-shadow:0 0 0 3px var(--maize)}
+@media (min-height:720px){.couv{padding-top:70px}}
+/* mode sombre : la couverture passe au vert profond, comme les autres blocs de marque */
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]) .couv{background:radial-gradient(120% 70% at 50% -8%,rgba(245,194,46,.14),transparent 60%),linear-gradient(170deg,#1D5E48,#113F31 55%,#0A2A20)}
+}
+:root[data-theme="dark"] .couv{background:radial-gradient(120% 70% at 50% -8%,rgba(245,194,46,.14),transparent 60%),linear-gradient(170deg,#1D5E48,#113F31 55%,#0A2A20)}
 /* case à cocher d'une liste : assez grande pour le pouce, visible d'un coup d'oeil */
 .chk{width:24px;height:24px;flex:none;border:1.6px solid var(--line);border-radius:7px;display:grid;place-items:center;color:var(--brand-ink);background:var(--surface)}
 .chk.on{background:var(--brand);border-color:var(--brand)}
@@ -891,7 +945,7 @@ details.g.demo>:not(summary)+*{margin-top:8px}
 </style>
 <style>html,body{margin:0}</style>
 </head><body>
-<script>window.KITABU_PWA = true; window.KITABU_VERSION = 'akiba-202610302311'; window.AKIBA_CIBLE = 'avec';</script>
+<script>window.KITABU_PWA = true; window.KITABU_VERSION = 'akiba-202610310208'; window.AKIBA_CIBLE = 'avec';</script>
 
 <div id="app"></div>
 <script src="core.js"></script>

@@ -80,7 +80,9 @@ const js = async (expr, attendre = true) => {
       }
       if (!coupe) dehors.push((e.tagName.toLowerCase() + '.' + String(e.className || '').split(' ')[0]).slice(0, 36));
     }
-    const m = document.querySelector('.main');
+    /* la zone de contenu de l'écran, quel que soit son nom : .main pour les écrans ordinaires,
+       .couv pour l'accueil, qui est une couverture pleine page et non une page à bandeau */
+    const m = document.querySelector('.shell main') || document.querySelector('.main');
     return { arrive: App.screen, vide: !m || m.innerHTML.trim().length < 60, dehors: [...new Set(dehors)].slice(0, 3) };
   };1`, false);
   const CIBLE = await js('window.AKIBA_CIBLE || "avec"', false);
