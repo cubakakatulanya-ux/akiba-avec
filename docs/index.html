@@ -825,6 +825,25 @@ h2,h3{font-weight:600;letter-spacing:-.005em}
 .vignette.neuve svg{width:24px;height:24px;flex:none;opacity:1}
 /* les mêmes vignettes pour choisir une personne : on touche un visage, pas une ligne de texte */
 .vignette .av{width:56px;height:56px;font-size:var(--t-lg)}
+/* la même famille de vignettes à l'intérieur du cahier : un geste à gauche, un chiffre à lire.
+   Elles remplacent les bandes qui défilaient et les listes de réglages, où l'oeil devait relire
+   chaque ligne pour trouver la bonne. */
+.vignette.geste,.vignette.chiffre{align-items:flex-start;text-align:left;min-height:0;padding:12px;gap:7px}
+.vignette.geste{justify-content:flex-start}
+.vignette.geste .nm{font-size:var(--t-md)}
+/* le sous-titre explique, il ne raconte pas : deux lignes au plus, sinon la vignette grandit
+   plus vite que la liste qu'elle remplace */
+.vignette.geste .vl{opacity:.72;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.vic{width:34px;height:34px;border-radius:11px;display:grid;place-items:center;flex:none;background:var(--brand-soft);color:var(--brand)}
+.vic svg{width:18px;height:18px}
+.vic.or{background:var(--maize-soft);color:var(--warn)}
+.vic.mal{background:var(--bad-soft);color:var(--bad)}
+.vignette.chiffre{justify-content:center;gap:3px}
+.vignette.chiffre .vk{font-size:var(--t-2xs);text-transform:uppercase;letter-spacing:.08em;font-weight:700;color:var(--ink-2)}
+.vignette.chiffre .vn{font-family:var(--f-display);font-size:1.5rem;font-weight:700;line-height:1.1}
+.vignette.chiffre .vl{font-size:var(--t-sm);color:var(--ink-2);opacity:1}
+.vignette.chiffre.mal{border-color:var(--bad);background:var(--bad-soft)}
+.vignette.chiffre.mal .vn{color:var(--bad)}
 .vignette.perso{min-height:128px}
 .vignette.perso .vl{font-weight:700;opacity:.8}
 @media (min-width:460px){.grille-avec{grid-template-columns:repeat(3,1fr)}}
@@ -880,7 +899,7 @@ h2,h3{font-weight:600;letter-spacing:-.005em}
    couverture plate ne ressemble à rien. */
 .couv{flex:1;display:flex;flex-direction:column;align-items:center;position:relative;overflow:hidden;
   color:#EAF4EE;padding:58px 20px 0;border-radius:0 0 26px 26px;
-  background:radial-gradient(120% 70% at 50% -8%,rgba(242,183,5,.16),transparent 60%),linear-gradient(170deg,var(--brand-2),var(--brand) 52%,var(--brand-deep))}
+  background:radial-gradient(120% 70% at 50% -8%,rgba(242,183,5,.2),transparent 60%),linear-gradient(170deg,#1E8160,#15664D 52%,#104F3C)}
 .couv::before{content:"";position:absolute;inset:0;pointer-events:none;
   background:repeating-linear-gradient(180deg,transparent 0 31px,rgba(255,255,255,.055) 31px 32px)}
 .couv>*{position:relative}
@@ -928,9 +947,9 @@ h2,h3{font-weight:600;letter-spacing:-.005em}
 @media (min-height:720px){.couv{padding-top:70px}}
 /* mode sombre : la couverture passe au vert profond, comme les autres blocs de marque */
 @media (prefers-color-scheme:dark){
-  :root:not([data-theme="light"]) .couv{background:radial-gradient(120% 70% at 50% -8%,rgba(245,194,46,.14),transparent 60%),linear-gradient(170deg,#1D5E48,#113F31 55%,#0A2A20)}
+  :root:not([data-theme="light"]) .couv{background:radial-gradient(120% 70% at 50% -8%,rgba(245,194,46,.18),transparent 60%),linear-gradient(170deg,#1F7A5C,#156349 52%,#0F4B39)}
 }
-:root[data-theme="dark"] .couv{background:radial-gradient(120% 70% at 50% -8%,rgba(245,194,46,.14),transparent 60%),linear-gradient(170deg,#1D5E48,#113F31 55%,#0A2A20)}
+:root[data-theme="dark"] .couv{background:radial-gradient(120% 70% at 50% -8%,rgba(245,194,46,.18),transparent 60%),linear-gradient(170deg,#1F7A5C,#156349 52%,#0F4B39)}
 /* case à cocher d'une liste : assez grande pour le pouce, visible d'un coup d'oeil */
 .chk{width:24px;height:24px;flex:none;border:1.6px solid var(--line);border-radius:7px;display:grid;place-items:center;color:var(--brand-ink);background:var(--surface)}
 .chk.on{background:var(--brand);border-color:var(--brand)}
@@ -945,7 +964,7 @@ details.g.demo>:not(summary)+*{margin-top:8px}
 </style>
 <style>html,body{margin:0}</style>
 </head><body>
-<script>window.KITABU_PWA = true; window.KITABU_VERSION = 'akiba-202610310208'; window.AKIBA_CIBLE = 'avec';</script>
+<script>window.KITABU_PWA = true; window.KITABU_VERSION = 'akiba-202610310314'; window.AKIBA_CIBLE = 'avec';</script>
 
 <div id="app"></div>
 <script src="core.js"></script>
@@ -970,7 +989,6 @@ details.g.demo>:not(summary)+*{margin-top:8px}
 <script src="support.js"></script>
 <script src="licence.js"></script>
 <script src="transfer.js"></script>
-
 <script src="training.js"></script>
 <script src="formation-anim.js"></script>
 <script src="export.js"></script>

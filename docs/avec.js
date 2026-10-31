@@ -79,23 +79,35 @@ function meetingLi(avec, m) {
   return `<div class="li"><span class="av" style="border-radius:12px;font-family:var(--f-display)">${m.n}</span>
     <div class="grow"><b>${fdate(m.date)}</b><span class="small muted">${here}/${Object.keys(m.presence || {}).length} présents${m.synced || m.status === 'open' ? '' : ' · pas encore envoyée'}</span></div>${chip}</div>`;
 }
-/* bande de l'accueil : ce qui n'est pas déjà affiché en grand, mais qu'il faut avoir en tête */
-function homeBand(avec, st, open, next) {
-  const late = st.activeLoans.filter(l => l.status === 'retard');
-  const days = Math.ceil((cycleEnd(avec) - Date.now()) / DAY);
+/* ---------- les vignettes du cahier ----------
+
+   La bande qui défilait ici répétait l'écran : « prochaine réunion n°15 » sous le bouton
+   « Ouvrir la réunion n°15 », « fin du cycle dans 4 semaines » au-dessus d'une carte de cycle
+   qui disait la même chose en jours, « journal, 600 écritures » juste avant la carte du
+   journal. Neuf lignes dont sept étaient déjà là, et la seule information neuve — la formation
+   — passait en dernier. Ce qui reste se lit d'un coup, en vignettes, comme sur la couverture. */
+
+/* une vignette-geste : un signe, un mot, et ce qu'il faut savoir en petit */
+const tuile = (icone, titre, sous, attrs, ton = '') =>
+  `<button class="vignette geste" ${attrs}><span class="vic ${ton}">${ic(icone)}</span>
+    <span class="nm">${titre}</span><span class="vl">${sous}</span></button>`;
+/* une vignette-chiffre : un montant qu'on vient lire, pas un geste */
+const chiffre = (nom, valeur, sous) =>
+  `<div class="vignette chiffre"><span class="vk">${nom}</span><span class="vn num">${valeur}</span><span class="vl">${sous}</span></div>`;
+
+/* ce qui n'est écrit nulle part ailleurs sur cet écran, et seulement quand cela vaut un geste */
+function homeTuiles(avec, st, ch) {
   const nm = typeof nextModule === 'function' ? nextModule(avec) : null;
-  const toSend = pending(avec);                                      // écritures qui n'existent que sur ce téléphone
-  return ticker([
-    { icon: 'calendar', label: open ? `Réunion n°${open.n} en cours` : `Prochaine réunion : n°${next}` },
-    { icon: 'users', label: 'Membres', value: `${st.activeCount}${st.activeCount ? ' · ' + pct(st.women / st.activeCount) + ' de femmes' : ''}` },
-    late.length ? { icon: 'alert', label: 'Crédits en retard', value: `${late.length} · ${fc(st.lateAmt)}` } : { icon: 'check', label: 'Aucun crédit en retard' },
-    { icon: 'split', label: 'Fin du cycle', value: days > 0 ? `dans ${days < 14 ? days + ' jours' : Math.ceil(days / 7) + ' semaines'}` : 'le partage est à faire' },
-    st.extDebt ? { icon: 'building', label: 'Crédit extérieur à rembourser', value: fc(st.extDebt) } : null,
-    typeof trainingCount === 'function' ? { icon: 'clip', label: 'Formation', value: `${trainingCount(avec)}/7 modules${nm ? ' · suite : ' + nm.t : ' · terminée'}` } : null,
-    (avec.waitlist || []).length ? { icon: 'clip', label: 'Demandes de crédit en attente', value: `${avec.waitlist.length} · prioritaires` } : null,
-    { icon: 'shield', label: 'Journal', value: `${avec.tx.length} écritures scellées` },
-    toSend ? { icon: 'sync', label: "À envoyer à l'animateur", value: `${toSend} écritures` } : { icon: 'sync', label: "Tout est envoyé à l'animateur" }
-  ], { aria: "Repères de l'AVEC" });
+  const toSend = pending(avec);
+  const t = [];
+  if ((avec.waitlist || []).length) t.push(tuile('clip', 'Demandes de crédit', `${avec.waitlist.length} en attente, prioritaires`, 'data-act="go" data-to="a.loans"', 'or'));
+  t.push(tuile(ch.ok ? 'shield' : 'alert', ch.ok ? 'Journal protégé' : 'Journal altéré !',
+    ch.ok ? `${avec.tx.length} écritures scellées` : esc(ch.reason), 'data-act="go" data-to="a.journal"', ch.ok ? '' : 'mal'));
+  if (typeof trainingCount === 'function') t.push(tuile('clip', 'Formation', `${trainingCount(avec)}/7 modules${nm ? ' · suite : ' + nm.t : ' · terminée'}`, 'data-act="go" data-to="t.home"'));
+  t.push(tuile('sync', toSend ? 'À envoyer' : 'Tout est envoyé',
+    toSend ? `${toSend} écriture${toSend > 1 ? 's' : ''} seulement sur ce téléphone` : "L'animateur a tout reçu",
+    'data-act="go" data-to="dev.backup"', toSend ? 'or' : ''));
+  return `<div class="grille-avec">${t.join('')}</div>`;
 }
 SCREENS['a.home'] = () => {
   const { avec, me, st } = cur();
@@ -120,19 +132,20 @@ SCREENS['a.home'] = () => {
     </section>
     ${open ? `<button class="btn primary block xl" data-act="go" data-to="a.meet">${ic('calendar')} Continuer la réunion n°${open.n}</button>`
       : `<button class="btn primary block xl" data-act="startMeeting">${ic('unlock')} Ouvrir la réunion n°${next}</button>`}
-    ${homeBand(avec, st, open, next)}
-    <div class="grid2">
-      <div class="kpi"><span>Épargne du cycle</span><b class="num">${fck(st.sum.EPARGNE)}</b><span class="num">${grp(st.parts)} parts</span></div>
-      <div class="kpi"><span>Crédits à rembourser</span><b class="num">${fck(st.outstanding)}</b><span>${st.activeLoans.length} crédits</span></div>
-      <div class="kpi"><span>Présence</span><b class="num">${pct(st.attendance)}</b><span>${st.meetings.length} réunions</span></div>
-      <div class="kpi"><span>Valeur d'une part</span><b class="num">${fc(st.shareValue)}</b><span>achetée ${fc(avec.settings.partValue)}</span></div>
+    <!-- Ce qu'il faut corriger passe avant ce qu'il faut lire : les alertes montent juste sous
+         le bouton de la réunion, là où le regard tombe. -->
+    ${h.alerts.length ? `<section class="section"><h2>À surveiller</h2>${h.alerts.map(a => `<div class="alert ${a.lvl}"><span style="width:22px;flex:none">${ic('alert')}</span><div><b>${esc(a.title)}</b><span class="small">${esc(a.detail)}</span></div></div>`).join('')}</section>` : ''}
+    <div class="grille-avec">
+      ${chiffre('Épargne du cycle', fck(st.sum.EPARGNE), `${grp(st.parts)} parts`)}
+      ${chiffre('Crédits à rembourser', fck(st.outstanding), `${st.activeLoans.length} crédits`)}
+      ${chiffre('Présence', pct(st.attendance), `${st.meetings.length} réunions`)}
+      ${chiffre("Valeur d'une part", fc(st.shareValue), `achetée ${fc(avec.settings.partValue)}`)}
     </div>
     ${cycleCard(avec, st)}
-    ${h.alerts.length ? `<section class="section"><h2>À surveiller</h2>${h.alerts.map(a => `<div class="alert ${a.lvl}"><span style="width:22px;flex:none">${ic('alert')}</span><div><b>${esc(a.title)}</b><span class="small">${esc(a.detail)}</span></div></div>`).join('')}</section>` : ''}
-    <section class="section"><h2>Dernières réunions</h2><div class="list">${avec.meetings.slice(-5).reverse().map(m => meetingLi(avec, m)).join('') || '<div class="li muted">Aucune réunion pour le moment</div>'}</div></section>
-    <button class="li card" data-act="go" data-to="a.journal" style="border-radius:var(--r)">
-      <span style="width:28px;flex:none;color:${ch.ok ? 'var(--good)' : 'var(--bad)'}">${ic(ch.ok ? 'shield' : 'alert')}</span>
-      <span class="grow"><b>${ch.ok ? 'Journal protégé' : 'Journal altéré !'}</b><span class="small muted">${ch.ok ? `${avec.tx.length} écritures scellées, aucune modification` : esc(ch.reason)}</span></span>${ic('chev')}</button>
+    <!-- trois réunions suffisent : au-delà, c'est le journal qu'on va chercher -->
+    <section class="section"><h2>Dernières réunions</h2><div class="list">${avec.meetings.slice(-3).reverse().map(m => meetingLi(avec, m)).join('') || '<div class="li muted">Aucune réunion pour le moment</div>'}</div>
+      ${avec.meetings.length > 3 ? '<button class="linkbtn" data-act="go" data-to="a.journal">Toutes les réunions, écriture par écriture</button>' : ''}</section>
+    ${homeTuiles(avec, st, ch)}
   </main>${tabbar(A_TABS, 'a.home')}</div>`;
 };
 ACT.startMeeting = () => {
@@ -840,7 +853,10 @@ SCREENS['a.members'] = () => {
     <div class="grid2"><button class="btn ghost" data-act="addMemberSheet">${ic('plus')} Ajouter un membre</button>
       <button class="btn ghost" data-act="go" data-to="a.cards">${ic('clip')} Cartes des membres</button></div>
     <div class="list">${rows.map(x => { const d = st.mem[x.id]; const l = d.loans.find(y => y.status !== 'solde');
-      return `<button class="li" data-act="go" data-to="a.member" data-id="${x.id}">${avatar(x)}<span class="grow"><b>${esc(x.name)}</b><span class="small muted">${x.left ? 'A quitté le groupe' : roleLabel(x)} · ${d.parts} parts${l ? ` · <b style="color:var(--${l.status === 'retard' ? 'bad' : 'warn'})">crédit ${fck(l.remaining)}</b>` : ''}</span></span>
+      /* Les parts ne sont pas répétées ici : l'épargne affichée à droite, c'est exactement les
+         parts multipliées par leur valeur. Deux fois le même fait fait hésiter sur ce qu'on lit.
+         Le compte de parts reste sur le carnet du membre, où il sert au partage. */
+      return `<button class="li" data-act="go" data-to="a.member" data-id="${x.id}">${avatar(x)}<span class="grow"><b>${esc(x.name)}</b><span class="small muted">${x.left ? 'A quitté le groupe' : roleLabel(x)}${l ? ` · <b style="color:var(--${l.status === 'retard' ? 'bad' : 'warn'})">crédit ${fck(l.remaining)}</b>` : ''}</span></span>
       <span class="end"><span class="num">${fc(d.savings)}</span><span class="small muted">épargne</span></span></button>`; }).join('')}</div>
   </main>${tabbar(A_TABS, 'a.members')}</div>`;
 };
@@ -877,7 +893,9 @@ function loanLi(avec, l, withName = true) {
   const prog = Math.min(1, l.paid / l.due);
   const chip = l.status === 'solde' ? '<span class="chip good">Soldé</span>' : l.status === 'retard' ? `<span class="chip bad">${l.daysLate} j de retard</span>` : `<span class="chip warn">Fin ${fdate(l.dueDate)}</span>`;
   return `<div class="li" style="flex-wrap:wrap">${withName ? avatar(x) : ''}<div class="grow"><b>${withName ? esc(x.name) : fc(l.principal) + ' sur ' + l.months + ' mois'}</b>
-    <span class="small muted num">${withName ? fc(l.principal) + ' · ' : ''}remboursé ${fc(l.paid)} / ${fc(l.due)}</span>
+    <!-- un seul nombre à lire : ce qui reste. La barre dit déjà la part remboursée, et « reste »
+         est la seule somme qu'on réclame à la réunion — l'afficher trois fois ne l'éclaircit pas. -->
+    <span class="small muted num">${withName ? 'emprunté ' + fc(l.principal) : 'remboursé ' + fc(l.paid) + ' / ' + fc(l.due)}</span>
     <div class="bar" style="margin-top:6px"><i style="width:${Math.round(prog * 100)}%;${l.status === 'retard' ? 'background:var(--bad)' : ''}"></i></div></div>
     <div class="end">${chip}<br><span class="num small">reste ${fc(l.remaining)}</span></div></div>`;
 }
@@ -887,10 +905,13 @@ SCREENS['a.loans'] = () => {
   const done = st.loanList.filter(l => l.status === 'solde');
   return `<div class="shell">${aTop(avec)}<main class="main">
     <h1>Crédits</h1>
-    <div class="grid2"><div class="kpi"><span>À rembourser</span><b class="num">${fck(st.outstanding)}</b><span>${act.length} crédits en cours</span></div>
-      <div class="kpi"><span>En retard</span><b class="num" style="color:${st.lateAmt ? 'var(--bad)' : 'inherit'}">${fck(st.lateAmt)}</b><span>PAR ${pct(st.par)}</span></div>
-      <div class="kpi"><span>Intérêts gagnés</span><b class="num">${fck(st.interest)}</b><span>pour le partage</span></div>
-      <div class="kpi"><span>Disponible</span><b class="num">${fck(st.loanFund)}</b><span>caisse de crédit</span></div></div>
+    <div class="grille-avec">
+      ${chiffre('À rembourser', fck(st.outstanding), `${act.length} crédits en cours`)}
+      ${st.lateAmt ? `<div class="vignette chiffre mal"><span class="vk">En retard</span><span class="vn num">${fck(st.lateAmt)}</span><span class="vl">PAR ${pct(st.par)}</span></div>`
+        : chiffre('En retard', 'Aucun', 'tous les crédits sont à jour')}
+      ${chiffre('Intérêts gagnés', fck(st.interest), 'pour le partage')}
+      ${chiffre('Disponible', fck(st.loanFund), 'caisse de crédit')}
+    </div>
     <section class="section"><h2>En cours</h2><div class="list">${act.map(l => loanLi(avec, l)).join('') || '<div class="li muted">Aucun crédit en cours</div>'}</div></section>
     ${extLoansSection(avec, st)}
     ${done.length ? `<section class="section"><h2>Soldés</h2><div class="list">${done.slice(0, 15).map(l => loanLi(avec, l)).join('')}</div></section>` : ''}

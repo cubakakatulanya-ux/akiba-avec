@@ -325,7 +325,7 @@ ACT.saveNewCycle = () => {
 };
 SCREENS['a.cycles'] = () => {
   const { avec, st } = cur();
-  return `<div class="shell">${topbar('Historique des cycles', esc(avec.name), backBtn('a.more'), syncPill(avec))}<main class="main">
+  return `<div class="shell">${topbar('Cycles passés', esc(avec.name), backBtn('a.more'), syncPill(avec))}<main class="main">
     <h2>En cours</h2>${cycleCard(avec, st, false)}
     <h2>Cycles terminés</h2>
     ${avec.cycles.slice().reverse().map(c => { const pv = c.partValue || avec.settings.partValue; return `<div class="card stack">
@@ -340,7 +340,7 @@ SCREENS['a.cycles'] = () => {
 SCREENS['a.roles'] = () => {
   const { avec, me } = cur();
   if (!isBureau(me)) return SCREENS['a.home']();
-  return `<div class="shell">${topbar('Bureau et porte-clés', esc(avec.name), backBtn('a.more'))}<main class="main">
+  return `<div class="shell">${topbar('Bureau', esc(avec.name), backBtn('a.more'))}<main class="main">
     <p class="muted">À utiliser quand l'assemblée l'a décidé, en cours de cycle comme à la fin : nouvelle élection, démission, départ, maladie ou décès d'un responsable. Le changement est validé par un deuxième membre du bureau actuel, et <b>reste écrit dans le journal</b> — qui perd le rôle, qui le prend, et qui a validé.</p>
     ${openMeeting(avec) ? '<div class="alert warn"><div><b>Réunion ouverte</b><span class="small">Changez les rôles après la clôture : les clés servent à fermer la caisse.</span></div></div>' : `${rolesForm(avec, 'ro')}${approverFields(avec, me, 'ra')}
     <button class="btn primary block xl" data-act="saveRoles">${ic('check')} Enregistrer le nouveau bureau</button>`}
@@ -504,36 +504,50 @@ SCREENS['a.more'] = () => {
   const s = avec.settings;
   const org = avec.orgId ? K.data.orgs.find(o => o.id === avec.orgId) : null;
   const anim = avec.animId ? userById(avec.animId) : null;
-  const li = (to, icon, title, sub, act = 'go') => `<button class="li" data-act="${act}" ${act === 'go' ? `data-to="${to}"` : ''}>${rowIc(icon)}<span class="grow"><b>${title}</b><span class="small muted">${sub}</span></span>${ic('chev')}</button>`;
+  /* Seize lignes grises les unes sous les autres : pour trouver « Changer de téléphone », il
+     fallait relire la liste entière. Les mêmes gestes en vignettes, rangés par sujet — ce qui
+     touche au cycle, ce qui touche au groupe, ce qui touche à ce téléphone — se repèrent au
+     signe et à la place, sans relire. */
+  const aSortir = pending(avec);
+  const grille = (titre, tuiles) => `<section class="section"><h2>${titre}</h2><div class="grille-avec">${tuiles.filter(Boolean).join('')}</div></section>`;
   return `<div class="shell">${aTop(avec)}<main class="main">
     <h1>Plus</h1>
-    <div class="list">
-      ${li('a.share', 'split', 'Partage de fin de cycle', `Cycle ${avec.cycle.n} · fin le ${fdate(cycleEnd(avec))}`)}
-      ${li('a.ext', 'building', 'Crédit extérieur (IMF)', 'De la demande au remboursement')}
-      ${li('a.imf', 'chart', 'Dossier pour une IMF', 'Partager les chiffres du groupe pour un crédit extérieur')}
-      ${li('a.cycles', 'calendar', 'Historique des cycles', `${avec.cycles.length} cycle${avec.cycles.length > 1 ? 's' : ''} terminé${avec.cycles.length > 1 ? 's' : ''}`)}
-      ${li('a.roles', 'users', 'Bureau et porte-clés', 'Changer un responsable')}
-      ${li('', 'map', 'Lieu du groupe', placeShort(avec) || 'À compléter', 'placeSheet')}
-      ${isBureau(me) ? li('', 'eye', 'Signe du groupe', EMBLEMES[emblemeDe(avec).signe].nom + ' · ' + TEINTES[emblemeDe(avec).teinte].nom, 'emblemeSheet') : ''}
-      ${li('a.security', 'shield', 'Sécurité et carte de secours', `${(avec.rescue || []).filter(r => !r.used).length} codes de secours valables`)}
-      ${li('a.member', 'user', 'Mon carnet et mon code', esc(me.name)).replace('data-to="a.member"', `data-to="a.member" data-id="${me.id}"`)}
-      ${li('', 'sync', 'Changer de téléphone', 'Mettre l\'AVEC sur un nouveau téléphone', 'transferSheet').replace('data-act="transferSheet"', `data-act="transferSheet" data-id="${avec.id}"`)}
-      ${li('dev.backup', 'home', 'Installer et sauvegarder', K.data.lastBackup ? 'Dernière sauvegarde ' + ago(K.data.lastBackup) : 'Aucune sauvegarde pour le moment')}
-      ${li('guide', 'book', 'Guide d\'utilisation', 'Tout sur l\'AVEC et l\'application')}
-      ${li('', 'globe', 'Langue', I18N.name(), 'langSheet')}
-      ${li('', 'eye', 'Apparence', THEMES[themeChoisi()], 'themeSheet')}
-      ${li('', sonActif() ? 'bell' : 'bellOff', 'Sons', sonActif() ? 'Une note à chaque écriture' : 'Coupés', 'sonSheet')}
-      ${li('', 'shield', 'Sauvegarde', pending(avec) ? `${pending(avec)} écriture(s) ne sont que sur ce téléphone` : 'tout est sorti du téléphone', 'syncSheet')}
-    </div>
-    <section class="section"><h2>Règlement intérieur · cycle ${avec.cycle.n}</h2><div class="list">
+    ${grille('Le cycle', [
+      tuile('split', 'Partage', `Cycle ${avec.cycle.n} · fin le ${fdate(cycleEnd(avec))}`, 'data-act="go" data-to="a.share"', 'or'),
+      tuile('calendar', 'Cycles passés', `${avec.cycles.length} cycle${avec.cycles.length > 1 ? 's' : ''} terminé${avec.cycles.length > 1 ? 's' : ''}`, 'data-act="go" data-to="a.cycles"'),
+      tuile('building', 'Crédit extérieur', 'Avec une IMF', 'data-act="go" data-to="a.ext"'),
+      tuile('chart', 'Dossier IMF', 'Les chiffres à présenter', 'data-act="go" data-to="a.imf"')
+    ])}
+    ${grille('Le groupe', [
+      tuile('users', 'Bureau', 'Changer un responsable', 'data-act="go" data-to="a.roles"'),
+      tuile('map', 'Lieu du groupe', placeShort(avec) || 'À compléter', 'data-act="placeSheet"'),
+      isBureau(me) ? tuile('eye', 'Signe du groupe', EMBLEMES[emblemeDe(avec).signe].nom + ' · ' + TEINTES[emblemeDe(avec).teinte].nom, 'data-act="emblemeSheet"') : '',
+      tuile('shield', 'Sécurité', `${(avec.rescue || []).filter(r => !r.used).length} codes valables`, 'data-act="go" data-to="a.security"')
+    ])}
+    ${grille('Ce téléphone', [
+      tuile('user', 'Mon carnet', esc(me.name), `data-act="go" data-to="a.member" data-id="${me.id}"`),
+      tuile('home', 'Sauvegarder', K.data.lastBackup ? 'Dernière sauvegarde ' + ago(K.data.lastBackup) : 'Jamais sauvegardé', 'data-act="go" data-to="dev.backup"'),
+      tuile('sync', 'Nouveau téléphone', 'Déplacer le cahier', `data-act="transferSheet" data-id="${avec.id}"`),
+      tuile('shield', 'Sortir les écritures', aSortir ? `${aSortir} écriture${aSortir > 1 ? 's' : ''} seulement ici` : 'Tout est sorti du téléphone', 'data-act="syncSheet"', aSortir ? 'or' : '')
+    ])}
+    ${grille('Réglages', [
+      tuile('globe', 'Langue', I18N.name(), 'data-act="langSheet"'),
+      tuile('eye', 'Apparence', THEMES[themeChoisi()], 'data-act="themeSheet"'),
+      tuile(sonActif() ? 'bell' : 'bellOff', 'Sons', sonActif() ? 'Une note à chaque écriture' : 'Coupés', 'data-act="sonSheet"'),
+      tuile('book', 'Guide', 'L\'AVEC et l\'application', 'data-act="go" data-to="guide"')
+    ])}
+    <!-- Le règlement est une référence : on vient le relire deux ou trois fois dans l'année, pas
+         à chaque passage. Replié, il rend une page entière à l'écran ; il s'ouvre d'un toucher. -->
+    <details class="g"><summary><span class="gi">${ic('book')}</span>Règlement intérieur · cycle ${avec.cycle.n}</summary><div class="gb">
+      <div class="list">
       ${[['Valeur d\'une part', fc(s.partValue)], ['Parts par réunion', '1 à ' + s.maxParts], ['Caisse sociale', fc(s.socialFee) + ' par réunion'], ['Intérêt du crédit', s.rate + ' % par mois'], ['Crédit maximum', s.maxMult + ' × l\'épargne'], ['Durée maximum du crédit', s.maxMonths + ' mois'], ['Amende absence / retard', fc(s.fineAbsent) + ' / ' + fc(s.fineLate)], ['Pénalité de retard de crédit', penRate(s) ? penRate(s) + ' % par mois' : 'aucune'], ['Durée du cycle', (s.cycleMonths || 12) + ' mois'], ['Réunions', (s.meetingDay ? s.meetingDay + ', ' : '') + ((s.frequency || 7) === 14 ? 'toutes les 2 semaines' : 'chaque semaine')]]
         .map(([k, v]) => `<div class="li"><span class="grow">${k}</span><b class="num">${v}</b></div>`).join('')}
-    </div><p class="hint">Les règles sont votées par l'assemblée au début de chaque cycle et ne changent pas en cours de cycle.</p></section>
+    </div><p class="hint">Les règles sont votées par l'assemblée au début de chaque cycle et ne changent pas en cours de cycle.</p></div></details>
     <section class="section"><h2>Accompagnement</h2>
       ${org ? `<div class="card stack"><div class="row">${rowIc('building')}<div><b>${esc(org.name)}</b><p class="small muted">Animateur : ${esc(anim ? anim.name : '—')}</p></div></div>
         ${avec.visits.map(v => `<div class="receipt"><div class="row between small"><b>Visite du ${fdate(v.ts)}</b><span class="muted">${esc(userById(v.by)?.name || '')}</span></div><p class="small">${esc(v.note)}</p></div>`).join('')}</div>`
         : '<div class="card"><b>AVEC autonome</b><p class="small muted">Votre groupe n\'est suivi par aucune organisation. Vos données ne sont visibles que par vous.</p></div>'}
     </section>
-    <div class="list">${li('', 'logout', 'Changer d\'utilisateur', 'Connecté : ' + esc(me.name), 'logout')}</div>
+    <div class="list"><button class="li" data-act="logout">${rowIc('logout')}<span class="grow"><b>Changer d'utilisateur</b><span class="small muted">Connecté : ${esc(me.name)}</span></span>${ic('chev')}</button></div>
   </main>${tabbar(A_TABS, 'a.more')}</div>`;
 };
