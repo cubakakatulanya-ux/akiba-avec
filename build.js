@@ -43,7 +43,11 @@ const cut = html.indexOf('</style>') + '</style>'.length;
 const head = html.slice(0, cut).replace(/<title>[^<]*<\/title>/, '');   // le titre du profil remplace celui de la source
 /* les fichiers retirés de cette cible disparaissent aussi de la page */
 const body = P.sansFichiers.reduce((h, f) => h.split(`<script src="${f}"></script>\n`).join('').split(`<script src="${f}"></script>`).join(''), html.slice(cut));
-const version = 'akiba-' + new Date().toISOString().slice(0, 16).replace(/\D/g, '');
+/* Le numéro de version va jusqu'aux secondes. À la minute près, deux publications rapprochées
+   portaient le même numéro : le service worker, qui ne se réinstalle que si son texte change,
+   gardait la première et aucun téléphone ne voyait jamais la seconde. Les six premiers chiffres
+   de date restent au même endroit, donc « 2 novembre 2026, 20:56 » s'affiche comme avant. */
+const version = 'akiba-' + new Date().toISOString().slice(0, 19).replace(/\D/g, '');
 
 fs.writeFileSync(path.join(out, 'index.html'), `<!doctype html>
 <html lang="fr"><head>

@@ -872,6 +872,13 @@ h2,h3{font-weight:600;letter-spacing:-.005em}
 .vignette.chiffre .vl{font-size:var(--t-sm);color:var(--ink-2);opacity:1}
 .vignette.chiffre.mal{border-color:var(--bad);background:var(--bad-soft)}
 .vignette.chiffre.mal .vn{color:var(--bad)}
+/* Les cartes de chiffres d'avant portent le même habit que les vignettes : c'est le même objet
+   — un intitulé, un nombre, une précision — et l'application en comptait deux dessins selon
+   l'écran où l'on se trouvait. Une seule forme, partout. */
+.kpi{border-radius:20px;padding:14px;border:1.5px solid var(--line)}
+.kpi>span:first-child{font-size:var(--t-2xs);text-transform:uppercase;letter-spacing:.08em;font-weight:700;color:var(--ink-2)}
+.kpi b{font-family:var(--f-display);font-size:1.5rem;font-weight:700;line-height:1.1;margin:3px 0 1px}
+.kpi span{font-size:var(--t-sm);color:var(--ink-2)}
 .vignette.perso{min-height:128px}
 .vignette.perso .vl{font-weight:700;opacity:.8}
 @media (min-width:460px){.grille-avec{grid-template-columns:repeat(3,1fr)}}
@@ -992,7 +999,7 @@ details.g.demo>:not(summary)+*{margin-top:8px}
 </style>
 <style>html,body{margin:0}</style>
 </head><body>
-<script>window.KITABU_PWA = true; window.KITABU_VERSION = 'akiba-202611022056'; window.AKIBA_CIBLE = 'suivi';</script>
+<script>window.KITABU_PWA = true; window.KITABU_VERSION = 'akiba-20261102215114'; window.AKIBA_CIBLE = 'suivi';</script>
 
 <div id="app"></div>
 <script src="core.js"></script>

@@ -879,9 +879,12 @@ SCREENS['a.members'] = () => {
   const rows = avec.members.slice().sort((a, b) => (!!a.left - !!b.left) || st.mem[b.id].parts - st.mem[a.id].parts);
   return `<div class="shell">${aTop(avec)}<main class="main">
     <div class="row between"><h1>Membres</h1><span class="chip brand">${st.activeCount} · ${st.women} femmes</span></div>
-    <div class="grid2"><button class="btn ghost" data-act="addMemberSheet">${ic('plus')} Ajouter un membre</button>
-      <button class="btn ghost" data-act="go" data-to="a.cards">${ic('clip')} Cartes des membres</button>
-      <button class="btn ghost" data-act="go" data-to="a.livret">${ic('book')} Livrets à imprimer</button></div>
+    <!-- les trois gestes de cette page, en vignettes : on les reconnaît au signe avant de lire -->
+    <div class="grille-avec">
+      ${tuile('plus', 'Ajouter', 'Un nouveau membre', 'data-act="addMemberSheet"', 'or')}
+      ${tuile('clip', 'Cartes', 'À découper, avec QR', 'data-act="go" data-to="a.cards"')}
+      ${tuile('book', 'Livrets', 'Une page A4 par membre', 'data-act="go" data-to="a.livret"')}
+    </div>
     <div class="list">${rows.map(x => { const d = st.mem[x.id]; const l = d.loans.find(y => y.status !== 'solde');
       /* Les parts ne sont pas répétées ici : l'épargne affichée à droite, c'est exactement les
          parts multipliées par leur valeur. Deux fois le même fait fait hésiter sur ce qu'on lit.
@@ -916,9 +919,9 @@ SCREENS['a.member'] = p => {
         ${chiffre('Mes parts', String(d.parts), 'capital, partagé en fin de cycle')}
       </div>
       <!-- Les deux papiers d'une banque : le relevé qu'on demande, le livret qu'on garde. -->
-      <div class="grid2">
-        <button class="btn ghost" data-act="releveSheet" data-id="${x.id}">${ic('clip')} Relevé de compte</button>
-        <button class="btn ghost" data-act="go" data-to="a.livret" data-id="${x.id}">${ic('book')} Mon livret</button>
+      <div class="grille-avec">
+        ${tuile('clip', 'Relevé de compte', 'Imprimé ou envoyé maintenant', `data-act="releveSheet" data-id="${x.id}"`)}
+        ${tuile('book', 'Mon livret', 'La page A4 à garder chez soi', `data-act="go" data-to="a.livret" data-id="${x.id}"`)}
       </div>
       ${typeof openGuichet === 'function' && openGuichet(avec) ? `<button class="btn ghost block" data-act="go" data-to="a.guichet">${ic('coins')} Le guichet est ouvert</button>` : ''}
     </section>

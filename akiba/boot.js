@@ -48,8 +48,23 @@ if (window.KITABU_PWA && 'serviceWorker' in navigator) {
     navigator.serviceWorker.addEventListener('controllerchange', () => {
       if (!hadController) { hadController = true; return; }            // toute première installation : rien à recharger
       App.updateReady = true;
-      const calm = ['login', 'a.home', 'n.home', 'o.home', 'guide', 'l.avec'].includes(App.screen) && !App.sheet && !(document.activeElement && /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName));
-      if (calm) { DB.save(); location.reload(); } else render();       // pendant une saisie : bandeau « Mettre à jour »
+      /* Recharger tout seul, sauf quand cela ferait perdre un geste en cours. La règle était une
+         liste de six écrans autorisés : tous les autres — la liste des membres, les crédits, le
+         journal, les réglages — restaient sur l'ancienne version jusqu'à ce que quelqu'un touche
+         le bandeau, c'est-à-dire souvent jamais. On inverse : on recharge, sauf si une feuille
+         est ouverte, si un champ est en train d'être rempli, si une réunion se tient, si un
+         guichet est ouvert, ou si un brouillon attend d'être enregistré. */
+      let risque = !!App.sheet || App.screen === 'a.meet' || !!App.draftKey;
+      try {
+        const el = document.activeElement;
+        if (el && /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName)) risque = true;
+        const s = K.session;
+        if (s && s.kind === 'avec' && typeof openGuichet === 'function') {
+          const a = avecById(s.avecId);
+          if (a && (openGuichet(a) || openMeeting(a))) risque = true;   // de l'argent est sur la table
+        }
+      } catch (e) { risque = true; }                                    // dans le doute, on ne reprend pas la main
+      if (!risque) { DB.save(); location.reload(); } else render();     // sinon : bandeau « Mettre à jour »
     });
   });
 }
