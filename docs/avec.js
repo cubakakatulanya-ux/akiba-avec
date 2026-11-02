@@ -815,13 +815,32 @@ ACT.annulSheet = d => {
     <button class="btn danger block xl" data-act="saveAnnul" data-id="${t.id}">Annuler cette écriture</button>`);
 };
 ACT.saveAnnul = d => {
-  const { avec, me } = cur(); const m = openMeeting(avec); const t = avec.tx.find(x => x.id === d.id);
+  /* Une séance de guichet s'annule comme une réunion : une erreur de montant au comptoir est
+     même plus probable qu'en assemblée, où vingt personnes regardent l'écran. La règle ne
+     change pas — tant que la séance est ouverte, et jamais après le sceau. */
+  const { avec, me } = cur(); const m = openMeeting(avec) || (typeof openGuichet === 'function' ? openGuichet(avec) : null);
+  const t = avec.tx.find(x => x.id === d.id);
   const note = document.getElementById('anN').value.trim();
-  if (!m || t.meetingId !== m.id) return App.toast('On ne peut annuler que pendant la réunion en cours');
+  if (!m || t.meetingId !== m.id) return App.toast('On ne peut annuler que pendant la séance en cours');
   if (!note) return App.toast('Écrivez la raison');
+  /* Un transfert est un seul geste en deux écritures : on les annule ensemble, jamais l'une
+     sans l'autre, sinon de l'argent apparaît ou disparaît entre deux comptes. */
+  const an0 = annulledSet(avec);
+  const lot = t.ref && /^TR-/.test(t.ref)
+    ? avec.tx.filter(y => y.ref === t.ref && y.type !== 'ANNUL' && !an0.has(y.id))
+    : [t];
+  /* Un dépôt déjà dépensé ne s'annule pas tout seul : si le membre a retiré ou transféré depuis,
+     son compte passerait sous zéro, c'est-à-dire que le cahier dirait qu'il doit de l'argent
+     qu'il n'a jamais emprunté. On annule d'abord ce qui a suivi. */
+  const st0 = stats(avec), effet = {};
+  lot.forEach(y => { if (!y.memberId) return; if (y.type === 'DEPOT') effet[y.memberId] = (effet[y.memberId] || 0) - y.amount; if (y.type === 'RETRAIT') effet[y.memberId] = (effet[y.memberId] || 0) + y.amount; });
+  for (const id of Object.keys(effet)) {
+    const reste = (st0.mem[id] || { libre: 0 }).libre + effet[id];
+    if (reste < 0) return App.toast(`Impossible : le compte de ${((memberOf(avec, id) || {}).name || '').split(' ')[0]} passerait à ${fc(reste)}. Annulez d'abord ce qui a suivi.`);
+  }
   const ap = checkApprover(avec, 'an', null); if (!ap) return;
-  appendTx(avec, { meetingId: m.id, type: 'ANNUL', memberId: t.memberId, ref: t.id, amount: t.amount, note: `${note} · validé par ${ap.name}`, by: me.id });
-  DB.save(); App.closeSheet(); App.toast('Écriture annulée (visible dans le journal)');
+  lot.forEach(y => appendTx(avec, { meetingId: m.id, type: 'ANNUL', memberId: y.memberId, ref: y.id, amount: y.amount, note: `${note} · validé par ${ap.name}`, by: me.id }));
+  DB.save(); App.closeSheet(); App.toast(lot.length > 1 ? 'Transfert annulé des deux côtés' : 'Écriture annulée (visible dans le journal)');
 };
 
 /* ---------- reçu de réunion ---------- */

@@ -106,12 +106,15 @@ SCREENS['a.guichet'] = () => {
       ${tuile('plus', 'Dépôt', 'Le membre confie de l’argent', 'data-act="guichetDepotSheet"')}
       ${tuile('hand', 'Retrait', 'Il reprend son argent, avec son code', 'data-act="guichetRetraitSheet"', 'or')}
       ${tuile('coins', 'Remboursement', 'Il paie une partie de son crédit', 'data-act="guichetRembSheet"')}
+      ${tuile('sync', 'Transfert', 'D’un compte à un autre, sans sortir l’argent', 'data-act="guichetTransfertSheet"')}
     </div></section>
     <section class="section"><h2>Opérations de la séance</h2><div class="list">${ops.length ? ops.slice().reverse().map(t => {
       const x = memberOf(avec, t.memberId);
       const signe = t.type === 'RETRAIT' ? '−' : '+';
       return `<div class="li">${avatar(x)}<span class="grow"><b>${esc(x ? x.name : '—')}</b><span class="small muted">${TX[t.type].l} · ${hhmm(t.ts)}</span></span>
-        <span class="end"><span class="num">${signe}${fc(t.amount)}</span><button class="linkbtn" data-act="guichetRecu" data-id="${t.id}">Reçu</button></span></div>`;
+        <span class="end"><span class="num">${signe}${fc(t.amount)}</span><span class="row" style="gap:2px;justify-content:flex-end">
+          <button class="linkbtn" data-act="guichetRecu" data-id="${t.id}">Reçu</button>
+          <button class="linkbtn" data-act="annulSheet" data-id="${t.id}">Annuler</button></span></span></div>`;
     }).join('') : '<div class="li muted">Personne n’est encore passé</div>'}</div></section>
     <section class="section"><h2>Fermer le guichet</h2>
       <div class="card stack">
@@ -129,9 +132,9 @@ function guichetPasses(avec) {
   return `<section class="section"><h2>Dernières séances</h2><div class="list">${list.map(m => {
     const n = guichetOps(avec, m).length;
     const gap = (m.closeCount || 0) - (m.closeExpected || 0);
-    return `<div class="li"><span class="av" style="border-radius:12px;font-family:var(--f-display)">${m.n}</span>
-      <div class="grow"><b>${fdate(m.date)}</b><span class="small muted">${n} opération${n > 1 ? 's' : ''}</span></div>
-      ${gap ? `<span class="chip bad">Écart ${fc(gap)}</span>` : '<span class="chip good">Caisse juste</span>'}</div>`;
+    return `<button class="li" data-act="guichetFeuille" data-id="${m.id}"><span class="av" style="border-radius:12px;font-family:var(--f-display)">${m.n}</span>
+      <div class="grow"><b>${fdate(m.date)}</b><span class="small muted">${n} opération${n > 1 ? 's' : ''} · voir la feuille de caisse</span></div>
+      ${gap ? `<span class="chip bad">Écart ${fc(gap)}</span>` : '<span class="chip good">Caisse juste</span>'}</button>`;
   }).join('')}</div></section>`;
 }
 
@@ -240,6 +243,97 @@ ACT.saveRembGuichet = () => {
   ACT.guichetRecu({ id: t.id });
 };
 
+/* ---------- transférer d'un compte à un autre ----------
+   L'argent ne bouge pas : il reste dans la même caisse, il change seulement de propriétaire.
+   C'est pour cela que le transfert ne demande rien à la caisse et ne peut jamais la vider.
+   Le code demandé est celui de CELUI QUI DONNE — recevoir ne se refuse pas, donner si. */
+ACT.guichetTransfertSheet = () => {
+  const { avec, st } = cur();
+  const donneurs = activeM(avec).filter(x => st.mem[x.id].libre > 0);
+  if (!donneurs.length) return App.toast('Aucun compte n’a d’argent à transférer');
+  App.openSheet(`<h2>Transfert entre comptes</h2><p class="muted">L’argent passe d’un membre à l’autre sans sortir de la caisse. Celui qui donne tape son code.</p>
+    <div class="field"><label for="trD">De</label><select id="trD" class="input">${memberOptions(donneurs, x => ` — ${fc(st.mem[x.id].libre)}`)}</select></div>
+    <div class="field"><label for="trV">Vers</label><select id="trV" class="input">${memberOptions(activeM(avec))}</select></div>
+    <div class="field"><label for="trA">Montant</label><input id="trA" class="input bignum num" inputmode="numeric" placeholder="0"></div>
+    <div class="field"><label for="trN">Pourquoi</label><input id="trN" class="input" placeholder="Remboursement d’une dette, part de récolte…"></div>
+    <button class="btn primary block xl" data-act="saveTransfert">Continuer</button>`);
+};
+ACT.saveTransfert = () => {
+  const { avec, me, st } = cur(); const g = openGuichet(avec);
+  if (!g) return App.toast('Le guichet est fermé');
+  const de = memberOf(avec, document.getElementById('trD').value);
+  const vers = memberOf(avec, document.getElementById('trV').value);
+  const amount = parseAmt(document.getElementById('trA').value);
+  const note = document.getElementById('trN').value.trim();
+  if (!de || !vers) return App.toast('Choisissez les deux membres');
+  if (de.id === vers.id) return App.toast('Choisissez deux membres différents');
+  if (!amount) return App.toast('Écrivez le montant');
+  if (amount > st.mem[de.id].libre) return App.toast(`Son compte n’a que ${fc(st.mem[de.id].libre)}`);
+  askPin(de, 'Transfert : votre code', () => {
+    const motif = note ? ' · ' + note : '';
+    /* Les deux écritures portent la même référence : elles sont un seul geste, et s'annulent
+       ensemble. N'en annuler qu'une ferait disparaître ou apparaître de l'argent entre deux
+       comptes, et le comptage de fermeture accuserait la caisse d'un écart qu'elle n'a pas. */
+    const tr = 'TR-' + uid();
+    appendTx(avec, { meetingId: g.id, type: 'RETRAIT', memberId: de.id, ref: tr, amount, note: `Transfert vers ${vers.name}${motif}`, by: me.id });
+    const t = appendTx(avec, { meetingId: g.id, type: 'DEPOT', memberId: vers.id, ref: tr, amount, note: `Transfert de ${de.name}${motif}`, by: me.id });
+    DB.save(); App.closeSheet();
+    if (typeof jouerSon === 'function') jouerSon('ok');
+    App.go('a.guichet'); App.toast(`${fc(amount)} de ${de.name.split(' ')[0]} à ${vers.name.split(' ')[0]}`);
+    ACT.guichetRecu({ id: t.id });
+  });
+};
+
+/* ---------- la feuille de caisse de la séance ----------
+   Ce que le trésorier affiche au mur ou garde dans la boîte : ce qui est entré, ce qui est
+   sorti, ce qui devrait rester, ce qui reste vraiment, et qui a signé. */
+function feuilleGuichet(avec, g) {
+  const ops = guichetOps(avec, g);
+  const som = f => ops.filter(f).reduce((a, t) => a + t.amount, 0);
+  const dep = som(t => t.type === 'DEPOT'), ret = som(t => t.type === 'RETRAIT'), rem = som(t => t.type === 'REMB');
+  const L = [];
+  L.push(rCenter('AKIBA - FEUILLE DE CAISSE'));
+  L.push(rCenter(avec.name));
+  L.push(rCenter(`Guichet n${g.n} - ${fdate(g.date)}`));
+  L.push(rRule('='));
+  L.push(rLine('Caisse a l ouverture', fc(g.openCount)));
+  L.push(rRule());
+  L.push(rLine('Depots recus', '+' + grp(dep)));
+  L.push(rLine('Remboursements', '+' + grp(rem)));
+  L.push(rLine('Retraits servis', '-' + grp(ret)));
+  L.push(rLine('Operations', String(ops.length)));
+  L.push(rRule());
+  L.push(rLine('Caisse attendue', fc(g.closeExpected != null ? g.closeExpected : g.openCount + dep + rem - ret)));
+  if (g.status === 'closed') {
+    L.push(rLine('Caisse comptee', fc(g.closeCount)));
+    const ec = (g.closeCount || 0) - (g.closeExpected || 0);
+    L.push(rLine('Ecart', ec ? (ec > 0 ? '+' : '') + grp(ec) : 'aucun'));
+    if (g.note) rWrap('Note : ' + g.note).forEach(l => L.push(l));
+    L.push(rRule());
+    L.push('Signe par :');
+    (g.validators || []).forEach(id => L.push(' ' + noAcc((memberOf(avec, id) || {}).name || '').slice(0, RECU_W - 1)));
+    L.push('Sceau de la seance :');
+    L.push(noAcc((g.seal || '').slice(0, 16).replace(/(.{4})/g, '$1 ').trim()));
+  } else L.push('(seance encore ouverte)');
+  L.push(rCenter('Akiba - Entreprise Sociale'));
+  return L.join('\n');
+}
+ACT.guichetFeuille = async d => {
+  const { avec } = cur();
+  const g = avec.meetings.find(m => m.id === d.id) || openGuichet(avec);
+  if (!g) return;
+  const texte = feuilleGuichet(avec, g);
+  App.openSheet(`<h2>Feuille de caisse</h2><pre class="ticket">${esc(texte)}</pre>
+    <button class="btn primary block xl" data-act="guichetFeuilleImprimer" data-id="${g.id}">${ic('clip')} Imprimer</button>
+    <button class="btn ghost block" data-act="closeSheet">Fermer</button>`);
+};
+ACT.guichetFeuilleImprimer = async d => {
+  const { avec } = cur();
+  const g = avec.meetings.find(m => m.id === d.id);
+  const voie = await printReceipt(feuilleGuichet(avec, g), 1);
+  App.toast(voie ? 'Feuille envoyée à l’imprimante' : 'Feuille prête');
+};
+
 /* ---------- le reçu d'une opération ---------- */
 ACT.guichetRecu = d => {
   const { avec } = cur();
@@ -293,4 +387,5 @@ ACT.guichetFermer = () => {
   DB.save();
   if (typeof jouerSon === 'function') { jouerSon('scelle'); vibrer([25, 60, 25, 60, 40]); }
   App.go('a.guichet'); App.toast('Guichet fermé et scellé');
+  ACT.guichetFeuille({ id: g.id });                                  // la preuve papier, proposée tout de suite
 };

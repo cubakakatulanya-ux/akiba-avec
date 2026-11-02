@@ -139,15 +139,15 @@ function exportSheets(avecs) {
   const memberSheet = {
     name: 'Membres', cols: [
       { h: 'AVEC', w: 24 }, { h: 'Nom', w: 26 }, { h: 'Sexe', w: 7 }, { h: 'Âge', w: 7, t: 'n' }, { h: 'Date de naissance', w: 13 }, { h: 'Téléphone', w: 16 }, { h: 'Activité', w: 18 }, { h: 'Adresse', w: 22 },
-      { h: 'Rôle', w: 20 }, { h: 'Situation', w: 10 }, { h: 'Parts', w: 8, t: 'n' }, { h: 'Épargne (FC)', w: 12, t: 'n' }, { h: 'Valeur si partage (FC)', w: 13, t: 'n' },
+      { h: 'Rôle', w: 20 }, { h: 'Situation', w: 10 }, { h: 'Parts', w: 8, t: 'n' }, { h: 'Épargne (FC)', w: 12, t: 'n' }, { h: 'Valeur si partage (FC)', w: 13, t: 'n' }, { h: 'Compte de dépôt (FC)', w: 13, t: 'n' },
       { h: 'Caisse sociale versée (FC)', w: 13, t: 'n' }, { h: 'Amendes payées (FC)', w: 12, t: 'n' }, { h: 'Amendes dues (FC)', w: 12, t: 'n' },
       { h: 'Crédit en cours (FC)', w: 13, t: 'n' }, { h: 'Jours de retard', w: 9, t: 'n' }
     ],
     rows: rows.flatMap(({ a, st }) => a.members.map(m => {
-      const d = st.mem[m.id] || { parts: 0, savings: 0, social: 0, fines: 0, fineDebt: 0, loans: [] };
+      const d = st.mem[m.id] || { parts: 0, savings: 0, libre: 0, social: 0, fines: 0, fineDebt: 0, loans: [] };
       const open = d.loans.filter(l => l.status !== 'solde');
       return [a.name, m.name, m.sex === 'M' ? 'H' : 'F', ageOf(m), m.birthDate || '', hasPhone(m) ? m.phone : '', m.activity || '', m.address || '', roleLabel(m), m.left ? 'Parti' : 'Actif',
-        d.parts, d.savings, Math.round(d.parts * st.shareValue), d.social, d.fines, Math.max(0, d.fineDebt),
+        d.parts, d.savings, Math.round(d.parts * st.shareValue), d.libre, d.social, d.fines, Math.max(0, d.fineDebt),
         open.reduce((s, l) => s + l.remaining, 0), open.reduce((s, l) => Math.max(s, l.daysLate), 0)];
     }))
   };
@@ -157,6 +157,9 @@ function exportSheets(avecs) {
       { h: 'AVEC', w: 24 }, { h: 'Réunion n°', w: 9, t: 'n' }, { h: 'Date', w: 12, t: 'd' }, { h: 'Type', w: 16 }, { h: 'Présents', w: 9, t: 'n' }, { h: 'Retards', w: 8, t: 'n' }, { h: 'Absents', w: 8, t: 'n' },
       { h: 'Épargne (FC)', w: 12, t: 'n' }, { h: 'Caisse sociale (FC)', w: 12, t: 'n' }, { h: 'Remboursements (FC)', w: 13, t: 'n' }, { h: 'Amendes (FC)', w: 11, t: 'n' },
       { h: 'Crédits accordés (FC)', w: 13, t: 'n' }, { h: 'Aides (FC)', w: 10, t: 'n' },
+      /* le guichet : sans ces deux colonnes, la caisse comptée d'une séance ne s'expliquerait
+         par aucun des montants de la ligne, et le lecteur chercherait une erreur qui n'existe pas */
+      { h: 'Dépôts (FC)', w: 11, t: 'n' }, { h: 'Retraits (FC)', w: 11, t: 'n' },
       { h: 'Caisse attendue (FC)', w: 13, t: 'n' }, { h: 'Caisse comptée (FC)', w: 13, t: 'n' }, { h: 'Écart (FC)', w: 10, t: 'n' }, { h: 'Explication', w: 36 },
       { h: 'Dont justifiés', w: 11, t: 'n' }, { h: 'Motifs', w: 40 }
     ],
@@ -169,6 +172,7 @@ function exportSheets(avecs) {
         return [a.name, m.n, m.date, m.kind === 'partage' ? 'Partage' : m.kind === 'reprise' ? 'Reprise du cahier' : m.kind === 'guichet' ? 'Guichet' : 'Réunion',
           pr.filter(x => x === 'P').length, pr.filter(x => x === 'R').length, pr.filter(x => x === 'A').length,
           b.EPARGNE || 0, b.SOCIAL || 0, b.REMB || 0, b.AMENDE || 0, b.CREDIT || 0, b.AIDE || 0,
+          b.DEPOT || 0, b.RETRAIT || 0,
           m.closeExpected, m.closeCount, (m.closeCount || 0) - (m.closeExpected || 0), m.note || '',
           /* un retard justifié n'est pas un retard négligent : l'organisation doit pouvoir les séparer */
           Object.keys(m.excuses || {}).length,

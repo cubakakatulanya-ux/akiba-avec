@@ -1412,6 +1412,35 @@ window.__akibaTests = async function () {
       const avantTrop = a.tx.length;
       ACT.guichetRetraitSheet(); document.getElementById('rtM').value = x.id; document.getElementById('rtA').value = '999000'; ACT.saveRetrait(); App.closeSheet();
       eq(a.tx.length, avantTrop, 'un retrait plus grand que le compte ne doit rien écrire');
+      /* un transfert : l'argent change de propriétaire sans quitter la caisse */
+      const y = activeM(a).filter(m => !isBureau(m) && m.id !== x.id)[0];
+      const avantTr = stats(a);
+      ACT.guichetTransfertSheet();
+      document.getElementById('trD').value = x.id; document.getElementById('trV').value = y.id; document.getElementById('trA').value = '1000';
+      ACT.saveTransfert(); x.pin.split('').forEach(k => ACT.pinKey({ k })); App.closeSheet();
+      const apTr = stats(a);
+      eq(apTr.cash, avantTr.cash, 'un transfert ne doit rien changer à la caisse');
+      eq(apTr.mem[x.id].libre, avantTr.mem[x.id].libre - 1000, 'le compte de celui qui donne');
+      eq(apTr.mem[y.id].libre, avantTr.mem[y.id].libre + 1000, 'le compte de celui qui reçoit');
+
+      /* on n'annule pas un dépôt déjà dépensé : le compte passerait sous zéro */
+      const dep = guichetOps(a, g).find(t => t.type === 'DEPOT' && t.amount === 5000);
+      const avantRefus = a.tx.length;
+      ACT.annulSheet({ id: dep.id }); document.getElementById('anN').value = 'essai';
+      document.getElementById('anPin').value = memberOf(a, document.getElementById('anAp').value).pin;
+      ACT.saveAnnul({ id: dep.id }); App.closeSheet();
+      must(a.tx.length === avantRefus || stats(a).mem[x.id].libre >= 0, 'aucun compte ne doit passer sous zéro');
+
+      /* un transfert s'annule des deux côtés, jamais d'un seul */
+      const tr = guichetOps(a, g).find(t => t.ref && /^TR-/.test(t.ref));
+      ACT.annulSheet({ id: tr.id }); document.getElementById('anN').value = 'erreur de bénéficiaire';
+      document.getElementById('anPin').value = memberOf(a, document.getElementById('anAp').value).pin;
+      ACT.saveAnnul({ id: tr.id }); App.closeSheet();
+      const apAn = stats(a);
+      eq(apAn.mem[x.id].libre, avantTr.mem[x.id].libre, 'le donneur doit retrouver son solde');
+      eq(apAn.mem[y.id].libre, avantTr.mem[y.id].libre, 'le receveur doit retrouver le sien');
+      eq(apAn.cash, avantTr.cash, 'la caisse ne bouge pas quand on annule un transfert');
+
       /* fermer et sceller */
       const st3 = stats(a);
       ACT.guichetFermerSheet();
@@ -1423,7 +1452,11 @@ window.__akibaTests = async function () {
       must(g.seal, 'la séance doit porter un sceau');
       eq(g.closeCount, g.closeExpected, 'le comptage de fermeture');
       must(verifyChain(a).ok, 'le journal doit rester valide après une séance de guichet');
-      return '5 000 déposés, 2 000 repris avec le code du membre, caisse juste, séance scellée';
+      /* la feuille de caisse de la séance, celle qu'on garde dans la boîte */
+      const f = feuilleGuichet(a, g).split('\n');
+      must(f.some(l => /Caisse comptee/.test(l)), 'la feuille doit porter la caisse comptée');
+      must(Math.max.apply(null, f.map(l => l.length)) <= RECU_W, 'la feuille doit tenir dans la largeur du papier');
+      return '5 000 déposés, 2 000 repris avec le code du membre, transfert annulé des deux côtés, caisse juste, séance scellée';
     } finally {
       a.tx.length = nTx; a.meetings.length = nM;      // le banc rend le cahier comme il l'a trouvé
       if (typeof _chain === 'object') Object.keys(_chain).forEach(k => delete _chain[k]);
