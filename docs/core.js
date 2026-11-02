@@ -125,6 +125,14 @@ const isBureau = m => m && ['president', 'secretaire', 'tresorier'].includes(m.r
 const TX = {
   EPARGNE: { l: 'Épargne (parts)', in: true },
   SOCIAL: { l: 'Caisse sociale', in: true },
+  /* Le compte d'épargne libre : ce qui fait du groupe une petite banque de ses membres.
+     L'épargne en parts est du capital — elle se partage en fin de cycle et donne droit aux
+     intérêts. Le compte libre, lui, est un dépôt : l'argent reste à celui qui l'a confié, il
+     se reprend n'importe quel jour d'ouverture du guichet, et il n'est JAMAIS prêté. C'est
+     cette règle qui permet de promettre un retrait à tout moment sans jamais manquer d'argent :
+     la caisse de crédit ne compte pas les dépôts, donc un crédit ne peut pas les manger. */
+  DEPOT: { l: 'Dépôt sur le compte', in: true },
+  RETRAIT: { l: 'Retrait du compte', in: false },
   REMB: { l: 'Remboursement', in: true },
   AMENDE: { l: 'Amende', in: true },
   CREDIT: { l: 'Crédit accordé', in: false },
@@ -306,7 +314,7 @@ function stats(avec, opt = {}) {
   const annulled = new Set(txs.filter(t => t.type === 'ANNUL').map(t => t.ref));
   const act = txs.filter(t => t.type !== 'ANNUL' && !annulled.has(t.id));
   const mem = {};
-  avec.members.forEach(x => mem[x.id] = { parts: 0, savings: 0, social: 0, fines: 0, fineDebt: 0, loans: [], left: !!x.left });
+  avec.members.forEach(x => mem[x.id] = { parts: 0, savings: 0, libre: 0, social: 0, fines: 0, fineDebt: 0, loans: [], left: !!x.left });
   /* Les totaux par type, initialisés depuis la table des types elle-même. En les écrivant à la
      main, un type nouveau donnait undefined + montant, soit NaN — et le NaN se propageait
      jusqu'à la caisse affichée. Le piège ne peut plus se reproduire. */
@@ -326,6 +334,8 @@ function stats(avec, opt = {}) {
     const m = mem[t.memberId];
     if (t.type === 'EPARGNE') { parts += t.parts; if (m) { m.parts += t.parts; m.savings += t.amount; } }
     if (t.type === 'SOCIAL' && m) m.social += t.amount;
+    if (t.type === 'DEPOT' && m) m.libre += t.amount;
+    if (t.type === 'RETRAIT' && m) m.libre -= t.amount;
     if (t.type === 'AMENDE' && m) { m.fines += t.amount; if (t.ref === 'DETTE') m.fineDebt -= t.amount; }
     if (t.type === 'DETTE' && m) m.fineDebt += t.amount;
     if (t.type === 'CREDIT') loans[t.id] = { id: t.id, memberId: t.memberId, principal: t.amount, rate: t.rate, months: t.months, ts: t.ts, note: t.note || '', due: Math.round(t.amount * (1 + t.rate / 100 * t.months)), paid: 0, dueDate: jourDeReunion(avec, t.ts + t.months * 28 * DAY), pays: [] };
@@ -366,6 +376,10 @@ function stats(avec, opt = {}) {
   }).sort((a, b) => b.ts - a.ts);
   const extDebt = extList.reduce((a, e) => a + e.remaining, 0);
   const loanFund = sum.EPARGNE + sum.REMB + sum.AMENDE + rep.REPORT_IN.credit + sum.EXT_IN - sum.EXT_FEE - sum.EXT_REPAY - sum.EXT_GUAR - sum.CREDIT - sum.PARTAGE - sum.DEPART - rep.REPORT_OUT.credit;
+  /* Les dépôts ne sont pas dans la caisse de crédit : ils dorment dans le coffre et ne se
+     prêtent pas. C'est ce qui rend un retrait toujours possible, et ce qui empêche le
+     partage de distribuer l'argent des autres. */
+  const libreTot = sum.DEPOT - sum.RETRAIT;
   const active = avec.members.filter(x => !x.left);
   const activeParts = active.reduce((a, x) => a + mem[x.id].parts, 0);
   const fineDebt = active.reduce((a, x) => a + Math.max(0, mem[x.id].fineDebt), 0);
@@ -374,9 +388,9 @@ function stats(avec, opt = {}) {
   meetings.forEach(m => Object.values(m.presence || {}).forEach(p => { slots++; if (p !== 'A') pres++; }));
   const ecarts = meetings.filter(m => m.closeCount !== m.closeExpected);
   return {
-    sum, rep, mem, parts: activeParts, fineDebt, cycleN: cyc, loanList, activeLoans, outstanding, lateAmt, penaltyTot, interest, socialFund, loanFund,
+    sum, rep, mem, parts: activeParts, fineDebt, cycleN: cyc, loanList, activeLoans, outstanding, lateAmt, penaltyTot, interest, socialFund, loanFund, libreTot,
     extList, extDebt, extActive: extList.filter(e => e.status !== 'solde'), capitalOut, capitalBack, capitalDue,
-    cash: socialFund + loanFund, par: outstanding ? lateAmt / outstanding : 0,
+    cash: socialFund + loanFund + libreTot, par: outstanding ? lateAmt / outstanding : 0,
     meetings, last: meetings[meetings.length - 1], attendance: slots ? pres / slots : 0, ecarts,
     women: active.filter(m => m.sex === 'F').length, activeCount: active.length,
     // valeur d'une part si le partage avait lieu aujourd'hui : caisse de crédit + crédits et amendes à recouvrer − dette extérieure
@@ -655,7 +669,11 @@ const memberOf = (avec, id) => avec.members.find(m => m.id === id);
 /* Le but d'un crédit et le motif d'une aide sont écrits dans la note, suivis de la mention de
    validation. Pour un tableau, on ne garde que ce qu'a dit l'assemblée. */
 const butDe = note => String(note || '').split(' · ')[0].trim();
-const openMeeting = avec => avec.meetings.find(m => m.status === 'open');
+/* Une séance de guichet est enregistrée comme une réunion d'un genre à part : même journal,
+   même sceau, même comptage de caisse — mais elle n'a pas les huit étapes, et l'accueil ne doit
+   pas proposer de « continuer la réunion » quand c'est le guichet qui est ouvert. */
+const openMeeting = avec => avec.meetings.find(m => m.status === 'open' && m.kind !== 'guichet');
+const openGuichet = avec => avec.meetings.find(m => m.status === 'open' && m.kind === 'guichet');
 const pending = avec => avec.tx.filter(t => !t.synced).length;
 const isActive = avec => !avec.status || avec.status === 'active';
 

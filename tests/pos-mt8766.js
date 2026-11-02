@@ -296,6 +296,21 @@ const UA_POS = 'Mozilla/5.0 (Linux; Android 13; POS MT8766) AppleWebKit/537.36 (
     'elle est figée à ' + ticket.largeur + ' signes (58 mm). Un terminal à 80 mm imprimerait un ticket étroit avec une large marge, et il n’y a aucun moyen de le dire à l’application.');
   else passe('la largeur du papier se règle', '58 mm ou 80 mm');
 
+  /* Le reçu du guichet s'imprime au comptoir, devant le membre, sur le même rouleau : il doit
+     tenir dans la même largeur et rester sans accent, sinon l'imprimante rend des losanges. */
+  const tg = await jsj(`(() => {
+    const a = K.data.avecs[0];
+    const x = a.members.filter(m => !m.left)[0];
+    const n = a.meetings.reduce((v, m) => Math.max(v, m.n), 0) + 1;
+    const g = { id: 'essai-guichet', n, date: Date.now(), kind: 'guichet' };
+    const t = { id: 'essai-tx', ts: Date.now(), type: 'DEPOT', memberId: x.id, amount: 5000, hash: 'abcdef0123456789' };
+    const lignes = recuGuichet(a, g, x, t, 5000).split(String.fromCharCode(10));
+    return { plusLongue: Math.max.apply(null, lignes.map(l => l.length)), lignes: lignes.length,
+      accents: lignes.filter(l => /[éèêàçôûïÉÈÀÇ]/.test(l)).length };
+  })()`);
+  verifier(tg.plusLongue <= ticket.largeur && tg.accents === 0, 'le reçu du guichet tient sur le papier',
+    tg.lignes + ' lignes, plus longue : ' + tg.plusLongue + ' signes pour ' + ticket.largeur + ', ' + tg.accents + ' accent(s)');
+
   trait();
   ligne('  CE QUE CE BANC NE PEUT PAS ÉPROUVER');
   [['l’imprimante elle-même', 'il faut le terminal : largeur réelle du papier, vitesse du rouleau, qualité de la coupe, comportement quand le papier manque'],

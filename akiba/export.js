@@ -166,7 +166,7 @@ function exportSheets(avecs) {
       a.tx.forEach(t => { if (t.type === 'ANNUL' || an.has(t.id) || !t.meetingId) return; const b = byMeet[t.meetingId] = byMeet[t.meetingId] || {}; b[t.type] = (b[t.type] || 0) + t.amount; });
       return st.meetings.map(m => {
         const pr = Object.values(m.presence || {}), b = byMeet[m.id] || {};
-        return [a.name, m.n, m.date, m.kind === 'partage' ? 'Partage' : m.kind === 'reprise' ? 'Reprise du cahier' : 'Réunion',
+        return [a.name, m.n, m.date, m.kind === 'partage' ? 'Partage' : m.kind === 'reprise' ? 'Reprise du cahier' : m.kind === 'guichet' ? 'Guichet' : 'Réunion',
           pr.filter(x => x === 'P').length, pr.filter(x => x === 'R').length, pr.filter(x => x === 'A').length,
           b.EPARGNE || 0, b.SOCIAL || 0, b.REMB || 0, b.AMENDE || 0, b.CREDIT || 0, b.AIDE || 0,
           m.closeExpected, m.closeCount, (m.closeCount || 0) - (m.closeExpected || 0), m.note || '',

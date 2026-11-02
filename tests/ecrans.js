@@ -42,6 +42,7 @@ module.exports = `(() => {
     ['a.roles', 'avec', sAvec, {}],
     ['a.security', 'avec', sAvec, {}],
     ['a.share', 'avec', sAvec, {}],
+    ['a.guichet', 'avec', sAvec, {}],
     ['a.more', 'avec', sAvec, {}],
     ['a.meet', 'avec', sAvec, {}],
 

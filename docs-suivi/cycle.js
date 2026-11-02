@@ -220,6 +220,16 @@ function shareExecuter() {
     if (r.debt > 0) appendTx(avec, { meetingId: m.id, type: 'AMENDE', ref: 'DETTE', memberId: r.x.id, amount: r.debt, note: 'Amendes dues, retenues sur le partage', by });
     if (r.grossR > 0) appendTx(avec, { meetingId: m.id, type: 'PARTAGE', memberId: r.x.id, parts: r.d.parts, amount: r.grossR, note: `${r.d.parts} parts × ${fc(r.gross / r.d.parts)} · reçoit ${fc(r.net)}`, by });
   });
+  /* Les dépôts ne se partagent pas : ils appartiennent à celui qui les a confiés, et personne
+     ne les lui rend de force parce qu'un cycle se termine. Le compte continue donc dans le
+     cycle suivant. Comme les totaux se comptent par cycle, le solde se referme ici et se
+     rouvre là — exactement ce que REPORT_OUT et REPORT_IN font pour les deux caisses. */
+  plan.rows.forEach(r => {
+    if (r.d.libre > 0) {
+      appendTx(avec, { meetingId: m.id, type: 'RETRAIT', memberId: r.x.id, amount: r.d.libre, note: 'Compte reporté au cycle suivant', by });
+      appendTx(avec, { meetingId: m.id, cycle: next, type: 'DEPOT', memberId: r.x.id, amount: r.d.libre, note: `Compte reporté du cycle ${old.n}`, by });
+    }
+  });
   const after = stats(avec);
   const kept = { social: after.socialFund, credit: after.loanFund };
   if (kept.social > 0) appendTx(avec, { meetingId: m.id, type: 'REPORT_OUT', ref: 'social', amount: kept.social, note: 'Caisse sociale gardée pour le cycle suivant', by });
@@ -471,6 +481,8 @@ ACT.saveDepart = d => {
   c.d.loans.filter(l => l.status !== 'solde').forEach(l => appendTx(avec, { meetingId: m.id, type: 'REMB', memberId: x.id, ref: l.id, amount: l.remaining, note: 'Retenu sur l\'épargne au départ', by: me.id }));
   if (c.debt > 0) appendTx(avec, { meetingId: m.id, type: 'AMENDE', ref: 'DETTE', memberId: x.id, amount: c.debt, note: 'Amendes retenues au départ', by: me.id });
   appendTx(avec, { meetingId: m.id, type: 'DEPART', memberId: x.id, amount: c.d.savings, note: `Épargne rendue ${fc(c.refund)} · validé par ${ap.name}`, by: me.id });
+  /* Son compte de dépôts part avec lui : c'est son argent, il n'a jamais appartenu au groupe. */
+  if (c.d.libre > 0) appendTx(avec, { meetingId: m.id, type: 'RETRAIT', memberId: x.id, amount: c.d.libre, note: 'Compte rendu au départ', by: me.id });
   x.left = Date.now();
   if (isBureau(x) || x.key) x.key = false;
   inscrireAuJournal(avec, x, 'Membre sorti du groupe, validé par ' + ap.name);
@@ -519,6 +531,7 @@ SCREENS['a.more'] = () => {
       tuile('chart', 'Dossier IMF', 'Les chiffres à présenter', 'data-act="go" data-to="a.imf"')
     ])}
     ${grille('Le groupe', [
+      tuile('coins', 'Guichet', 'Dépôts et retraits hors réunion', 'data-act="go" data-to="a.guichet"'),
       tuile('users', 'Bureau', 'Changer un responsable', 'data-act="go" data-to="a.roles"'),
       tuile('map', 'Lieu du groupe', placeShort(avec) || 'À compléter', 'data-act="placeSheet"'),
       isBureau(me) ? tuile('eye', 'Signe du groupe', EMBLEMES[emblemeDe(avec).signe].nom + ' · ' + TEINTES[emblemeDe(avec).teinte].nom, 'data-act="emblemeSheet"') : '',

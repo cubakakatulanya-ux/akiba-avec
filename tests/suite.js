@@ -1371,5 +1371,64 @@ window.__akibaTests = async function () {
       return avant.avecs + ' AVEC, ' + avant.tx + ' écritures et ' + fc(avant.caisse) + ' repris de l’ancien stockage, puis recopiés dans la base';
     } finally { K.data = sauve; K.session = sessionSauve; DB.save(); await DB.vide(); }
   });
+
+  /* ---------- W. le guichet : l'AVEC comme petite banque de ses membres ----------
+     Deux promesses se vérifient ici, et elles valent plus que tout le reste de l'écran :
+     l'argent déposé n'est jamais prêté, et personne ne le sort sans le code de son
+     propriétaire. Si l'une des deux tombe, la caisse n'est plus une banque. */
+  await t("Le guichet : dépôt, retrait, et la caisse qui reste juste", async () => {
+    const a = avecById(A);
+    const sauveSession = K.session;
+    K.session = { kind: 'avec', avecId: A, memberId: bureauOf(a)[0].id };
+    const nTx = a.tx.length, nM = a.meetings.length;
+    try {
+      const x = activeM(a).find(m => !isBureau(m));
+      const av = stats(a);
+      /* ouvrir */
+      ACT.guichetOuvrirSheet(); document.getElementById('guA').value = String(av.cash); ACT.guichetOuvrir();
+      const g = openGuichet(a);
+      must(g, 'le guichet doit s’ouvrir');
+      must(!openMeeting(a), 'une séance de guichet ne doit pas passer pour une réunion');
+      /* déposer */
+      ACT.guichetDepotSheet(); document.getElementById('dpM').value = x.id; document.getElementById('dpA').value = '5000'; ACT.saveDepot(); App.closeSheet();
+      const ap = stats(a);
+      eq(ap.mem[x.id].libre, 5000, 'le compte du membre');
+      eq(ap.cash, av.cash + 5000, 'la caisse après le dépôt');
+      eq(ap.loanFund, av.loanFund, 'la caisse de crédit ne doit PAS grossir : un dépôt ne se prête pas');
+      eq(ap.shareValue, av.shareValue, 'la valeur d’une part ne doit pas bouger : un dépôt n’est pas du capital');
+      /* retirer : sans le bon code, rien ne s'écrit */
+      const avantFaux = a.tx.length;
+      ACT.guichetRetraitSheet(); document.getElementById('rtM').value = x.id; document.getElementById('rtA').value = '2000'; ACT.saveRetrait();
+      ['9', '9', '9', '9'].forEach(k => ACT.pinKey({ k }));
+      eq(a.tx.length, avantFaux, 'un code faux ne doit rien écrire');
+      /* retirer : avec le bon code */
+      ACT.guichetRetraitSheet(); document.getElementById('rtM').value = x.id; document.getElementById('rtA').value = '2000'; ACT.saveRetrait();
+      x.pin.split('').forEach(k => ACT.pinKey({ k }));
+      App.closeSheet();
+      const ap2 = stats(a);
+      eq(ap2.mem[x.id].libre, 3000, 'le compte après le retrait');
+      eq(ap2.cash, av.cash + 3000, 'la caisse après le retrait');
+      /* on ne retire pas plus qu'on n'a */
+      const avantTrop = a.tx.length;
+      ACT.guichetRetraitSheet(); document.getElementById('rtM').value = x.id; document.getElementById('rtA').value = '999000'; ACT.saveRetrait(); App.closeSheet();
+      eq(a.tx.length, avantTrop, 'un retrait plus grand que le compte ne doit rien écrire');
+      /* fermer et sceller */
+      const st3 = stats(a);
+      ACT.guichetFermerSheet();
+      document.getElementById('gfA').value = String(st3.cash);
+      const ap3 = memberOf(a, document.getElementById('gfAp').value);
+      document.getElementById('gfPin').value = ap3.pin;
+      ACT.guichetFermer(); App.closeSheet();
+      eq(g.status, 'closed', 'la séance doit être close');
+      must(g.seal, 'la séance doit porter un sceau');
+      eq(g.closeCount, g.closeExpected, 'le comptage de fermeture');
+      must(verifyChain(a).ok, 'le journal doit rester valide après une séance de guichet');
+      return '5 000 déposés, 2 000 repris avec le code du membre, caisse juste, séance scellée';
+    } finally {
+      a.tx.length = nTx; a.meetings.length = nM;      // le banc rend le cahier comme il l'a trouvé
+      if (typeof _chain === 'object') Object.keys(_chain).forEach(k => delete _chain[k]);
+      K.session = sauveSession; DB.save(); await DB.vide();
+    }
+  });
   return res;
 };

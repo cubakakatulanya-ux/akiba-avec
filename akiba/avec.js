@@ -75,7 +75,7 @@ ACT.pinKey = d => {
 function meetingLi(avec, m) {
   const here = Object.values(m.presence || {}).filter(p => p !== 'A').length;
   const gap = m.closeCount - m.closeExpected;
-  const chip = m.kind ? `<span class="chip brand">${m.kind === 'partage' ? 'Partage' : 'Reprise du cahier'}</span>` : m.status === 'open' ? '<span class="chip warn">En cours</span>' : gap ? `<span class="chip bad">Écart ${fc(gap)}</span>` : '<span class="chip good">Caisse juste</span>';
+  const chip = m.kind ? `<span class="chip brand">${m.kind === 'partage' ? 'Partage' : m.kind === 'guichet' ? 'Guichet' : 'Reprise du cahier'}</span>` : m.status === 'open' ? '<span class="chip warn">En cours</span>' : gap ? `<span class="chip bad">Écart ${fc(gap)}</span>` : '<span class="chip good">Caisse juste</span>';
   return `<div class="li"><span class="av" style="border-radius:12px;font-family:var(--f-display)">${m.n}</span>
     <div class="grow"><b>${fdate(m.date)}</b><span class="small muted">${here}/${Object.keys(m.presence || {}).length} présents${m.synced || m.status === 'open' ? '' : ' · pas encore envoyée'}</span></div>${chip}</div>`;
 }
@@ -100,6 +100,11 @@ function homeTuiles(avec, st, ch) {
   const nm = typeof nextModule === 'function' ? nextModule(avec) : null;
   const toSend = pending(avec);
   const t = [];
+  /* Le guichet passe en tête quand il est ouvert : il y a de l'argent sur la table. */
+  const g = typeof openGuichet === 'function' ? openGuichet(avec) : null;
+  t.push(tuile('coins', g ? 'Guichet ouvert' : 'Guichet',
+    g ? `Séance n°${g.n} · servir ou fermer` : st.libreTot ? `${fck(st.libreTot)} déposés par les membres` : 'Dépôts et retraits hors réunion',
+    'data-act="go" data-to="a.guichet"', g ? 'or' : ''));
   if ((avec.waitlist || []).length) t.push(tuile('clip', 'Demandes de crédit', `${avec.waitlist.length} en attente, prioritaires`, 'data-act="go" data-to="a.loans"', 'or'));
   t.push(tuile(ch.ok ? 'shield' : 'alert', ch.ok ? 'Journal protégé' : 'Journal altéré !',
     ch.ok ? `${avec.tx.length} écritures scellées` : esc(ch.reason), 'data-act="go" data-to="a.journal"', ch.ok ? '' : 'mal'));
@@ -128,7 +133,9 @@ SCREENS['a.home'] = () => {
       <div class="locks" aria-hidden="true">${[1, 2, 3].map(() => `<span style="width:18px;height:18px;display:block">${ic('lock')}</span>`).join('')}</div>
       <div class="label" style="color:inherit;opacity:.8">Argent dans la caisse</div>
       <div class="big num">${grp(st.cash)}<small>FC</small></div>
-      <div class="split"><div><span>Caisse de crédit</span><b class="num">${fc(st.loanFund)}</b></div><div><span>Caisse sociale</span><b class="num">${fc(st.socialFund)}</b></div></div>
+      <!-- Le grand nombre, c'est tout ce qu'il y a dans le coffre. Il faut donc dire d'où vient
+           chaque part, et surtout que les dépôts des membres n'appartiennent pas au groupe. -->
+      <div class="split"><div><span>Caisse de crédit</span><b class="num">${fc(st.loanFund)}</b></div><div><span>Caisse sociale</span><b class="num">${fc(st.socialFund)}</b></div>${st.libreTot ? `<div><span>Dépôts des membres</span><b class="num">${fc(st.libreTot)}</b></div>` : ''}</div>
     </section>
     ${open ? `<button class="btn primary block xl" data-act="go" data-to="a.meet">${ic('calendar')} Continuer la réunion n°${open.n}</button>`
       : `<button class="btn primary block xl" data-act="startMeeting">${ic('unlock')} Ouvrir la réunion n°${next}</button>`}
@@ -151,6 +158,9 @@ SCREENS['a.home'] = () => {
 ACT.startMeeting = () => {
   const { avec, me } = cur();
   if (!isActive(avec)) return App.toast('L\'AVEC doit d\'abord être validée par l\'organisation');
+  /* Une réunion et un guichet ouverts en même temps, ce sont deux comptages de la même caisse :
+     celui qui ferme en second trouve un écart qu'il ne comprend pas. */
+  if (typeof openGuichet === 'function' && openGuichet(avec)) return App.toast('Fermez d\'abord le guichet');
   if (avec.movedOut) return App.toast('Cette AVEC est sur un autre téléphone : la réunion se tient là-bas');
   if (!isBureau(me)) return App.toast('Seul le bureau peut ouvrir une réunion');
   if (openMeeting(avec)) return App.go('a.meet');
@@ -877,6 +887,16 @@ SCREENS['a.member'] = p => {
     <section class="caisse"><div class="label" style="color:inherit;opacity:.8">Mon épargne</div><div class="big num">${grp(d.savings)}<small>FC</small></div>
       <div class="split"><div><span>Parts achetées</span><b class="num">${d.parts}</b></div><div><span>Valeur estimée si partage</span><b class="num">${fc(d.parts * st.shareValue)}</b></div></div></section>
     <div class="row">${speakBtn('carnet', '.main h1, .caisse .label, .caisse .big, .caisse .split span, .caisse .split b', 'Écouter mon carnet', I18N.cur())}</div>
+    <!-- Le compte d'épargne libre, à côté des parts mais jamais mélangé avec elles : les parts
+         sont du capital qui travaille et se partage, le compte est de l'argent gardé, repris
+         quand on veut. Les confondre ferait croire à un membre qu'il peut retirer ses parts. -->
+    <section class="section"><h2>Mon compte</h2>
+      <div class="grille-avec">
+        ${chiffre('Déposé sur mon compte', fc(d.libre), d.libre ? 'à reprendre quand je veux' : 'aucun dépôt pour le moment')}
+        ${chiffre('Mes parts', String(d.parts), 'capital, partagé en fin de cycle')}
+      </div>
+      ${typeof openGuichet === 'function' && openGuichet(avec) ? `<button class="btn ghost block" data-act="go" data-to="a.guichet">${ic('coins')} Le guichet est ouvert</button>` : ''}
+    </section>
     ${typeof reveCarte === 'function' ? reveCarte(avec, st, x, self || isBureau(me)) : ''}
     <section class="section"><h2>Timbres d'épargne</h2><div class="card" style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px">
       ${closed.map(m => { const n = byMeet[m.id] || 0; return `<div style="text-align:center"><div class="small muted">R${m.n}</div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:2px;justify-items:center;margin-top:3px">${Array.from({ length: 5 }, (_, i) => `<span style="width:9px;height:9px;border-radius:50%;${i < n ? 'background:var(--maize)' : 'border:1.5px solid var(--line)'}"></span>`).join('')}</div></div>`; }).join('') || '<span class="muted">Pas encore de réunion</span>'}

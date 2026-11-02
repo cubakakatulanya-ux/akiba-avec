@@ -44,7 +44,7 @@
     "lot": "A",
     "etat": "passe",
     "quoi": "l accueil d un groupe reste utilisable a cette echelle",
-    "preuve": "8 ms"
+    "preuve": "7 ms"
   },
   {
     "lot": "A",
@@ -230,7 +230,7 @@
     "lot": "E",
     "etat": "passe",
     "quoi": "repartition des 500 credits",
-    "preuve": "200 soldes · 117 en cours · 183 en retard"
+    "preuve": "200 soldes · 109 en cours · 191 en retard"
   },
   {
     "lot": "E",
@@ -314,7 +314,7 @@
     "lot": "G",
     "etat": "passe",
     "quoi": "deux copies peuvent exister apres restauration d une sauvegarde ancienne",
-    "preuve": "telephone 1 : 25 ecritures (tete d60d198145) · telephone 2 : 25 ecritures (tete 85fa12ddce)"
+    "preuve": "telephone 1 : 25 ecritures (tete 415aa28ce3) · telephone 2 : 25 ecritures (tete a41ef9afe1)"
   },
   {
     "lot": "G",
@@ -422,7 +422,7 @@
     "lot": "I",
     "etat": "passe",
     "quoi": "duree de l export",
-    "preuve": "152 ms pour 12 AVEC"
+    "preuve": "170 ms pour 12 AVEC"
   },
   {
     "lot": "I",
@@ -590,13 +590,13 @@
     "lot": "L",
     "etat": "passe",
     "quoi": "ce que l application signale au comite",
-    "preuve": "niveau bad · warn : Fin du cycle dans 10 jours ; bad : Aucune réunion depuis 89 jours ; warn : Aucune sauvegarde récente"
+    "preuve": "niveau bad · warn : Fin du cycle dans 10 jours ; bad : Aucune réunion depuis 90 jours ; warn : Aucune sauvegarde récente"
   },
   {
     "lot": "L",
     "etat": "passe",
     "quoi": "le cahier garde la trace de sa provenance",
-    "preuve": "copie le 31/10/2026 a la reunion n°30, 1515 ecritures, caisse 3 150 450 FC"
+    "preuve": "copie le 02/11/2026 a la reunion n°30, 1515 ecritures, caisse 3 150 450 FC"
   },
   {
     "lot": "L",

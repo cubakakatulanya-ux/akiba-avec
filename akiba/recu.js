@@ -224,7 +224,10 @@ async function printReceipt(text, copies = 1, voie = '') {
 }
 
 /* ---------- écrans ---------- */
-const recuMeeting = p => { const { avec } = cur(); return avec.meetings.find(x => x.id === p.id) || avec.meetings.filter(m => m.status === 'closed').slice(-1)[0]; };
+/* Les reçus de membre sont ceux d'une réunion : présence, parts du jour, cumul du cycle. Une
+   séance de guichet n'a rien de tout cela — elle donne un reçu par opération, imprimé sur le
+   champ, et ne doit donc pas être proposée ici. */
+const recuMeeting = p => { const { avec } = cur(); return avec.meetings.find(x => x.id === p.id) || avec.meetings.filter(m => m.status === 'closed' && m.kind !== 'guichet').slice(-1)[0]; };
 
 SCREENS['a.receipts'] = p => {
   const { avec, st } = cur();
