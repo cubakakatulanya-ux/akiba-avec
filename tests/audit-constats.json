@@ -314,7 +314,7 @@
     "lot": "G",
     "etat": "passe",
     "quoi": "deux copies peuvent exister apres restauration d une sauvegarde ancienne",
-    "preuve": "telephone 1 : 25 ecritures (tete 415aa28ce3) · telephone 2 : 25 ecritures (tete a41ef9afe1)"
+    "preuve": "telephone 1 : 25 ecritures (tete 441e27b372) · telephone 2 : 25 ecritures (tete ddee24c797)"
   },
   {
     "lot": "G",
@@ -422,7 +422,7 @@
     "lot": "I",
     "etat": "passe",
     "quoi": "duree de l export",
-    "preuve": "170 ms pour 12 AVEC"
+    "preuve": "200 ms pour 12 AVEC"
   },
   {
     "lot": "I",

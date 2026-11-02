@@ -861,7 +861,8 @@ SCREENS['a.members'] = () => {
   return `<div class="shell">${aTop(avec)}<main class="main">
     <div class="row between"><h1>Membres</h1><span class="chip brand">${st.activeCount} · ${st.women} femmes</span></div>
     <div class="grid2"><button class="btn ghost" data-act="addMemberSheet">${ic('plus')} Ajouter un membre</button>
-      <button class="btn ghost" data-act="go" data-to="a.cards">${ic('clip')} Cartes des membres</button></div>
+      <button class="btn ghost" data-act="go" data-to="a.cards">${ic('clip')} Cartes des membres</button>
+      <button class="btn ghost" data-act="go" data-to="a.livret">${ic('book')} Livrets à imprimer</button></div>
     <div class="list">${rows.map(x => { const d = st.mem[x.id]; const l = d.loans.find(y => y.status !== 'solde');
       /* Les parts ne sont pas répétées ici : l'épargne affichée à droite, c'est exactement les
          parts multipliées par leur valeur. Deux fois le même fait fait hésiter sur ce qu'on lit.
@@ -895,11 +896,19 @@ SCREENS['a.member'] = p => {
         ${chiffre('Déposé sur mon compte', fc(d.libre), d.libre ? 'à reprendre quand je veux' : 'aucun dépôt pour le moment')}
         ${chiffre('Mes parts', String(d.parts), 'capital, partagé en fin de cycle')}
       </div>
+      <!-- Les deux papiers d'une banque : le relevé qu'on demande, le livret qu'on garde. -->
+      <div class="grid2">
+        <button class="btn ghost" data-act="releveSheet" data-id="${x.id}">${ic('clip')} Relevé de compte</button>
+        <button class="btn ghost" data-act="go" data-to="a.livret" data-id="${x.id}">${ic('book')} Mon livret</button>
+      </div>
       ${typeof openGuichet === 'function' && openGuichet(avec) ? `<button class="btn ghost block" data-act="go" data-to="a.guichet">${ic('coins')} Le guichet est ouvert</button>` : ''}
     </section>
     ${typeof reveCarte === 'function' ? reveCarte(avec, st, x, self || isBureau(me)) : ''}
+    <!-- Les timbres montrent autant de ronds que le règlement autorise de parts : un groupe qui
+         en vote dix verrait sinon cinq ronds pleins quel que soit son achat. -->
     <section class="section"><h2>Timbres d'épargne</h2><div class="card" style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px">
-      ${closed.map(m => { const n = byMeet[m.id] || 0; return `<div style="text-align:center"><div class="small muted">R${m.n}</div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:2px;justify-items:center;margin-top:3px">${Array.from({ length: 5 }, (_, i) => `<span style="width:9px;height:9px;border-radius:50%;${i < n ? 'background:var(--maize)' : 'border:1.5px solid var(--line)'}"></span>`).join('')}</div></div>`; }).join('') || '<span class="muted">Pas encore de réunion</span>'}
+      ${(() => { const mx = avec.settings.maxParts || 5, col = mx > 6 ? 5 : 3;
+        return closed.map(m => { const n = byMeet[m.id] || 0; return `<div style="text-align:center"><div class="small muted">R${m.n}</div><div style="display:grid;grid-template-columns:repeat(${col},1fr);gap:2px;justify-items:center;margin-top:3px">${Array.from({ length: mx }, (_, i) => `<span style="width:9px;height:9px;border-radius:50%;${i < n ? 'background:var(--maize)' : 'border:1.5px solid var(--line)'}"></span>`).join('')}</div></div>`; }).join('') || '<span class="muted">Pas encore de réunion</span>'; })()}
     </div></section>
     <section class="section"><h2>Crédits</h2>${d.loans.length ? `<div class="list">${d.loans.map(l => loanLi(avec, l, false)).join('')}</div>` : '<div class="card muted">Aucun crédit</div>'}</section>
     <div class="grid2"><div class="kpi"><span>Caisse sociale versée</span><b class="num">${fc(d.social)}</b></div><div class="kpi"><span>Amendes payées</span><b class="num">${fc(d.fines)}</b></div></div>

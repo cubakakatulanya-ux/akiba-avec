@@ -311,6 +311,18 @@ const UA_POS = 'Mozilla/5.0 (Linux; Android 13; POS MT8766) AppleWebKit/537.36 (
   verifier(tg.plusLongue <= ticket.largeur && tg.accents === 0, 'le reçu du guichet tient sur le papier',
     tg.lignes + ' lignes, plus longue : ' + tg.plusLongue + ' signes pour ' + ticket.largeur + ', ' + tg.accents + ' accent(s)');
 
+  /* Le relevé de compte sort du même rouleau, à la demande du membre. */
+  const tr = await jsj(`(() => {
+    const a = K.data.avecs[0];
+    const st = stats(a);
+    const x = a.members.filter(m => !m.left)[0];
+    const lignes = releveTexte(a, x, st).split(String.fromCharCode(10));
+    return { plusLongue: Math.max.apply(null, lignes.map(l => l.length)), lignes: lignes.length,
+      accents: lignes.filter(l => /[éèêàçôûïÉÈÀÇ]/.test(l)).length };
+  })()`);
+  verifier(tr.plusLongue <= ticket.largeur && tr.accents === 0, 'le relevé de compte tient sur le papier',
+    tr.lignes + ' lignes, plus longue : ' + tr.plusLongue + ' signes pour ' + ticket.largeur + ', ' + tr.accents + ' accent(s)');
+
   trait();
   ligne('  CE QUE CE BANC NE PEUT PAS ÉPROUVER');
   [['l’imprimante elle-même', 'il faut le terminal : largeur réelle du papier, vitesse du rouleau, qualité de la coupe, comportement quand le papier manque'],

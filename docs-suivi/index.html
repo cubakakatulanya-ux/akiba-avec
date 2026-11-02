@@ -758,11 +758,39 @@ h2,h3{font-weight:600;letter-spacing:-.005em}
 .carte-m .qr{width:52px;height:52px;flex:none}
 .carte-m footer{display:flex;justify-content:space-between;align-items:baseline;font-size:.58rem;color:#51635a;border-top:1px solid #e3e9e5;padding-top:5px}
 .carte-m .emp{font-family:var(--f-mono);letter-spacing:.08em;color:#102017}
+/* ---------- le livret du membre : une page A4 par personne ----------
+   C'est le papier qu'on garde chez soi. Il doit donc se lire sans l'application : des tableaux
+   à l'encre noire, des lignes vides pour la suite, et deux signatures en bas. */
+.livret{background:#fff;color:#102017;border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:14px}
+.livret header{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;border-bottom:2px solid #102017;padding-bottom:8px}
+.livret .lv-ou{display:flex;align-items:center;gap:8px}
+.livret .lv-ou b{display:block;font-family:var(--f-display);font-size:1rem;line-height:1.15}
+.livret .lv-ou span,.livret .lv-qui span{display:block;font-size:.7rem;color:#51635a}
+.livret .lv-qui{text-align:right}
+.livret .lv-qui b{font-family:var(--f-display);font-size:1.05rem}
+.livret h3{font-family:var(--f-display);font-size:.92rem;margin:13px 0 5px;color:#102017}
+.livret h3 small{font-weight:400;font-size:.72rem;color:#51635a}
+.lv-t{width:100%;border-collapse:collapse;font-size:.78rem}
+.lv-t th,.lv-t td{border:1px solid #c9d4cd;padding:4px 7px;text-align:left}
+.lv-t thead th{background:#eef2ec;font-size:.7rem;text-transform:uppercase;letter-spacing:.04em}
+.lv-t .n{text-align:right;font-variant-numeric:tabular-nums}
+.lv-t tfoot th{background:#f6f8f5;font-size:.78rem}
+.lv-t tr.vide td{height:19px}
+.lv-sign{display:flex;gap:22px;margin-top:16px}
+.lv-sign div{flex:1;border-top:1px solid #102017;padding-top:3px}
+.lv-sign span{font-size:.68rem;color:#51635a}
+.livret footer{margin-top:12px;border-top:1px solid #c9d4cd;padding-top:6px;font-size:.66rem;color:#51635a;display:flex;flex-direction:column;gap:2px}
+.livret footer b{font-family:var(--f-mono);color:#102017}
 @media print{
-  /* seules les cartes s'impriment : huit par feuille A4, aux vraies dimensions */
+  /* seules les cartes — ou les livrets — s'impriment, aux vraies dimensions */
   @page{size:A4 portrait;margin:10mm}
   body{background:#fff}
-  .shell>.topbar,.shell>.main>*:not(.cartes){display:none!important}
+  .shell>.topbar,.shell>.main>*:not(.cartes):not(.livrets){display:none!important}
+  .livret{border:0;border-radius:0;padding:0;margin:0;break-after:page;color:#000}
+  .livret:last-child{break-after:auto}
+  .livret h3{font-size:11pt;margin:14pt 0 4pt}
+  .lv-t{font-size:9.5pt}
+  .lv-t tr.vide td{height:22px}
   .cartes{display:grid;grid-template-columns:repeat(2,85mm);grid-auto-rows:54mm;gap:4mm 6mm;justify-content:center}
   .carte-m{aspect-ratio:auto;width:85mm;height:54mm;border:1px dashed #9aa8a1;border-radius:0;break-inside:avoid;
     padding:4mm 5mm;background:#fff;color:#000}
@@ -964,7 +992,7 @@ details.g.demo>:not(summary)+*{margin-top:8px}
 </style>
 <style>html,body{margin:0}</style>
 </head><body>
-<script>window.KITABU_PWA = true; window.KITABU_VERSION = 'akiba-202611022018'; window.AKIBA_CIBLE = 'suivi';</script>
+<script>window.KITABU_PWA = true; window.KITABU_VERSION = 'akiba-202611022041'; window.AKIBA_CIBLE = 'suivi';</script>
 
 <div id="app"></div>
 <script src="core.js"></script>
@@ -1001,6 +1029,7 @@ details.g.demo>:not(summary)+*{margin-top:8px}
 <script src="reve.js"></script>
 <script src="cartes.js"></script>
 <script src="guichet.js"></script>
+<script src="livret.js"></script>
 <script src="boot.js"></script>
 
 </body></html>

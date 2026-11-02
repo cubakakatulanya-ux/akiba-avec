@@ -65,7 +65,7 @@ const GUIDE = [
       <li><b>Présences</b> : pour chaque membre, touchez « Là », « Retard » ou « Absent ».</li>
       <li><b>Comptage</b> : les porte-clés ouvrent la caisse devant tous. On compte l'argent et on écrit le montant. S'il ne correspond pas au cahier, il faut expliquer l'écart.</li>
       <li><b>Caisse sociale</b> : chaque présent verse la cotisation. On peut aussi donner une aide (maladie, deuil).</li>
-      <li><b>Épargne</b> : chaque membre achète de 1 à 5 parts avec les boutons + et −. Les timbres jaunes montrent les parts.</li>
+      <li><b>Épargne</b> : chaque membre achète autant de parts que le règlement autorise (3, 5 ou 10) avec les boutons + et −. Les timbres jaunes montrent les parts.</li>
       <li><b>Remboursements</b> : écrivez ce que chaque emprunteur rembourse. « Échéance » met le montant prévu.</li>
       <li><b>Crédits</b> : l'assemblée écoute les demandes. Akiba montre le maximum permis et calcule l'intérêt.</li>
       <li><b>Amendes</b> : les retards paient sur place. L'amende d'un absent est notée comme dette.</li>
@@ -75,7 +75,7 @@ const GUIDE = [
     <p>Akiba reprend la suite tout seul : au début, un <b>résumé de la réunion précédente</b> (caisse, échéances du jour, amendes dues, absents) ; à l'épargne, les <b>parts habituelles</b> de chaque membre sont proposées ; aux remboursements, les <b>échéances du jour</b> sont déjà écrites. Il suffit de vérifier et de corriger.</p>
     <div class="tip">Si le téléphone s'éteint pendant la réunion, rien n'est perdu : touchez <b>Continuer la réunion</b>.</div>` },
   { id: 'epargne', icon: 'coins', t: 'Épargne et parts', b: `
-    <p>L'épargne se fait en <b>parts</b>. Toutes les parts ont la même valeur pendant le cycle (par exemple 1 000 FC). À chaque réunion, un membre achète de 1 à 5 parts.</p>
+    <p>L'épargne se fait en <b>parts</b>. Toutes les parts ont la même valeur pendant le cycle (par exemple 1 000 FC). À chaque réunion, un membre achète de 1 à 3, 5 ou 10 parts, selon ce que l'assemblée a voté au début du cycle.</p>
     <p>Le carnet du membre montre ses parts à chaque réunion, son épargne totale et <b>la valeur de ses parts si le partage avait lieu aujourd'hui</b>. Cette valeur augmente grâce aux intérêts et aux amendes.</p>` },
   { id: 'credit', icon: 'hand', t: 'Les crédits', b: `
     <div class="tip">L'<b>échéance</b> d'un crédit tombe toujours un <b>jour de réunion</b> : personne ne peut rembourser

@@ -1430,5 +1430,54 @@ window.__akibaTests = async function () {
       K.session = sauveSession; DB.save(); await DB.vide();
     }
   });
+  /* ---------- X. le livret et le relevé : les deux papiers d'une banque ----------
+     Le papier que le membre garde doit dire la même chose que le cahier, sinon il ne sert à
+     rien le jour où les deux sont posés côte à côte sur la natte. */
+  await t("Le livret et le relevé disent ce que dit le cahier", async () => {
+    const a = avecById(A);
+    const sauveSession = K.session;
+    K.session = { kind: 'avec', avecId: A, memberId: bureauOf(a)[0].id };
+    const nTx = a.tx.length, nM = a.meetings.length;
+    try {
+      const x = activeM(a).find(m => !isBureau(m));
+      const st0 = stats(a);
+      /* deux dépôts et un retrait, pour que le solde courant ait de quoi se tromper */
+      ACT.guichetOuvrirSheet(); document.getElementById('guA').value = String(st0.cash); ACT.guichetOuvrir(); App.closeSheet();
+      const pose = (id, v) => { document.getElementById(id).value = v; };
+      ACT.guichetDepotSheet(); pose('dpM', x.id); pose('dpA', '7000'); ACT.saveDepot(); App.closeSheet();
+      ACT.guichetDepotSheet(); pose('dpM', x.id); pose('dpA', '3000'); ACT.saveDepot(); App.closeSheet();
+      ACT.guichetRetraitSheet(); pose('rtM', x.id); pose('rtA', '4000'); ACT.saveRetrait();
+      x.pin.split('').forEach(k => ACT.pinKey({ k })); App.closeSheet();
+
+      const st = stats(a);
+      const mv = compteMouvements(a, x, a.cycle.n);
+      eq(mv.length, 3, 'le livret doit porter les trois opérations');
+      eq(mv[0].solde, 7000, 'le solde après le premier dépôt');
+      eq(mv[1].solde, 10000, 'le solde après le deuxième dépôt');
+      eq(mv[2].solde, 6000, 'le solde après le retrait');
+      eq(mv[mv.length - 1].solde, st.mem[x.id].libre, 'le dernier solde du livret doit être celui du cahier');
+
+      /* les parts du livret sont celles du cahier */
+      const pm = partsMouvements(a, x, a.cycle.n);
+      eq(pm.length ? pm[pm.length - 1].cumul : 0, st.mem[x.id].parts, 'le cumul des parts du livret');
+
+      /* le relevé porte le solde, et tient sur le rouleau */
+      const txt = releveTexte(a, x, st);
+      must(txt.indexOf(fc(st.mem[x.id].libre).replace(/ | /g, ' ')) >= 0 || txt.indexOf(grp(st.mem[x.id].libre)) >= 0, 'le relevé doit porter le solde du compte');
+      const lignes = txt.split('\n');
+      must(Math.max.apply(null, lignes.map(l => l.length)) <= RECU_W, 'le relevé doit tenir dans la largeur du papier');
+      must(!lignes.some(l => /[éèêàçôûïÉÈÀÇ]/.test(l)), 'le relevé ne doit porter aucun accent');
+
+      /* la page du livret se dessine */
+      const html = livretHTML(a, x, st, livretAncre(a));
+      must(html.indexOf('Signature du membre') > 0, 'le livret doit porter les lignes de signature');
+      must(html.indexOf(grp(st.mem[x.id].libre)) > 0, 'le livret doit porter le solde');
+      return `3 mouvements, solde ${fc(st.mem[x.id].libre)}, ${lignes.length} lignes sur le rouleau`;
+    } finally {
+      a.tx.length = nTx; a.meetings.length = nM;
+      if (typeof _chain === 'object') Object.keys(_chain).forEach(k => delete _chain[k]);
+      K.session = sauveSession; DB.save(); await DB.vide();
+    }
+  });
   return res;
 };
