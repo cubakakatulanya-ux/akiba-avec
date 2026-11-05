@@ -49,7 +49,8 @@ function figure(chemin, legende) {
   const b = fs.readFileSync(f);
   const w = b.readUInt32BE(16), h = b.readUInt32BE(20);
   const tel = /(^|\/)tel-/.test(chemin);
-  const large = tel ? 215 : 470;
+  const schema = /^schema\//.test(chemin);
+  const large = tel ? 215 : schema ? 480 : 470;
   const haut = Math.round(large * h / w);
   return [
     new Paragraph({ children: [new ImageRun({ type: 'png', data: b, transformation: { width: large, height: haut } })],
@@ -96,6 +97,14 @@ for (const b of blocs) {
   else if (k === 'ul') a.forEach(x => corps.push(puce(x)));
   else if (k === 'ol') a.forEach(x => corps.push(num(x)));
   else if (k === 'fig') corps.push(...figure(a, c));
+  /* la légende d'une capture annotée : le numéro du repère, puis ce qu'il désigne */
+  else if (k === 'reperes') {
+    a.forEach((t, i) => corps.push(new Paragraph({
+      children: [new TextRun({ text: ' ' + (i + 1) + ' ', bold: true, font: F, size: 22, color: '1B2A24', shading: { type: ShadingType.CLEAR, fill: 'F2B705', color: 'auto' } })].concat(runs('   ' + t)),
+      spacing: { after: 80, line: 280 }, indent: { left: 420 },
+    })));
+    corps.push(new Paragraph({ text: '', spacing: { after: 120 } }));
+  }
   else if (k === 'tip') { corps.push(encadre(a, VERT, 'À RETENIR')); corps.push(new Paragraph({ text: '', spacing: { after: 160 } })); }
   else if (k === 'attention') { corps.push(encadre(a, 'A05A00', 'ATTENTION')); corps.push(new Paragraph({ text: '', spacing: { after: 160 } })); }
   else if (k === 'tbl') { corps.push(tableau(a, c)); corps.push(new Paragraph({ text: '', spacing: { after: 200 } })); }

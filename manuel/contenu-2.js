@@ -65,6 +65,7 @@ module.exports = [
 ['fig', 'avec/tel-l-member', 'La connexion : chacun touche son nom.'],
 
 ['h1', '6. La réunion, étape par étape'],
+['fig', 'schema/huit-etapes', 'Les huit étapes, dans l’ordre. On ne saute pas une étape qui engage de l’argent.'],
 ['p', 'La réunion est le cœur d’Akiba. Elle se tient en huit étapes, dans l’ordre, et l’application ne laisse pas sauter une étape qui engage de l’argent. Le secrétaire tient le téléphone ; les montants se disent à haute voix.'],
 ['tip', 'Une réunion interrompue n’est pas perdue : elle reste ouverte. Rallumez le téléphone, rouvrez le cahier, et le grand bouton doré propose **Continuer la réunion**.'],
 
@@ -88,7 +89,11 @@ module.exports = [
 
 ['h2', 'Étape 5 — Les remboursements'],
 ['p', 'Akiba liste les crédits en cours avec ce qui reste dû, les intérêts du mois et, s’il y a lieu, la pénalité de retard. Le membre peut payer tout ou partie. Un crédit soldé disparaît de la liste et entre dans l’historique.'],
-['fig', 'reunion/tel-etape-5', 'Étape 5 : qui rembourse, et combien.'],
+['fig', 'annote/reunion-remboursements', 'Étape 5, sur le téléphone du secrétaire.'],
+['reperes', ['La barre des huit étapes : celles qui sont faites portent une coche, et l’on peut revenir en arrière.',
+  '« Échéance » remet le montant prévu au contrat, sans avoir à le retaper.',
+  '« Solder » écrit tout ce qui reste, même avant la fin du crédit : les intérêts s’arrêtent au jour du paiement.',
+  'Le grand bouton passe à l’étape suivante, et écrit tout ce qui est à l’écran.']],
 
 ['h2', 'Étape 6 — Les nouveaux crédits'],
 ['p', 'L’assemblée écoute chaque demande. Akiba affiche l’argent disponible pour prêter et, pour chaque membre, le plafond calculé selon la règle votée — un multiple de son épargne.'],

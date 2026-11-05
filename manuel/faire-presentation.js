@@ -105,6 +105,12 @@ s.addText('Le groupe', { x: 1.0, y: 5.5, w: 1.1, h: 0.4, fontSize: 13, bold: tru
 s.addText('L’animateur', { x: 10.6, y: 5.5, w: 1.4, h: 0.4, fontSize: 13, bold: true, color: VERT, isTextBox: true });
 
 s = pres.addSlide({ masterName: 'TITRE', sectionTitle: 'Le problème et la réponse' });
+s.addText('Où vit le cahier, et comment il voyage', { placeholder: 'titre' });
+s.addImage(Object.assign(IMG('schema/ou-vit-le-cahier'), { x: 1.15, y: 1.5, w: 11.0, h: 4.73 }));
+s.addText('Le cahier naît chez l’animateur, vit sur le téléphone du groupe, et remonte en copie — jamais l’inverse.',
+  { x: 0.7, y: 6.4, w: 11.2, h: 0.5, fontSize: 15, italic: true, color: VERT, isTextBox: true });
+
+s = pres.addSlide({ masterName: 'TITRE', sectionTitle: 'Le problème et la réponse' });
 s.addText('Trois principes qui ne bougent pas', { placeholder: 'titre' });
 const principes = [
   ['Tout fonctionne sans réseau', 'Akiba n’a pas de serveur. Rien ne part du téléphone tout seul : ce qui sort, sort parce que quelqu’un l’a décidé.'],
@@ -158,7 +164,8 @@ liste(s, 0.7, 1.55, 5.7, 3.6, [
   'Un retrait demande le code du membre lui-même — pas celui du bureau.',
   'La séance s’ouvre et se ferme par un comptage à deux.',
 ], 15);
-carte(s, 0.7, 5.3, 11.9, 1.5, 'Pourquoi cela compte', 'Là où la réunion est hebdomadaire et le marché quotidien, un groupe qui ne rend pas l’argent entre deux séances pousse ses membres vers le prêteur du coin.', DOUX);
+s.addImage(Object.assign(IMG('schema/trois-poches'), { x: 0.75, y: 5.3, w: 4.85, h: 2.09 }));
+carte(s, 6.9, 5.3, 5.7, 1.5, 'Pourquoi cela compte', 'Là où la réunion est hebdomadaire et le marché quotidien, un groupe qui ne rend pas l’argent entre deux séances pousse ses membres vers le prêteur du coin.', DOUX);
 
 s = pres.addSlide({ masterName: 'TITRE', sectionTitle: 'Akiba — le cahier du groupe' });
 s.addText('Ce qui sort sur le papier', { placeholder: 'titre' });

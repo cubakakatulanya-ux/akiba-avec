@@ -19,6 +19,7 @@ module.exports = [
 
 ['h1', '13. Sécurité'],
 ['h2', '13.1 Ce qui protège l’argent'],
+['fig', 'schema/qui-peut-quoi', 'Chacun son droit — et ce que personne ne peut faire.'],
 ['tbl', ['Protection', 'Contre quoi'], [
   ['Code secret par membre', 'Qu’un autre agisse à sa place'],
   ['Deux validations pour un crédit', 'Qu’une seule personne décide d’un prêt'],
@@ -30,6 +31,7 @@ module.exports = [
   ['Preuve sur chaque reçu', 'Qu’un reçu soit refait à la main'],
   ['Carte de secours', 'Qu’un code oublié bloque le groupe'],
 ]],
+['fig', 'schema/journal-scelle', 'Chaque empreinte dépend de la ligne et de celle d’avant : une retouche se voit immédiatement.'],
 ['h2', '13.2 Vérifier que le cahier est intact'],
 ['p', 'Dans **Plus › Sécurité**, Akiba revérifie toute la chaîne et dit combien d’écritures ont été vérifiées. Si une ligne a été modifiée, il donne son numéro. Faites-le avant un partage, avant d’envoyer un dossier à une IMF, et chaque fois qu’un doute apparaît.'],
 ['fig', 'avec/ordi-a-security', 'L’écran de sécurité : le journal, les codes, les traces.'],
@@ -64,7 +66,8 @@ module.exports = [
 ['fig', 'suivi/ordi-adm-home', 'L’espace d’administration : licences, blocage, versions.'],
 
 ['h1', '16. Problèmes et réponses'],
-['p', 'Ce chapitre est fait pour être consulté en urgence, le téléphone à la main, pendant une réunion. Cherchez d’abord le message exact affiché à l’écran dans le tableau ci-dessous.'],
+['p', 'Ce chapitre est fait pour être consulté en urgence, le téléphone à la main, pendant une réunion. Suivez le chemin ci-dessous : il mène à la réponse en deux questions.'],
+['fig', 'schema/que-faire-si', 'Le chemin le plus court entre un blocage et sa réponse.'],
 
 ['h2', '16.1 Les messages d’Akiba'],
 ['tbl', ['Le message', 'Ce qu’il veut dire, et quoi faire'], [

@@ -2,6 +2,7 @@
 module.exports = [
 
 ['h1', '7. Le guichet entre les réunions'],
+['fig', 'schema/trois-poches', 'Trois poches, trois règles. Akiba ne les mélange jamais.'],
 ['p', 'Le guichet est **facultatif**. L’assemblée le vote à la création, et peut l’ouvrir plus tard dans **Plus › Règlement**. Sans lui, l’argent ne bouge qu’en réunion, comme toujours.'],
 ['p', 'Avec lui, un membre peut **confier de l’argent** ou **le reprendre** un autre jour, au village, sans attendre la réunion. C’est utile là où la réunion est hebdomadaire et le marché quotidien.'],
 ['fig', 'avec/ordi-a-guichet', 'L’écran du guichet : ce qui est déposé, ce qu’il y a dans la caisse, et les quatre gestes.'],
@@ -59,7 +60,10 @@ module.exports = [
 ['fig', 'avec/ordi-a-imf', 'Le dossier IMF : sept critères, et où en est le groupe.'],
 
 ['h1', '10. Les membres'],
-['fig', 'avec/ordi-a-members', 'La liste des membres : épargne et crédit de chacun, en un coup d’œil.'],
+['fig', 'annote/membres', 'La liste des membres, sur ordinateur.'],
+['reperes', ['Ajouter un membre en cours de cycle : il part de zéro part.',
+  'Imprimer les cartes de membre : dix par feuille A4, à découper.',
+  'Imprimer les livrets : une page A4 par membre, à garder chez lui.']],
 
 ['h2', '10.1 La fiche d’un membre'],
 ['p', 'Nom, sexe, date de naissance (l’âge s’en déduit), téléphone, activité, adresse, photo. Seuls le nom et le sexe sont obligatoires. La photo reste facultative, se prend avec l’accord de la personne, et Akiba la réduit pour qu’elle ne pèse pas sur le téléphone.'],

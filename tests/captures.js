@@ -78,7 +78,7 @@ const FEUILLES = [
   const nb = await js('window.__ECRANS.length', false);
 
   const faites = [];
-  for (const [etiq, w, h, dsf, mob] of [['tel', 390, 844, 2, true], ['ordi', 1440, 900, 1, false]]) {
+  for (const [etiq, w, h, dsf, mob] of [['tel', 390, 844, 2, true], ['ordi', 1440, 900, 2, false]]) {
     await pose(w, h, dsf, mob);
     const vus = {};
     for (let i = 0; i < nb; i++) {

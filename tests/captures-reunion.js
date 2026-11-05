@@ -41,7 +41,7 @@ const image = async nom => { const r = await cdp('Page.captureScreenshot', { for
   await cdp('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-color-scheme', value: 'light' }] });
 
   const faites = [];
-  for (const [etiq, w, h, dsf, mob] of [['tel', 390, 844, 2, true], ['ordi', 1440, 900, 1, false]]) {
+  for (const [etiq, w, h, dsf, mob] of [['tel', 390, 844, 2, true], ['ordi', 1440, 900, 2, false]]) {
     await cdp('Emulation.setDeviceMetricsOverride', { width: w, height: h, deviceScaleFactor: dsf, mobile: mob });
     await cdp('Page.navigate', { url: 'http://localhost:' + PORT + '/?x=' + Math.random() });
     for (let i = 0; i < 120; i++) { await dors(250); try { if (await js("typeof App !== 'undefined' && !!(K.data && K.data.avecs && K.data.avecs.length)", false)) break; } catch (e) {} }

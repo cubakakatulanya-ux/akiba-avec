@@ -3,6 +3,7 @@ module.exports = [
 
 ['h1', '1. Ce qu’est Akiba'],
 ['p', 'Akiba remplace le cahier de papier d’une AVEC — une association villageoise d’épargne et de crédit — par un cahier qui vit dans un téléphone ou un terminal de caisse. Il tient les présences, l’épargne en parts, la caisse sociale, les crédits, les amendes, la clôture à trois clés, le partage de fin de cycle, et il imprime les reçus.'],
+['fig', 'schema/ou-vit-le-cahier', 'Le cahier naît chez l’animateur, vit sur le téléphone du groupe, et remonte en copie.'],
 ['p', 'Trois principes commandent tout le reste, et il faut les connaître avant de toucher à l’application.'],
 ['ul', [
   '**Tout fonctionne sans réseau.** Akiba n’a pas de serveur. Rien ne part du téléphone tout seul. Ce qui sort, sort parce que quelqu’un l’a décidé : un fichier de sauvegarde, un envoi vers un autre téléphone, une image montrée à l’animateur.',
@@ -28,7 +29,12 @@ module.exports = [
   '**Un ordinateur**, pour l’animateur et l’organisation : la même application, dans une mise en page de bureau avec une colonne de navigation à gauche.',
 ]],
 ['p', 'Le navigateur doit être récent (Chrome, Edge, Samsung Internet). Akiba garde ses données dans le téléphone lui-même ; vider les données du navigateur efface le cahier, comme brûler le cahier de papier.'],
-['fig', 'avec/ordi-a-home', 'L’accueil du groupe sur un ordinateur : colonne de navigation, en-tête de page, caisse, alertes et chiffres du cycle.'],
+['fig', 'annote/accueil-groupe', 'L’accueil du groupe sur un ordinateur. Les repères renvoient à la liste ci-dessous.'],
+['reperes', ['La colonne de navigation : accueil, membres, crédits, journal, et le reste sous « Plus ».',
+  'L’argent dans la caisse, et ses deux poches : la caisse de crédit et la caisse sociale.',
+  'Ce qui demande une action : écart de caisse, fin de cycle, crédit en retard.',
+  'Le geste du jour. Il n’y a jamais qu’un seul grand bouton doré, et il dit ce qu’il fait.',
+  'Ce qui n’existe encore que sur ce téléphone, et qu’il faut sauvegarder.']],
 ['fig', 'avec/tel-a-home', 'Le même accueil sur un téléphone.'],
 
 ['h2', 'Installer l’application'],
@@ -57,8 +63,12 @@ module.exports = [
 ]],
 
 ['h1', '3. L’animateur : créer et suivre les groupes'],
+['fig', 'schema/vie-du-cycle', 'Un cycle, de la création au partage — puis le suivant, avec les mêmes règles ou d’autres.'],
 ['p', 'L’animateur travaille dans **Akiba Suivi**. Il crée les AVEC avec l’assemblée, remet le cahier au téléphone du groupe, puis suit les groupes à distance à partir de ce qu’ils lui renvoient.'],
-['fig', 'suivi/ordi-n-home', 'Le tableau de bord de l’animateur : alertes, groupes suivis, épargne cumulée, outils.'],
+['fig', 'annote/tableau-animateur', 'Le tableau de bord de l’animateur.'],
+['reperes', ['Ses groupes : un par ligne, avec l’épargne et ce qui cloche.',
+  'Reprendre le cahier d’un groupe, par fichier ou par image.',
+  'Sortir le rapport Excel de tous ses groupes, sans réseau.']],
 
 ['h2', '3.1 Ouvrir son compte'],
 ['p', 'Un animateur ne se déclare pas tout seul : c’est l’organisation qui crée son compte et lui remet un code secret de quatre chiffres. À la première ouverture, l’animateur touche son nom sur la couverture et tape ce code. Il peut le changer ensuite dans **Plus › Mon code**.'],
