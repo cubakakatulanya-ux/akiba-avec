@@ -49,6 +49,16 @@ function qrCharge(avec) {
        ne peut plus être activé — ni par appel, ni par envoi — et ne tiendra jamais sa première
        réunion. Douze signes de plus dans l'image, contre un groupe bloqué. */
     rq: avec.requestCode || '',
+    /* L'organisation voyage elle aussi, réduite à ce dont le téléphone du groupe a besoin :
+       son nom, et le secret partagé qui permet de vérifier le code d'activation dicté au
+       téléphone. Sans lui, le groupe entend bien les huit chiffres, mais ne peut pas les
+       reconnaître : il reste « en attente » pour toujours. Le fichier emporte déjà l'organisation
+       entière ; l'image n'en garde que trois champs, pour tenir dans la trame. */
+    og: (() => { const o = avec.orgId ? (K.data.orgs || []).find(x => x.id === avec.orgId) : null;
+      return o ? [o.id, o.name, o.secret || ''].join(sep) : ''; })(),
+    /* l'animateur, en lecture seule : c'est lui que le cahier nomme comme créateur */
+    us: (() => { const u = avec.animId ? userById(avec.animId) : null;
+      return u ? [u.id, u.role, u.orgId || '', u.name, u.zone || ''].join(sep) : ''; })(),
     me: avec.members.map(m => [m.id, m.name, m.sex || '', m.role || 'membre', m.key ? 1 : 0, m.pin,
       m.birthDate || '', m.phone && m.phone !== '—' ? m.phone : '', m.activity || ''].join(sep)),
     sc: (avec.rescue || []).map(r => r.h + (r.used ? '*' : '')),
@@ -371,6 +381,17 @@ async function qrImporter(texte, code) {
   members.forEach(m => appendTx(avec, { type: 'MEMBRE', amount: 0, memberId: m.id, by: null,
     note: 'Membre fondateur · ' + m.name + (m.role !== 'membre' ? ' · ' + ROLES[m.role] : '') }));
   if (deja) K.data.avecs = K.data.avecs.filter(a => a.id !== deja.id);
+  /* l'organisation et l'animateur arrivent avec le groupe, comme dans le fichier : c'est le
+     secret de l'organisation qui permettra de reconnaître le code d'activation dicté au
+     téléphone, et son nom qui s'affiche sur le cahier */
+  if (c.og) {
+    const [oid, onom, osec] = String(c.og).split(sep);
+    if (oid && !(K.data.orgs || []).some(o => o.id === oid)) (K.data.orgs = K.data.orgs || []).push({ id: oid, name: onom, secret: osec, rescue: [] });
+  }
+  if (c.us) {
+    const [uid, urole, uorg, unom, uzone] = String(c.us).split(sep);
+    if (uid && !(K.data.users || []).some(u => u.id === uid)) (K.data.users = K.data.users || []).push({ id: uid, role: urole, orgId: uorg, name: unom, zone: uzone, pin: null, remote: true });
+  }
   K.data.avecs.push(avec);
   DB.save();
   return { id: avec.id, name: avec.name };

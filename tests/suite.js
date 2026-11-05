@@ -1425,6 +1425,8 @@ window.__akibaTests = async function () {
       K.data.avecs.push(neuf);
       must(qrPossible(neuf).ok, 'un groupe neuf doit tenir dans une image');
 
+      /* ce que l'organisation dictera au telephone, calcule ici pendant qu'elle est encore la */
+      const codeActAttendu = signCode('ACT', neuf.orgId, neuf.requestCode);
       const code = 'QRESSAI1';
       const texte = await qrTexte(neuf, code);
       must(texte.length <= 2200, 'l’image doit rester lisible : ' + texte.length + ' signes');
@@ -1444,6 +1446,10 @@ window.__akibaTests = async function () {
       /* Un groupe créé par un animateur arrive « en attente ». S'il perd son code de demande en
          route, l'organisation ne peut plus l'activer : il ne tiendra jamais sa première réunion. */
       eq(K.data.avecs[0].requestCode, neuf.requestCode, 'le code de demande arrive avec le groupe');
+      /* Et le code d'activation dicté par l'organisation doit être reconnu ici : il se calcule
+         avec le secret de l'organisation, qui doit donc avoir voyagé lui aussi. */
+      eq(signCode('ACT', K.data.avecs[0].orgId, K.data.avecs[0].requestCode), codeActAttendu,
+        'le code d’activation dicté par l’organisation est reconnu sur le téléphone du groupe');
 
       /* en deux images : le secrétaire vise l'une puis l'autre, dans l'ordre qu'il veut */
       const bouts = qrMorceaux(texte);
