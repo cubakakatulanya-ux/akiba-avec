@@ -110,15 +110,18 @@ App.go = function (screen, ...rest) { if (!/^adm\./.test(screen)) { App.adminKey
 /* ce que contient ce téléphone : réservé à l'administrateur */
 function admStats() {
   const avecs = K.data.avecs.filter(x => x.status !== 'refused');
-  let membres = 0, epargne = 0, reunions = 0, credits = 0;
+  let membres = 0, epargne = 0, reunions = 0, credits = 0, depots = 0, caisse = 0;
   for (const x of avecs) {
     try {
       const st = stats(x);
       membres += st.activeCount; epargne += st.sum.EPARGNE; reunions += st.meetings.length; credits += st.outstanding;
+      /* les dépôts du guichet sont de l'argent présent dans la caisse et qui n'appartient pas
+         au groupe : sans eux, le tableau d'Ubora annonçait moins d'argent qu'il n'y en a */
+      depots += st.libreTot || 0; caisse += st.cash;
     } catch (e) { /* une AVEC illisible ne doit pas vider l'écran */ }
   }
   const k = (v, l) => `<div class="kpi"><span>${l}</span><b>${v}</b></div>`;
-  return `<div class="kpis">${k(avecs.length, 'AVEC sur ce téléphone')}${k(membres, 'Membres')}${k(fck(epargne), 'Épargne du cycle')}${k(fck(credits), 'Crédits à rembourser')}${k(reunions, 'Réunions tenues')}</div>`;
+  return `<div class="kpis">${k(avecs.length, 'AVEC sur ce téléphone')}${k(membres, 'Membres')}${k(fck(epargne), 'Épargne du cycle')}${k(fck(credits), 'Crédits à rembourser')}${depots ? k(fck(depots), 'Déposé au guichet') : ''}${k(fck(caisse), 'Argent en caisse')}${k(reunions, 'Réunions tenues')}</div>`;
 }
 SCREENS['adm.home'] = () => {
   const hasKey = !!admGet(ADM_KEY_STORE);
@@ -221,6 +224,13 @@ SCREENS['adm.home'] = () => {
     <section class="card stack"><h2>Bloquer un partenaire ou un téléphone</h2>
       <p class="small muted">Liste de blocage en vigueur : <b>${blk ? (blk.licences || []).length : 0}</b> partenaire(s), <b>${blk ? (blk.devices || []).length : 0}</b> téléphone(s)${blk && blk.iat ? ', publiée le ' + fdateY(+blk.iat) : ''}.</p>
       <p class="small">Sur l'ordinateur, dossier <b>Documents › Akiba-admin</b>, double-cliquez sur <b>3-Bloquer-ou-debloquer.bat</b>. Chaque téléphone applique la liste dès qu'il capte le réseau ; sans réseau, il continue avec la dernière liste reçue.</p>
+      <p class="hint" style="margin:0">La liste part sur les <b>deux applications</b> : celle des groupes et Akiba Suivi. Publiée d'un seul côté, elle ne bloquerait que la moitié des téléphones.</p>
+    </section>
+    <!-- ce que le support demande en premier quand un partenaire appelle -->
+    <section class="card stack"><h2>Cet appareil</h2>
+      ${row('Version d\'Akiba', esc(typeof versionLisible === 'function' && versionLisible(window.KITABU_VERSION) || 'démonstration'))}
+      ${row('Application', window.AkibaPOS ? 'Android, installée' : window.KITABU_PWA ? 'Navigateur' : 'Essai local')}
+      ${row('Code du téléphone', `<span class="mono">${esc(devNu(deviceId()))}</span>`)}
     </section>
     <section class="section"><div class="row between"><h2>Partenaires et téléphones</h2><span class="chip">${reg.length}</span></div>
       <div class="list">${reg.map(p => { const expired = new Date(p.exp + 'T23:59:59') < new Date(); const devs = acts.filter(a => a.lic === p.id); return `<div class="li"><span class="grow"><b>${esc(p.name)}</b><span class="small muted">${esc(p.id)} · ${LIC_KINDS[p.kind]} · ${devs.length}${p.seats ? '/' + p.seats : ''} téléphone${devs.length > 1 ? 's' : ''}${devs.length ? ' : <span class="mono">' + devs.map(d => esc(d.dev)).join(', ') + '</span>' : ''}</span></span><span class="chip ${expired ? 'bad' : 'good'}">${expired ? 'expiré' : 'fin ' + esc(p.exp)}</span></div>`; }).join('') || '<div class="li muted">Aucun partenaire sur ce téléphone</div>'}</div>
