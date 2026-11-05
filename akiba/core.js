@@ -226,7 +226,22 @@ const REGLES_CHOIX = {
   fineLate: [[100, '100 FC'], [200, '200 FC'], [500, '500 FC']],
   penaltyRate: [[0, 'Aucune pénalité'], [2, '2 % par mois'], [5, '5 % par mois'], [10, '10 % par mois']],
   frequency: [[7, 'Chaque semaine'], [14, 'Toutes les 2 semaines']],
+  /* Le guichet ne va pas à tous les groupes : beaucoup ne veulent toucher l'argent qu'en
+     assemblée, et c'est une pratique prudente. Il se vote donc comme le reste, et par défaut
+     il n'existe pas : une AVEC reste une AVEC tant que l'assemblée n'a pas décidé autrement. */
+  guichet: [[0, 'Non : l\'argent ne bouge qu\'en réunion'], [1, 'Oui : dépôts et retraits entre les réunions']],
 };
+
+/* Le guichet est-il ouvert à ce groupe ? Le règlement décide — mais un cahier qui porte déjà
+   des dépôts garde ses écrans, sinon l'argent des membres deviendrait invisible le jour où
+   quelqu'un remettrait la règle à « non ». */
+function guichetActif(avec, st) {
+  if (!avec) return false;
+  if ((avec.settings || {}).guichet) return true;
+  if (typeof openGuichet === 'function' && openGuichet(avec)) return true;
+  if (st) return !!st.libreTot;
+  return avec.tx.some(t => t.type === 'DEPOT');
+}
 
 function appendTx(avec, f) {
   const prev = avec.tx.length ? avec.tx[avec.tx.length - 1].hash : 'GENESE:' + avec.id;
@@ -775,7 +790,7 @@ function seed() {
         { signe: 'poisson', teinte: 'ciel' }, { signe: 'soleil', teinte: 'grenat' }, { signe: 'panier', teinte: 'nuit' }][ai % 6],
       province: 'Nord-Kivu', entite: d.terr === 'Butembo' ? 'ville' : 'territoire', secteur: d.terr === 'Lubero' ? 'Bamate' : '', groupement: '',
       createdAt: start - 14 * DAY, cycle: { n: d.p === 'late' ? 2 : 1, start, end: start + (d.p === 'ecart' ? 4 : 12) * 30 * DAY },
-      settings: { partValue: d.part, maxParts: 5, socialFee: d.social, rate: d.p === 'auto' ? 5 : 10, maxMult: 3, maxMonths: 3, fineAbsent: 500, fineLate: 200, cycleMonths: d.p === 'ecart' ? 4 : 12 },
+      settings: { partValue: d.part, maxParts: 5, socialFee: d.social, rate: d.p === 'auto' ? 5 : 10, maxMult: 3, maxMonths: 3, fineAbsent: 500, fineLate: 200, cycleMonths: d.p === 'ecart' ? 4 : 12, guichet: 1 },
       members, meetings: [], tx: [], visits: [], lastSync: 0,
       status: 'active', requestCode: 'DEMO' + ai + 'X', rescue: RESCUE_DEMO.map(c => ({ h: hashCode(c), used: false })), security: [],
       // formation déjà réalisée par l'animateur (démonstration) : modules 1 à 4 avant la 1re réunion, puis 5, 6 et 7

@@ -64,12 +64,14 @@ function livretHTML(avec, x, st, ancre) {
       <div class="lv-qui"><b>${esc(x.name)}</b><span>${esc(roleLabel(x))} · membre n°${carteNum(avec, x)} · cycle ${cyc}</span></div>
     </header>
 
-    <h3>Mon compte <small>— l'argent que je confie au groupe, que je reprends quand je veux</small></h3>
+    <!-- un groupe sans guichet n'a pas de compte de dépôt : huit lignes vides sur son livret ne
+         diraient rien, et laisseraient croire qu'il manque quelque chose -->
+    ${guichetActif(avec, st) ? `<h3>Mon compte <small>— l'argent que je confie au groupe, que je reprends quand je veux</small></h3>
     <table class="lv-t"><thead><tr><th>Date</th><th>Opération</th><th class="n">Montant</th><th class="n">Solde</th></tr></thead>
       <tbody>${mv.map(o => `<tr><td>${jour(o.ts)}</td><td>${o.type === 'DEPOT' ? 'Dépôt' : 'Retrait'}</td>
         <td class="n">${o.type === 'DEPOT' ? '+' : '−'} ${grp(o.amount)}</td><td class="n">${grp(o.solde)}</td></tr>`).join('')}
         ${ligneVide(Math.max(2, 8 - mv.length))}</tbody>
-      <tfoot><tr><th colspan="3">Sur mon compte aujourd'hui</th><th class="n">${grp(d.libre)} FC</th></tr></tfoot></table>
+      <tfoot><tr><th colspan="3">Sur mon compte aujourd'hui</th><th class="n">${grp(d.libre)} FC</th></tr></tfoot></table>` : ''}
 
     <h3>Mes parts <small>— mon capital dans le groupe, partagé en fin de cycle</small></h3>
     <table class="lv-t"><thead><tr><th>Réunion</th><th>Date</th><th class="n">Parts</th><th class="n">Cumul</th></tr></thead>
@@ -126,13 +128,15 @@ function releveTexte(avec, x, st) {
   L.push(rRule('='));
   L.push(rLine('Membre', x.name.slice(0, 20)));
   L.push(rRule());
-  L.push('MON COMPTE');
-  if (!mv.length) L.push(' Aucun depot pour le moment');
-  mv.slice(-12).forEach(o => L.push(rLine(` ${jj(o.ts)} ${o.type === 'DEPOT' ? 'depot' : 'retrait'}`,
-    (o.type === 'DEPOT' ? '+' : '-') + grp(o.amount) + ' > ' + grp(o.solde))));
-  if (mv.length > 12) L.push(` (${mv.length - 12} lignes plus anciennes)`);
-  L.push(rLine(' SOLDE', fc(d.libre)));
-  L.push(rRule());
+  if (guichetActif(avec, st)) {
+    L.push('MON COMPTE');
+    if (!mv.length) L.push(' Aucun depot pour le moment');
+    mv.slice(-12).forEach(o => L.push(rLine(` ${jj(o.ts)} ${o.type === 'DEPOT' ? 'depot' : 'retrait'}`,
+      (o.type === 'DEPOT' ? '+' : '-') + grp(o.amount) + ' > ' + grp(o.solde))));
+    if (mv.length > 12) L.push(` (${mv.length - 12} lignes plus anciennes)`);
+    L.push(rLine(' SOLDE', fc(d.libre)));
+    L.push(rRule());
+  }
   L.push('MES PARTS');
   L.push(rLine(' Parts du cycle', String(d.parts)));
   L.push(rLine(' Epargne versee', fc(d.savings)));

@@ -80,6 +80,7 @@ const C_RENDER = {
         ${pickSel('crF', 'Amende d\'absence', REGLES_CHOIX.fineAbsent, r.fineAbsent)}
         ${pickSel('crL', 'Amende de retard', REGLES_CHOIX.fineLate, r.fineLate)}
         ${pickSel('crPn', 'Pénalité si un crédit est en retard', REGLES_CHOIX.penaltyRate, r.penaltyRate != null ? r.penaltyRate : r.rate)}
+        ${pickSel('crG', 'Guichet entre les réunions', REGLES_CHOIX.guichet, r.guichet ? 1 : 0)}
       </div>
       <div class="tip" id="crEx">${exampleHtml(r)}</div>
     </section>`;
@@ -191,7 +192,7 @@ ACT.cGps = async () => {
 
 function readStep(step, d) {
   if (step === 1 && fval('cgN') !== null) Object.assign(d.g, { name: fval('cgN').trim(), ...readGeo('cg'),animId: fval('cgA') || '', meetingDay: fval('cgJ'), frequency: +fval('cgQ'), createdOn: fval('cgO') || d.g.createdOn });
-  if (step === 2 && fval('crP') !== null) Object.assign(d.r, { partValue: +fval('crP'), maxParts: +fval('crX'), socialFee: +fval('crS'), cycleMonths: +fval('crC'), rate: +fval('crR'), maxMult: +fval('crM'), maxMonths: +fval('crD'), cycleStart: fval('crB') || d.r.cycleStart, fineAbsent: +fval('crF'), fineLate: +fval('crL'), penaltyRate: +fval('crPn') });
+  if (step === 2 && fval('crP') !== null) Object.assign(d.r, { partValue: +fval('crP'), maxParts: +fval('crX'), socialFee: +fval('crS'), cycleMonths: +fval('crC'), rate: +fval('crR'), maxMult: +fval('crM'), maxMonths: +fval('crD'), cycleStart: fval('crB') || d.r.cycleStart, fineAbsent: +fval('crF'), fineLate: +fval('crL'), penaltyRate: +fval('crPn'), guichet: +fval('crG') });
   if (step === 4 && fval('cbP') !== null) d.roles = { P: fval('cbP'), S: fval('cbS'), T: fval('cbT'), C1: fval('cbC1'), C2: fval('cbC2'), K1: fval('cbK1'), K2: fval('cbK2'), K3: fval('cbK3') };
   if (step === 5 && fval('rsS') !== null) {
     d.rep.social = fval('rsS'); d.rep.credit = fval('rsC');
@@ -367,7 +368,7 @@ ACT.cCreate = () => {
     province: g.province, entite: g.entite, secteur: g.secteur, groupement: g.groupement,
     orgId: d.from === 'login' ? null : u.orgId, animId: d.from === 'org' ? g.animId : d.from === 'anim' ? u.id : null,
     embleme: Object.assign({}, EMB_DEFAUT, g.embleme || {}), createdAt: fromIso(g.createdOn), cycle: { n: 1, start, end: start + r.cycleMonths * 30 * DAY }, cycles: [],
-    settings: { partValue: r.partValue, maxParts: r.maxParts, socialFee: r.socialFee, rate: r.rate, maxMult: r.maxMult, maxMonths: r.maxMonths, fineAbsent: r.fineAbsent, fineLate: r.fineLate, penaltyRate: r.penaltyRate != null ? r.penaltyRate : r.rate, cycleMonths: r.cycleMonths, meetingDay: g.meetingDay, frequency: g.frequency },
+    settings: { partValue: r.partValue, maxParts: r.maxParts, socialFee: r.socialFee, rate: r.rate, maxMult: r.maxMult, maxMonths: r.maxMonths, fineAbsent: r.fineAbsent, fineLate: r.fineLate, penaltyRate: r.penaltyRate != null ? r.penaltyRate : r.rate, cycleMonths: r.cycleMonths, meetingDay: g.meetingDay, frequency: g.frequency, guichet: r.guichet ? 1 : 0 },
     members, meetings: [], tx: [], visits: [], lastSync: 0
   };
   const rescue = Array.from({ length: 6 }, rescueCode);

@@ -71,6 +71,21 @@ SCREENS['a.guichet'] = () => {
   const comptes = activeM(avec).map(x => ({ x, solde: st.mem[x.id].libre })).filter(c => c.solde > 0).sort((a, b) => b.solde - a.solde);
   const tete = `<div class="shell">${topbar('Guichet', g ? `Séance n°${g.n} · ouverte ${hhmm(g.date)}` : 'Le compte de chaque membre', backBtn('a.home'), syncPill(avec))}<main class="main">`;
 
+  /* ---- le groupe n'a pas voté le guichet : on explique, on ne l'impose pas ---- */
+  if (!guichetActif(avec, st)) {
+    return `${tete}
+      <section class="card stack">
+        <div class="row" style="align-items:flex-start;gap:10px">${icSpan('coins')}<div style="flex:1;min-width:0">
+          <b>Votre AVEC ne tient pas de guichet</b>
+          <span class="small muted" style="display:block">L'argent ne bouge qu'en réunion : c'est la pratique de la plupart des groupes, et c'est prudent.</span></div></div>
+        <p class="small muted" style="margin:0">Un guichet permet à un membre de déposer la recette du marché un mardi et de la reprendre le jeudi. L'argent déposé n'est jamais prêté et se reprend avec le code de son propriétaire. Cela demande qu'un responsable soit disponible entre les réunions.</p>
+        ${isBureau(me) ? `<button class="btn primary block xl" data-act="guichetActiverSheet">${ic('check')} Ouvrir un guichet pour notre AVEC</button>
+          <p class="hint" style="margin:0">La décision appartient à l'assemblée. Elle se vote aussi au début de chaque cycle, dans le règlement.</p>`
+          : '<p class="hint" style="margin:0">Seul le bureau peut mettre cette décision en route.</p>'}
+      </section>
+    </main>${tabbar(A_TABS, '')}</div>`;
+  }
+
   /* ---- guichet fermé : ce qu'il est, et le bouton pour l'ouvrir ---- */
   if (!g) {
     const ouvrable = guichetTenable(avec, me);
@@ -137,6 +152,27 @@ function guichetPasses(avec) {
       ${gap ? `<span class="chip bad">Écart ${fc(gap)}</span>` : '<span class="chip good">Caisse juste</span>'}</button>`;
   }).join('')}</div></section>`;
 }
+
+/* ---------- mettre le guichet en route, ou l'arrêter ----------
+   Ce n'est pas une règle d'argent — la valeur d'une part, l'intérêt, les amendes ne bougent pas
+   — c'est un service que le groupe se rend. Il peut donc se décider en cours de cycle, à deux
+   membres du bureau, et la décision laisse une trace dans le registre de sécurité. */
+ACT.guichetActiverSheet = () => {
+  const { avec, me } = cur();
+  App.openSheet(`<h2>Ouvrir un guichet</h2>
+    <p class="muted">Les membres pourront déposer et reprendre leur argent entre les réunions. Ce que cela demande : qu'un responsable soit là les jours annoncés, et que la caisse soit comptée à chaque ouverture et à chaque fermeture.</p>
+    <p class="hint">L'argent déposé n'entre pas dans la caisse de crédit : il ne sera jamais prêté, et ne changera pas la valeur d'une part.</p>
+    ${approverFields(avec, me, 'ga')}
+    <button class="btn primary block xl" data-act="guichetActiver">Ouvrir le guichet</button>`);
+};
+ACT.guichetActiver = () => {
+  const { avec, me } = cur();
+  if (!isBureau(me)) return App.toast('Seul le bureau peut décider');
+  const ap = checkApprover(avec, 'ga', null); if (!ap) return;
+  avec.settings.guichet = 1;
+  if (typeof secLog === 'function') secLog(avec, 'Guichet ouvert', me.id, `Décision du bureau, validée par ${ap.name}`);
+  DB.save(); App.closeSheet(); App.go('a.guichet'); App.toast('Le guichet est en route');
+};
 
 /* ---------- ouvrir ---------- */
 ACT.guichetOuvrirSheet = () => {

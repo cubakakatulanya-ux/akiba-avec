@@ -1383,6 +1383,13 @@ window.__akibaTests = async function () {
     const nTx = a.tx.length, nM = a.meetings.length;
     try {
       const x = activeM(a).find(m => !isBureau(m));
+      /* facultatif : un groupe qui ne l'a pas voté ne doit voir le guichet nulle part */
+      const vote = a.settings.guichet;
+      a.settings.guichet = 0;
+      must(!guichetActif(a), 'sans vote, le guichet ne doit pas être actif');
+      must(/ne tient pas de guichet/.test(SCREENS['a.guichet']()), 'l’écran doit expliquer, pas proposer de servir');
+      must(!/data-to="a.guichet"/.test(SCREENS['a.home']()), 'l’accueil ne doit pas porter de vignette Guichet');
+      a.settings.guichet = vote || 1;
       const av = stats(a);
       /* ouvrir */
       ACT.guichetOuvrirSheet(); document.getElementById('guA').value = String(av.cash); ACT.guichetOuvrir();

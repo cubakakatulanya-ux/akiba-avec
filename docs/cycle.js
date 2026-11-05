@@ -316,6 +316,7 @@ SCREENS['a.newCycle'] = () => {
       ${pickSel('ncX', 'Crédit maximum', REGLES_CHOIX.maxMult, s.maxMult)}
       ${pickSel('ncM', 'Parts par réunion', REGLES_CHOIX.maxParts, s.maxParts)}
       ${pickSel('ncQ', 'Rythme des réunions', REGLES_CHOIX.frequency, s.frequency || 7)}
+      ${pickSel('ncG', 'Guichet entre les réunions', REGLES_CHOIX.guichet, s.guichet ? 1 : 0)}
     </div></div>
     <h2>Bureau et porte-clés</h2>${rolesForm(avec, 'nr')}
     ${approverFields(avec, me, 'nc')}
@@ -327,7 +328,7 @@ ACT.saveNewCycle = () => {
   const g = id => +document.getElementById(id).value;
   const r = readRoles('nr'); if (!r) return;
   const ap = checkApprover(avec, 'nc', null); if (!ap) return;
-  Object.assign(avec.settings, { partValue: g('ncP'), socialFee: g('ncS'), rate: g('ncR'), maxMonths: g('ncD'), cycleMonths: g('ncC'), fineAbsent: g('ncF'), fineLate: g('ncL'), penaltyRate: g('ncPn'), maxMult: g('ncX'), maxParts: g('ncM'), frequency: g('ncQ') });
+  Object.assign(avec.settings, { partValue: g('ncP'), socialFee: g('ncS'), rate: g('ncR'), maxMonths: g('ncD'), cycleMonths: g('ncC'), fineAbsent: g('ncF'), fineLate: g('ncL'), penaltyRate: g('ncPn'), maxMult: g('ncX'), maxParts: g('ncM'), frequency: g('ncQ'), guichet: g('ncG') });
   avec.cycle.end = avec.cycle.start + avec.settings.cycleMonths * 30 * DAY;
   avec.cycle.rulesPending = false;
   applyRoles(avec, r, ap.name);
@@ -531,7 +532,7 @@ SCREENS['a.more'] = () => {
       tuile('chart', 'Dossier IMF', 'Les chiffres à présenter', 'data-act="go" data-to="a.imf"')
     ])}
     ${grille('Le groupe', [
-      tuile('coins', 'Guichet', 'Dépôts et retraits hors réunion', 'data-act="go" data-to="a.guichet"'),
+      guichetActif(avec) ? tuile('coins', 'Guichet', 'Dépôts et retraits hors réunion', 'data-act="go" data-to="a.guichet"') : '',
       tuile('users', 'Bureau', 'Changer un responsable', 'data-act="go" data-to="a.roles"'),
       tuile('map', 'Lieu du groupe', placeShort(avec) || 'À compléter', 'data-act="placeSheet"'),
       isBureau(me) ? tuile('eye', 'Signe du groupe', EMBLEMES[emblemeDe(avec).signe].nom + ' · ' + TEINTES[emblemeDe(avec).teinte].nom, 'data-act="emblemeSheet"') : '',
@@ -553,7 +554,7 @@ SCREENS['a.more'] = () => {
          à chaque passage. Replié, il rend une page entière à l'écran ; il s'ouvre d'un toucher. -->
     <details class="g"><summary><span class="gi">${ic('book')}</span>Règlement intérieur · cycle ${avec.cycle.n}</summary><div class="gb">
       <div class="list">
-      ${[['Valeur d\'une part', fc(s.partValue)], ['Parts par réunion', '1 à ' + s.maxParts], ['Caisse sociale', fc(s.socialFee) + ' par réunion'], ['Intérêt du crédit', s.rate + ' % par mois'], ['Crédit maximum', s.maxMult + ' × l\'épargne'], ['Durée maximum du crédit', s.maxMonths + ' mois'], ['Amende absence / retard', fc(s.fineAbsent) + ' / ' + fc(s.fineLate)], ['Pénalité de retard de crédit', penRate(s) ? penRate(s) + ' % par mois' : 'aucune'], ['Durée du cycle', (s.cycleMonths || 12) + ' mois'], ['Réunions', (s.meetingDay ? s.meetingDay + ', ' : '') + ((s.frequency || 7) === 14 ? 'toutes les 2 semaines' : 'chaque semaine')]]
+      ${[['Valeur d\'une part', fc(s.partValue)], ['Parts par réunion', '1 à ' + s.maxParts], ['Guichet entre les réunions', s.guichet ? 'oui' : 'non'], ['Caisse sociale', fc(s.socialFee) + ' par réunion'], ['Intérêt du crédit', s.rate + ' % par mois'], ['Crédit maximum', s.maxMult + ' × l\'épargne'], ['Durée maximum du crédit', s.maxMonths + ' mois'], ['Amende absence / retard', fc(s.fineAbsent) + ' / ' + fc(s.fineLate)], ['Pénalité de retard de crédit', penRate(s) ? penRate(s) + ' % par mois' : 'aucune'], ['Durée du cycle', (s.cycleMonths || 12) + ' mois'], ['Réunions', (s.meetingDay ? s.meetingDay + ', ' : '') + ((s.frequency || 7) === 14 ? 'toutes les 2 semaines' : 'chaque semaine')]]
         .map(([k, v]) => `<div class="li"><span class="grow">${k}</span><b class="num">${v}</b></div>`).join('')}
     </div><p class="hint">Les règles sont votées par l'assemblée au début de chaque cycle et ne changent pas en cours de cycle.</p></div></details>
     <section class="section"><h2>Accompagnement</h2>

@@ -26,8 +26,12 @@ ACT.recuPapier = () => {
   App.toast('Papier ' + mm + ' mm : ' + RECU_W + ' signes par ligne');
 };
 /* les imprimantes thermiques bon marché ne connaissent pas les accents : on les enlève du ticket */
+/* Le vrai moins typographique qu'écrit fc() n'existe pas dans la table de caractères d'une
+   imprimante thermique : « −3 500 FC » sortait avec un carré à la place du signe, ou sans signe
+   du tout. Un écart de caisse négatif imprimé comme positif, c'est exactement ce que ce papier
+   ne doit jamais faire — il est donc ramené au trait d'union, comme les tirets et les puces. */
 const noAcc = s => String(s == null ? '' : s).normalize('NFD').replace(/[̀-ͯ]/g, '')
-  .replace(/[«»]/g, '"').replace(/[’‘]/g, "'").replace(/[—–]/g, '-').replace(/[·•]/g, '-').replace(/ | /g, ' ');
+  .replace(/[«»]/g, '"').replace(/[’‘]/g, "'").replace(/[—–]/g, '-').replace(/−/g, '-').replace(/[·•]/g, '-').replace(/ | /g, ' ');
 const rLine = (l, v, w = RECU_W) => { const b = noAcc(v); const a = noAcc(l).slice(0, Math.max(0, w - b.length - 1)); return a + ' '.repeat(Math.max(1, w - a.length - b.length)) + b; };
 const rCenter = (s, w = RECU_W) => { const t = noAcc(s).slice(0, w); return ' '.repeat(Math.max(0, Math.floor((w - t.length) / 2))) + t; };
 const rRule = (c = '-', w = RECU_W) => c.repeat(w);
@@ -411,6 +415,32 @@ function journalReunionText(avec, m) {
     L.push(rLine(ecart === 0 ? 'Caisse' : 'ECART', ecart === 0 ? 'juste' : fc(ecart)));
     if (ecart !== 0 && m.note) { L.push('Explication :'); rWrap(m.note).forEach(l => L.push(l)); }
   }
+  /* ---------- la synthèse et les cumuls ----------
+     Le journal disait ce qui s'était passé ce jour-là, et rien de plus : pour savoir où en était
+     le groupe, il fallait rallumer le téléphone — c'est-à-dire exactement ce que ce papier doit
+     remplacer quand le téléphone n'est plus là. On ajoute donc la situation du groupe et les
+     cumuls du cycle. Ils sont datés honnêtement : « apres la seance » seulement si rien n'a été
+     écrit depuis, sinon la date du jour où le papier est tiré. */
+  const st = stats(avec, { cycle: m.cycle || avec.cycle.n });
+  const fige = m.sealSeq != null && m.sealSeq === avec.tx.length;
+  L.push(rRule('='));
+  L.push(fige ? 'SITUATION APRES LA SEANCE' : 'SITUATION AU ' + noAcc(fdate(Date.now())).toUpperCase());
+  L.push(rLine(' Membres', String(st.activeCount)));
+  L.push(rLine(' Epargne du cycle', fc(st.sum.EPARGNE)));
+  L.push(rLine(' Parts', String(st.parts)));
+  L.push(rLine(' Valeur d une part', fc(st.shareValue)));
+  L.push(rLine(' Credits en cours', String(st.activeLoans.length)));
+  L.push(rLine(' Reste a rembourser', fc(st.outstanding)));
+  if (st.lateAmt) L.push(rLine(' DONT EN RETARD', fc(st.lateAmt)));
+  L.push(rLine(' Interets gagnes', fc(st.interest)));
+  L.push(rLine(' Amendes payees', fc(st.sum.AMENDE)));
+  if (st.fineDebt) L.push(rLine(' Amendes dues', fc(st.fineDebt)));
+  if (st.extDebt) L.push(rLine(' Dette exterieure', fc(st.extDebt)));
+  if (st.libreTot) L.push(rLine(' Depots des membres', fc(st.libreTot)));
+  L.push(rRule());
+  L.push(rLine(' Caisse de credit', fc(st.loanFund)));
+  L.push(rLine(' Caisse sociale', fc(st.socialFund)));
+  L.push(rLine('ARGENT EN CAISSE', fc(st.cash)));
   L.push(rRule());
   if ((m.validators || []).length) {
     L.push('Cles : ' + noAcc(m.validators.map(id => (memberOf(avec, id) || {}).name || '').filter(Boolean).map(n => n.split(' ')[0]).join(', ')).slice(0, RECU_W - 7));

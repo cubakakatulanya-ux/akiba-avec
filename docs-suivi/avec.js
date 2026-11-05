@@ -100,9 +100,10 @@ function homeTuiles(avec, st, ch) {
   const nm = typeof nextModule === 'function' ? nextModule(avec) : null;
   const toSend = pending(avec);
   const t = [];
-  /* Le guichet passe en tête quand il est ouvert : il y a de l'argent sur la table. */
+  /* Le guichet passe en tête quand il est ouvert : il y a de l'argent sur la table. Le groupe
+     qui ne l'a pas voté ne le voit nulle part — une AVEC reste une AVEC. */
   const g = typeof openGuichet === 'function' ? openGuichet(avec) : null;
-  t.push(tuile('coins', g ? 'Guichet ouvert' : 'Guichet',
+  if (guichetActif(avec, st)) t.push(tuile('coins', g ? 'Guichet ouvert' : 'Guichet',
     g ? `Séance n°${g.n} · servir ou fermer` : st.libreTot ? `${fck(st.libreTot)} déposés par les membres` : 'Dépôts et retraits hors réunion',
     'data-act="go" data-to="a.guichet"', g ? 'or' : ''));
   if ((avec.waitlist || []).length) t.push(tuile('clip', 'Demandes de crédit', `${avec.waitlist.length} en attente, prioritaires`, 'data-act="go" data-to="a.loans"', 'or'));
@@ -862,14 +863,15 @@ SCREENS['a.receipt'] = p => {
       <div class="small muted">Clés : ${m.validators.map(id => esc(memberOf(avec, id).name)).join(', ')}</div>
       <div><span class="label">Sceau</span><div class="mono" style="word-break:break-all">${m.seal.slice(0, 32).replace(/(.{4})/g, '$1 ')}</div></div>
     </div>
-    <button class="btn brand block xl" data-act="go" data-to="a.receipts" data-id="${m.id}">${ic('clip')} Reçus des membres</button>
-    <!-- Le papier est la seule sauvegarde qui survit à un téléphone perdu, volé, noyé ou cassé.
-         On le recommande à chaque clôture, en disant pourquoi — pas comme une option de plus. -->
-    <div class="alert">${icSpan('shield')}<div><b>Imprimez le journal de cette séance</b>
-      <span class="small">Si le téléphone est perdu, volé ou cassé, ce papier est ce qui reste du cahier.
-        Gardez-le dans la caisse, avec les trois clés : il reprend chaque écriture, les totaux et le sceau.</span>
-      <button class="btn sm brand" style="margin-top:9px" data-act="journalReunionVoir" data-m="${m.id}">${ic('clip')} Journal de la séance</button></div></div>
-    <button class="btn primary block xl" data-act="go" data-to="a.home">Retour à l'accueil</button>
+    <!-- Le premier geste après une réunion, c'est d'imprimer le journal de la séance. Le papier
+         est la seule sauvegarde qui survit à un téléphone perdu, volé, noyé ou cassé : il passe
+         donc avant les reçus des membres, en grand, et non en conseil au milieu de la page. -->
+    <button class="btn primary block xl" data-act="journalReunionVoir" data-m="${m.id}">${ic('clip')} Imprimer le journal de la séance</button>
+    <p class="hint" style="margin:0;text-align:center">Chaque écriture, les totaux, les clés et le sceau. Gardez-le dans la caisse, avec les trois clés : si le téléphone disparaît, ce papier est ce qui reste du cahier.</p>
+    <div class="grille-avec">
+      ${tuile('users', 'Reçus des membres', 'Un reçu par membre présent', `data-act="go" data-to="a.receipts" data-id="${m.id}"`)}
+      ${tuile('home', 'Retour à l’accueil', 'La réunion est close', 'data-act="go" data-to="a.home"')}
+    </div>
   </main></div>`;
 };
 
@@ -915,7 +917,7 @@ SCREENS['a.member'] = p => {
          quand on veut. Les confondre ferait croire à un membre qu'il peut retirer ses parts. -->
     <section class="section"><h2>Mon compte</h2>
       <div class="grille-avec">
-        ${chiffre('Déposé sur mon compte', fc(d.libre), d.libre ? 'à reprendre quand je veux' : 'aucun dépôt pour le moment')}
+        ${guichetActif(avec, st) ? chiffre('Déposé sur mon compte', fc(d.libre), d.libre ? 'à reprendre quand je veux' : 'aucun dépôt pour le moment') : ''}
         ${chiffre('Mes parts', String(d.parts), 'capital, partagé en fin de cycle')}
       </div>
       <!-- Les deux papiers d'une banque : le relevé qu'on demande, le livret qu'on garde. -->

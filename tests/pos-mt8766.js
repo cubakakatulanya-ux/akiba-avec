@@ -291,6 +291,19 @@ const UA_POS = 'Mozilla/5.0 (Linux; Android 13; POS MT8766) AppleWebKit/537.36 (
   verifier(ticket.plusLongue <= ticket.largeur, 'aucune ligne ne dépasse la largeur du papier',
     'plus longue : ' + ticket.plusLongue + ' signes pour ' + ticket.largeur);
   verifier(ticket.accents === 0, 'aucun accent sur le ticket', ticket.accents + ' ligne(s) accentuée(s)');
+  /* Au-delà des accents : tout signe hors de la table d'une imprimante thermique sort en carré,
+     ou ne sort pas. Le moins typographique de « −3 500 FC » en faisait partie. */
+  const horsTable = await jsj(`(() => {
+    const a = K.data.avecs[0];
+    const der = a.meetings.filter(x => x.status === 'closed' && !x.kind).slice(-1)[0];
+    const x = a.members[0];
+    const textes = [receiptText(a, der, x, memberReceipt(a, der, x), false), journalReunionText(a, der), releveTexte(a, x, stats(a))];
+    const mauvais = [];
+    textes.join(String.fromCharCode(10)).split('').forEach(c => { const n = c.charCodeAt(0); if (n !== 10 && (n < 32 || n > 126) && mauvais.indexOf(c) < 0) mauvais.push(c); });
+    return mauvais;
+  })()`);
+  verifier(horsTable.length === 0, 'aucun signe hors de la table de l’imprimante',
+    horsTable.length ? 'trouvé : ' + horsTable.join(' ') : 'reçu, journal de séance et relevé');
   verifier(ticket.escpos && ticket.pont, 'commandes ESC/POS et pont d’impression présents');
   if (!ticket.reglable) echoue('la largeur du papier se règle',
     'elle est figée à ' + ticket.largeur + ' signes (58 mm). Un terminal à 80 mm imprimerait un ticket étroit avec une large marge, et il n’y a aucun moyen de le dire à l’application.');

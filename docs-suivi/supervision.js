@@ -179,20 +179,26 @@ SCREENS['n.home'] = () => {
   const nAlerts = rows.reduce((s, r) => s + r.h.alerts.length, 0);
   return `<div class="shell">${topbar(u.name, `${liveTag()} · ${esc(u.zone || '')}${demoTag()}`, '', logoutBtn)}<main class="main">
     ${supBand(rows, [{ icon: 'users', label: 'Membres suivis', value: String(members) }, { icon: 'coins', label: 'Épargne cumulée', value: fck(savings) }])}
-    <div class="grid2">
-      <div class="kpi"><span>AVEC suivies</span><b class="num">${rows.length}</b><span>${members} membres</span></div>
-      <div class="kpi"><span>Épargne cumulée</span><b class="num">${fck(savings)}</b><span>données reçues</span></div>
+    <div class="grille-avec">
+      ${chiffre('AVEC suivies', String(rows.length), `${members} membres`)}
+      ${chiffre('Épargne cumulée', fck(savings), 'données reçues')}
     </div>
     ${nAlerts ? `<button class="alert bad" style="border-top:0;border-right:0;border-bottom:0;width:100%;text-align:left" data-act="go" data-to="n.alerts"><span style="width:22px;flex:none">${ic('alert')}</span><span style="flex:1"><b>${nAlerts} point${nAlerts > 1 ? 's' : ''} à vérifier</b><span class="small">Écarts de caisse, retards, réunions manquées</span></span>${ic('chev')}</button>` : ''}
     <h2>Mes AVEC</h2>
     <div class="list">${rows.map(r => `<button class="li" data-act="go" data-to="n.avec" data-id="${r.avec.id}"><span class="health ${r.h.level}" aria-label="${r.h.level}"></span>
       <span class="grow"><b>${esc(r.avec.name)}</b><span class="small muted">${esc(r.avec.village)} · ${r.avec.members.length} membres · réunion ${r.st.last ? ago(r.st.last.date) : '—'}</span></span>
       <span class="end"><span class="num">${fck(r.st.sum.EPARGNE)}</span><br>${r.avec.status === 'pending' ? '<span class="chip warn">À valider</span>' : r.avec.status === 'refused' ? '<span class="chip bad">Refusée</span>' : r.h.alerts.length ? `<span class="chip ${r.h.level}">${r.h.alerts.length} alerte${r.h.alerts.length > 1 ? 's' : ''}</span>` : '<span class="chip good">RAS</span>'}</span></button>`).join('')}</div>
-    <button class="btn brand block" data-act="receiveSheet">${ic('sync')} Recevoir une AVEC</button>
-    <button class="btn ghost block" data-act="unlockSheet">${ic('lock')} Débloquer un membre (code perdu)</button>
-    <button class="btn ghost block" data-act="exportSheet">${ic('chart')} Exporter mes AVEC vers Excel</button>
-    <button class="btn ghost block" data-act="go" data-to="dev.backup">${ic('shield')} Installer et sauvegarder</button>
-    <div class="grid2"><button class="btn ghost" data-act="go" data-to="tr.edit" data-lang="ln">${ic('globe')} Langues</button><button class="btn ghost" data-act="themeSheet">${ic('eye')} Apparence</button><button class="btn ghost" data-act="userPinSheet">${ic('key')} Mon code</button></div>
+    <!-- Sept boutons gris empilés : il fallait les relire tous pour trouver « Exporter ». Les
+         mêmes gestes en vignettes, comme dans l'application des groupes. -->
+    <section class="section"><h2>Mes outils</h2><div class="grille-avec">
+      ${tuile('sync', 'Recevoir une AVEC', 'Le fichier d’un groupe', 'data-act="receiveSheet"', 'or')}
+      ${tuile('chart', 'Exporter vers Excel', 'Toutes mes AVEC', 'data-act="exportSheet"')}
+      ${tuile('lock', 'Débloquer un membre', 'Code secret perdu', 'data-act="unlockSheet"')}
+      ${tuile('shield', 'Installer et sauvegarder', 'Sortir les données du téléphone', 'data-act="go" data-to="dev.backup"')}
+      ${tuile('globe', 'Langues', 'Traduire l’application', 'data-act="go" data-to="tr.edit" data-lang="ln"')}
+      ${tuile('eye', 'Apparence', 'Clair ou sombre', 'data-act="themeSheet"')}
+      ${tuile('key', 'Mon code', 'Changer mon code secret', 'data-act="userPinSheet"')}
+    </div></section>
   </main>${tabbar(N_TABS, 'n.home')}</div>`;
 };
 SCREENS['n.alerts'] = () => {
