@@ -1,0 +1,11 @@
+# Les captures et les deux documents se refabriquent en deux commandes :
+#   node tests/captures.js docs manuel/captures/avec
+#   node tests/captures.js docs-suivi manuel/captures/suivi
+#   node tests/captures-reunion.js
+#   node manuel/faire-manuel.js   &&   node manuel/faire-presentation.js
+# Inutile de garder 15 Mo d'images et deux binaires dans le dépôt.
+captures/
+*.docx
+*.pptx
+_p/
+_x/

@@ -1,0 +1,119 @@
+/* Manuel — première partie : ce qu'est Akiba, le vocabulaire, et le travail de l'animateur. */
+module.exports = [
+
+['h1', '1. Ce qu’est Akiba'],
+['p', 'Akiba remplace le cahier de papier d’une AVEC — une association villageoise d’épargne et de crédit — par un cahier qui vit dans un téléphone ou un terminal de caisse. Il tient les présences, l’épargne en parts, la caisse sociale, les crédits, les amendes, la clôture à trois clés, le partage de fin de cycle, et il imprime les reçus.'],
+['p', 'Trois principes commandent tout le reste, et il faut les connaître avant de toucher à l’application.'],
+['ul', [
+  '**Tout fonctionne sans réseau.** Akiba n’a pas de serveur. Rien ne part du téléphone tout seul. Ce qui sort, sort parce que quelqu’un l’a décidé : un fichier de sauvegarde, un envoi vers un autre téléphone, une image montrée à l’animateur.',
+  '**Rien ne s’efface.** Chaque écriture est scellée par une empreinte qui dépend de toutes les précédentes. Corriger, c’est écrire une annulation : la trace de l’erreur reste. C’est ce qui donne au cahier sa valeur devant une institution financière.',
+  '**L’assemblée décide, Akiba écrit.** L’application propose, vérifie, refuse ce qui est hors règlement — mais elle ne vote pas. Les montants se comptent à haute voix devant tout le monde, comme avec le cahier de papier.',
+]],
+
+['h2', 'Deux applications, une seule source'],
+['p', 'Akiba se présente en deux applications distinctes, construites à partir du même code. Elles ne partagent pas leurs données : un téléphone qui porte les deux garde deux réserves séparées.'],
+['tbl', ['', 'Akiba', 'Akiba Suivi'], [
+  ['Pour qui', 'Le bureau et les membres d’une AVEC', 'Animateurs, organisations, administration Ubora'],
+  ['Adresse', 'akiba.uborardc.com', 'akibas.uborardc.com'],
+  ['Ce qu’on y fait', 'Tenir les réunions, l’argent, les crédits, les reçus', 'Créer les groupes, les suivre, exporter, alerter'],
+  ['Écrit dans le cahier ?', 'Oui — c’est lui qui tient le journal', 'Non — lecture seule sur les cahiers reçus'],
+  ['Icône', 'Fond vert', 'Fond bleu'],
+]],
+['tip', 'Un seul téléphone tient le cahier d’un groupe à un moment donné. L’animateur garde une copie pour consulter et pour rendre compte, mais il n’ouvre pas de réunion. C’est ce qui évite deux cahiers qui divergent.'],
+
+['h2', 'Sur quoi Akiba fonctionne'],
+['ul', [
+  '**Un terminal de caisse Android** avec imprimante intégrée — c’est le matériel prévu pour le village : il imprime les reçus sur le rouleau, se recharge au panneau solaire, et ne sert qu’à cela.',
+  '**Un téléphone Android ordinaire**, par l’application installable ou par le navigateur.',
+  '**Un ordinateur**, pour l’animateur et l’organisation : la même application, dans une mise en page de bureau avec une colonne de navigation à gauche.',
+]],
+['p', 'Le navigateur doit être récent (Chrome, Edge, Samsung Internet). Akiba garde ses données dans le téléphone lui-même ; vider les données du navigateur efface le cahier, comme brûler le cahier de papier.'],
+['fig', 'avec/ordi-a-home', 'L’accueil du groupe sur un ordinateur : colonne de navigation, en-tête de page, caisse, alertes et chiffres du cycle.'],
+['fig', 'avec/tel-a-home', 'Le même accueil sur un téléphone.'],
+
+['h2', 'Installer l’application'],
+['h3', 'Sur un terminal ou un téléphone Android'],
+['ol', [
+  'Ouvrir **akiba.uborardc.com** dans Chrome (ou **akibas.uborardc.com** pour l’application de suivi).',
+  'Toucher **Installer Akiba** quand la bannière se présente, ou le menu ⋮ du navigateur puis **Ajouter à l’écran d’accueil**.',
+  'Si l’icône n’apparaît pas — c’est fréquent sur les terminaux de caisse —, ouvrir la page **android.html** du même site et installer le fichier APK. C’est le même cahier et les mêmes données.',
+]],
+['h3', 'Sur un ordinateur'],
+['p', 'Ouvrir l’adresse dans le navigateur. Rien à installer. Pour travailler hors connexion, utiliser le même navigateur : l’application se garde elle-même en mémoire après la première ouverture.'],
+['attention', 'L’application Android se met à jour en se réinstallant à la main ; son contenu, lui, se met à jour tout seul à l’ouverture dès qu’il y a du réseau. Une mise à jour ne touche jamais aux données du groupe.'],
+
+['h1', '2. Les mots à connaître'],
+['tbl', ['Mot', 'Ce qu’il veut dire'], [
+  ['AVEC', 'Association villageoise d’épargne et de crédit : 15 à 35 personnes du même village qui épargnent ensemble et se prêtent entre elles.'],
+  ['Part', 'L’unité d’épargne. L’assemblée fixe sa valeur (par exemple 1 000 FC) et le nombre de parts qu’un membre peut acheter par réunion (1 à 5, par exemple).'],
+  ['Cycle', 'La durée de vie d’une caisse, de 6 à 12 mois. À la fin, tout l’argent est rendu aux membres au prorata de ce qu’ils ont épargné et du temps.'],
+  ['Caisse de crédit', 'L’argent qui se prête : l’épargne en parts, plus les intérêts gagnés.'],
+  ['Caisse sociale', 'Une caisse de solidarité, séparée. Elle aide un membre en difficulté et ne se partage pas en fin de cycle.'],
+  ['Bureau', 'Président, secrétaire, trésorier, deux compteurs. Le trésorier garde la caisse et ne porte jamais de clé.'],
+  ['Les trois clés', 'Trois membres différents gardent chacun une clé du coffre. Il faut les trois pour ouvrir — et les trois codes pour sceller une réunion dans Akiba.'],
+  ['Journal scellé', 'La suite de toutes les écritures, chacune portant l’empreinte de la précédente. Changer une ligne casse la chaîne, et Akiba le dit.'],
+  ['Code de demande', 'Six signes qu’affiche le téléphone d’un groupe neuf. L’organisation s’en sert pour calculer le code d’activation.'],
+  ['Code de transfert', 'Huit signes qui protègent un fichier de cahier ou une image. Il se dit de vive voix, jamais dans le même message que le fichier.'],
+]],
+
+['h1', '3. L’animateur : créer et suivre les groupes'],
+['p', 'L’animateur travaille dans **Akiba Suivi**. Il crée les AVEC avec l’assemblée, remet le cahier au téléphone du groupe, puis suit les groupes à distance à partir de ce qu’ils lui renvoient.'],
+['fig', 'suivi/ordi-n-home', 'Le tableau de bord de l’animateur : alertes, groupes suivis, épargne cumulée, outils.'],
+
+['h2', '3.1 Ouvrir son compte'],
+['p', 'Un animateur ne se déclare pas tout seul : c’est l’organisation qui crée son compte et lui remet un code secret de quatre chiffres. À la première ouverture, l’animateur touche son nom sur la couverture et tape ce code. Il peut le changer ensuite dans **Plus › Mon code**.'],
+
+['h2', '3.2 Créer une AVEC, étape par étape'],
+['p', 'La création se fait **d’un seul trait, avec l’assemblée réunie**. Comptez trois quarts d’heure. Aucun réseau n’est nécessaire. Avant de commencer, il faut avoir sous la main : l’assemblée, la liste des membres avec le sexe de chacun, le bureau élu, les règles votées, le jour de réunion, et de quoi recopier les codes secrets sur de petits papiers.'],
+['fig', 'suivi/ordi-c-avec', 'La première étape : le nom du groupe et son lieu, jusqu’au village.'],
+['h3', 'Étape 1 — le groupe'],
+['p', 'Le nom tel que le groupe se nomme, puis la province, le territoire ou la ville, le secteur ou la chefferie, le groupement, et le village. Ces renseignements servent aux rapports de l’organisation : un groupe mal situé est un groupe qu’on ne retrouve pas.'],
+['h3', 'Étape 2 — le règlement'],
+['p', 'Onze choix, tous votés par l’assemblée : valeur d’une part, parts par réunion, caisse sociale, durée du cycle, intérêt du crédit, crédit maximum, durée maximum d’un crédit, date de début, amende d’absence, amende de retard, pénalité de retard de crédit, et **guichet entre les réunions** (voir le chapitre 7).'],
+['p', 'Un exemple chiffré s’affiche au bas de l’écran : « Kavira achète 3 parts à chaque réunion. Après 10 réunions, elle a épargné 30 000 FC. Elle peut emprunter jusqu’à 90 000 FC sur 3 mois et paiera 27 000 FC d’intérêt. » Lisez-le à haute voix : c’est ainsi que l’assemblée comprend ce qu’elle vote.'],
+['tip', 'Le règlement ne change pas pendant un cycle. Au cycle suivant, Akiba repropose exactement les mêmes choix, et l’assemblée peut les reconduire ou les changer.'],
+['h3', 'Étape 3 — les membres'],
+['p', 'Seuls le **nom complet** et le **sexe** sont obligatoires. La date de naissance, le téléphone, l’activité, l’adresse et la photo se complètent plus tard, et la photo reste facultative.'],
+['p', 'Pour aller vite, touchez **Aller plus vite : coller une liste** et collez une liste écrite d’avance, un membre par ligne, sous la forme « Kavira Mbusa, F ».'],
+['h3', 'Étape 4 — le bureau'],
+['p', 'Président, secrétaire, trésorier, deux compteurs, trois porte-clés. Akiba refuse qu’une même personne cumule deux rôles incompatibles, et le trésorier ne peut pas porter de clé : celui qui garde l’argent ne garde pas la clé du coffre.'],
+['h3', 'Étape 5 — le démarrage'],
+['p', 'Deux cas. **Nouveau groupe** : la caisse part de zéro. **Groupe déjà en cours** : on recopie le cahier de papier — parts déjà achetées, crédits en cours, caisse sociale, argent en caisse. Le récapitulatif reprend tout avant la création ; relisez-le avec le bureau.'],
+['p', 'À la validation, Akiba affiche **une seule fois** le code secret de chaque membre et la **carte de secours** du groupe. Recopiez les codes sur de petits papiers pliés, donnez-les en main propre, et gardez la carte de secours dans le coffre.'],
+['attention', 'Cette liste ne sera plus jamais affichée. Un code perdu se remplace (chapitre 13), mais cela demande l’organisation : mieux vaut recopier soigneusement le jour même.'],
+
+['h2', '3.3 Remettre le cahier au téléphone du groupe'],
+['p', 'Le groupe créé, le cahier est encore sur le téléphone de l’animateur. Deux chemins pour le remettre, selon ce qu’on a sous la main.'],
+['h3', 'Par image — le plus simple le jour de la création'],
+['ol', [
+  'Chez l’animateur : ouvrir le groupe, puis **Montrer l’AVEC en image**. Une ou deux images s’affichent, selon la taille du groupe, avec un code de huit signes.',
+  'Sur le téléphone du groupe : **Recevoir par photo**, viser les images l’une après l’autre.',
+  'Taper les huit signes, dictés de vive voix.',
+]],
+['p', 'Ce chemin ne vaut que pour un groupe **neuf**, le jour de sa création : un cahier qui a déjà tenu des réunions est trop gros pour une image.'],
+['h3', 'Par fichier — pour tout le reste'],
+['ol', [
+  'Chez l’animateur : **Envoyer vers le téléphone du groupe**, puis **Créer le fichier**. Akiba écrit un fichier `.akiba` chiffré et affiche un code de transfert de huit signes.',
+  'Envoyer le fichier par WhatsApp, Bluetooth ou carte mémoire.',
+  'Sur le téléphone du groupe : **Recevoir une AVEC**, choisir le fichier, taper le code.',
+]],
+['attention', 'Donnez le code **par un autre canal** que le fichier : de vive voix, ou par appel. Un fichier et son code dans le même message WhatsApp, c’est un coffre et sa clé dans le même sac.'],
+['p', 'Après l’envoi, le téléphone de l’animateur ne peut plus ouvrir de réunion pour ce groupe. Il garde une copie à consulter.'],
+['fig', 'avec/ordi-feuille-recevoir', 'Côté groupe : la feuille « Recevoir une AVEC » attend le fichier et le code.'],
+
+['h2', '3.4 Suivre les groupes'],
+['p', 'Le tableau de bord de l’animateur ne montre que ce que les groupes lui ont renvoyé. Il ne devine rien.'],
+['ul', [
+  '**Alertes** : écart de caisse, réunion manquée, crédit en retard, fin de cycle proche, sauvegarde ancienne.',
+  '**Chaque groupe** : épargne, crédits dehors, PAR, présence, qualité des données, indicateur « prête pour une IMF ».',
+  '**Visite de suivi** : après une visite au village, l’animateur note comment la réunion s’est passée et ce qu’il a constaté. La note entre dans le cahier et se retrouve dans les rapports.',
+  '**Exporter vers Excel** : toutes les AVEC suivies, en un fichier `.xlsx` qui s’ouvre dans Excel, Google Sheets ou WPS, même sans réseau.',
+]],
+['fig', 'suivi/ordi-n-avec', 'La fiche d’un groupe vue par l’animateur : chiffres, qualité des données, critères IMF.'],
+['fig', 'suivi/ordi-n-alerts', 'Les alertes : ce qui demande une action, groupe par groupe.'],
+
+['h2', '3.5 Recevoir une réunion du groupe'],
+['p', 'Après chaque séance, le bureau peut renvoyer la réunion à l’animateur **en images** : deux ou trois codes à photographier, et la copie de l’animateur se prolonge de cette séance. Elle ne remplace rien : s’il manque une réunion entre les deux, Akiba refuse et demande le fichier.'],
+['p', 'Pour un cahier entier — changement de téléphone, fin de cycle, dossier pour une IMF — le groupe envoie plutôt un **fichier de sauvegarde**.'],
+
+];
