@@ -1118,7 +1118,7 @@ ACT.syncSheet = () => {
     ${avec.lastSync ? `<p class="hint">Dernière sortie du téléphone : ${fdt(avec.lastSync)}${avec.lastSyncKind ? ' (' + esc(avec.lastSyncKind) + ')' : ''}.</p>` : ''}
     <button class="btn primary block xl" data-act="backupSheet">${ic('shield')} Créer une sauvegarde</button>
     <p class="hint">Le fichier est chiffré par un mot de passe. Gardez-le ailleurs que sur ce téléphone : chez la présidente, au bureau de l'organisation, sur une carte mémoire.</p>` : ''}
-    ${K.data.mode === 'prod' ? '' : `<div class="row between card"><div><b>Simuler l'absence de réseau</b><p class="hint">Démonstration : pour tester le mode village</p></div><button class="toggle ${on ? '' : 'on'}" data-act="toggleNet" aria-label="Simuler hors ligne"></button></div>`}`);
+    ${K.data.mode === 'prod' ? '' : `<div class="row between card"><div><b>Simuler l'absence de réseau</b><p class="hint">Démonstration : pour tester le mode village</p></div><button class="toggle ${K.data.net && K.data.net.online ? '' : 'on'}" data-act="toggleNet" aria-label="Simuler hors ligne"></button></div>`}`);
 };
 /* « Envoyer maintenant » n'existe plus : il n'envoyait nulle part. Le geste qui protège est la
    sauvegarde, et elle demande un mot de passe — donc une décision, pas un simple toucher. */

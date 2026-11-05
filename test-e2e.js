@@ -111,6 +111,11 @@ const js = async (expr, attendre = true) => {
   await dors(300);
   const poseOrdi = await revue();
 
+  /* Les feuilles : tout ce qui touche à l'argent passe par elles, et aucune revue ne les
+     regardait. On les ouvre toutes, dans quatre situations. */
+  await cdp('Emulation.setDeviceMetricsOverride', { width: 375, height: 812, deviceScaleFactor: 2, mobile: true });
+  const feuilles = await js(require('./tests/feuilles.js'));
+
   /* rapport */
   const reussis = resultats.filter(r => r.ok).length;
   console.log('\n=== Essais fonctionnels ===');
@@ -125,10 +130,18 @@ const js = async (expr, attendre = true) => {
   for (const p of pose) console.log(ligne(p));
   console.log('\n=== Revue des écrans, ordinateur (1440 x 900) ===');
   for (const p of poseOrdi) console.log(ligne(p));
+  console.log('\n=== Revue des feuilles ===');
+  /* Une feuille d'AVEC appelée depuis l'espace d'un animateur lève une erreur, et c'est normal :
+     elle n'y est atteignable par aucun bouton. Ce qui compte, c'est qu'elle s'ouvre là où on
+     l'atteint. Une feuille qui ne s'ouvre nulle part est, elle, hors d'usage. */
+  const feuillesKo = feuilles.filter(f => !f.ouvre);
+  for (const f of feuillesKo) console.log('  ÉCHEC ' + f.nom.padEnd(22) + ' — ne s’ouvre dans aucune situation' + (f.erreurs.length ? ' · ' + f.erreurs.join(' | ') : ''));
+  console.log('  ' + (feuilles.length - feuillesKo.length) + '/' + feuilles.length + ' feuilles s’ouvrent sans erreur');
+
   console.log('\n=== Erreurs de console ===');
   console.log(erreursConsole.length ? erreursConsole.map(e => '  ' + e).join('\n') : '  aucune');
 
-  const echecs = resultats.length - reussis + pose.filter(mauvais).length + poseOrdi.filter(mauvais).length + erreursConsole.length;
+  const echecs = resultats.length - reussis + pose.filter(mauvais).length + poseOrdi.filter(mauvais).length + erreursConsole.length + feuillesKo.length;
   console.log('\nRésultat : ' + reussis + '/' + resultats.length + ' essais fonctionnels réussis, ' + echecs + ' problème(s) au total.');
 
   ws.close(); chrome.kill(); serveur.close();
