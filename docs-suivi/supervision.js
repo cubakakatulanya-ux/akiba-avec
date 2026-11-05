@@ -47,51 +47,67 @@ ACT.outilsSheet = () => {
     </div>
     <button class="btn ghost block" data-act="closeSheet">Fermer</button>`);
 };
+/* ---------- l'accueil d'Akiba Suivi ----------
+
+   La même couverture que l'application des groupes, avec ce qui change pour un animateur : il
+   n'a pas d'emblème de groupe — il a la marque d'Ubora — et ce qu'il vient chercher en arrivant,
+   c'est combien de groupes il suit et ce qui l'attend.
+
+   La forme tient sur un téléphone comme sur un ordinateur : une colonne pleine sur l'un, deux
+   colonnes qui occupent toute la hauteur sur l'autre. L'ancien accueil laissait, sur un écran
+   de portable, les trois quarts de sa colonne de droite vides. */
 function accueilSuivi() {
   const hasAnim = K.data.users.some(u => u.role === 'anim' && !u.remote);
   const hasOrg = K.data.users.some(u => u.role === 'org' && !u.remote);
-  const row = (act, to, role, icon, title, sub) => `<button class="li" data-act="${act}" ${to ? `data-to="${to}"` : ''} ${role ? `data-role="${role}"` : ''}><span class="xl-ic">${ic(icon)}</span><span class="grow"><b>${title}</b><span class="small muted">${sub}</span></span>${ic('chev')}</button>`;
-  const org = !K.data.orgs.length
-    ? `<button class="btn primary block xl" data-act="orgStart">${ic('building')} Ouvrir le compte de mon organisation</button>
-       <p class="hint" style="text-align:center;margin-top:-4px">Ubora valide la demande — une fois, avec du réseau.</p>`
-    : '';
-  return `<div class="shell home">
-  <header class="hero tight">
-    <button class="langbtn pastille2" data-act="themeSheet" aria-label="Choisir l’apparence">${ic("eye")}</button><button class="langbtn" data-act="langSheet" aria-label="Choisir la langue">${ic('globe')}<span class="no-tr">${esc(I18N.name())}</span></button>
-    <svg class="ledger" viewBox="0 0 200 200" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><rect x="30" y="20" width="140" height="170" rx="10"/>${[55, 80, 105, 130, 155].map(y => `<path d="M50 ${y}h100"/>`).join('')}<path d="M80 20v170"/></svg>
-    <img class="hubmark no-tr" src="ubora-hub.png" width="512" height="512" alt="Logo Ubora" decoding="async">
-    <div class="label" style="color:inherit;opacity:.85">Suivi des AVEC</div>
-    <h1>Akiba <em>Suivi</em></h1>
-    <p>Pour les animateurs, les organisations et Ubora. Les groupes, eux, travaillent sur Akiba.</p>
-    <ul class="preuves">
-      <li>${ic('shield')}<span>Les journaux arrivent <b>scellés</b> et se vérifient à la réception</span></li>
-      <li>${ic('map')}<span>Tous vos groupes suivis, <b>même ceux que vous n'avez pas visités</b></span></li>
-      <li>${ic('chart')}<span>Qualité des données notée, <b>export Excel</b> pour le bailleur</span></li>
-    </ul>
-  </header>
-  <main class="main login">
-    ${licenceBanner()}
-    <!-- une seule porte : animateurs et organisation prennent leur nom dans la même liste -->
-    <section class="entree">
-      <h2 class="surtitre">Entrer</h2>
-      <div class="list">
-        ${hasAnim || hasOrg
-          ? row('go', 'l.users', '', 'users', 'Entrer dans mon espace', 'Animateur ou organisation : choisissez votre nom')
-          : '<div class="li muted">Aucun compte sur ce téléphone.</div>'}
+  const demo = K.data.mode !== 'prod' && K.data.avecs.length;
+  const lien = (act, to, icone, mot, extra) => `<button data-act="${act}"${to ? ` data-to="${to}"` : ''}${extra || ''}>${ic(icone)}<span>${mot}</span></button>`;
+
+  /* ce qui attend l'animateur : le nombre de groupes et les points à vérifier */
+  let etat = '';
+  if (hasAnim || hasOrg) {
+    const n = K.data.avecs.length;
+    let alertes = 0;
+    try { alertes = K.data.avecs.reduce((s2, a) => s2 + health(a, stats(a), chainOf(a)).alerts.length, 0); } catch (e) { alertes = 0; }
+    etat = `<span class="couv-etat ${alertes ? 'today' : ''}">${ic(alertes ? 'alert' : 'check')}${n} AVEC suivie${n > 1 ? 's' : ''}${alertes ? ` · ${alertes} point${alertes > 1 ? 's' : ''} à vérifier` : ' · rien à signaler'}</span>`;
+  }
+
+  return `<div class="shell home"><main class="couv">
+    <div class="couv-haut">
+      <button class="langbtn" data-act="themeSheet" aria-label="Choisir l’apparence">${ic('eye')}</button>
+      <button class="langbtn" data-act="langSheet" aria-label="Choisir la langue">${ic('globe')}<span class="no-tr">${esc(I18N.name())}</span></button></div>
+    <div class="couv-centre">
+      <img class="couv-marque no-tr" src="ubora-hub.png" width="512" height="512" alt="" decoding="async">
+      <h1 class="couv-nom">Akiba <em>Suivi</em></h1>
+      <p class="couv-lieu">Pour les animateurs, les organisations et Ubora. Les groupes, eux, travaillent sur Akiba.</p>
+      ${etat}
+      <div class="couv-promesses${hasAnim || hasOrg ? ' connu' : ''}">
+        <div>${ic('shield')}<span>Les journaux arrivent <b>scellés</b> et se vérifient à la réception</span></div>
+        <div>${ic('map')}<span>Tous vos groupes suivis, <b>même ceux que vous n'avez pas visités</b></span></div>
+        <div>${ic('chart')}<span>Qualité des données notée, <b>export Excel</b> pour le bailleur</span></div>
       </div>
-      ${org}
-    </section>
-    <!-- les gestes secondaires : des liens sobres, pas des tuiles. L'écran garde une seule porte visible. -->
-    <!-- recevoir une AVEC et suivre la formation sont des gestes de métier : ils se font dans
-         l'espace de l'animateur ou de l'organisation, pas sur la page d'accueil.
-         Seul le guide reste ici : il explique l'application à qui ne l'a pas encore ouverte. -->
-    <nav class="liens" aria-label="Autres gestes">
-      <button data-act="go" data-to="guide">${ic('book')}<span>Guide d’utilisation</span></button>
-    </nav>
-    ${K.data.mode === 'prod' || !K.data.avecs.length ? '' : `<div class="demo"><p class="small"><b>Démonstration</b> · codes secrets <b class="mono">1234</b></p>
-      ${licKind() === 'demo' ? '<p class="hint">Licence de démonstration : les vraies données ne sont pas disponibles.</p>' : `<button class="btn ghost block" data-act="goLive">${ic('check')} Commencer avec mes vraies données</button>`}</div>`}
-    <!-- l'administration ne concerne qu'Ubora : un lien effacé, en bas, plutôt qu'une porte dans la liste -->
-    <p class="discret"><button class="linkbtn" data-act="go" data-to="adm.home">Administration Ubora</button></p>
+    </div>
+    <div class="couv-bas">
+      ${licenceBanner()}
+      ${hasAnim || hasOrg
+        /* Les comptes du téléphone directement ici, en vignettes : on touche son nom et on tape
+           son code. L'écran intermédiaire « choisissez votre nom » ne servait qu'à répéter une
+           liste de deux noms — et laissait la moitié droite d'un écran d'ordinateur vide. */
+        ? `<span class="surtitre couv-titre">Entrer</span>
+           <div class="grille-avec">${K.data.users.filter(u => !u.remote && (u.role === 'anim' || u.role === 'org')).map(u =>
+            `<button class="vignette perso" data-act="loginUser" data-id="${u.id}">
+              <span class="av">${esc(initials(u.name))}</span><span class="nm">${esc(u.name)}</span>
+              <span class="vl">${u.role === 'org' ? 'Organisation' : 'Animateur'}${u.zone ? ' · ' + esc(u.zone) : ''}</span></button>`).join('')}</div>`
+        : `<button class="barre-or" data-act="orgStart">${ic('building')}<span>Ouvrir le compte de mon organisation</span></button>
+           <p class="hint" style="margin:0;text-align:center">Ubora valide la demande — une fois, avec du réseau.</p>`}
+      ${!K.data.orgs.length && (hasAnim || hasOrg) ? `<button class="vignette geste" data-act="orgStart"><span class="vic or">${ic('building')}</span>
+        <span class="nm">Ouvrir le compte de mon organisation</span><span class="vl">Ubora valide la demande, une fois, avec du réseau</span></button>` : ''}
+      ${demo ? `<div class="couv-demo">${ic('alert')}<span>Démonstration · codes secrets <b class="mono">1234</b></span></div>
+        ${licKind() === 'demo' ? '' : `<button class="btn ghost block" data-act="goLive">${ic('check')} Commencer avec mes vraies données</button>`}` : ''}
+      <nav class="liens" aria-label="Autres gestes">
+        ${lien('go', 'guide', 'book', 'Guide d’utilisation')}
+        ${lien('go', 'adm.home', 'shield', 'Administration Ubora')}
+      </nav>
+    </div>
   </main></div>`;
 }
 
