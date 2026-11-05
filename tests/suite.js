@@ -1441,6 +1441,9 @@ window.__akibaTests = async function () {
       eq(K.data.mode, 'prod', 'recevoir son cahier fait quitter la démonstration');
       eq(K.data.avecs.length, 1, 'les groupes de démonstration ne restent pas à côté du vrai');
       eq(K.data.avecs[0].name, 'Tujenge Essai', 'le cahier reçu est le seul sur le téléphone');
+      /* Un groupe créé par un animateur arrive « en attente ». S'il perd son code de demande en
+         route, l'organisation ne peut plus l'activer : il ne tiendra jamais sa première réunion. */
+      eq(K.data.avecs[0].requestCode, neuf.requestCode, 'le code de demande arrive avec le groupe');
 
       /* en deux images : le secrétaire vise l'une puis l'autre, dans l'ordre qu'il veut */
       const bouts = qrMorceaux(texte);

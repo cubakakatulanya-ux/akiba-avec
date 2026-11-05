@@ -45,6 +45,10 @@ function qrCharge(avec) {
     em: [avec.embleme.signe, avec.embleme.teinte].join(sep),
     re: avec.settings, cy: { n: avec.cycle.n, d: avec.cycle.start, f: avec.cycle.end },
     st: avec.status || 'active', or: avec.orgId || '', an: avec.animId || '', cr: avec.createdAt || Date.now(),
+    /* le code de demande voyage avec le groupe : sans lui, un groupe qui arrive « en attente »
+       ne peut plus être activé — ni par appel, ni par envoi — et ne tiendra jamais sa première
+       réunion. Douze signes de plus dans l'image, contre un groupe bloqué. */
+    rq: avec.requestCode || '',
     me: avec.members.map(m => [m.id, m.name, m.sex || '', m.role || 'membre', m.key ? 1 : 0, m.pin,
       m.birthDate || '', m.phone && m.phone !== '—' ? m.phone : '', m.activity || ''].join(sep)),
     sc: (avec.rescue || []).map(r => r.h + (r.used ? '*' : '')),
@@ -358,7 +362,8 @@ async function qrImporter(texte, code) {
     embleme: Object.assign({}, EMB_DEFAUT, { signe, teinte }),
     createdAt: c.cr || Date.now(), cycle: { n: c.cy.n, start: c.cy.d, end: c.cy.f }, cycles: [],
     settings: Object.assign({}, c.re), members, meetings: [], tx: [], visits: [], lastSync: 0,
-    status: c.st || 'active', rescue: (c.sc || []).map(x => ({ h: String(x).replace(/\*$/, ''), used: /\*$/.test(String(x)) })), security: []
+    status: c.st || 'active', requestCode: c.rq || '', submittedAt: c.cr || Date.now(),
+    rescue: (c.sc || []).map(x => ({ h: String(x).replace(/\*$/, ''), used: /\*$/.test(String(x)) })), security: []
   };
   secLog(avec, 'AVEC reçue par image', null, 'montrée par ' + (c.an ? 'l\'animateur' : 'l\'organisation'));
   /* les fondateurs entrent dans le journal de CE téléphone : la liste du premier jour est
