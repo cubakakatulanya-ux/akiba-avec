@@ -1421,7 +1421,10 @@ window.__akibaTests = async function () {
       neuf.id = 'avec-qr-essai'; neuf.name = 'Tujenge Essai'; neuf.meetings = []; neuf.tx = [];
       neuf.members = neuf.members.slice(0, 12).map((m, i) => Object.assign({}, m, { id: 'qm' + i, photo: '' }));
       neuf.movedOut = null;
-      neuf.members.forEach(m => appendTx(neuf, { type: 'MEMBRE', amount: 0, memberId: m.id, by: null, note: 'Membre fondateur · ' + m.name }));
+      /* exactement la phrase qu'écrit l'assistant de création : elle entre dans le sceau, donc
+         la moindre différence ferait diverger les deux cahiers dès la première ligne */
+      neuf.members.forEach(m => appendTx(neuf, { type: 'MEMBRE', amount: 0, memberId: m.id, by: null,
+        note: 'Membre fondateur · ' + m.name + (m.role !== 'membre' ? ' · ' + ROLES[m.role] : '') }));
       K.data.avecs.push(neuf);
       must(qrPossible(neuf).ok, 'un groupe neuf doit tenir dans une image');
 
@@ -1450,6 +1453,13 @@ window.__akibaTests = async function () {
          avec le secret de l'organisation, qui doit donc avoir voyagé lui aussi. */
       eq(signCode('ACT', K.data.avecs[0].orgId, K.data.avecs[0].requestCode), codeActAttendu,
         'le code d’activation dicté par l’organisation est reconnu sur le téléphone du groupe');
+      /* Le voyage fait un aller-retour : le groupe tiendra ses réunions sur ce téléphone, puis
+         les renverra en image à l'animateur, dont la copie se prolonge seulement si les deux
+         journaux sont partis de la même empreinte. C'est la raison d'être de l'heure portée par
+         chaque ligne de membre : sans elle, l'aller marche et le retour est refusé pour toujours. */
+      const avantP = neuf.tx.map(payload), apresP = K.data.avecs[0].tx.map(payload);
+      const ecart = avantP.map((p, i) => p === apresP[i] ? null : i + ' : ' + p.split('|').map((v,k)=>v===apresP[i].split('|')[k]?null:k+'['+v+'/'+apresP[i].split('|')[k]+']').filter(Boolean).join(' ')).filter(Boolean)[0];
+      must(!ecart, 'les deux cahiers partent de la même empreinte, sinon la réunion renvoyée ne s’accrochera jamais — ' + ecart);
 
       /* en deux images : le secrétaire vise l'une puis l'autre, dans l'ordre qu'il veut */
       const bouts = qrMorceaux(texte);

@@ -59,8 +59,16 @@ function qrCharge(avec) {
     /* l'animateur, en lecture seule : c'est lui que le cahier nomme comme créateur */
     us: (() => { const u = avec.animId ? userById(avec.animId) : null;
       return u ? [u.id, u.role, u.orgId || '', u.name, u.zone || ''].join(sep) : ''; })(),
-    me: avec.members.map(m => [m.id, m.name, m.sex || '', m.role || 'membre', m.key ? 1 : 0, m.pin,
-      m.birthDate || '', m.phone && m.phone !== '—' ? m.phone : '', m.activity || ''].join(sep)),
+    /* La dernière valeur de chaque ligne est l'instant de l'écriture fondatrice de ce membre,
+       compté depuis la création du groupe. Il ne sert qu'à une chose, mais elle est décisive :
+       le téléphone du groupe réécrit lui-même les écritures fondatrices, et l'heure entre dans
+       le sceau. Sans elle, les deux cahiers partent sur des empreintes différentes dès la
+       première ligne — et la réunion renvoyée par image ne s'accroche plus à la copie de
+       l'animateur, qui doit alors redemander le fichier. */
+    me: avec.members.map(m => { const f = avec.tx.find(t => t.type === 'MEMBRE' && t.memberId === m.id);
+      return [m.id, m.name, m.sex || '', m.role || 'membre', m.key ? 1 : 0, m.pin,
+        m.birthDate || '', m.phone && m.phone !== '—' ? m.phone : '', m.activity || '',
+        f ? f.ts - (avec.createdAt || 0) : ''].join(sep); }),
     sc: (avec.rescue || []).map(r => r.h + (r.used ? '*' : '')),
   };
 }
@@ -360,9 +368,10 @@ async function qrImporter(texte, code) {
 
   const sep = '|';
   const members = c.me.map(l => {
-    const [id, name, sex, role, key, pin, ne, tel, act] = String(l).split(sep);
+    const [id, name, sex, role, key, pin, ne, tel, act, dts] = String(l).split(sep);
     return { id, name, sex: sex || 'F', phone: tel || '—', pin, joined: c.cr || Date.now(), birthYear: null,
-      birthDate: ne || '', photo: '', activity: act || '', address: '', role: role || 'membre', key: key === '1' };
+      birthDate: ne || '', photo: '', activity: act || '', address: '', role: role || 'membre', key: key === '1',
+      _ts: dts === undefined || dts === '' ? null : (c.cr || 0) + Number(dts) };
   });
   const [signe, teinte] = String(c.em || '').split(sep);
   const avec = {
@@ -378,8 +387,9 @@ async function qrImporter(texte, code) {
   secLog(avec, 'AVEC reçue par image', null, 'montrée par ' + (c.an ? 'l\'animateur' : 'l\'organisation'));
   /* les fondateurs entrent dans le journal de CE téléphone : la liste du premier jour est
      couverte par le sceau, comme pour une AVEC créée ici */
-  members.forEach(m => appendTx(avec, { type: 'MEMBRE', amount: 0, memberId: m.id, by: null,
+  members.forEach(m => appendTx(avec, { type: 'MEMBRE', amount: 0, memberId: m.id, by: null, ts: m._ts || Date.now(),
     note: 'Membre fondateur · ' + m.name + (m.role !== 'membre' ? ' · ' + ROLES[m.role] : '') }));
+  members.forEach(m => { delete m._ts; });        // l'heure a servi au sceau : elle ne reste pas dans la fiche
   if (deja) K.data.avecs = K.data.avecs.filter(a => a.id !== deja.id);
   /* l'organisation et l'animateur arrivent avec le groupe, comme dans le fichier : c'est le
      secret de l'organisation qui permettra de reconnaître le code d'activation dicté au
