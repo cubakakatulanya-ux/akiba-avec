@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <string name="app_name">Akiba</string>
 
   <!-- Le verrou contre la suppression par erreur. Les textes sont lus par le bureau du groupe :
        ils disent ce qui se passe, sans vocabulaire technique. -->

@@ -8,7 +8,6 @@ android {
   compileSdk 34
 
   defaultConfig {
-    applicationId 'com.ubora.akiba'
     minSdk 24                           // Android 7 : les terminaux POS les plus anciens encore en service
     targetSdk 34
     /* Le numéro de fabrication, passé par GitHub. Il monte à chaque fabrication, ce qui fait
@@ -17,10 +16,37 @@ android {
     versionName '1.0.' + (project.hasProperty('versionCode') ? project.versionCode : '0')
   }
 
-  sourceSets {
-    main {
-      assets.srcDirs += ['../../docs']  // la page web, telle qu'elle est en ligne
+  /* Deux applications, une seule source — comme pour le site.
+       avec  : le cahier des groupes, sur akiba.uborardc.com
+       suivi : l'outil des animateurs et des organisations, sur akibas.uborardc.com
+
+     Chacune porte son propre identifiant : les deux s'installent côte à côte sur le même
+     terminal, chacune avec ses données, et une mise à jour de l'une ne touche pas l'autre.
+     Le domaine est écrit dans le code fabriqué (BuildConfig), pas dans le Java : c'est la même
+     classe qui sert aux deux, et elle ne peut pas se tromper d'adresse. */
+  flavorDimensions += 'application'
+  productFlavors {
+    avec {
+      dimension 'application'
+      applicationId 'com.ubora.akiba'
+      resValue 'string', 'app_name', 'Akiba'
+      buildConfigField 'String', 'DOMAINE', '"akiba.uborardc.com"'
     }
+    suivi {
+      dimension 'application'
+      applicationId 'com.ubora.akiba.suivi'
+      resValue 'string', 'app_name', 'Akiba Suivi'
+      buildConfigField 'String', 'DOMAINE', '"akibas.uborardc.com"'
+    }
+  }
+
+  buildFeatures { buildConfig true }
+
+  sourceSets {
+    /* Les fichiers de chaque application sont pris dans son dossier publié : une seule version
+       à tenir à jour, et l'application ne peut pas diverger de son site. */
+    avec { assets.srcDirs += ['../../docs'] }
+    suivi { assets.srcDirs += ['../../docs-suivi'] }
   }
 
   /* La signature. Elle prouve qu'une Akiba installée sur un terminal vient bien d'Ubora, et
@@ -59,7 +85,7 @@ android {
     /* Ce qui est sur le site mais n'a rien à faire dans l'application. En tête : le fichier de
        l'application lui-même, déposé dans docs/ par la fabrique — sans cette ligne, chaque
        nouvelle version embarquerait la précédente et doublerait de taille à chaque fois. */
-    ignoreAssetsPattern '!.svn:!.git:!.ds_store:!*.scc:!CVS:!thumbs.db:!akiba.apk:!akiba-apk.txt:!sitemap.xml:!robots.txt:!CNAME:!LANCER.md'
+    ignoreAssetsPattern '!.svn:!.git:!.ds_store:!*.scc:!CVS:!thumbs.db:!akiba.apk:!akiba-apk.txt:!akiba-suivi.apk:!akiba-suivi-apk.txt:!sitemap.xml:!robots.txt:!CNAME:!LANCER.md'
   }
 }
 

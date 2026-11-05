@@ -26,7 +26,7 @@ if (!P) throw new Error('cible inconnue : ' + CIBLE + " (avec ou suivi)");
 /* Le dossier est refait à neuf à chaque construction. L'application Android, elle, n'est pas
    fabriquée ici : c'est GitHub qui la compile et la dépose dans ce même dossier. On la met donc
    de côté le temps du ménage, sinon chaque construction la ferait disparaître du site. */
-const APK = ['akiba.apk', 'akiba-apk.txt'];
+const APK = CIBLE === 'suivi' ? ['akiba-suivi.apk', 'akiba-suivi-apk.txt'] : ['akiba.apk', 'akiba-apk.txt'];
 const gardes = {};
 APK.forEach(f => { const c = path.join(out, f); if (fs.existsSync(c)) gardes[f] = fs.readFileSync(c); });
 fs.rmSync(out, { recursive: true, force: true });
@@ -177,12 +177,15 @@ fs.writeFileSync(path.join(out, 'version.txt'), version + '\n');
    les terminaux de caisse, « Ajouter à l'écran d'accueil » ne pose souvent aucune icône : le
    secrétaire ne retrouve plus le cahier. L'application résout cela, et ouvre l'imprimante du
    terminal. Elle lit exactement les mêmes données : même adresse, même cahier. */
-const apkPresent = fs.existsSync(path.join(out, 'akiba.apk'));
-const apkNote = apkPresent && fs.existsSync(path.join(out, 'akiba-apk.txt'))
-  ? fs.readFileSync(path.join(out, 'akiba-apk.txt'), 'utf8').trim().split('\n') : [];
+const APK_FICHIER = APK[0];
+const apkPresent = fs.existsSync(path.join(out, APK_FICHIER));
+const apkNote = apkPresent && fs.existsSync(path.join(out, APK[1]))
+  ? fs.readFileSync(path.join(out, APK[1]), 'utf8').trim().split('\n') : [];
 const jourFr = d => { const [a, m, j] = d.split('-'); return j + '/' + m + '/' + a; };
-/* seul Akiba AVEC a une application Android : c'est elle qui tourne sur les terminaux */
-if (CIBLE === 'avec') fs.writeFileSync(path.join(out, 'android.html'), `<!doctype html>
+/* Les deux applications ont la leur : celle des groupes tourne sur les terminaux de caisse,
+   celle des animateurs sur leur propre téléphone. Les deux cohabitent sur un même appareil —
+   identifiants différents, données séparées. */
+fs.writeFileSync(path.join(out, 'android.html'), `<!doctype html>
 <html lang="fr"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Installer ${P.nom} sur un téléphone Android · Ubora</title>
@@ -210,13 +213,13 @@ if (CIBLE === 'avec') fs.writeFileSync(path.join(out, 'android.html'), `<!doctyp
 <h1>Installer ${P.nom} sur un téléphone Android</h1>
 <p class="chapeau">${P.nom} marche déjà dans le navigateur, sans rien installer. Cette application sert surtout aux terminaux de caisse, où l'icône n'apparaît pas toujours sur l'écran d'accueil, et où l'on veut imprimer les reçus.</p>
 
-${apkPresent ? `<a class="bouton" href="akiba.apk" download>Télécharger l'application</a>
+${apkPresent ? `<a class="bouton" href="${APK_FICHIER}" download>Télécharger l'application</a>
 <p class="sous">${apkNote[1] ? apkNote[1] + ' · ' : ''}${apkNote[0] ? 'version du ' + jourFr(apkNote[0]) : ''}</p>`
   : '<div class="avis"><b>L\'application n\'est pas encore prête</b>Elle est en cours de fabrication. En attendant, ouvrez <a href="./">' + P.domaine + '</a> dans le navigateur du téléphone : le cahier y fonctionne entièrement, y compris sans réseau.</div>'}
 
 <h2>Pas à pas</h2>
 <ol>
-  <li>Appuyez sur <b>Télécharger l'application</b>. Le téléphone enregistre un fichier nommé <b>akiba.apk</b>.</li>
+  <li>Appuyez sur <b>Télécharger l'application</b>. Le téléphone enregistre un fichier nommé <b>${APK_FICHIER}</b>.</li>
   <li>Ouvrez ce fichier, depuis la barre des notifications ou depuis le dossier <b>Téléchargements</b>.</li>
   <li>Le téléphone demande l'autorisation d'installer depuis cette source. Appuyez sur <b>Paramètres</b>, puis activez <b>Autoriser cette source</b>, puis revenez en arrière.</li>
   <li>Appuyez sur <b>Installer</b>, puis sur <b>Ouvrir</b>.</li>

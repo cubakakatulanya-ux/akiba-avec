@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <!-- Akiba Suivi porte le bleu de l'outil des animateurs, là où l'application des groupes porte
+       le vert. Deux icônes qu'on distingue sur le même écran d'accueil, sans lire leur nom.
+       Android 8 et au-delà composent l'icône avec ce fond ; sur Android 7, qui n'a que l'image
+       figée, les deux icônes restent vertes. -->
+  <color name="ic_launcher_background">#0B3A52</color>
+</resources>

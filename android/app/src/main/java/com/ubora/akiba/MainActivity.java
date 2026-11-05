@@ -31,7 +31,7 @@ public class MainActivity extends AppCompatActivity {
 
   /** Le domaine du site. Ne pas le changer : c'est lui qui relie l'application aux données
    *  déjà enregistrées sur le terminal. En changer couperait le cahier existant. */
-  private static final String DOMAINE = "akiba.uborardc.com";
+  private static final String DOMAINE = BuildConfig.DOMAINE;   // akiba.uborardc.com ou akibas.uborardc.com, selon l'application fabriquée
 
   private WebView vue;
 
