@@ -1404,7 +1404,9 @@ window.__akibaTests = async function () {
      sans câble et sans réseau — l'animatrice montre, le secrétaire photographie. */
   await t('Une AVEC neuve passe par une image, et une AVEC qui a vécu refuse', async () => {
     const a = avecById(A);
-    const sauve = JSON.stringify(K.data.avecs);
+    /* l'essai sort de la démonstration, ce qui vide tout le téléphone : on garde donc
+       l'ensemble des données, comptes compris, et pas seulement les AVEC. */
+    const sauve = JSON.stringify(K.data);
     const licSauve = App.licence;
     /* un téléphone de groupe déjà validé : la licence se vérifie ailleurs, pas ici */
     if (licenceRequired() && !(App.licence && App.licence.ok)) App.licence = { ok: true, how: 'demo', data: { name: 'Essai', kind: 'demo' } };
@@ -1433,6 +1435,12 @@ window.__akibaTests = async function () {
       must(faux.error, 'un code faux ne doit rien ouvrir');
       const r = await qrImporter(texte, code);
       must(!r.error, 'l’image doit s’ouvrir avec le bon code : ' + r.error);
+      /* Le téléphone d'un groupe neuf sort de la démonstration en recevant son cahier. La
+         réception par fichier le faisait, l'image ne le faisait pas : le groupe se retrouvait
+         devant une couverture qui montrait encore un faux groupe, son cahier introuvable. */
+      eq(K.data.mode, 'prod', 'recevoir son cahier fait quitter la démonstration');
+      eq(K.data.avecs.length, 1, 'les groupes de démonstration ne restent pas à côté du vrai');
+      eq(K.data.avecs[0].name, 'Tujenge Essai', 'le cahier reçu est le seul sur le téléphone');
 
       /* en deux images : le secrétaire vise l'une puis l'autre, dans l'ordre qu'il veut */
       const bouts = qrMorceaux(texte);
@@ -1496,7 +1504,7 @@ window.__akibaTests = async function () {
       must(verifyChain(recu).ok, 'le journal du groupe doit être scellé dès l’arrivée');
       must(verifyMembres(recu).ok, 'la liste des membres doit être couverte par le journal');
       return `${texte.length} signes dans l’image, 12 membres et leurs codes arrivés entiers`;
-    } finally { K.data.avecs = JSON.parse(sauve); App.licence = licSauve; DB.save(); await DB.vide(); }
+    } finally { K.data = JSON.parse(sauve); App.licence = licSauve; DB.save(); await DB.vide(); }
   });
 
   /* ---------- W. le guichet : l'AVEC comme petite banque de ses membres ----------

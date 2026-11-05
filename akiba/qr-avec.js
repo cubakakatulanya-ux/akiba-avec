@@ -339,6 +339,10 @@ async function qrImporter(texte, code) {
   const deja = avecById(c.id);
   if (deja && !deja.movedOut) return { error: 'Cette AVEC est déjà sur ce téléphone' };
   if (licenceRequired() && !(App.licence && App.licence.ok)) return { error: 'Ce téléphone n\'a pas de licence. Demandez un lien d\'activation.' };
+  /* On quitte la démonstration, comme le fait déjà la réception par fichier. Sans cela, le
+     cahier arrive dans un téléphone encore plein de faux groupes : la couverture continue de
+     montrer la démonstration, et le vrai cahier du groupe reste introuvable. */
+  if (K.data.mode !== 'prod') wipeTo(emptyData());
 
   const sep = '|';
   const members = c.me.map(l => {
