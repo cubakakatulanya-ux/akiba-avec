@@ -85,6 +85,7 @@ const js = async (expr, attendre = true) => {
     const m = document.querySelector('.shell main') || document.querySelector('.main');
     return { arrive: App.screen, vide: !m || m.innerHTML.trim().length < 60, dehors: [...new Set(dehors)].slice(0, 3) };
   };1`, false);
+  const DESSIN = require('./tests/design.js');
   const CIBLE = await js('window.AKIBA_CIBLE || "avec"', false);
   const nbEcrans = await js('window.__ECRANS.length', false);
   const revue = async () => {
@@ -95,7 +96,8 @@ const js = async (expr, attendre = true) => {
       const r = await js('window.__akibaOuvre(' + i + ')', false);
       await dors(90);
       const r2 = await js('window.__akibaOuvre(' + i + ')', false);   // après peinture : mesures stables
-      out.push({ ecran: id, ...(r.erreur ? r : r2) });
+      const d = r.erreur ? null : await js(DESSIN, false);            // contraste, cibles, coupures
+      out.push({ ecran: id, ...(r.erreur ? r : r2), dessin: d });
     }
     return out;
   };
@@ -137,6 +139,31 @@ const js = async (expr, attendre = true) => {
   const feuillesKo = feuilles.filter(f => !f.ouvre);
   for (const f of feuillesKo) console.log('  ÉCHEC ' + f.nom.padEnd(22) + ' — ne s’ouvre dans aucune situation' + (f.erreurs.length ? ' · ' + f.erreurs.join(' | ') : ''));
   console.log('  ' + (feuilles.length - feuillesKo.length) + '/' + feuilles.length + ' feuilles s’ouvrent sans erreur');
+
+  /* Le dessin : ce qui se mesure sans l'œil — contraste réel, cibles du pouce, textes coupés.
+     Un écran lisible dans un bureau peut être illisible dehors, et c'est dehors qu'on s'en sert. */
+  const dessinRapport = (titre, liste, ordi) => {
+    console.log('\n=== Revue du dessin, ' + titre + ' ===');
+    const tot = { contraste: 0, cibles: 0, coupes: 0, petits: 0, rangs: 0 };
+    const vus = {};
+    for (const p of liste) {
+      const d = p.dessin; if (!d) continue;
+      for (const k of Object.keys(tot)) tot[k] += (d[k] || []).length;
+      for (const c of d.contraste || []) { const cle = c.cl + '|' + c.r; if (!vus[cle]) { vus[cle] = 1; console.log('  CONTRASTE ' + String(c.r).padEnd(5) + ' pour ' + c.seuil + ' — ' + c.px + 'px .' + c.cl + ' « ' + c.t + ' » (' + p.ecran + ')'); } }
+      for (const c of d.coupes || []) { const cle = 'x' + c.cl; if (!vus[cle]) { vus[cle] = 1; console.log('  COUPÉ     .' + c.cl + ' « ' + c.t + ' » perd ' + c.de + 'px (' + p.ecran + ')'); } }
+      for (const c of d.petits || []) { const cle = 'p' + c.cl + c.px; if (!vus[cle]) { vus[cle] = 1; console.log('  PETIT     ' + c.px + 'px .' + c.cl + ' « ' + c.t + ' » (' + p.ecran + ')'); } }
+      for (const c of d.rangs || []) { const cle = 'r' + c.cl + c.ecart; if (!vus[cle]) { vus[cle] = 1; console.log('  RANGÉE    .' + c.cl + ' — ' + c.n + ' cases, ' + c.ecart + 'px d’écart de hauteur, « ' + c.t + ' » (' + p.ecran + ')'); } }
+      for (const c of d.cibles || []) { const cle = 'c' + c.cl + c.h; if (!vus[cle]) { vus[cle] = 1; console.log('  CIBLE     ' + c.w + 'x' + c.h + ' .' + c.cl + ' « ' + c.t + ' » (' + p.ecran + ')'); } }
+    }
+    if (ordi) {
+      const etroits = liste.filter(p => p.dessin && p.dessin.part < 55).map(p => p.ecran + ' ' + p.dessin.part + '%');
+      if (etroits.length) console.log('  VIDE      ' + etroits.length + ' écran(s) occupent moins de 55 % de la largeur : ' + etroits.join(', '));
+    }
+    console.log('  ' + tot.contraste + ' contraste(s) faible(s), ' + tot.coupes + ' texte(s) coupé(s), ' + tot.petits + ' texte(s) sous 12px, ' + tot.rangs + ' rangée(s) mal alignée(s)' + (ordi ? '' : ', ' + tot.cibles + ' cible(s) trop petite(s)'));
+    return tot.contraste + tot.coupes + tot.petits + tot.rangs + (ordi ? 0 : tot.cibles);
+  };
+  const dessinTel = dessinRapport('téléphone', pose, false);
+  const dessinOrdi = dessinRapport('ordinateur', poseOrdi, true);
 
   console.log('\n=== Erreurs de console ===');
   console.log(erreursConsole.length ? erreursConsole.map(e => '  ' + e).join('\n') : '  aucune');

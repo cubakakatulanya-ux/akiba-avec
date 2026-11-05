@@ -110,7 +110,7 @@ SCREENS['o.impact'] = () => {
   return `<div class="shell wide">${topbar('Impact', esc(org.name), backBtn('o.home'))}<main class="main">
     <div class="card stack" style="background:var(--brand-soft);border:0">
       <b style="font-family:var(--f-display);font-size:clamp(1rem,3.4vw,1.2rem);line-height:1.3;font-weight:700">Une infrastructure numérique hors ligne, conçue autour des pratiques réelles des AVEC rurales, transforme leurs opérations quotidiennes en données financières fiables et vérifiables, réduit le coût de leur supervision et crée une passerelle vers le système financier formel.</b>
-      <span class="small muted">Chiffres calculés sur ${n} AVEC suivies, à partir des journaux scellés reçus par l'organisation.</span>
+      <span class="small">Chiffres calculés sur ${n} AVEC suivies, à partir des journaux scellés reçus par l'organisation.</span>
     </div>
 
     ${pillar(1, 'Hors ligne, au rythme des AVEC', 'Les réunions se tiennent sans réseau, dans l\'ordre du cahier, et chaque franc est écrit au moment où il bouge.',

@@ -964,11 +964,12 @@ try { document.documentElement.dataset.cible = CIBLE; } catch (e) { /* hors navi
    Le choix est gardé sur l'appareil ; il ne voyage pas avec les données du groupe. */
 const THEME_STORE = 'kitabu.theme';
 const THEMES = { auto: 'Comme le téléphone', light: 'Fond clair', dark: 'Fond sombre' };
-/* Le fond sombre par défaut, et non « comme le téléphone ». Un écran sombre fatigue moins l'œil
-   le soir — l'heure des réunions — et consomme moins sur les écrans OLED, ce qui compte quand on
-   recharge au panneau solaire. « Comme le téléphone » et le fond clair restent à un toucher, dans
-   Apparence ; un choix déjà fait par quelqu'un n'est jamais écrasé. */
-const THEME_DEFAUT = 'dark';
+/* Le fond clair par défaut, et non « comme le téléphone » ni le fond sombre. C'est l'aspect d'un
+   registre : encre sombre sur papier blanc. Il se lit dehors, en plein jour, là où se tiennent
+   les réunions, et c'est celui qu'on montre à une IMF ou à un partenaire. Le fond sombre reste
+   à un toucher, dans Apparence, pour les réunions du soir et les écrans OLED ; un choix déjà
+   fait par quelqu'un n'est jamais écrasé. */
+const THEME_DEFAUT = 'light';
 const themeChoisi = () => { try { return THEMES[localStorage.getItem(THEME_STORE)] ? localStorage.getItem(THEME_STORE) : THEME_DEFAUT; } catch (e) { return THEME_DEFAUT; } };
 function appliquerTheme(v = themeChoisi()) {
   try {
@@ -1101,8 +1102,11 @@ const backBtn = (to, extra = '') => `<button class="iconbtn" data-act="back" dat
    n'existent que là. */
 function syncPill(avec) {
   const n = pending(avec);
+  /* Sur un téléphone, la phrase entière mangeait la largeur du bandeau et poussait le nom du
+     groupe sur trois lignes. Elle se réduit alors à ce qui compte : le nombre, ou rien. */
   const label = n ? `${n} à sauvegarder` : 'Sauvegardé';
-  return `<button class="sync ${n ? 'off' : ''}" data-act="syncSheet" aria-label="État de la sauvegarde"><i></i>${label}</button>`;
+  const court = n ? String(n) : '';
+  return `<button class="sync ${n ? 'off' : ''}" data-act="syncSheet" aria-label="${esc(label)}"><i></i><span class="lg">${label}</span>${court ? `<span class="pt">${court}</span>` : ''}</button>`;
 }
 function tabbar(items, cur) {
   return `<nav class="tabbar"><div class="in">${items.map(t => `<button class="tab ${t.id === cur ? 'on' : ''}" data-act="go" data-to="${t.id}">${ic(t.icon)}${t.label}</button>`).join('')}</div></nav>`;

@@ -17,17 +17,17 @@
 <style>
 :root{
   /* échelle typographique : sept degrés, et rien entre les deux */
-  --t-2xs: 0.7rem;
-  --t-xs: 0.76rem;
+  --t-2xs: 0.75rem;
+  --t-xs: 0.8rem;
   --t-sm: 0.82rem;
   --t-md: 0.9rem;
   --t-base: 1rem;
   --t-lg: 1.06rem;
   --t-xl: 1.18rem;
-  --ground:#EEF2EC; --surface:#FFFFFF; --surface-2:#E2E9E1; --ink:#10261F; --ink-2:#4B6058; --line:#CCD8CE;
+  --ground:#EEF2EC; --surface:#FFFFFF; --surface-2:#E2E9E1; --ink:#10261F; --ink-2:#3F534B; --line:#CCD8CE;
   --brand:#0F4D3A; --brand-ink:#FFFFFF; --brand-soft:#D5E7DD;
   --maize:#F2B705; --maize-ink:#2A1F00; --maize-soft:#FCEFC2;
-  --good:#1E7F4A; --good-soft:#D8EEDF; --warn:#A86300; --warn-soft:#FBE7C6; --bad:#B8321F; --bad-soft:#F6D9D3;
+  --good:#16663A; --good-soft:#D8EEDF; --warn:#875000; --warn-soft:#FBE7C6; --bad:#A92C1A; --bad-soft:#F6D9D3;
   --shadow:0 1px 0 rgba(16,38,31,.06),0 6px 20px -12px rgba(16,38,31,.35);
   --f-display:"Ubuntu",system-ui,sans-serif;
   --f-body:"Ubuntu",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
@@ -52,6 +52,9 @@
 }
 *{box-sizing:border-box}
 html,body{background:var(--ground);color:var(--ink)}
+/* Un lien sans classe prenait le bleu du navigateur : 1,6 contre 1 sur le vert foncé,
+   autant dire invisible. Les liens du texte suivent la couleur de la marque. */
+a{color:var(--brand);text-underline-offset:2px}
 body{font-family:var(--f-body);font-size:16px;line-height:1.5;-webkit-tap-highlight-color:transparent;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility}
 h1,h2,h3{font-family:var(--f-display);line-height:1.15;margin:0;text-wrap:balance;font-weight:700;letter-spacing:-.01em}
 h1{font-size:1.7rem;font-weight:800} h2{font-size:var(--t-xl)} h3{font-size:var(--t-lg)}
@@ -101,8 +104,10 @@ button{cursor:pointer}
 .iconbtn{background:transparent;border:0;color:inherit;width:42px;height:42px;border-radius:12px;display:grid;place-items:center}
 .iconbtn:hover{background:rgba(255,255,255,.12)}
 .main{padding:16px;display:flex;flex-direction:column;gap:16px;flex:1}
-.sync{display:inline-flex;align-items:center;gap:6px;border:0;border-radius:999px;padding:6px 10px;font-size:var(--t-xs);font-weight:800;background:rgba(255,255,255,.14);color:inherit;white-space:nowrap}
+.sync{display:inline-flex;align-items:center;gap:6px;border:0;border-radius:999px;padding:9px 12px;min-height:40px;font-size:var(--t-xs);font-weight:800;background:rgba(255,255,255,.14);color:inherit;white-space:nowrap}
 .sync i{width:8px;height:8px;border-radius:50%;background:#7EE2A8;display:block}
+.sync .pt{display:none}
+@media (max-width:430px){.sync .lg{display:none}.sync .pt{display:inline}.sync{padding:9px;min-width:40px;justify-content:center}}
 .sync.off i{background:var(--maize)}
 .tabbar{position:fixed;bottom:0;left:0;right:0;z-index:20;background:var(--surface);border-top:1px solid var(--line);display:flex;justify-content:center;padding-bottom:env(safe-area-inset-bottom)}
 .tabbar .in{display:flex;width:100%;max-width:520px}
@@ -200,10 +205,10 @@ button.li:hover{background:var(--surface-2)}
 .stamps{display:flex;gap:3px;margin-top:3px}
 .stamps span{width:11px;height:11px;border-radius:50%;border:1.5px solid var(--line)}
 .stamps span.on{background:var(--maize);border-color:var(--maize)}
-.toggle{width:52px;height:32px;border-radius:999px;border:0;background:var(--surface-2);position:relative;flex:none}
-.toggle::after{content:"";position:absolute;top:4px;left:4px;width:24px;height:24px;border-radius:50%;background:var(--surface);box-shadow:0 1px 3px rgba(0,0,0,.3);transition:left .15s}
+.toggle{width:56px;height:40px;border-radius:999px;border:0;background:var(--surface-2);position:relative;flex:none}
+.toggle::after{content:"";position:absolute;top:8px;left:5px;width:24px;height:24px;border-radius:50%;background:var(--surface);box-shadow:0 1px 3px rgba(0,0,0,.3);transition:left .15s}
 .toggle.on{background:var(--good)}
-.toggle.on::after{left:24px}
+.toggle.on::after{left:27px}
 /* totals strip */
 .totals{display:flex;justify-content:space-between;align-items:center;background:var(--brand-soft);color:var(--brand);border-radius:12px;padding:12px 14px;font-weight:800}
 .totals b{font-family:var(--f-display);font-size:1.3rem}
@@ -311,7 +316,7 @@ details.g h4{margin:6px 0 0;font-size:var(--t-base)}
 @media (max-width:360px){.support-actions{grid-template-columns:1fr}}
 .updbar{position:fixed;left:50%;transform:translateX(-50%);bottom:92px;z-index:55;width:calc(100% - 32px);max-width:488px;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;border-radius:14px;background:var(--ink);color:var(--ground);box-shadow:var(--shadow)}
 .updbar b{display:block}
-.langbtn{position:absolute;right:14px;top:14px;z-index:1;background:rgba(255,255,255,.16);color:inherit;border:0;border-radius:999px;padding:6px 12px;font-weight:800;font-size:var(--t-sm);display:inline-flex;gap:6px;align-items:center}
+.langbtn{position:absolute;right:14px;top:14px;z-index:1;background:rgba(255,255,255,.16);color:inherit;border:0;border-radius:999px;padding:9px 12px;min-height:40px;font-weight:800;font-size:var(--t-sm);display:inline-flex;gap:6px;align-items:center}
 .langbtn svg{width:16px;height:16px}
 /* ---------- finition premium ---------- */
 :root{
@@ -422,6 +427,8 @@ button.li:active{background:var(--surface-2)}
 .xl-ic svg{width:20px;height:20px}
 .devcode{display:flex;flex-direction:column;align-items:center;gap:4px;padding:14px;border-radius:16px;background:var(--brand-soft);color:var(--brand)}
 .devcode b{font-size:1.9rem;letter-spacing:.12em;font-weight:600}
+/* l'intitulé reprend le vert de la marque : en gris, il tombait sous le seuil de lisibilité */
+.devcode .label{color:var(--brand);opacity:1}
 /* mode sombre : en-têtes vert profond, texte clair */
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]) .topbar{background:linear-gradient(135deg,#1D5E48,#113F31 55%,#0A2A20);color:#EAF4EE}
@@ -484,7 +491,9 @@ button.li:active{background:var(--surface-2)}
 .li .end{white-space:nowrap}
 .li .end{display:flex;flex-direction:column;align-items:flex-end;justify-content:center;gap:1px;line-height:1.25}
 .li .end .small{font-weight:600}
-.topbar .t span{display:flex;align-items:center;gap:6px;flex-wrap:wrap;white-space:nowrap;overflow:hidden}
+/* Le sous-titre du bandeau était coupé net, sans même les trois points : « Le compte de
+   chaque mer ». Il passe maintenant à la ligne ; seules les pastilles restent insécables. */
+.topbar .t span{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .topbar .t span>.chip{flex:none}
 @media (max-width:400px){.topbar{gap:8px;padding-left:12px;padding-right:12px}}
 /* grands écrans et 4K : la même application, nette et centrée */
@@ -724,9 +733,9 @@ h2,h3{font-weight:600;letter-spacing:-.005em}
 .livret .lv-qui b{font-family:var(--f-display);font-size:1.05rem}
 .livret h3{font-family:var(--f-display);font-size:.92rem;margin:13px 0 5px;color:#102017}
 .livret h3 small{font-weight:400;font-size:.72rem;color:#51635a}
-.lv-t{width:100%;border-collapse:collapse;font-size:.78rem}
+.lv-t{width:100%;border-collapse:collapse;font-size:.78rem;color:#102017}
 .lv-t th,.lv-t td{border:1px solid #c9d4cd;padding:4px 7px;text-align:left}
-.lv-t thead th{background:#eef2ec;font-size:.7rem;text-transform:uppercase;letter-spacing:.04em}
+.lv-t thead th{background:#eef2ec;font-size:.72rem;text-transform:uppercase;letter-spacing:.04em;color:#2c4034}
 .lv-t .n{text-align:right;font-variant-numeric:tabular-nums}
 .lv-t tfoot th{background:#f6f8f5;font-size:.78rem}
 .lv-t tr.vide td{height:19px}
@@ -848,6 +857,9 @@ h2,h3{font-weight:600;letter-spacing:-.005em}
    rangent par autant de colonnes que la largeur en porte. */
 @media (min-width:1100px){
   .grille-avec{grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}
+  /* sur deux colonnes, un grand bouton seul s'étirait sur toute la hauteur de la carte
+     d'en face : un rectangle doré presque vide. Il garde sa taille et reste en haut. */
+  .shell>.main>.btn{align-self:start}
   /* une grille de vignettes prend toute la largeur de l'écran, pas une demi-colonne : sinon
      elle s'allonge vers le bas pendant que la moitié droite reste vide */
   .shell:has(.tabbar)>.main>.grille-avec,.shell:has(.tabbar)>.main>.section:has(>.grille-avec),
@@ -1009,7 +1021,7 @@ details.g.demo>:not(summary)+*{margin-top:8px}
 </style>
 <style>html,body{margin:0}</style>
 </head><body>
-<script>window.KITABU_PWA = true; window.KITABU_VERSION = 'akiba-20261105212239'; window.AKIBA_CIBLE = 'suivi';</script>
+<script>window.KITABU_PWA = true; window.KITABU_VERSION = 'akiba-20261105222250'; window.AKIBA_CIBLE = 'suivi';</script>
 
 <div id="app"></div>
 <script src="core.js"></script>

@@ -59,7 +59,7 @@ ACT.extSheet = () => {
     <h3>Décision de l'assemblée générale</h3>
     <div class="grid2"><div class="field"><label for="exG">Date de l'AG</label><input id="exG" class="input" type="date" value="${isoDay(Date.now())}"></div>
       <div class="field"><label for="exP">Votes pour / contre</label><div class="row" style="gap:6px"><input id="exP" class="input num" inputmode="numeric" placeholder="pour"><input id="exC" class="input num" inputmode="numeric" placeholder="contre"></div></div></div>
-    <label class="row small" style="gap:10px;align-items:flex-start"><input id="exOk" type="checkbox" style="width:22px;height:22px;flex:none"><span>L'assemblée générale a approuvé ce crédit, son montant, ses intérêts, ses frais et sa durée.</span></label>
+    <label class="row small" style="gap:10px;align-items:flex-start"><input id="exOk" type="checkbox" style="width:24px;height:24px;flex:none"><span>L'assemblée générale a approuvé ce crédit, son montant, ses intérêts, ses frais et sa durée.</span></label>
     ${approverFields(avec, me, 'ex')}
     <button class="btn primary block xl" data-act="saveExt">${ic('check')} Enregistrer le crédit reçu</button>`);
   INP.extCalc();
@@ -192,8 +192,8 @@ SCREENS['a.imf'] = () => {
     ${bureau ? `<section class="card stack"><h2>Préparer le fichier</h2>
       <p class="small">Contenu : profil du groupe, indicateurs par cycle, réunions, crédits internes, crédits extérieurs, membres.
         <b>Jamais</b> de téléphone ni d'adresse.</p>
-      <label class="row" style="gap:10px"><input id="imN" type="checkbox" style="width:22px;height:22px;flex:none"><span>Mettre les noms des membres (sinon « Membre 1, Membre 2… »)</span></label>
-      <label class="row" style="gap:10px;align-items:flex-start"><input id="imA" type="checkbox" style="width:22px;height:22px;flex:none"><span>L'assemblée générale a accepté de partager ces informations avec l'IMF.</span></label>
+      <label class="row" style="gap:10px"><input id="imN" type="checkbox" style="width:24px;height:24px;flex:none"><span>Mettre les noms des membres (sinon « Membre 1, Membre 2… »)</span></label>
+      <label class="row" style="gap:10px;align-items:flex-start"><input id="imA" type="checkbox" style="width:24px;height:24px;flex:none"><span>L'assemblée générale a accepté de partager ces informations avec l'IMF.</span></label>
       <div class="field"><label for="imI">Nom de l'IMF</label><input id="imI" class="input" placeholder="Ex. IMF Tujenge Mikopo"></div>
       <button class="btn primary block xl" data-act="imfDownload">${ic('chart')} Télécharger le dossier Excel</button>
       ${navigator.share ? `<button class="btn ghost block" data-act="imfShare">${ic('chat')} Partager (WhatsApp, e-mail…)</button>` : ''}

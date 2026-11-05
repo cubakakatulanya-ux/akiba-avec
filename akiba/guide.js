@@ -220,6 +220,38 @@ const GUIDE = [
       <li>Chaque aide demande une raison écrite et <b>la validation d'un 2ᵉ membre du bureau</b>.</li>
       <li>La caisse sociale <b>n'est pas partagée</b> en fin de cycle : elle passe au cycle suivant.</li>
     </ul>` },
+  { id: 'guichet', icon: 'coins', t: 'Le guichet entre les réunions', b: `
+    <p>Le guichet est <b>facultatif</b> : l'assemblée le vote à la création, et peut l'ouvrir plus tard dans <b>Plus › Règlement</b>. Sans lui, l'argent ne bouge qu'en réunion, comme toujours.</p>
+    <p>Avec lui, un membre peut <b>confier de l'argent</b> ou <b>le reprendre</b> un autre jour, au village, sans attendre la réunion.</p>
+    <ul>
+      <li><b>L'argent déposé n'est jamais prêté.</b> Il dort dans la caisse et se reprend n'importe quel jour d'ouverture. Les crédits se font avec l'épargne en parts, pas avec les dépôts.</li>
+      <li>Un <b>retrait</b> demande le code secret <b>du membre lui-même</b> : personne ne sort l'argent d'un autre, pas même le bureau.</li>
+      <li>Une séance de guichet s'ouvre en comptant la caisse devant un deuxième membre du bureau, et se ferme de la même façon. Les deux comptages entrent dans le journal scellé.</li>
+      <li>Le guichet ne s'ouvre pas pendant une réunion, et une réunion ne s'ouvre pas pendant le guichet.</li>
+    </ul>
+    <div class="tip">Un dépôt n'est pas de l'épargne en parts : il ne donne pas droit à un crédit plus grand et ne compte pas au partage. C'est l'argent du membre, gardé par le groupe.</div>` },
+  { id: 'livret', icon: 'book', t: 'Le livret du membre', b: `
+    <p>Chaque membre peut repartir avec <b>sa page</b> : ce que le cahier dit de lui, sur une feuille A4 qu'il garde chez lui.</p>
+    <ul>
+      <li><b>Membres › son nom › Livret</b> : les parts achetées réunion par réunion, les mouvements du guichet, les crédits, le solde, et deux lignes de signature.</li>
+      <li><b>Relevé sur le terminal</b> : le même compte, en court, sur le rouleau de l'imprimante.</li>
+      <li>Chaque livret porte une référence qui dit de quel cahier et de quelle écriture il est tiré : on peut le confronter au journal.</li>
+    </ul>
+    <div class="tip">C'est la réponse à « combien j'ai, moi ? » sans ouvrir le cahier du groupe devant tout le monde.</div>` },
+  { id: 'image', icon: 'eye', t: 'Donner une AVEC, ou une réunion, par image', b: `
+    <p>Sans réseau, sans câble, sans WhatsApp : l'animateur <b>montre une image</b> à l'écran, le téléphone du groupe la <b>photographie</b>. L'image est chiffrée ; un code de huit signes se dit de vive voix, jamais dans le même message.</p>
+    <h4>De l'animateur vers le groupe</h4>
+    <ul>
+      <li>Chez l'animateur : la fiche du groupe › <b>Montrer l'AVEC en image</b>. Une ou deux images selon la taille du groupe.</li>
+      <li>Sur le téléphone du groupe : <b>Recevoir par photo</b>, viser les images l'une après l'autre, puis taper les huit signes.</li>
+      <li>Cela ne vaut que pour un groupe <b>neuf</b>, le jour de sa création. Un cahier qui a déjà tenu des réunions passe par le <b>fichier</b> : il est trop gros pour une image.</li>
+    </ul>
+    <h4>Du groupe vers l'animateur</h4>
+    <ul>
+      <li>Après la clôture : <b>Montrer à l'animateur</b>. Les écritures de la séance tiennent en deux ou trois images.</li>
+      <li>La copie de l'animateur <b>se prolonge</b> de cette séance ; elle ne remplace rien. S'il manque une réunion entre les deux, Akiba refuse et demande le fichier.</li>
+    </ul>
+    <div class="tip">L'image se partage aussi comme une photo ordinaire, par WhatsApp ou Bluetooth, quand il y a du réseau. Le code, lui, se dit à part.</div>` },
   { id: 'amendes', icon: 'gavel', t: 'Les amendes', b: `
     <ul>
       <li><b>Retard</b> : le membre est là, il paie tout de suite.</li>
