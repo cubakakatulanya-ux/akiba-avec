@@ -76,5 +76,19 @@
         <action android:name="android.app.action.DEVICE_ADMIN_ENABLED" />
       </intent-filter>
     </receiver>
+
+    <!-- Par où sort un fichier : le cahier envoyé à l'animateur, la sauvegarde, l'export Excel.
+         Akiba écrit dans son propre cache et laisse Android porter le fichier jusqu'à WhatsApp,
+         au Bluetooth ou à Fichiers. Aucune autorisation sur le téléphone n'est demandée, et rien
+         d'autre que ce dossier n'est accessible aux autres applications. -->
+    <provider
+        android:name="androidx.core.content.FileProvider"
+        android:authorities="${applicationId}.fichiers"
+        android:exported="false"
+        android:grantUriPermissions="true">
+      <meta-data
+          android:name="android.support.FILE_PROVIDER_PATHS"
+          android:resource="@xml/fichiers_partages" />
+    </provider>
   </application>
 </manifest>

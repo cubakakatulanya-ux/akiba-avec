@@ -1,15 +1,22 @@
 package com.ubora.akiba;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
+import android.webkit.ValueCallback;
+import android.webkit.WebChromeClient;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import androidx.activity.OnBackPressedCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.webkit.WebViewAssetLoader;
 
@@ -34,6 +41,20 @@ public class MainActivity extends AppCompatActivity {
   private static final String DOMAINE = BuildConfig.DOMAINE;   // akiba.uborardc.com ou akibas.uborardc.com, selon l'application fabriquée
 
   private WebView vue;
+
+  /* ---------- recevoir un fichier ----------
+     « Recevoir une AVEC », « Restaurer une sauvegarde » : la page ouvre un champ de fichier.
+     Une WebView n'y répond pas toute seule — le bureau touchait le champ et il ne se passait
+     rien. C'est ici qu'on ouvre le sélecteur du téléphone et qu'on rend le fichier choisi. */
+  private ValueCallback<Uri[]> fichierAttendu;
+  private final ActivityResultLauncher<Intent> selecteur =
+      registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), resultat -> {
+        Uri[] choisis = null;
+        if (resultat.getResultCode() == Activity.RESULT_OK && resultat.getData() != null) {
+          choisis = WebChromeClient.FileChooserParams.parseResult(resultat.getResultCode(), resultat.getData());
+        }
+        if (fichierAttendu != null) { fichierAttendu.onReceiveValue(choisis); fichierAttendu = null; }
+      });
 
   @SuppressLint("SetJavaScriptEnabled")
   @Override protected void onCreate(Bundle etat) {
@@ -71,7 +92,22 @@ public class MainActivity extends AppCompatActivity {
       }
     });
 
-    /* le pont vers le matériel du terminal : pour l'instant, l'imprimante */
+    vue.setWebChromeClient(new WebChromeClient() {
+      @Override public boolean onShowFileChooser(WebView v, ValueCallback<Uri[]> retour, FileChooserParams params) {
+        if (fichierAttendu != null) fichierAttendu.onReceiveValue(null);   // un seul choix à la fois
+        fichierAttendu = retour;
+        /* On ouvre sur TOUS les fichiers, au lieu de suivre le filtre de la page. Un cahier
+           Akiba porte l'extension « .akiba », qu'aucun téléphone ne connaît : en filtrant, le
+           sélecteur l'affichait en gris, impossible à choisir. */
+        Intent choix = new Intent(Intent.ACTION_GET_CONTENT);
+        choix.addCategory(Intent.CATEGORY_OPENABLE);
+        choix.setType("*/*");
+        try { selecteur.launch(Intent.createChooser(choix, "Choisir le fichier")); return true; }
+        catch (Exception e) { fichierAttendu = null; return false; }
+      }
+    });
+
+    /* le pont vers le matériel du terminal : l'imprimante, et la sortie des fichiers */
     vue.addJavascriptInterface(new PontPOS(this), "AkibaPOS");
 
     /* Le bouton Retour du terminal suit l'historique de l'application. Sans cela, il quitterait

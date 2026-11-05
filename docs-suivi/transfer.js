@@ -133,18 +133,9 @@ ACT.transferRun = async d => {
   DB.save();
   App.lastTransfer = { code, file };
   const fname = 'akiba-' + avec.name.toLowerCase().normalize('NFD').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') + '.akiba';
-  let shared = false;
-  try {
-    const f = new File([file], fname, { type: 'application/octet-stream' });
-    if (navigator.canShare && navigator.canShare({ files: [f] })) { await navigator.share({ files: [f], title: 'Akiba : ' + avec.name }); shared = true; }
-  } catch (e) { /* partage annulé : on télécharge */ }
-  if (!shared && window.URL && URL.createObjectURL) {
-    const url = URL.createObjectURL(new Blob([file], { type: 'application/octet-stream' }));
-    const a = document.createElement('a'); a.href = url; a.download = fname; document.body.appendChild(a); a.click(); a.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 5000);
-  }
+  const voie = await sortirFichier(fname, file, 'application/octet-stream');
   App.openSheet(`<h2>Fichier prêt</h2>
-    <p class="muted">${shared ? 'Choisissez le téléphone du groupe dans le partage.' : `Le fichier <b>${esc(fname)}</b> est dans « Téléchargements ». Envoyez-le au téléphone du groupe.`}</p>
+    <p class="muted">${esc(ouEstLeFichier(voie, fname))}${voie ? ' Envoyez-le au téléphone du groupe.' : ''}</p>
     <div class="receipt" style="text-align:center"><span class="label">Code de transfert</span>${bigCode(fmtXfer(code))}</div>
     <p class="hint">Donnez ce code de vive voix ou par appel, jamais dans le même message que le fichier.</p>
     <button class="btn primary block xl" data-act="closeSheet">C'est noté</button>`);

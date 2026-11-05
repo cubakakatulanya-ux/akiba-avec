@@ -1372,6 +1372,32 @@ window.__akibaTests = async function () {
     } finally { K.data = sauve; K.session = sessionSauve; DB.save(); await DB.vide(); }
   });
 
+  /* ---------- V bis. le fichier sort du téléphone, même dans l'application Android ----------
+     Toute la synchronisation passe par là : le cahier qu'un groupe envoie à son animateur, la
+     sauvegarde, l'export Excel. Dans une WebView, ni le téléchargement ni navigator.share
+     n'existent — sans le pont, l'application installée sur un terminal ne peut rien envoyer,
+     alors que la même page marche dans un navigateur. */
+  await t('Le fichier sort par le pont de l’application Android', async () => {
+    const vrai = window.AkibaPOS;
+    let recu = null;
+    window.AkibaPOS = Object.assign({}, vrai || {}, {
+      partagerFichier: (nom, b64, type) => { recu = { nom, b64, type }; return true; }
+    });
+    try {
+      const voie = await sortirFichier('essai.akiba', 'contenu du cahier', 'application/octet-stream');
+      eq(voie, 'android', 'la voie employée');
+      must(recu, 'le pont doit être appelé');
+      eq(recu.nom, 'essai.akiba', 'le nom du fichier');
+      eq(atob(recu.b64), 'contenu du cahier', 'le contenu transmis');
+      must(/Choisissez/.test(ouEstLeFichier(voie, recu.nom)), 'la page doit dire où va le fichier');
+      /* et quand le pont refuse, la page ne doit pas prétendre que c'est parti */
+      window.AkibaPOS.partagerFichier = () => false;
+      const sansPont = await sortirFichier('essai.akiba', 'x', 'application/octet-stream');
+      must(sansPont === 'telechargement' || sansPont === 'partage' || sansPont === '', 'le repli doit être honnête : ' + sansPont);
+      return 'pont appelé, contenu intact, repli vers le navigateur';
+    } finally { if (vrai) window.AkibaPOS = vrai; else delete window.AkibaPOS; }
+  });
+
   /* ---------- W. le guichet : l'AVEC comme petite banque de ses membres ----------
      Deux promesses se vérifient ici, et elles valent plus que tout le reste de l'écran :
      l'argent déposé n'est jamais prêté, et personne ne le sort sans le code de son

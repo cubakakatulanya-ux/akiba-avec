@@ -127,6 +127,19 @@ public class PontPOS {
   }
 
   /**
+   * Faire sortir un fichier : le cahier envoyé à l'animateur, la sauvegarde, l'export Excel.
+   *
+   * La page appelle ceci quand elle tourne dans l'application, parce qu'une WebView ne sait ni
+   * télécharger ni partager toute seule. Le fichier arrive en base64, il est écrit dans le cache
+   * de l'application, et Android propose où l'envoyer. Rend false si rien n'a pu partir — la page
+   * le dit alors au bureau au lieu d'annoncer un envoi qui n'a pas eu lieu.
+   */
+  @JavascriptInterface
+  public boolean partagerFichier(String nom, String base64, String type) {
+    return Fichiers.partager(activite, nom, base64, type);
+  }
+
+  /**
    * Ce que ce terminal sait faire, en clair. Sans câble ni outil de développeur, c'est la seule
    * façon de savoir à quoi on a affaire : le bureau ouvre l'écran « Imprimante du terminal »,
    * lit ce qui s'affiche, et le dit.

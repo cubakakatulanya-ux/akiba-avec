@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Le seul dossier qu'Akiba offre aux autres applications : celui où elle écrit le fichier
+     qu'on vient de demander à envoyer. Rien d'autre du téléphone n'est accessible. -->
+<paths>
+  <cache-path name="partage" path="partage/" />
+</paths>

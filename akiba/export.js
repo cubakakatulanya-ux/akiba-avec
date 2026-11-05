@@ -228,13 +228,11 @@ ACT.exportSheet = d => {
     <button class="btn primary block xl" data-act="exportDownload">${ic('chart')} Télécharger le fichier Excel</button>
     ${canShare ? `<button class="btn ghost block" data-act="exportShare">${ic('sync')} Partager (WhatsApp, e-mail…)</button>` : ''}`);
 };
-ACT.exportDownload = () => {
+ACT.exportDownload = async () => {
   const f = exportFile(App.exportArg);
-  const url = URL.createObjectURL(f.blob), a = document.createElement('a');
-  a.href = url; a.download = f.name; document.body.appendChild(a); a.click(); a.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 30000);
+  const voie = await sortirFichier(f.name, f.blob, XL_MIME);
   App.sheet = null; render();
-  App.toast(`${f.name} enregistré dans les Téléchargements`);
+  App.toast(voie ? ouEstLeFichier(voie, f.name) : 'Le fichier n\'a pas pu sortir de ce téléphone');
 };
 ACT.exportShare = async () => {
   const f = exportFile(App.exportArg);

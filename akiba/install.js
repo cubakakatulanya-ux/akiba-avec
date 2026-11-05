@@ -159,18 +159,16 @@ ACT.backupRun = async () => {
     const copy = Object.assign({}, K.data, { tamper: null });
     const cipher = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, new TextEncoder().encode(JSON.stringify(copy)));
     const file = JSON.stringify({ app: 'kitabu-avec', format: 1, created: Date.now(), avecs: K.data.avecs.length, salt: b64enc(salt), iv: b64enc(iv), data: b64enc(cipher) });
-    const url = URL.createObjectURL(new Blob([file], { type: 'application/json' }));
-    const a = document.createElement('a');
-    a.href = url; a.download = `akiba-sauvegarde-${isoDay(Date.now())}.akiba`;
-    document.body.appendChild(a); a.click(); a.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 5000);
+    const nom = `akiba-sauvegarde-${isoDay(Date.now())}.akiba`;
+    const voie = await sortirFichier(nom, file, 'application/json');
+    if (!voie) return App.toast('La sauvegarde n\'a pas pu sortir de ce téléphone');
     K.data.lastBackup = Date.now();
     /* la sauvegarde contient tout : c'est le moment où les écritures sortent vraiment */
     let sorties = 0;
     K.data.avecs.forEach(a => { sorties += marquerSorti(a, 'sauvegarde'); });
     DB.save();
     App.closeSheet();
-    App.toast(sorties ? `Sauvegarde enregistrée dans « Téléchargements » · ${sorties} écriture${sorties > 1 ? 's' : ''} mise${sorties > 1 ? 's' : ''} à l'abri` : 'Sauvegarde enregistrée dans « Téléchargements »');
+    App.toast(ouEstLeFichier(voie, nom) + (sorties ? ` · ${sorties} écriture${sorties > 1 ? 's' : ''} mise${sorties > 1 ? 's' : ''} à l'abri` : ''));
   } catch (e) { App.toast('La sauvegarde n\'a pas pu être créée : ' + e.message); }
 };
 ACT.restoreSheet = () => {

@@ -208,6 +208,57 @@ function ticker(items, opts = {}) {
   return `<div class="reperes${opts.cls ? ' ' + opts.cls : ''}" aria-label="${esc(opts.aria || 'Repères')}">${one}</div>`;
 }
 
+/* ---------- faire sortir un fichier du téléphone ----------
+
+   C'est par là que passe toute la synchronisation : le cahier qu'un groupe envoie à l'animateur,
+   la sauvegarde, l'export Excel. Trois chemins, et il en faut trois parce qu'aucun ne marche
+   partout :
+
+   1. L'application Android. Une WebView ne sait NI télécharger un fichier NI partager : le
+      lien de téléchargement ne fait rien, et navigator.share n'y existe pas. Sans ce pont,
+      l'application installée sur un terminal ne pouvait envoyer aucun cahier — la
+      synchronisation marchait dans le navigateur et pas dans l'application.
+   2. Le partage du navigateur, sur un téléphone Android ou un iPhone : la feuille de partage
+      ouvre WhatsApp, Bluetooth, Fichiers.
+   3. Le téléchargement classique, sur un ordinateur : le fichier tombe dans « Téléchargements ».
+
+   Rend par quel chemin le fichier est sorti, ou '' si aucun n'a abouti — jamais un message
+   rassurant quand rien n'est sorti. */
+async function sortirFichier(nom, donnees, type = 'application/octet-stream') {
+  const blob = donnees instanceof Blob ? donnees : new Blob([donnees], { type });
+  /* 1. le pont de l'application Android */
+  if (window.AkibaPOS && typeof AkibaPOS.partagerFichier === 'function') {
+    try {
+      const b64 = await new Promise((ok, ko) => {
+        const l = new FileReader();
+        l.onload = () => ok(String(l.result).split(',')[1] || '');
+        l.onerror = () => ko(l.error);
+        l.readAsDataURL(blob);
+      });
+      if (AkibaPOS.partagerFichier(nom, b64, type)) return 'android';
+    } catch (e) { /* on essaie le navigateur */ }
+  }
+  /* 2. le partage du navigateur */
+  try {
+    const f = new File([blob], nom, { type });
+    if (navigator.canShare && navigator.canShare({ files: [f] })) { await navigator.share({ files: [f], title: nom }); return 'partage'; }
+  } catch (e) { if (e && e.name === 'AbortError') return ''; }
+  /* 3. le téléchargement */
+  if (window.URL && URL.createObjectURL) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = nom; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 30000);
+    return 'telechargement';
+  }
+  return '';
+}
+/* Où le fichier est parti, en une phrase pour le bureau. */
+const ouEstLeFichier = (voie, nom) => voie === 'android' ? 'Choisissez où l’envoyer : WhatsApp, Bluetooth, ou « Enregistrer dans Fichiers ».'
+  : voie === 'partage' ? 'Choisissez où l’envoyer dans le partage.'
+  : voie === 'telechargement' ? `Le fichier ${nom} est dans « Téléchargements ».`
+  : 'Le fichier n’a pas pu sortir de ce téléphone.';
+
 /* ---------- registre chaîné (append-only) ---------- */
 const payload = t => [t.seq, t.avecId, t.meetingId, t.type, t.memberId || '', t.amount, t.parts || 0, t.months || 0, t.rate || 0, t.ref || '', t.note || '', t.by || '', t.ts, t.cycle || 1, t.prev].join('|');
 
