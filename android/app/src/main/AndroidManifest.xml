@@ -1,9 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-  <!-- Akiba ne demande aucune permission : pas de réseau, pas de localisation, pas de contacts.
-       Le cahier vit dans le terminal, et rien n'en sort sans un geste du bureau. C'est aussi ce
-       qui rend l'installation hors Play Store acceptable : il n'y a rien à accorder. -->
+  <!-- Akiba ne demande qu'une seule permission : pas de réseau, pas de localisation, pas de
+       contacts, pas de stockage. Le cahier vit dans le terminal, et rien n'en sort sans un
+       geste du bureau.
+
+       L'appareil photo est l'exception, et Android ne la demande qu'au moment où l'on vise :
+       recevoir une AVEC neuve en photographiant l'image montrée par l'animatrice, et vérifier
+       une carte de membre. Refusée, l'application continue de marcher — il reste le fichier.
+       Elle n'est pas obligatoire : un terminal sans appareil photo installe quand même. -->
+  <uses-permission android:name="android.permission.CAMERA" />
+  <uses-feature android:name="android.hardware.camera" android:required="false" />
 
   <!-- Depuis Android 11, une application ne voit pas les autres sans le déclarer. Akiba déclare
        ici les seules questions qu'elle pose, toutes au sujet de l'impression : telle application
@@ -77,6 +84,11 @@
       </intent-filter>
     </receiver>
 
+    <!-- Voir le reste du manifeste : Akiba ne demandait aucune autorisation, et c'était un point
+         d'honneur. La caméra en ajoute une seule, demandée au moment précis où le secrétaire
+         vise l'image que montre l'animatrice — pour recevoir une AVEC neuve sans fichier à
+         déplacer, et pour vérifier une carte de membre. Refusée, l'application continue : il
+         reste le fichier. Le téléphone qui n'a pas d'appareil photo installe quand même. -->
     <!-- Par où sort un fichier : le cahier envoyé à l'animateur, la sauvegarde, l'export Excel.
          Akiba écrit dans son propre cache et laisse Android porter le fichier jusqu'à WhatsApp,
          au Bluetooth ou à Fichiers. Aucune autorisation sur le téléphone n'est demandée, et rien

@@ -46,6 +46,19 @@ public class MainActivity extends AppCompatActivity {
      « Recevoir une AVEC », « Restaurer une sauvegarde » : la page ouvre un champ de fichier.
      Une WebView n'y répond pas toute seule — le bureau touchait le champ et il ne se passait
      rien. C'est ici qu'on ouvre le sélecteur du téléphone et qu'on rend le fichier choisi. */
+  /* ---------- viser une image ----------
+     La page demande l'appareil photo pour lire le QR d'une AVEC neuve ou vérifier une carte.
+     Une WebView refuse toute seule, en silence : il faut lui dire oui ici, et demander d'abord
+     la permission à Android. Tant que le secrétaire n'a pas visé, rien n'est demandé. */
+  private android.webkit.PermissionRequest camera;
+  private final ActivityResultLauncher<String> permissionCamera =
+      registerForActivityResult(new ActivityResultContracts.RequestPermission(), accorde -> {
+        if (camera == null) return;
+        if (accorde) camera.grant(new String[]{ android.webkit.PermissionRequest.RESOURCE_VIDEO_CAPTURE });
+        else camera.deny();                        // la page le dit, et propose le fichier
+        camera = null;
+      });
+
   private ValueCallback<Uri[]> fichierAttendu;
   private final ActivityResultLauncher<Intent> selecteur =
       registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), resultat -> {
@@ -93,6 +106,18 @@ public class MainActivity extends AppCompatActivity {
     });
 
     vue.setWebChromeClient(new WebChromeClient() {
+      @Override public void onPermissionRequest(android.webkit.PermissionRequest demande) {
+        boolean veutCamera = false;
+        for (String r : demande.getResources()) if (android.webkit.PermissionRequest.RESOURCE_VIDEO_CAPTURE.equals(r)) veutCamera = true;
+        if (!veutCamera) { demande.deny(); return; }   // Akiba ne demande rien d'autre
+        if (androidx.core.content.ContextCompat.checkSelfPermission(MainActivity.this, android.Manifest.permission.CAMERA)
+            == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+          demande.grant(new String[]{ android.webkit.PermissionRequest.RESOURCE_VIDEO_CAPTURE });
+          return;
+        }
+        camera = demande;
+        permissionCamera.launch(android.Manifest.permission.CAMERA);
+      }
       @Override public boolean onShowFileChooser(WebView v, ValueCallback<Uri[]> retour, FileChooserParams params) {
         if (fichierAttendu != null) fichierAttendu.onReceiveValue(null);   // un seul choix à la fois
         fichierAttendu = retour;

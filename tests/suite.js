@@ -1398,6 +1398,68 @@ window.__akibaTests = async function () {
     } finally { if (vrai) window.AkibaPOS = vrai; else delete window.AkibaPOS; }
   });
 
+  /* ---------- V ter. une AVEC neuve tient dans une image ----------
+     Le fichier reste le seul chemin pour un cahier qui a vécu. Mais le jour de la création, il
+     n'y a qu'un acte de naissance : il doit passer d'un téléphone à l'autre sans WhatsApp,
+     sans câble et sans réseau — l'animatrice montre, le secrétaire photographie. */
+  await t('Une AVEC neuve passe par une image, et une AVEC qui a vécu refuse', async () => {
+    const a = avecById(A);
+    const sauve = JSON.stringify(K.data.avecs);
+    const licSauve = App.licence;
+    /* un téléphone de groupe déjà validé : la licence se vérifie ailleurs, pas ici */
+    if (licenceRequired() && !(App.licence && App.licence.ok)) App.licence = { ok: true, how: 'demo', data: { name: 'Essai', kind: 'demo' } };
+    try {
+      /* celle de la démonstration a tenu quatorze réunions : l'image doit être refusée */
+      const refus = qrPossible(a);
+      must(!refus.ok, 'un cahier avec des réunions ne doit pas tenir dans une image');
+      must(/fichier/.test(refus.pourquoi), 'le refus doit renvoyer vers le fichier : ' + refus.pourquoi);
+
+      /* un groupe neuf, bâti comme le fait l'assistant */
+      const neuf = JSON.parse(JSON.stringify(a));
+      neuf.id = 'avec-qr-essai'; neuf.name = 'Tujenge Essai'; neuf.meetings = []; neuf.tx = [];
+      neuf.members = neuf.members.slice(0, 12).map((m, i) => Object.assign({}, m, { id: 'qm' + i, photo: '' }));
+      neuf.movedOut = null;
+      neuf.members.forEach(m => appendTx(neuf, { type: 'MEMBRE', amount: 0, memberId: m.id, by: null, note: 'Membre fondateur · ' + m.name }));
+      K.data.avecs.push(neuf);
+      must(qrPossible(neuf).ok, 'un groupe neuf doit tenir dans une image');
+
+      const code = 'QRESSAI1';
+      const texte = await qrTexte(neuf, code);
+      must(texte.length <= 2200, 'l’image doit rester lisible : ' + texte.length + ' signes');
+
+      /* le téléphone du groupe : il ne connaît pas encore ce groupe */
+      K.data.avecs = K.data.avecs.filter(x => x.id !== neuf.id);
+      const faux = await qrImporter(texte, 'ZZZZZZZZ');
+      must(faux.error, 'un code faux ne doit rien ouvrir');
+      const r = await qrImporter(texte, code);
+      must(!r.error, 'l’image doit s’ouvrir avec le bon code : ' + r.error);
+
+      /* en deux images : le secrétaire vise l'une puis l'autre, dans l'ordre qu'il veut */
+      const bouts = qrMorceaux(texte);
+      must(bouts.length >= 1, 'le texte doit se couper en images');
+      if (bouts.length > 1) {
+        let r2 = qrAssembler(bouts[bouts.length - 1]);
+        must(r2.attente, 'une seule image sur deux ne doit pas suffire');
+        for (let i = 0; i < bouts.length - 1; i++) r2 = qrAssembler(bouts[i]);
+        eq(r2.texte, texte, 'les morceaux remis bout à bout');
+      }
+
+      const recu = avecById(neuf.id);
+      must(recu, 'l’AVEC doit être sur ce téléphone');
+      eq(recu.name, 'Tujenge Essai', 'le nom');
+      eq(recu.members.length, 12, 'les membres');
+      eq(recu.members.filter(m => m.key).length, neuf.members.filter(m => m.key).length, 'les porte-clés');
+      eq(recu.members.map(m => m.pin).join(), neuf.members.map(m => m.pin).join(), 'les codes secrets des membres');
+      eq(recu.settings.partValue, neuf.settings.partValue, 'la valeur d’une part');
+      eq(recu.settings.guichet, neuf.settings.guichet, 'le choix du guichet');
+      eq((recu.rescue || []).length, (neuf.rescue || []).length, 'la carte de secours');
+      eq(stats(recu).cash, 0, 'la caisse d’un groupe neuf');
+      must(verifyChain(recu).ok, 'le journal du groupe doit être scellé dès l’arrivée');
+      must(verifyMembres(recu).ok, 'la liste des membres doit être couverte par le journal');
+      return `${texte.length} signes dans l’image, 12 membres et leurs codes arrivés entiers`;
+    } finally { K.data.avecs = JSON.parse(sauve); App.licence = licSauve; DB.save(); await DB.vide(); }
+  });
+
   /* ---------- W. le guichet : l'AVEC comme petite banque de ses membres ----------
      Deux promesses se vérifient ici, et elles valent plus que tout le reste de l'écran :
      l'argent déposé n'est jamais prêté, et personne ne le sort sans le code de son

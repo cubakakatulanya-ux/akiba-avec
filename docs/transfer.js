@@ -103,7 +103,11 @@ function transferBlock(avec) {
     ? `<div class="alert good">${icSpan('sync')}<div><b>Sur le téléphone du groupe depuis le ${fdate(avec.movedOut)}</b><span class="small">Ce téléphone garde une copie. Les réunions se tiennent sur le téléphone du groupe.</span>
         <button class="btn sm ghost" style="margin-top:8px" data-act="transferSheet" data-id="${avec.id}">Renvoyer le fichier</button></div></div>`
     : `<div class="card stack"><div class="row" style="align-items:flex-start">${rowIc('sync')}<div><b>Mettre l'AVEC sur le téléphone du groupe</b><p class="small muted">Sans internet : un fichier à envoyer par WhatsApp, Bluetooth ou carte mémoire, et un code à dire de vive voix.</p></div></div>
-        <button class="btn brand block" data-act="transferSheet" data-id="${avec.id}">${ic('sync')} Envoyer vers le téléphone du groupe</button></div>`;
+        <button class="btn brand block" data-act="transferSheet" data-id="${avec.id}">${ic('sync')} Envoyer vers le téléphone du groupe</button>
+        ${/* un groupe qui n'a pas encore tenu de réunion tient dans une image : rien à envoyer */
+          typeof qrPossible === 'function' && qrPossible(avec).ok
+            ? `<button class="btn ghost block" data-act="qrEnvoyer" data-id="${avec.id}">${ic('eye')} Montrer l'AVEC en image, face à face</button>
+               <p class="hint" style="margin:0">Pour un groupe qui vient d'être créé : le secrétaire photographie l'écran, rien ne transite par WhatsApp.</p>` : ''}</div>`;
 }
 ACT.transferSheet = d => {
   const avec = avecById(d.id);

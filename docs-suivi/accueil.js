@@ -146,6 +146,7 @@ function couverture() {
           ${ic(canCreate ? 'plus' : 'sync')}<span>${canCreate ? 'Commencer notre AVEC' : 'Recevoir notre AVEC'}</span></button>
         <nav class="liens" aria-label="Autres gestes">
           ${canCreate ? lien('receiveSheet', '', 'sync', 'Recevoir notre AVEC') : ''}
+          ${typeof qrScanDispo === 'function' && qrScanDispo() ? lien('qrRecevoir', '', 'eye', 'Recevoir par photo') : ''}
           ${lien('go', 'guide', 'book', 'Guide')}</nav>
       </div></main>`;
   }
@@ -192,6 +193,7 @@ function couverture() {
       <nav class="liens" aria-label="Autres gestes">
         ${canCreate ? lien('createAvec', '', 'plus', 'Commencer une AVEC') : ''}
         ${lien('receiveSheet', '', 'sync', 'Recevoir une AVEC')}
+        ${typeof qrScanDispo === 'function' && qrScanDispo() ? lien('qrRecevoir', '', 'eye', 'Recevoir par photo') : ''}
         ${lien('go', 'guide', 'book', 'Guide')}</nav>
     </div></main>`;
 }
