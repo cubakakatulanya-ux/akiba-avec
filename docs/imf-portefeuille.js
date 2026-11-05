@@ -163,12 +163,10 @@ function imfPortefeuillePreparer() {
   const slug = org.name.normalize('NFD').replace(/\p{M}/gu, '').replace(/[^A-Za-z0-9]+/g, '-').replace(/^-|-$/g, '');
   return { blob: buildXlsx(imfPortefeuilleFeuilles(rows, org, noms)), name: `Akiba-portefeuille-IMF-${slug}-${isoDay(Date.now())}.xlsx`, imf, n: retenues.length };
 }
-ACT.imfPfTelecharger = () => {
+ACT.imfPfTelecharger = async () => {
   const f = imfPortefeuillePreparer(); if (!f) return;
-  const url = URL.createObjectURL(f.blob), a = document.createElement('a');
-  a.href = url; a.download = f.name; document.body.appendChild(a); a.click(); a.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 30000);
-  render(); App.toast(`${f.n} AVEC dans ${f.name}`);
+  const voie = await sortirFichier(f.name, f.blob, XL_MIME);
+  render(); App.toast(voie ? `${f.n} AVEC · ${ouEstLeFichier(voie, f.name)}` : 'Le portefeuille n\'a pas pu sortir de ce téléphone');
 };
 ACT.imfPfPartager = async () => {
   const f = imfPortefeuillePreparer(); if (!f) return;

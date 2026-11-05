@@ -250,12 +250,10 @@ function imfPrepare() {
   const slug = avec.name.normalize('NFD').replace(/\p{M}/gu, '').replace(/[^A-Za-z0-9]+/g, '-').replace(/^-|-$/g, '');
   return { blob: buildXlsx(imfSheets(avec, names)), name: `Akiba-dossier-IMF-${slug}-${isoDay(Date.now())}.xlsx`, imf };
 }
-ACT.imfDownload = () => {
+ACT.imfDownload = async () => {
   const f = imfPrepare(); if (!f) return;
-  const url = URL.createObjectURL(f.blob), a = document.createElement('a');
-  a.href = url; a.download = f.name; document.body.appendChild(a); a.click(); a.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 30000);
-  render(); App.toast(`${f.name} enregistré dans les Téléchargements`);
+  const voie = await sortirFichier(f.name, f.blob, XL_MIME);
+  render(); App.toast(voie ? ouEstLeFichier(voie, f.name) : 'Le dossier n\'a pas pu sortir de ce téléphone');
 };
 ACT.imfShare = async () => {
   const f = imfPrepare(); if (!f) return;
