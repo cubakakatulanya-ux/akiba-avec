@@ -1444,6 +1444,45 @@ window.__akibaTests = async function () {
         eq(r2.texte, texte, 'les morceaux remis bout à bout');
       }
 
+      /* ---- l'autre sens : une réunion revient du groupe vers l'animateur ----
+         La copie de l'animateur se prolonge si, et seulement si, la première écriture reçue
+         s'accroche exactement à la dernière qu'il connaît. */
+      const copie = JSON.parse(JSON.stringify(a));
+      /* on part de la queue de la chaîne : la séance à renvoyer est celle des dernières
+         écritures, sinon on ne prolongerait pas, on recollerait au milieu */
+      /* On tient la séance nous-mêmes, avec le vrai chemin d'écriture, pour ne dépendre
+         d'aucun état laissé par les essais précédents. */
+      const n0 = copie.tx.length;
+      const derniere = { id: copie.id + '-qrseance', n: 900, cycle: copie.cycle.n, date: Date.now(),
+        status: 'open', presence: {}, openedBy: null, stepDone: 7, openExpected: 0, openCount: 0, synced: false };
+      activeM(copie).forEach(x => derniere.presence[x.id] = 'P');
+      copie.meetings.push(derniere);
+      activeM(copie).slice(0, 5).forEach(x => appendTx(copie, { meetingId: derniere.id, type: 'SOCIAL', memberId: x.id, amount: 300, by: null }));
+      Object.assign(derniere, { status: 'closed', closedAt: Date.now(), closeExpected: 0, closeCount: 0,
+        validators: [], sealSeq: copie.tx.length, seal: copie.tx[copie.tx.length - 1].hash });
+      const txSeance = copie.tx.slice(n0);
+      must(txSeance.length === 5, 'la séance doit porter cinq écritures : ' + txSeance.length);
+      /* l'animateur est resté à la veille de cette séance */
+      copie.tx.length = n0;
+      copie.meetings = copie.meetings.filter(x => x.id !== derniere.id);
+      K.data.avecs = K.data.avecs.filter(x => x.id !== copie.id).concat([copie]);
+      const avant = copie.tx.length;
+
+      const faitMal = { k: 'kitabu-qr-r', a: copie.id, m: derniere, t: txSeance.map((t, i) => i === 1 ? Object.assign({}, t, { amount: t.amount + 1000 }) : t) };
+      const refuse = await qrReunionImporter(faitMal);
+      must(refuse.error, 'une écriture retouchée doit être refusée');
+      eq(copie.tx.length, avant, 'rien ne doit rester après un refus');
+
+      const trou = { k: 'kitabu-qr-r', a: copie.id, m: derniere, t: txSeance.slice(1) };
+      must((await qrReunionImporter(trou)).error, 'une séance qui ne s’accroche pas doit être refusée');
+
+      const bon = await qrReunionImporter({ k: 'kitabu-qr-r', a: copie.id, m: derniere, t: txSeance });
+      must(!bon.error, 'la séance entière doit s’ajouter : ' + bon.error);
+      eq(copie.tx.length, avant + txSeance.length, 'les écritures de la séance');
+      must(verifyChain(copie).ok, 'le journal prolongé doit rester valide');
+      must(avecById(copie.id).meetings.some(x => x.id === derniere.id && x.synced), 'la réunion doit être marquée reçue');
+      must((await qrReunionImporter({ k: 'kitabu-qr-r', a: copie.id, m: derniere, t: txSeance })).error, 'deux fois la même séance doit être refusée');
+
       const recu = avecById(neuf.id);
       must(recu, 'l’AVEC doit être sur ce téléphone');
       eq(recu.name, 'Tujenge Essai', 'le nom');

@@ -101,15 +101,15 @@ ACT.qrEnvoyer = async d => {
   if (texte.length > QR_MAX) return App.toast('Ce groupe est trop grand pour une image : envoyez le fichier.');
   App.qrLot = qrMorceaux(texte); App.qrIndex = 0;
   App.openSheet(`<h2>Montrer l'AVEC</h2>
-    <p class="muted">Le secrétaire ouvre Akiba sur le téléphone du groupe, touche « Recevoir par photo », et vise ${App.qrLot.length > 1 ? 'les images l\'une après l\'autre' : 'cette image'}. Touchez-la pour la mettre en plein écran.</p>
+    <p class="muted">Sur le téléphone du groupe : « Recevoir par photo », puis viser ${App.qrLot.length > 1 ? 'les images l\'une après l\'autre' : 'cette image'}. Touchez-la pour l'agrandir.</p>
     <button class="qr-grand" data-act="qrPlein" aria-label="Agrandir l'image"><img id="qrImg" alt="Code à photographier"></button>
     ${App.qrLot.length > 1 ? `<div class="row between"><button class="btn ghost sm" data-act="qrImage" data-d="-1">‹ Précédente</button>
       <span id="qrRang" class="small muted">Image 1 sur ${App.qrLot.length}</span>
       <button class="btn brand sm" data-act="qrImage" data-d="1">Suivante ›</button></div>` : ''}
-    <div class="receipt" style="text-align:center"><span class="label">Code à dire à voix haute</span>${bigCode(fmtXfer(code))}</div>
-    <p class="hint">Ne mettez jamais le code dans le même message que l'image. Sans lui, l'image ne s'ouvre pas.</p>
-    <button class="btn primary block xl" data-act="qrEnvoye" data-id="${avec.id}">Le groupe l'a reçue</button>
-    <button class="btn ghost block" data-act="closeSheet">Annuler</button>`);
+    <div class="receipt" style="text-align:center"><span class="label">Code à dire à voix haute</span>${bigCode(fmtXfer(code))}
+      <p class="hint" style="margin:6px 0 0">Jamais dans le même message que l'image.</p></div>
+    <div class="grid2"><button class="btn primary" data-act="qrEnvoye" data-id="${avec.id}">Le groupe l'a reçue</button>
+      <button class="btn ghost" data-act="qrPartager">${ic('chat')} Envoyer l'image</button></div>`);
   qrDessiner();
 };
 /* Correction « L » : la trame la moins fine pour la même quantité de texte. Un QR lu de près,
@@ -128,6 +128,17 @@ ACT.qrImage = d => {
   const n = App.qrLot.length;
   App.qrIndex = (App.qrIndex + (+d.d) + n) % n;
   qrDessiner();
+};
+/* L'image elle-même se partage : par WhatsApp, par Bluetooth, ou enregistrée dans Fichiers.
+   Elle reste chiffrée — sans les huit signes dits de vive voix, elle ne s'ouvre pas — donc
+   l'envoyer n'est pas plus risqué que d'envoyer le fichier. C'est ce qui permet d'ouvrir une
+   AVEC quand l'animatrice et le secrétaire ne sont pas dans le même village. */
+ACT.qrPartager = async () => {
+  if (!App.qrImage) return;
+  const n = App.qrLot.length, rang = n > 1 ? `-${App.qrIndex + 1}-sur-${n}` : '';
+  const octets = Uint8Array.from(atob(App.qrImage.split(',')[1]), c => c.charCodeAt(0));
+  const voie = await sortirFichier(`akiba-image${rang}.png`, new Blob([octets], { type: 'image/png' }), 'image/png');
+  App.toast(voie ? ouEstLeFichier(voie, 'akiba-image' + rang + '.png') : 'L\'image n\'a pas pu sortir de ce téléphone');
 };
 /* En plein écran, sur fond blanc et à la plus grande taille que porte l'appareil : c'est ce qui
    fait la différence entre une image lue du premier coup et trois minutes à chercher l'angle. */
@@ -151,6 +162,76 @@ ACT.qrEnvoye = d => {
   DB.save(); App.closeSheet(); render();
   App.toast('C\'est le téléphone du groupe qui tient le cahier maintenant');
 };
+
+/* ---------- renvoyer une réunion à l'animateur ----------
+
+   L'autre sens du chemin. Le groupe tient son cahier ; l'animatrice en a reçu une copie le jour
+   de la création, et elle doit la tenir à jour sans attendre la prochaine visite avec un câble.
+
+   On n'envoie pas le cahier : on envoie LA RÉUNION — ses écritures, dans l'ordre, avec son
+   sceau. Et comme le journal est une chaîne, la copie de l'animatrice ne les accepte que si la
+   première s'accroche exactement à la dernière écriture qu'elle connaît. C'est un prolongement,
+   jamais une fusion : si une réunion manque entre les deux, l'application le dit et renvoie au
+   fichier, au lieu de recoller deux histoires différentes.
+
+   Une séance de vingt membres pèse une quinzaine de milliers de signes, trois mille une fois
+   serrés : cinq images à viser l'une après l'autre. */
+const QR_REUNION = 'kitabu-qr-r';
+
+function qrReunionPossible(avec, m) {
+  if (!m || m.status !== 'closed') return { ok: false, pourquoi: 'La réunion doit être fermée et scellée' };
+  if (!m.seal) return { ok: false, pourquoi: 'Cette réunion n\'a pas de sceau' };
+  return { ok: true };
+}
+async function qrReunionTexte(avec, m, code) {
+  const tx = avec.tx.filter(t => t.meetingId === m.id);
+  const corps = JSON.stringify({ k: QR_REUNION, a: avec.id, n: avec.name, m, t: tx });
+  const serre = qrCompresseur();
+  const brut = serre ? await qrSerrer(corps) : new TextEncoder().encode(corps);
+  const salt = crypto.getRandomValues(new Uint8Array(16)), iv = crypto.getRandomValues(new Uint8Array(12));
+  const cipher = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, await backupKey(cleanXfer(code), salt), brut);
+  return JSON.stringify(Object.assign({ a: QR_REUNION, s: b64enc(salt), i: b64enc(iv), d: b64enc(cipher) }, serre ? { z: 1 } : {}));
+}
+ACT.qrReunion = async d => {
+  const { avec } = cur();
+  const m = avec.meetings.find(x => x.id === d.m);
+  const peut = qrReunionPossible(avec, m);
+  if (!peut.ok) return App.toast(peut.pourquoi);
+  if (!canEncrypt()) return App.toast('Ce navigateur ne permet pas le chiffrement');
+  const code = randCode(8);
+  const texte = await qrReunionTexte(avec, m, code);
+  App.qrLot = qrMorceaux(texte); App.qrIndex = 0;
+  const n = App.qrLot.length;
+  App.openSheet(`<h2>Envoyer la réunion n°${m.n}</h2>
+    <p class="muted">L'animateur vise ${n > 1 ? `les ${n} images, l'une après l'autre` : 'cette image'} : sa copie du cahier se prolonge de cette séance.</p>
+    <button class="qr-grand" data-act="qrPlein" aria-label="Agrandir l'image"><img id="qrImg" alt="Code à photographier"></button>
+    ${n > 1 ? `<div class="row between"><button class="btn ghost sm" data-act="qrImage" data-d="-1">‹ Précédente</button>
+      <span id="qrRang" class="small muted">Image 1 sur ${n}</span>
+      <button class="btn brand sm" data-act="qrImage" data-d="1">Suivante ›</button></div>` : ''}
+    <div class="receipt" style="text-align:center"><span class="label">Code à dire à voix haute</span>${bigCode(fmtXfer(code))}</div>
+    <div class="grid2"><button class="btn ghost" data-act="qrPartager">${ic('chat')} Envoyer l'image</button>
+      <button class="btn ghost" data-act="closeSheet">Fermer</button></div>`);
+  qrDessiner();
+};
+
+/* Prolonger la copie de l'animateur : on vérifie avant d'écrire, et on défait tout au moindre
+   doute. Une copie qui refuse est réparable ; une copie qui accepte n'importe quoi ne l'est pas. */
+async function qrReunionImporter(c) {
+  const avec = avecById(c.a);
+  if (!avec) return { error: 'Ce cahier n\'est pas sur ce téléphone : recevez-le d\'abord par fichier.' };
+  if (!Array.isArray(c.t) || !c.t.length || !c.m) return { error: 'Cette image ne contient pas de réunion' };
+  if (avec.meetings.some(x => x.id === c.m.id)) return { error: `La réunion n°${c.m.n} est déjà dans ce cahier` };
+  const tete = avec.tx.length ? avec.tx[avec.tx.length - 1].hash : 'GENESE:' + avec.id;
+  if (c.t[0].prev !== tete) return { error: `Il manque une réunion avant la n°${c.m.n} : demandez le fichier au groupe.` };
+  const nTx = avec.tx.length, nM = avec.meetings.length;
+  avec.tx.push(...c.t.map(t => Object.assign({}, t, { synced: true })));
+  avec.meetings.push(Object.assign({}, c.m, { synced: true }));
+  const v = verifyDepuis(avec, nTx);
+  if (!v.ok) { avec.tx.length = nTx; avec.meetings.length = nM; return { error: 'Ces écritures ne tiennent pas dans la chaîne : refusées (' + v.reason + ')' }; }
+  if (typeof _chain === 'object') delete _chain[avec.id];
+  DB.save();
+  return { id: avec.id, name: avec.name, reunion: c.m.n, ecritures: c.t.length };
+}
 
 /* ---------- lire ----------
    Une image entière ouvre tout de suite ; une image en deux morceaux attend sa sœur. L'ordre
@@ -177,7 +258,7 @@ const qrScanDispo = () => typeof window !== 'undefined' && 'BarcodeDetector' in 
 
 ACT.qrRecevoir = () => {
   App.openSheet(`<h2>Recevoir par photo</h2>
-    <p class="muted">Pour un groupe qui vient d'être créé. L'animatrice montre l'image sur son téléphone, vous la visez, puis vous tapez les huit signes qu'elle vous dit.</p>
+    <p class="muted">Visez l'image montrée en face, puis tapez les huit signes qu'on vous dit.</p>
     ${qrScanDispo()
       ? '<div class="scanbox"><video id="qrVid" playsinline muted></video></div>'
       : '<div class="alert warn">' + icSpan('alert') + '<div><b>Cet appareil ne lit pas les images</b><span class="small">Demandez le fichier à l\'animatrice : « Recevoir notre AVEC ».</span></div></div>'}
@@ -227,6 +308,12 @@ ACT.qrOuvrir = async () => {
   const r = await qrImporter(qrVu, code);
   if (r.error) return App.toast(r.error);
   qrArreter(); App.closeSheet();
+  /* une réunion reçue prolonge un cahier déjà là : on reste où l'on est, on ne change de
+     téléphone ni d'écran — c'est l'animateur qui travaille, pas le groupe qui arrive */
+  if (r.reunion) {
+    render();
+    return App.toast(`Réunion n°${r.reunion} ajoutée : ${r.ecritures} écritures vérifiées et scellées`);
+  }
   rememberAvec(r.id);
   App.go('l.member', { id: r.id });
   App.toast(`« ${r.name} » est sur ce téléphone. Chaque membre touche son nom et tape son code.`);
@@ -239,13 +326,15 @@ ACT.qrOuvrir = async () => {
 async function qrImporter(texte, code) {
   let box;
   try { box = JSON.parse(texte); } catch (e) { return { error: 'Cette image n\'est pas une AVEC Akiba' }; }
-  if (!box || box.a !== QR_KIND) return { error: 'Cette image n\'est pas une AVEC Akiba' };
+  if (!box || (box.a !== QR_KIND && box.a !== QR_REUNION)) return { error: 'Cette image n\'est pas une AVEC Akiba' };
   let c;
   try {
     const plain = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: b64dec(box.i) }, await backupKey(cleanXfer(code), b64dec(box.s)), b64dec(box.d));
     const texte2 = box.z ? await qrDesserrer(new Uint8Array(plain)) : new TextDecoder().decode(plain);
     c = JSON.parse(texte2);
   } catch (e) { return { error: 'Code faux, ou image mal lue' }; }
+  /* une réunion qui revient du groupe : on prolonge la copie au lieu d'ouvrir un groupe */
+  if (c && c.k === QR_REUNION) return await qrReunionImporter(c);
   if (!c || c.k !== QR_KIND || !Array.isArray(c.me) || !c.me.length) return { error: 'Cette image ne contient pas d\'AVEC' };
   const deja = avecById(c.id);
   if (deja && !deja.movedOut) return { error: 'Cette AVEC est déjà sur ce téléphone' };

@@ -208,6 +208,7 @@ SCREENS['n.home'] = () => {
          mêmes gestes en vignettes, comme dans l'application des groupes. -->
     <section class="section"><h2>Mes outils</h2><div class="grille-avec">
       ${tuile('sync', 'Recevoir une AVEC', 'Le fichier d’un groupe', 'data-act="receiveSheet"', 'or')}
+      ${typeof qrScanDispo === 'function' && qrScanDispo() ? tuile('eye', 'Recevoir par photo', 'Une AVEC neuve, ou une réunion', 'data-act="qrRecevoir"') : ''}
       ${tuile('chart', 'Exporter vers Excel', 'Toutes mes AVEC', 'data-act="exportSheet"')}
       ${tuile('lock', 'Débloquer un membre', 'Code secret perdu', 'data-act="unlockSheet"')}
       ${tuile('shield', 'Installer et sauvegarder', 'Sortir les données du téléphone', 'data-act="go" data-to="dev.backup"')}

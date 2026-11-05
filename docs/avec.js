@@ -867,9 +867,12 @@ SCREENS['a.receipt'] = p => {
          est la seule sauvegarde qui survit à un téléphone perdu, volé, noyé ou cassé : il passe
          donc avant les reçus des membres, en grand, et non en conseil au milieu de la page. -->
     <button class="btn primary block xl" data-act="journalReunionVoir" data-m="${m.id}">${ic('clip')} Imprimer le journal de la séance</button>
-    <p class="hint" style="margin:0;text-align:center">Chaque écriture, les totaux, les clés et le sceau. Gardez-le dans la caisse, avec les trois clés : si le téléphone disparaît, ce papier est ce qui reste du cahier.</p>
+    <p class="hint" style="margin:0;text-align:center">À garder dans la caisse : si le téléphone disparaît, ce papier est ce qui reste du cahier.</p>
     <div class="grille-avec">
       ${tuile('users', 'Reçus des membres', 'Un reçu par membre présent', `data-act="go" data-to="a.receipts" data-id="${m.id}"`)}
+      ${/* l'animateur repart avec la séance sans câble ni fichier : il vise l'écran */''}
+      ${typeof qrReunionPossible === 'function' && qrReunionPossible(avec, m).ok
+        ? tuile('eye', 'Montrer à l’animateur', 'La séance en images, à photographier', `data-act="qrReunion" data-m="${m.id}"`) : ''}
       ${tuile('home', 'Retour à l’accueil', 'La réunion est close', 'data-act="go" data-to="a.home"')}
     </div>
   </main></div>`;
