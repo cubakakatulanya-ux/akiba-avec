@@ -1475,6 +1475,7 @@ window.__akibaTests = async function () {
          La copie de l'animateur se prolonge si, et seulement si, la première écriture reçue
          s'accroche exactement à la dernière qu'il connaît. */
       const copie = JSON.parse(JSON.stringify(a));
+      copie.status = 'pending';
       /* on part de la queue de la chaîne : la séance à renvoyer est celle des dernières
          écritures, sinon on ne prolongerait pas, on recollerait au milieu */
       /* On tient la séance nous-mêmes, avec le vrai chemin d'écriture, pour ne dépendre
@@ -1505,6 +1506,9 @@ window.__akibaTests = async function () {
 
       const bon = await qrReunionImporter({ k: 'kitabu-qr-r', a: copie.id, m: derniere, t: txSeance });
       must(!bon.error, 'la séance entière doit s’ajouter : ' + bon.error);
+      /* la copie apprend du même coup que le groupe a été validé : il n'aurait pas pu tenir
+         de réunion sans cela, et « À valider » resterait affiché pour rien */
+      must(avecById(copie.id).status !== 'pending', 'une réunion reçue vaut preuve que le groupe est actif');
       eq(copie.tx.length, avant + txSeance.length, 'les écritures de la séance');
       must(verifyChain(copie).ok, 'le journal prolongé doit rester valide');
       must(avecById(copie.id).meetings.some(x => x.id === derniere.id && x.synced), 'la réunion doit être marquée reçue');

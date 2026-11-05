@@ -251,6 +251,10 @@ async function qrReunionImporter(c) {
   const v = verifyDepuis(avec, nTx);
   if (!v.ok) { avec.tx.length = nTx; avec.meetings.length = nM; return { error: 'Ces écritures ne tiennent pas dans la chaîne : refusées (' + v.reason + ')' }; }
   if (typeof _chain === 'object') delete _chain[avec.id];
+  /* Un groupe qui a tenu et scellé une réunion a forcément été validé : son téléphone ne le
+     lui aurait pas permis sinon. La copie de l'animateur l'apprend ici, sinon elle continue
+     d'afficher « À valider » et invite l'organisation à valider une deuxième fois. */
+  if (avec.status === 'pending' && c.m.status === 'closed') { avec.status = 'active'; avec.validatedAt = avec.validatedAt || Date.now(); }
   DB.save();
   return { id: avec.id, name: avec.name, reunion: c.m.n, ecritures: c.t.length };
 }
