@@ -179,6 +179,6 @@ module.exports = [
   ['Lire le guide', 'Couverture › Guide'],
 ]],
 ['p', ' '],
-['p', '**Entreprise Sociale Ubora** — Goma, République démocratique du Congo · 0998 275 144 · akiba.uborardc.com'],
+['p', '**Entreprise Sociale Ubora** — Lubumbashi, République démocratique du Congo · pour les AVEC des vingt-six provinces · 0998 275 144 · akiba.uborardc.com'],
 
 ];

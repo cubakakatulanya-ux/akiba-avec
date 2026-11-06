@@ -9,3 +9,7 @@ captures/
 *.pptx
 _p/
 _x/
+*.pdf
+*.html
+relecture/
+polices/

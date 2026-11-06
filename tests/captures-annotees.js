@@ -31,13 +31,19 @@ const VUES = [
     ['texte:Solder', 'Écrire tout ce qui reste, même avant la fin', 'droite'],
     ['texte:Enregistrer les remboursements', 'Passer à l’étape suivante', 'gauche'],
   ]],
+  ['creation-etape1', 'docs-suivi', 1440, 900, "K.session={kind:'anim',userId:K.data.users.find(u=>u.role==='anim').id}; App.cdraft=null; App.go('c.avec',{from:'login'}); await new Promise(r=>setTimeout(r,500)); const b=[...document.querySelectorAll('.shell main button')].find(x=>/commencer/i.test(x.textContent)); if(b) b.click();", [
+    ['selecteur:.steps, .etapes', 'Les cinq étapes de la création', 'bas'],
+    ['selecteur:#cgN', 'Le nom tel que le groupe se nomme', 'droite'],
+    ['selecteur:#cgProv', 'La province, puis le territoire', 'droite'],
+    ['selecteur:#cgV', 'Le village : c’est lui qu’on retrouve sur une carte', 'droite'],
+  ]],
   ['membres', 'docs', 1440, 900, "K.session={kind:'avec',avecId:'avec1',memberId:bureauOf(avecById('avec1'))[0].id}; App.go('a.members');", [
     ['texte:Ajouter', 'Un nouveau membre', 'bas'],
     ['texte:Cartes', 'Dix cartes par feuille A4', 'bas'],
     ['texte:Livrets', 'Une page A4 par membre', 'bas'],
   ]],
   ['tableau-animateur', 'docs-suivi', 1440, 900, "K.session={kind:'anim',userId:K.data.users.find(u=>u.role==='anim').id}; App.go('n.home');", [
-    ['texte:Mes AVEC', 'Les groupes de cet animateur', 'droite'],
+    ['selecteur:.shell main > .list', 'Les groupes de cet animateur', 'droite'],
     ['texte:Recevoir une AVEC', 'Reprendre le cahier d’un groupe', 'droite'],
     ['texte:Exporter vers Excel', 'Le rapport, hors connexion', 'droite'],
   ]],
@@ -114,7 +120,8 @@ const POSE = `window.__repere = (reperes) => {
     for (let i = 0; i < 120; i++) { await dors(250); try { if (await js("typeof App !== 'undefined' && !!(K.data && K.data.avecs)", false)) break; } catch (e) {} }
     await dors(800);
     await js("if (!K.data.avecs.length) DB.reset(); try{localStorage.setItem('kitabu.theme','light')}catch(e){} appliquerTheme('light'); 1", false);
-    await js(geste + ' 1', false);
+    /* le geste peut attendre un rendu : on l'enveloppe, et on attend sa promesse */
+    await js('(async () => { ' + geste + ' })()');
     await dors(700);
     await js(POSE, false);
     const poses = await js('window.__repere(' + JSON.stringify(reperes) + ')', false);

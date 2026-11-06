@@ -4,6 +4,7 @@ module.exports = [
 ['h1', '1. Ce qu’est Akiba'],
 ['p', 'Akiba remplace le cahier de papier d’une AVEC — une association villageoise d’épargne et de crédit — par un cahier qui vit dans un téléphone ou un terminal de caisse. Il tient les présences, l’épargne en parts, la caisse sociale, les crédits, les amendes, la clôture à trois clés, le partage de fin de cycle, et il imprime les reçus.'],
 ['fig', 'schema/ou-vit-le-cahier', 'Le cahier naît chez l’animateur, vit sur le téléphone du groupe, et remonte en copie.'],
+['p', 'Akiba est écrite à Lubumbashi par l’Entreprise Sociale Ubora, et faite pour les AVEC de **toute la République démocratique du Congo** : les vingt-six provinces, cent quarante-six territoires et trente-six villes sont déjà dans l’application, et le groupe se situe jusqu’au village. Un groupe du Haut-Katanga, du Nord-Kivu ou du Kasaï s’y retrouve sans rien configurer.'],
 ['p', 'Trois principes commandent tout le reste, et il faut les connaître avant de toucher à l’application.'],
 ['ul', [
   '**Tout fonctionne sans réseau.** Akiba n’a pas de serveur. Rien ne part du téléphone tout seul. Ce qui sort, sort parce que quelqu’un l’a décidé : un fichier de sauvegarde, un envoi vers un autre téléphone, une image montrée à l’animateur.',
@@ -75,8 +76,13 @@ module.exports = [
 
 ['h2', '3.2 Créer une AVEC, étape par étape'],
 ['p', 'La création se fait **d’un seul trait, avec l’assemblée réunie**. Comptez trois quarts d’heure. Aucun réseau n’est nécessaire. Avant de commencer, il faut avoir sous la main : l’assemblée, la liste des membres avec le sexe de chacun, le bureau élu, les règles votées, le jour de réunion, et de quoi recopier les codes secrets sur de petits papiers.'],
-['fig', 'suivi/ordi-c-avec', 'La première étape : le nom du groupe et son lieu, jusqu’au village.'],
+['fig', 'suivi/ordi-c-avec', 'Avant de commencer : l’écran rappelle ce qu’il faut avoir sous la main.'],
 ['h3', 'Étape 1 — le groupe'],
+['fig', 'annote/creation-etape1', 'La première étape, telle qu’elle se présente à l’animateur.'],
+['reperes', ['Les cinq étapes de la création : on les parcourt dans l’ordre, et l’on peut revenir en arrière.',
+  'Le nom du groupe, tel que le groupe se nomme lui-même.',
+  'La province, puis le territoire ou la ville : la liste suit le découpage officiel des vingt-six provinces.',
+  'Le village : c’est lui qu’on retrouvera sur une carte, et dans les rapports de l’organisation.']],
 ['p', 'Le nom tel que le groupe se nomme, puis la province, le territoire ou la ville, le secteur ou la chefferie, le groupement, et le village. Ces renseignements servent aux rapports de l’organisation : un groupe mal situé est un groupe qu’on ne retrouve pas.'],
 ['h3', 'Étape 2 — le règlement'],
 ['p', 'Onze choix, tous votés par l’assemblée : valeur d’une part, parts par réunion, caisse sociale, durée du cycle, intérêt du crédit, crédit maximum, durée maximum d’un crédit, date de début, amende d’absence, amende de retard, pénalité de retard de crédit, et **guichet entre les réunions** (voir le chapitre 7).'],

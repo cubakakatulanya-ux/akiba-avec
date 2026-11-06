@@ -10,8 +10,8 @@ const IMG = p => ({ data: 'image/png;base64,' + img(p) });
 
 const THEME = {
   name: 'Akiba',
-  headFontFace: 'Trebuchet MS',
-  bodyFontFace: 'Calibri',
+  headFontFace: 'Ubuntu',
+  bodyFontFace: 'Ubuntu',
   colors: {
     dk1: '1B2A24', lt1: 'FFFFFF', dk2: '0F4D3A', lt2: 'F1F6F2',
     accent1: '0F4D3A', accent2: 'F2B705', accent3: '2E7D5B', accent4: 'D5E7DD',
@@ -32,15 +32,15 @@ const C = pres.SchemeColor;
 pres.defineSlideMaster({
   title: 'COUVERTURE', background: { color: VERT },
   objects: [
-    { text: { text: '', options: { placeholder: 'titre', x: 0.9, y: 2.4, w: 11.5, h: 1.5, fontSize: 54, bold: true, color: 'FFFFFF', fontFace: 'Trebuchet MS' } } },
+    { text: { text: '', options: { placeholder: 'titre', x: 0.9, y: 2.4, w: 11.5, h: 1.5, fontSize: 54, bold: true, color: 'FFFFFF', fontFace: 'Ubuntu' } } },
     { text: { text: '', options: { placeholder: 'sous', x: 0.9, y: 3.9, w: 11.5, h: 1.2, fontSize: 20, color: DOUX } } },
-    { text: { text: 'Entreprise Sociale Ubora · Goma, RDC', options: { x: 0.9, y: 6.5, w: 8, h: 0.4, fontSize: 12, color: DOUX } } },
+    { text: { text: 'Entreprise Sociale Ubora · Lubumbashi · pour les AVEC des vingt-six provinces', options: { x: 0.9, y: 6.5, w: 8, h: 0.4, fontSize: 12, color: DOUX } } },
   ],
 });
 pres.defineSlideMaster({
   title: 'TITRE', background: { color: 'FFFFFF' },
   objects: [
-    { text: { text: '', options: { placeholder: 'titre', x: 0.7, y: 0.45, w: 12, h: 0.9, fontSize: 32, bold: true, color: VERT, fontFace: 'Trebuchet MS' } } },
+    { text: { text: '', options: { placeholder: 'titre', x: 0.7, y: 0.45, w: 12, h: 0.9, fontSize: 32, bold: true, color: VERT, fontFace: 'Ubuntu' } } },
     { text: { text: 'Akiba · Entreprise Sociale Ubora', options: { x: 0.7, y: 6.95, w: 6, h: 0.3, fontSize: 10, color: GRIS } } },
   ],
   slideNumber: { x: 12.15, y: 6.95, fontSize: 10, color: GRIS },
@@ -48,7 +48,7 @@ pres.defineSlideMaster({
 pres.defineSlideMaster({
   title: 'SECTION', background: { color: CLAIR },
   objects: [
-    { text: { text: '', options: { placeholder: 'titre', x: 1.0, y: 3.0, w: 11.3, h: 1.2, fontSize: 40, bold: true, color: VERT, fontFace: 'Trebuchet MS' } } },
+    { text: { text: '', options: { placeholder: 'titre', x: 1.0, y: 3.0, w: 11.3, h: 1.2, fontSize: 40, bold: true, color: VERT, fontFace: 'Ubuntu' } } },
     { text: { text: '', options: { placeholder: 'sous', x: 1.0, y: 4.2, w: 11.3, h: 1.0, fontSize: 17, color: GRIS } } },
   ],
   slideNumber: { x: 12.15, y: 6.95, fontSize: 10, color: GRIS },
@@ -57,11 +57,11 @@ pres.defineSlideMaster({
 /* ---------- briques ---------- */
 const carte = (s, x, y, w, h, titre, texte, teinte) => {
   s.addShape(pres.ShapeType.roundRect, { x, y, w, h, rectRadius: 0.08, fill: { color: teinte || CLAIR }, line: { color: 'E2E5E2', width: 1 }, objectName: 'carte-' + titre.slice(0, 14) });
-  s.addText(titre, { x: x + 0.25, y: y + 0.18, w: w - 0.5, h: 0.4, fontSize: 16, bold: true, color: VERT, isTextBox: true, margin: 0, fontFace: 'Trebuchet MS' });
+  s.addText(titre, { x: x + 0.25, y: y + 0.18, w: w - 0.5, h: 0.4, fontSize: 16, bold: true, color: VERT, isTextBox: true, margin: 0, fontFace: 'Ubuntu' });
   s.addText(texte, { x: x + 0.25, y: y + 0.62, w: w - 0.5, h: h - 0.8, fontSize: 13, color: ENCRE, isTextBox: true, margin: 0, lineSpacingMultiple: 1.1 });
 };
 const stat = (s, x, y, w, chiffre, mot) => {
-  s.addText(chiffre, { x, y, w, h: 0.85, fontSize: 44, bold: true, color: VERT, align: 'center', isTextBox: true, margin: 0, fontFace: 'Trebuchet MS' });
+  s.addText(chiffre, { x, y, w, h: 0.85, fontSize: 44, bold: true, color: VERT, align: 'center', isTextBox: true, margin: 0, fontFace: 'Ubuntu' });
   s.addText(mot, { x, y: y + 0.85, w, h: 0.6, fontSize: 12, color: GRIS, align: 'center', isTextBox: true, margin: 0 });
 };
 const pastille = (s, x, y, n) => {
@@ -91,7 +91,7 @@ s.addText('Et pourtant le cahier marche : il est public, il se lit à haute voix
   { x: 0.7, y: 4.0, w: 11.9, h: 0.9, fontSize: 17, italic: true, color: VERT, isTextBox: true });
 stat(s, 0.7, 5.0, 3.9, '15 à 35', 'personnes par groupe');
 stat(s, 4.8, 5.0, 3.9, '6 à 12', 'mois par cycle');
-stat(s, 8.9, 5.0, 3.7, '0', 'réseau nécessaire');
+stat(s, 8.9, 5.0, 3.7, '26', 'provinces déjà dans l’application');
 
 s = pres.addSlide({ masterName: 'TITRE', sectionTitle: 'Le problème et la réponse' });
 s.addText('Deux applications, une seule source', { placeholder: 'titre' });
@@ -120,7 +120,7 @@ const principes = [
 principes.forEach(([t, d], i) => {
   const y = 1.7 + i * 1.65;
   pastille(s, 0.75, y + 0.1, i + 1);
-  s.addText(t, { x: 1.45, y, w: 10.8, h: 0.45, fontSize: 20, bold: true, color: VERT, isTextBox: true, margin: 0, fontFace: 'Trebuchet MS' });
+  s.addText(t, { x: 1.45, y, w: 10.8, h: 0.45, fontSize: 20, bold: true, color: VERT, isTextBox: true, margin: 0, fontFace: 'Ubuntu' });
   s.addText(d, { x: 1.45, y: y + 0.5, w: 10.8, h: 0.8, fontSize: 14, color: ENCRE, isTextBox: true, margin: 0 });
 });
 
@@ -265,7 +265,7 @@ s.addText('Ce qu’il faut pour commencer', { placeholder: 'titre' });
 carte(s, 0.7, 1.55, 3.9, 2.1, 'Le matériel', 'Un terminal Android avec imprimante par groupe, ou un téléphone ordinaire.\n\nUn téléphone ou un ordinateur par animateur.');
 carte(s, 4.8, 1.55, 3.9, 2.1, 'L’installation', 'Ouvrir l’adresse, installer l’icône. Sur un terminal de caisse, installer l’application Android.\n\nAucun serveur à monter.');
 carte(s, 8.9, 1.55, 3.7, 2.1, 'La validation', 'Chaque téléphone qui porte de vraies données est validé un par un par Ubora, pour une durée donnée.');
-s.addText('La formation', { x: 0.7, y: 3.9, w: 11.9, h: 0.45, fontSize: 20, bold: true, color: VERT, isTextBox: true, fontFace: 'Trebuchet MS' });
+s.addText('La formation', { x: 0.7, y: 3.9, w: 11.9, h: 0.45, fontSize: 20, bold: true, color: VERT, isTextBox: true, fontFace: 'Ubuntu' });
 liste(s, 0.7, 4.35, 11.9, 2.2, [
   'Sept modules de formation pour les animateurs, dans l’application elle-même.',
   'Un guide complet hors connexion, qui se lit et s’écoute, en français, kiswahili et lingála.',
@@ -284,6 +284,7 @@ s.addText([
   { text: 'animateurs et organisations', options: { fontSize: 14, color: DOUX } },
 ], { x: 0.9, y: 5.0, w: 7, h: 1.6, fontSize: 20, color: 'FFFFFF', isTextBox: true });
 s.addText('0998 275 144', { x: 9.0, y: 5.6, w: 3.4, h: 0.5, fontSize: 18, color: OR, align: 'right', isTextBox: true });
+s.addText('Écrite à Lubumbashi, faite pour les AVEC des vingt-six provinces.', { x: 0.9, y: 6.55, w: 11.5, h: 0.5, fontSize: 14, color: DOUX, isTextBox: true });
 
 pres.writeFile({ fileName: path.join(__dirname, 'Akiba-presentation.pptx') })
   .then(async f => { await applyTheme(f, THEME); console.log('écrit : ' + f); })
