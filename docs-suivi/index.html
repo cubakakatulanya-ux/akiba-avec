@@ -1070,6 +1070,13 @@ details.g.demo>:not(summary)+*{margin-top:8px}
   .shell .section{gap:8px}
   .shell h2{font-size:var(--t-lg)}
 
+  /* Treize colonnes à douze pixels de marge de chaque côté font trois cents pixels de bordure
+     blanche : le tableau débordait de soixante-treize pixels et sortait une barre de défilement
+     alors que la place était là. Huit pixels suffisent, et tout tient. */
+  .shell .tablewrap th,.shell .tablewrap td{padding-left:8px;padding-right:8px}
+  /* une note sous un tableau n'est pas une bannière : elle garde une largeur de lecture */
+  .shell .main .hint{max-width:92ch}
+
   /* ---- la souris : la ligne survolée se détache, et le curseur dit qu'on peut cliquer ---- */
   .shell .li:hover{background:var(--surface-2)}
   .shell .li,.shell .tab,.shell .btn,.shell .chip[data-act]{cursor:pointer}
@@ -1077,7 +1084,7 @@ details.g.demo>:not(summary)+*{margin-top:8px}
 </style>
 <style>html,body{margin:0}</style>
 </head><body>
-<script>window.KITABU_PWA = true; window.KITABU_VERSION = 'akiba-20261106082027'; window.AKIBA_CIBLE = 'suivi';</script>
+<script>window.KITABU_PWA = true; window.KITABU_VERSION = 'akiba-20261106083924'; window.AKIBA_CIBLE = 'suivi';</script>
 
 <div id="app"></div>
 <script src="core.js"></script>
