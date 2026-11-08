@@ -172,6 +172,9 @@ function couverture() {
         <nav class="liens" aria-label="Autres gestes">
           ${licKind() === 'demo' ? '' : lien('goLive', '', 'check', 'Notre vrai cahier')}
           ${lien('receiveSheet', '', 'sync', 'Recevoir')}
+          ${/* un téléphone qu'on vient de remettre à un groupe est en démonstration : c'est là,
+               justement, que l'animatrice montre l'image. Le geste doit s'y trouver. */
+            typeof qrScanDispo === 'function' && qrScanDispo() ? lien('qrRecevoir', '', 'eye', 'Recevoir par photo') : ''}
           ${lien('go', 'guide', 'book', 'Guide')}</nav>
         <button class="linkbtn couv-discret" data-act="resetDemo">Remettre la démonstration à zéro</button>
       </div></main>`;
