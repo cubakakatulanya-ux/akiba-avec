@@ -3,6 +3,7 @@
 
 const GUIDE = [
   { id: 'bref', icon: 'book', t: 'Akiba en bref', b: `
+    ${FIG.cahier()}
     <p>Akiba est une <b>infrastructure numérique hors ligne</b>, conçue autour des pratiques réelles des AVEC rurales. Elle remplace les cahiers du groupe (caisse, carnets des membres, registre des crédits, procès-verbal) et tient trois promesses :</p>
     <ol>
       <li><b>Des opérations quotidiennes transformées en données fiables et vérifiables.</b> La réunion suit l'ordre du cahier, sans réseau. Chaque franc est écrit au moment où il bouge, dans un journal scellé où toute modification se voit.</li>
@@ -20,6 +21,23 @@ const GUIDE = [
     </ul>
     <p>Akiba est développée par l'<b>Entreprise Sociale Ubora</b>, qui assure aussi l'assistance : appel ou WhatsApp au <b>0998 275 144</b>, e-mail <b>contact@uborahub.com</b>.</p>
     <div class="tip">Une AVEC <b>autonome</b> (sans organisation) utilise seulement l'interface du groupe. Personne d'autre ne voit ses données.</div>` },
+  { id: 'premierjour', icon: 'home', t: 'Le premier jour : par où commencer', b: `
+    <p>Vous venez de recevoir le téléphone, ou vous ouvrez Akiba pour la première fois. Faites ces choses dans cet ordre, et rien d'autre.</p>
+    <h4>1. S'entraîner sans risque</h4>
+    <p>À la première ouverture, Akiba affiche un groupe de <b>démonstration</b> : vingt membres, quatorze réunions déjà tenues, tous les codes secrets à <b>1234</b>. Tenez une réunion entière dessus. Rien de ce que vous faites là ne touche à de vraies données, et <b>Remettre la démonstration à zéro</b> efface tout.</p>
+    <h4>2. Valider le téléphone</h4>
+    <p>Un téléphone qui portera de vraies données doit être validé par Ubora : voir <b>Les codes de validation d'Ubora</b>. Comptez cinq minutes et un appel.</p>
+    <h4>3. Recevoir ou créer le cahier</h4>
+    <p>Si l'animateur a créé le groupe, il vous le remet par <b>fichier</b> ou par <b>image</b>. Si le groupe est seul, créez-le vous-même avec l'assemblée : voir <b>Créer l'AVEC et commencer</b>.</p>
+    <h4>4. Distribuer les codes secrets</h4>
+    <p>Akiba affiche le code de chaque membre <b>une seule fois</b>. Recopiez-les sur de petits papiers pliés, donnez-les en main propre, et rangez la carte de secours dans la caisse.</p>
+    <h4>5. Prendre deux habitudes</h4>
+    <ul>
+      <li><b>Après chaque réunion</b> : imprimer le journal de la séance et le classer dans la caisse.</li>
+      <li><b>Après chaque réunion</b> : créer une sauvegarde et la garder ailleurs que sur le téléphone.</li>
+    </ul>
+    <div class="tip">Vous n'avez besoin de personne pour commencer. Tout ce que fait Akiba est écrit dans ce guide, et le guide fonctionne sans réseau.</div>` },
+
   { id: 'debut', icon: 'plus', t: 'Créer l\'AVEC et commencer', b: `
     <p>Touchez <b>Commencer notre AVEC</b> sur l'écran d'accueil. La première fois, Akiba demande le <b>code de validation</b> délivré par l'Entreprise Sociale Ubora. Un animateur ou une organisation crée l'AVEC depuis son propre espace. Tout se prépare en 5 étapes, avec l'assemblée réunie.</p>
     <ol>
@@ -34,6 +52,8 @@ const GUIDE = [
     <p>Choisissez « Groupe déjà en cours » et recopiez le cahier : parts achetées par chaque membre, reste à payer sur chaque crédit, caisse sociale, puis l'argent compté dans la caisse de crédit. Akiba enregistre tout dans une séance « Reprise du cahier », scellée. S'il manque de l'argent par rapport au cahier, l'écart est signalé.</p>
     <div class="tip">À la fin, Akiba affiche <b>un code secret différent pour chaque membre</b>, une seule fois. Recopiez-les sur de petits papiers et donnez-les en main propre.</div>` },
   { id: 'connexion', icon: 'users', t: 'Comment une AVEC se connecte', b: `
+    ${FIG.photo('guide-accueil.jpg', 'L’accueil du groupe : la caisse, ce qu’il faut surveiller, et le geste du jour.')}
+    ${FIG.droits()}
     <p>L'écran d'accueil est fait pour le groupe et tient sur un seul écran, quel que soit le téléphone. Le grand bouton jaune <b>AVEC</b> mène directement aux noms des membres. Sur un téléphone encore vide, il devient <b>Entrer mon AVEC</b> et propose de <b>recevoir</b> l'AVEC (fichier et code envoyés par l'animateur) ou de la <b>créer</b>. Le bouton <b>« Recevoir une AVEC »</b> est en bas de l'écran.</p>
     ${!estSuivi() ? '' : `<div class="alert"><div><b>Sur Akiba Suivi, l'accueil ne montre que l'entrée</b><span class="small">Recevoir une AVEC et la Formation sont des gestes de métier : ils sont dans l'espace de l'animateur (bouton <b>Recevoir une AVEC</b> et onglet <b>Formation</b>) et dans les <b>Outils</b> de l'organisation. L'accueil ne garde que le guide.</span></div></div>`}
     ${estSuivi() ? '' : `<div class="alert"><div><b>Les autres espaces ont leur propre application</b><span class="small">L'animateur, l'organisation et l'administration d'Ubora travaillent sur <b>Akiba Suivi</b> (akibas.uborardc.com). Celle-ci est l'application du groupe : elle ne contient plus ces espaces.</span></div></div>`}
@@ -60,6 +80,8 @@ const GUIDE = [
     <h4>Le groupe avait un cahier papier</h4>
     <p>À la création, choisir <b>Groupe déjà en cours</b> et recopier le cahier (voir « Créer l'AVEC »).</p>` },
   { id: 'reunion', icon: 'calendar', t: 'La réunion, étape par étape', b: `
+    ${FIG.photo('guide-reunion.jpg', 'L’étape de l’épargne : chaque membre achète ses parts.')}
+    ${FIG.etapes()}
     <p>Sur l'accueil, un membre du bureau touche <b>Ouvrir la réunion</b>. Akiba guide la réunion dans l'ordre. On ne peut pas sauter une étape.</p>
     <ol>
       <li><b>Présences</b> : pour chaque membre, touchez « Là », « Retard » ou « Absent ».</li>
@@ -154,6 +176,7 @@ const GUIDE = [
     </ol>
     <div class="tip">Ces indicateurs portent sur le <b>groupe</b>, jamais sur un membre : aucune donnée personnelle n'est utilisée ni partagée.</div>` },
   { id: 'recus', icon: 'clip', t: 'Reçus des membres, imprimés ou partagés', b: `
+    ${FIG.photo('guide-recu.jpg', 'Le reçu d’une réunion, tel qu’il sortira de l’imprimante.')}
     <p>Après la clôture d'une réunion, l'écran du reçu propose <b>Reçus des membres</b> : un ticket par personne présente.</p>
     <h4>Ce que contient le ticket</h4>
     <ul>
@@ -221,6 +244,8 @@ const GUIDE = [
       <li>La caisse sociale <b>n'est pas partagée</b> en fin de cycle : elle passe au cycle suivant.</li>
     </ul>` },
   { id: 'guichet', icon: 'coins', t: 'Le guichet entre les réunions', b: `
+    ${FIG.photo('guide-guichet.jpg', 'L’écran du guichet : ce qui est déposé, ce qu’il y a dans la caisse, les quatre gestes.')}
+    ${FIG.poches()}
     <p>Le guichet est <b>facultatif</b> : l'assemblée le vote à la création, et peut l'ouvrir plus tard dans <b>Plus › Règlement</b>. Sans lui, l'argent ne bouge qu'en réunion, comme toujours.</p>
     <p>Avec lui, un membre peut <b>confier de l'argent</b> ou <b>le reprendre</b> un autre jour, au village, sans attendre la réunion.</p>
     <ul>
@@ -264,6 +289,7 @@ const GUIDE = [
     <div class="tip">Le motif n'est pas une faveur du bureau : c'est l'assemblée qui décide, à haute voix. Le bureau peut toujours remettre l'amende, et Akiba garde trace de qui a justifié quoi.</div>
     <div class="tip">Une amende due qui n'est jamais payée est retirée de la part du membre au partage.</div>` },
   { id: 'securite', icon: 'lock', t: 'Sécurité et contrôle contre la fraude', b: `
+    ${FIG.journal()}
     <ul>
       <li><b>Code secret personnel</b> de 4 chiffres. Après 3 codes faux, le clavier se bloque 30 secondes.</li>
       <li><b>Verrouillage automatique</b> après 15 minutes sans activité.</li>
@@ -456,6 +482,83 @@ const GUIDE = [
       <li>Chaque organisation ne voit que ses propres AVEC : les données restent séparées d'une organisation à l'autre.</li>
       <li>Les AVEC autonomes n'apparaissent jamais dans votre tableau.</li>
     </ul>` },
+  { id: 'messages', icon: 'alert', t: 'Un message vous bloque : la liste', b: `
+    ${FIG.sifaute()}
+    <p>Akiba ne refuse jamais sans dire pourquoi. Cherchez ici le message exact que vous voyez à l'écran.</p>
+    <h4>« Ce téléphone n'a pas de licence »</h4><p>Le téléphone n'est pas encore validé. Lisez le <b>code de ce téléphone</b> à Ubora, tapez le code reçu. Voir <b>Les codes de validation d'Ubora</b>.</p>
+    <h4>« Ce code est pour le téléphone XXXX-XXXX, pas pour celui-ci »</h4><p>Le code appartient à un autre appareil. Redemandez-en un en donnant le code affiché sur <b>ce</b> téléphone-ci.</p>
+    <h4>« Ce code sert seulement à la démonstration »</h4><p>Vous avez reçu un code d'entraînement. Demandez à Ubora un code pour une AVEC ou pour une organisation.</p>
+    <h4>« L'organisation doit valider le groupe avant la première réunion »</h4><p>Le groupe est encore en attente. Appelez l'organisation avec le <b>code de demande</b> affiché, elle vous dicte huit chiffres.</p>
+    <h4>« Code de transfert faux, ou fichier abîmé »</h4><p>Les huit signes ne correspondent pas, ou le fichier a été coupé pendant l'envoi. Retapez le code ; s'il refuse encore, demandez le fichier à nouveau.</p>
+    <h4>« Cette AVEC est déjà active sur ce téléphone »</h4><p>Le cahier est déjà là et vivant. Ne le remplacez pas avant d'avoir vérifié lequel des deux est le plus récent : demandez au porteur de l'autre téléphone à quelle réunion il en est.</p>
+    <h4>« Il manque une réunion avant la n°X »</h4><p>La séance reçue ne s'accroche pas à la copie. Le groupe doit envoyer un <b>fichier</b> complet, pas une image.</p>
+    <h4>« Ces écritures ne tiennent pas dans la chaîne : refusées »</h4><p>Ce qui arrive a été modifié, ou vient d'un autre cahier. Rien n'a été ajouté. Demandez le fichier.</p>
+    <h4>« Le journal est altéré : le partage est impossible »</h4><p>Une écriture a été changée après enregistrement. Ne partagez pas, n'envoyez rien à une IMF : voir <b>Le téléphone, le papier et les pannes</b>.</p>
+    <h4>« Fermez d'abord la réunion en cours » / « Fermez d'abord le guichet »</h4><p>Une séance est ouverte. Terminez-la (étape 8, ou « Recompter et fermer » au guichet) avant d'envoyer le cahier.</p>
+    <h4>« Réservé au bureau »</h4><p>Le membre connecté n'a pas ce droit. Reconnectez-vous avec le code d'un membre du bureau.</p>
+    <h4>« Expliquez l'écart : c'est obligatoire »</h4><p>Le montant compté ne correspond pas au cahier. Écrivez ce qui s'est passé, même en deux mots : c'est cette phrase que lira l'organisation.</p>
+    <h4>« Ce navigateur ne permet pas le chiffrement »</h4><p>Le navigateur est trop ancien. Mettez Chrome à jour, ou installez l'application Android depuis la page <b>android.html</b> du site.</p>
+    <h4>« Ce groupe est trop grand pour une image »</h4><p>L'image ne porte qu'un groupe neuf. Passez par le fichier.</p>
+    <h4>« Appareil photo indisponible »</h4><p>La caméra n'est pas autorisée, ou l'appareil n'en a pas. Autorisez-la dans les réglages du téléphone, ou demandez le fichier.</p>
+    <div class="tip">Un message que vous ne trouvez pas ici ? Notez-le mot pour mot et appelez Ubora : c'est ainsi que cette liste s'allonge.</div>` },
+
+  { id: 'panne', icon: 'alert', t: 'Le téléphone, le papier et les pannes', b: `
+    <h4>Le téléphone est perdu, cassé ou volé</h4>
+    <p>Dans cet ordre :</p>
+    <ul>
+      <li>Reprendre la <b>dernière sauvegarde</b> sur un autre téléphone, avec son mot de passe.</li>
+      <li>À défaut, reprendre la <b>copie de l'animateur</b> : elle contient tout ce que le groupe lui a renvoyé.</li>
+      <li>À défaut encore, les <b>journaux de séance imprimés</b> et classés dans la caisse permettent de recomposer le cahier à la main, réunion par réunion.</li>
+    </ul>
+    <div class="tip">Si l'ancien téléphone réapparaît, ne tenez pas de réunion dessus : deux cahiers qui avancent chacun de leur côté ne se recollent pas. Le bureau décide lequel fait foi, à deux signatures, dans <b>Reprendre l'AVEC sur ce téléphone</b>.</div>
+    <h4>L'imprimante ne sort rien</h4>
+    <ul>
+      <li>Vérifiez le rouleau : un papier thermique posé à l'envers ne marque pas.</li>
+      <li>Vérifiez que le capot est bien fermé.</li>
+      <li>Sur un terminal, l'impression passe par l'application Android : ouverte dans le navigateur, Akiba imprime vers le navigateur, pas vers le rouleau.</li>
+      <li>En dernier recours, <b>Partager</b> le texte du reçu : il part par WhatsApp ou se garde en fichier.</li>
+    </ul>
+    <h4>L'image ne se lit pas</h4>
+    <ul>
+      <li>Approchez ou reculez de quelques centimètres, visez bien droit.</li>
+      <li>Évitez le soleil direct sur l'écran qui montre l'image.</li>
+      <li>Touchez l'image pour l'agrandir en plein écran.</li>
+      <li>Un écran très rayé rend l'image illisible : essuyez-le, ou passez par le fichier.</li>
+    </ul>
+    <h4>Le cahier a disparu</h4>
+    <p>Akiba garde le cahier <b>dans le téléphone</b>. Trois gestes l'effacent : vider les données du navigateur, désinstaller l'application, réinitialiser l'appareil. Il n'y a pas de serveur pour le récupérer — seulement vos sauvegardes. Vérifiez d'abord que vous êtes sur la bonne adresse : <b>akiba.uborardc.com</b> et <b>akibas.uborardc.com</b> sont deux réserves séparées.</p>
+    <h4>La date du téléphone est fausse</h4>
+    <p>Réglez-la avant la réunion : les échéances de crédit, les pénalités et les sceaux portent l'heure du téléphone.</p>
+    <h4>Akiba dit que le journal est altéré</h4>
+    <p>Une écriture ne correspond plus à son empreinte. Ne partagez pas, n'envoyez pas de dossier. Notez le numéro de l'écriture signalée, dites-le à l'animateur, et repartez de la dernière sauvegarde saine ou de la copie de l'animateur.</p>` },
+
+  { id: 'limites', icon: 'clip', t: 'Ce qu\'Akiba ne fait pas', b: `
+    <p>Un outil qui promet tout se fait prendre au premier cas difficile. Voici ce qu'Akiba ne fait pas, pour que vous ne l'appreniez pas un mauvais jour.</p>
+    <ul>
+      <li><b>Pas de fusion de deux cahiers qui ont divergé.</b> Un seul téléphone tient le cahier à la fois.</li>
+      <li><b>Pas de serveur, donc pas de synchronisation automatique.</b> Tout passe par un fichier, une image, ou un envoi décidé par quelqu'un.</li>
+      <li><b>Pas de mobile money.</b> Akiba enregistre de l'argent compté à la main.</li>
+      <li><b>Pas de comptabilité d'ONG.</b> Akiba tient le cahier d'un groupe, pas les comptes de l'organisation qui l'accompagne.</li>
+      <li><b>L'impression dépend du terminal.</b> Sur un appareil sans imprimante, les papiers se partagent en texte ou s'impriment depuis un ordinateur.</li>
+    </ul>
+    <div class="tip">Un groupe qui connaît ces limites — un seul téléphone, une sauvegarde après chaque séance — ne les rencontre jamais.</div>` },
+
+  { id: 'ouest', icon: 'book', t: 'Où trouver quoi', b: `
+    <ul>
+      <li><b>Tenir la réunion</b> — la couverture, le grand bouton doré.</li>
+      <li><b>Voir le compte d'un membre</b> — Membres, puis son nom.</li>
+      <li><b>Imprimer le livret d'un membre</b> — Membres, son nom, Livret.</li>
+      <li><b>Accorder un crédit</b> — réunion, étape 6 ; ou Crédits, Accorder.</li>
+      <li><b>Ouvrir le guichet</b> — Plus, Guichet, Ouvrir le guichet.</li>
+      <li><b>Imprimer le journal d'une séance</b> — Reçus, la séance, Imprimer le journal.</li>
+      <li><b>Sauvegarder</b> — la pastille en haut de l'écran, Créer une sauvegarde.</li>
+      <li><b>Envoyer le cahier à un autre téléphone</b> — Plus, Envoyer vers un autre téléphone.</li>
+      <li><b>Montrer la séance à l'animateur</b> — après la clôture, Montrer à l'animateur.</li>
+      <li><b>Vérifier que le journal est intact</b> — Plus, Sécurité.</li>
+      <li><b>Changer la langue ou l'apparence</b> — les deux boutons en haut de la couverture.</li>
+      <li><b>Débloquer un membre</b> — son téléphone affiche un code, l'organisation le convertit ; ou la carte de secours de la caisse.</li>
+    </ul>` },
+
   { id: 'mots', icon: 'clip', t: 'Mots à connaître', b: `
     <ul>
       <li><b>Part</b> : unité d'épargne, de même valeur pour tous pendant le cycle.</li>
@@ -470,7 +573,7 @@ const GUIDE = [
   { id: 'faq', icon: 'alert', t: 'Questions fréquentes', b: `
     <h4>Il y a un écart de caisse, que faire ?</h4><p>Recomptez devant tous. Si l'écart reste, écrivez l'explication. La réunion peut être fermée, mais l'animateur verra l'écart.</p>
     <h4>J'ai tapé un mauvais montant.</h4><p>Pendant la réunion : <b>Journal</b>, touchez « Annuler » sur l'écriture, donnez la raison et le code d'un 2ᵉ membre du bureau, puis refaites l'opération. Après la clôture, on ne peut plus rien changer.</p>
-    <h4>Le téléphone est perdu ou cassé.</h4><p>Les données déjà envoyées sont sauvegardées. D'où l'importance d'envoyer dès que le réseau est là.</p>
+    <h4>Le téléphone est perdu ou cassé.</h4><p>Reprenez la dernière sauvegarde, à défaut la copie de l'animateur, à défaut les journaux de séance imprimés. Tout est détaillé dans <b>Le téléphone, le papier et les pannes</b>.</p>
     <h4>Qui appeler en cas de problème ?</h4><p><b>Ubora</b>, entreprise sociale : appel ou WhatsApp au <b>0998 275 144</b>, ou e-mail <b>contact@uborahub.com</b>. Les boutons Appeler et WhatsApp sont dans Plus, dans ce guide et sur l'écran d'activation.</p>
     <h4>Un membre veut voir son compte.</h4><p><b>AVEC › Voir mon carnet › Tous les membres</b>, puis son nom et son code : il voit seulement son carnet.</p>` }
 ];
@@ -482,6 +585,43 @@ const GUIDE_WHO = {
   validation: ['org', 'anim', 'bureau', 'none'], installer: ['org', 'anim', 'bureau', 'none'], debut: ['org', 'anim', 'bureau', 'none'],
   cartes: ['bureau', 'anim', 'org', 'none'], codes: ['org', 'anim', 'bureau', 'none'],
   cles: ['bureau', 'anim', 'org', 'none']
+};
+/* La recherche du guide. Elle lit le texte déjà présent dans la page : pas d'index à tenir à
+   jour, donc rien qui puisse mentir quand une partie change. Les accents et la casse sont
+   ignorés — on tape « ecart » comme « écart ». */
+const guideSansAccent = t => String(t).toLowerCase().normalize('NFD').replace(/\p{M}/gu, '');
+INP.guideChercher = el => {
+  /* « code perdu » doit trouver « Code secret perdu » : on cherche tous les mots, pas la
+     phrase. Celui qui tape deux mots attend les deux, où qu'ils soient dans la partie. */
+  const mots = guideSansAccent(el.value).split(/[^\p{L}\p{N}]+/u).filter(m => m.length > 1);
+  const q = mots.join(' ');
+  const parties = [...document.querySelectorAll('details.g')];
+  const tuiles = [...document.querySelectorAll('.gtile')];
+  const compte = document.getElementById('gqn');
+  if (!q) {
+    parties.forEach(d => { d.hidden = false; if (d.dataset.ouvertAvant === '1') d.open = true; else d.open = false; });
+    tuiles.forEach(t => t.hidden = false);
+    if (compte) compte.textContent = '';
+    return;
+  }
+  let n = 0;
+  parties.forEach(d => {
+    if (d.dataset.ouvertAvant === undefined) d.dataset.ouvertAvant = d.open ? '1' : '0';
+    const texte = guideSansAccent(d.textContent);
+    const trouve = mots.every(m => texte.includes(m));
+    d.hidden = !trouve; d.open = trouve;
+    const id = d.id.replace(/^g-/, '');
+    const t = tuiles.find(x => x.dataset.s === id);
+    if (t) t.hidden = !trouve;
+    if (trouve) n++;
+  });
+  /* Une partie dont le TITRE porte les mots cherchés est presque toujours la bonne : on la
+     nomme, pour éviter de lire quatre parties avant de tomber sur celle qu'on voulait. */
+  const titre = parties.find(d => !d.hidden && (() => { const s = d.querySelector('summary');
+    const t = guideSansAccent(s ? s.textContent : ''); return mots.every(m => t.includes(m)); })());
+  if (compte) compte.textContent = !n ? 'Rien trouvé. Essayez un autre mot — ou appelez Ubora au 0998 275 144.'
+    : n + ' partie' + (n > 1 ? 's' : '') + ' sur ' + parties.length
+      + (titre ? ' · au plus près : « ' + titre.querySelector('summary').textContent.trim() + ' »' : '');
 };
 ACT.guideTo = p => {
   App.go('guide', { s: p.s });
@@ -497,6 +637,7 @@ SCREENS.guide = p => {
   const isAnim = s && s.kind === 'anim';
   const open = p.s || (isAnim ? 'animateur' : s && s.kind === 'org' ? 'organisation' : 'bref');
   return `<div class="shell">${topbar('Guide d\'utilisation', APP_NOM(), isAnim ? '' : backBtn(back))}<main class="main">
+    ${figDefs()}
     <header class="docintro">
       <p class="sur">Guide d'utilisation</p>
       <h1>Comment utiliser Akiba</h1>
@@ -515,6 +656,13 @@ SCREENS.guide = p => {
       </ol>
     </section>
     <section class="docbloc"><h2 class="surtitre">Tout le guide</h2>
+      <!-- Trente-six parties : personne ne doit faire défiler pour trouver « code perdu ». La
+           recherche travaille dans la page, sans réseau et sans redessiner l'écran — le champ
+           garde donc le curseur pendant qu'on tape. -->
+      <div class="field"><label for="gq" class="sr-only">Chercher dans le guide</label>
+        <input id="gq" class="input" type="search" data-in="guideChercher" autocomplete="off"
+          placeholder="Chercher : guichet, code perdu, écart de caisse…"></div>
+      <p class="hint" id="gqn" aria-live="polite"></p>
       <div class="gtiles">${sections.map(x => `<button class="gtile" data-act="guideTo" data-s="${x.id}"><span class="gi">${ic(x.icon)}</span><b>${guideSection(x).t}</b></button>`).join('')}</div>
     </section>
     <div class="row">${speakBtn('all', '.g summary, .g .gb p, .g .gb li, .g .gb h4, .g .gb .formula, .g .gb .tip', 'Écouter tout le guide')}</div>
@@ -523,7 +671,10 @@ SCREENS.guide = p => {
          français faute de traduction, il ne doit pas noyer la liste de travail du traducteur. -->
     ${sections.map(g => { const x = guideSection(g); return `<details class="g" id="g-${g.id}" ${g.id === open ? 'open' : ''}><summary><span class="gi">${ic(g.icon)}</span>${esc(x.t)}</summary><div class="gb">
       <div>${speakBtn(g.id, `#g-${g.id} summary, #g-${g.id} .gb p, #g-${g.id} .gb li, #g-${g.id} .gb h4, #g-${g.id} .gb .formula, #g-${g.id} .gb .tip`, 'Écouter cette partie')}</div>
-      ${x.traduit ? '' : `<p class="hint no-tr">Cette partie n\u2019est pas encore écrite en ${esc(I18N.name(x.lang))} : elle reste en français.</p>`}
+      <!-- En français, le texte d'origine EST le texte lu : la partie n'a pas à s'excuser de
+           « n'être pas encore écrite en Français ». L'avertissement ne vaut que pour une autre
+           langue, où il dit honnêtement que cette partie-là n'est pas traduite. -->
+      ${x.traduit || x.lang === 'fr' ? '' : `<p class="hint no-tr">Cette partie n\u2019est pas encore écrite en ${esc(I18N.name(x.lang))} : elle reste en français.</p>`}
       <div class="no-tr">${x.b}</div></div></details>`; }).join('')}
     ${supportCard()}
   </main>${isAnim ? tabbar(N_TABS, 'guide') : ''}</div>`;

@@ -36,7 +36,9 @@ Object.keys(gardes).forEach(f => fs.writeFileSync(path.join(out, f), gardes[f]))
 const html = fs.readFileSync(path.join(src, 'index.html'), 'utf8');
 const scripts = [...html.matchAll(/<script src="([^"]+)"><\/script>/g)].map(m => m[1]).filter(f => !P.sansFichiers.includes(f));
 scripts.forEach(f => fs.copyFileSync(path.join(src, f), path.join(out, f)));
-const assets = ['ubora-logo.png', 'ubora-hub.png', 'qrcode.min.js', 'blocage.txt'];                                   // images de l'application (gardées hors ligne)
+/* les captures du guide voyagent avec l'application : il se lit sans réseau */
+const capturesGuide = ['guide-accueil.jpg', 'guide-reunion.jpg', 'guide-guichet.jpg', 'guide-recu.jpg'];
+const assets = ['ubora-logo.png', 'ubora-hub.png', 'qrcode.min.js', 'blocage.txt', ...capturesGuide];                                   // images de l'application (gardées hors ligne)
 assets.forEach(f => fs.copyFileSync(path.join(src, f), path.join(out, f)));
 fs.writeFileSync(path.join(out, 'CNAME'), P.domaine + '\n');
 const cut = html.indexOf('</style>') + '</style>'.length;
