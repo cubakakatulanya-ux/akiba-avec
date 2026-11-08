@@ -175,7 +175,66 @@ ACT.qrPlein = () => {
 /* Un cahier ne vit que sur un téléphone à la fois : celui qui a montré le QR passe la main,
    exactement comme après l'envoi d'un fichier. On attend que l'animatrice confirme, parce
    qu'elle seule sait si le secrétaire a vraiment réussi à lire l'image. */
+
+/* ---------- le cahier entier, en images ----------
+
+   Un cahier qui a vécu ne tient pas dans une image : quatorze réunions pèsent seize mille
+   signes. Mais rien n'oblige à n'en faire qu'une. Le fichier de transfert — le même que
+   celui qu'on envoie par WhatsApp, chiffré par les mêmes huit signes — se découpe en une
+   vingtaine d'images que l'écran montre en boucle, et que le téléphone d'en face ramasse
+   dans l'ordre qu'il peut. Celle qu'il rate revient vingt secondes plus tard.
+
+   Ce que cela enlève : le gestionnaire de fichiers, WhatsApp, le câble, la carte mémoire.
+   Deux téléphones face à face suffisent, et rien ne sort du village. */
+const QR_IMAGES_MAX = 25;          // au-delà, la boucle dure trop longtemps : le fichier reste
+/* Une estimation à bas prix, pour savoir s'il faut proposer le geste sans chiffrer tout le
+   cahier à chaque dessin d'écran. Comptée large : mieux vaut ne pas proposer que proposer
+   puis refuser. Soixante-cinq octets serrés par écriture, et trois mille pour le reste du
+   cahier : mesuré sur la démonstration, de zéro à quatorze réunions. */
+const qrImagesEstimees = avec => Math.ceil((((avec && avec.tx) || []).length * 65 + 3000) * 1.37 / QR_PAR_IMAGE);
+const qrCahierPossible = avec => !!avec && qrImagesEstimees(avec) <= QR_IMAGES_MAX;
+ACT.qrCahier = async d => {
+  const avec = avecById(d.id);
+  if (!avec || !canMove(avec)) return App.toast('Réservé au bureau, à l\'animateur ou à l\'organisation');
+  if (!canEncrypt()) return App.toast('Ce navigateur ne permet pas le chiffrement. Mettez Chrome à jour.');
+  if (openMeeting(avec)) return App.toast('Fermez d\'abord la réunion en cours');
+  App.toast('Préparation des images…');
+  const code = randCode(8);
+  const fichier = await buildTransfer(avec, code);
+  const lot = qrMorceaux(fichier);
+  if (lot.length > QR_IMAGES_MAX) return App.toast(`Ce cahier demanderait ${lot.length} images : envoyez le fichier.`);
+  App.qrLot = lot; App.qrIndex = 0; App.qrCode = code;
+  App.openSheet(`<h2>Montrer le cahier</h2>
+    <p class="muted">Sur l'autre téléphone : <b>Recevoir par photo</b>. Tenez l'appareil en face ; les images défilent toutes seules et recommencent. Celle qu'il rate reviendra.</p>
+    <button class="qr-grand" data-act="qrPlein" aria-label="Agrandir l'image"><img id="qrImg" alt="Code à photographier"></button>
+    <div class="row between"><button class="btn ghost sm" data-act="qrImage" data-d="-1">‹ Précédente</button>
+      <span id="qrRang" class="small muted">Image 1 sur ${lot.length}</span>
+      <button class="btn brand sm" data-act="qrImage" data-d="1">Suivante ›</button></div>
+    <div class="row between card"><div><b>Défilement automatique</b><p class="hint">Une image toutes les deux secondes</p></div>
+      <button class="toggle on" data-act="qrAuto" aria-label="Défilement automatique"></button></div>
+    <div class="receipt" style="text-align:center"><span class="label">Code à dire à voix haute</span>${bigCode(fmtXfer(code))}
+      <p class="hint" style="margin:6px 0 0">Jamais dans le même message que les images.</p></div>
+    <button class="btn primary block xl" data-act="qrEnvoye" data-id="${avec.id}">Le groupe a tout reçu</button>`);
+  qrDessiner();
+  qrAutoDemarrer();
+};
+/* la boucle : elle s'arrête d'elle-même quand la feuille se ferme */
+function qrAutoDemarrer() {
+  qrAutoArreter();
+  App.qrBoucleImg = setInterval(() => {
+    if (!document.getElementById('qrImg')) return qrAutoArreter();
+    App.qrIndex = (App.qrIndex + 1) % App.qrLot.length;
+    qrDessiner();
+  }, 2000);
+}
+function qrAutoArreter() { if (App.qrBoucleImg) { clearInterval(App.qrBoucleImg); App.qrBoucleImg = null; } }
+ACT.qrAuto = (d, el) => {
+  if (App.qrBoucleImg) { qrAutoArreter(); el.classList.remove('on'); App.toast('Défilement arrêté'); }
+  else { qrAutoDemarrer(); el.classList.add('on'); App.toast('Les images défilent'); }
+};
+
 ACT.qrEnvoye = d => {
+  qrAutoArreter();
   const avec = avecById(d.id);
   if (!avec) return;
   avec.movedOut = Date.now();
@@ -273,7 +332,12 @@ function qrAssembler(brut) {
   if (pris < qrSac.n) {
     const manque = [];
     for (let i = 1; i <= qrSac.n; i++) if (!qrSac.bouts[i]) manque.push(i);
-    return { attente: `Image ${p.i} lue. Visez maintenant l'image ${manque[0]} sur ${qrSac.n}.` };
+    /* Deux images se disent « visez la suivante ». Dix-sept images se comptent : le secrétaire
+       doit savoir où il en est, et lesquelles lui manquent encore — l'écran d'en face tourne
+       en boucle, celles qu'il a ratées reviendront. */
+    if (qrSac.n <= 3) return { attente: `Image ${p.i} lue. Visez maintenant l'image ${manque[0]} sur ${qrSac.n}.`, pris, total: qrSac.n };
+    const liste = manque.slice(0, 6).join(', ') + (manque.length > 6 ? '…' : '');
+    return { attente: `${pris} image${pris > 1 ? 's' : ''} sur ${qrSac.n} · il manque ${manque.length > 1 ? 'les n°' : 'la n°'} ${liste}`, pris, total: qrSac.n };
   }
   let t = '';
   for (let i = 1; i <= qrSac.n; i++) t += qrSac.bouts[i];
@@ -352,6 +416,15 @@ ACT.qrOuvrir = async () => {
 async function qrImporter(texte, code) {
   let box;
   try { box = JSON.parse(texte); } catch (e) { return { error: 'Cette image n\'est pas une AVEC Akiba' }; }
+  /* Un cahier entier arrive par images comme il arriverait par fichier : c'est le MÊME
+     contenu, découpé en morceaux. On le remet donc à la même fonction, celle qui vérifie la
+     chaîne, la licence et la provenance — rien de nouveau n'est inventé sur le chemin de
+     l'argent. */
+  if (box && box.app === 'kitabu-transfert') {
+    const r = await importTransfer(texte, code);
+    if (!r.error) { rememberAvec(r.id); App.go('l.member', { id: r.id }); }
+    return r;
+  }
   if (!box || (box.a !== QR_KIND && box.a !== QR_REUNION)) return { error: 'Cette image n\'est pas une AVEC Akiba' };
   let c;
   try {

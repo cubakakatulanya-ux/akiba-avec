@@ -46,8 +46,16 @@ async function buildTransfer(avec, code) {
     tete: avec.tx.length ? avec.tx[avec.tx.length - 1].hash : null, caisse: stats(avec).cash, par: whoName() };
   const body = { kind: TRANSFER_KIND, v: 1, created: Date.now(), avec: copy, org, users, licence: licGet(), i18n: K.data.i18n || {}, langs: K.data.langs || [], repere };
   const salt = crypto.getRandomValues(new Uint8Array(16)), iv = crypto.getRandomValues(new Uint8Array(12));
-  const cipher = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, await backupKey(cleanXfer(code), salt), new TextEncoder().encode(JSON.stringify(body)));
-  return JSON.stringify({ app: TRANSFER_KIND, format: 1, name: avec.name, created: body.created, salt: b64enc(salt), iv: b64enc(iv), data: b64enc(cipher) });
+  /* On serre AVANT de chiffrer : après, le texte est du bruit et ne se compresse plus. Un
+     journal est fait de répétitions — les mêmes noms, les mêmes mots, des empreintes en
+     hexadécimal — et perd les quatre cinquièmes de son poids. C'est ce qui fait la
+     différence entre un fichier qui part sur un réseau de village et un fichier qui ne part
+     pas, et entre un cahier qu'on peut montrer en images et un cahier qu'on ne peut pas. */
+  const clair = new TextEncoder().encode(JSON.stringify(body));
+  const serre = typeof qrSerrer === 'function' && typeof CompressionStream === 'function';
+  const brut = serre ? await qrSerrer(JSON.stringify(body)) : clair;
+  const cipher = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, await backupKey(cleanXfer(code), salt), brut);
+  return JSON.stringify(Object.assign({ app: TRANSFER_KIND, format: 1, name: avec.name, created: body.created, salt: b64enc(salt), iv: b64enc(iv), data: b64enc(cipher) }, serre ? { z: 1 } : {}));
 }
 
 async function importTransfer(text, code) {
@@ -57,7 +65,9 @@ async function importTransfer(text, code) {
   let body;
   try {
     const plain = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: b64dec(box.iv) }, await backupKey(cleanXfer(code), b64dec(box.salt)), b64dec(box.data));
-    body = JSON.parse(new TextDecoder().decode(plain));
+    /* « z » dit que le contenu a été serré avant d'être chiffré. Un fichier d'avant ne le
+       porte pas : il se lit comme avant, et continue de s'ouvrir. */
+    body = JSON.parse(box.z ? await qrDesserrer(new Uint8Array(plain)) : new TextDecoder().decode(plain));
   } catch (e) { return { error: 'Code de transfert faux, ou fichier abîmé' }; }
   const a = body.avec;
   if (!a || !Array.isArray(a.tx) || !verifyChain(a).ok) return { error: 'Le journal de cette AVEC est altéré : transfert refusé' };
@@ -102,11 +112,16 @@ function transferBlock(avec) {
   return avec.movedOut
     ? `<div class="alert good">${icSpan('sync')}<div><b>Sur le téléphone du groupe depuis le ${fdate(avec.movedOut)}</b><span class="small">Ce téléphone garde une copie. Les réunions se tiennent sur le téléphone du groupe.</span>
         <button class="btn sm ghost" style="margin-top:8px" data-act="transferSheet" data-id="${avec.id}">Renvoyer le fichier</button></div></div>`
-    : `<div class="card stack"><div class="row" style="align-items:flex-start">${rowIc('sync')}<div><b>Mettre l'AVEC sur le téléphone du groupe</b><p class="small muted">Sans internet : un fichier à envoyer par WhatsApp, Bluetooth ou carte mémoire, et un code à dire de vive voix.</p></div></div>
-        <button class="btn brand block" data-act="transferSheet" data-id="${avec.id}">${ic('sync')} Envoyer vers le téléphone du groupe</button>
-        ${/* un groupe qui n'a pas encore tenu de réunion tient dans une image : rien à envoyer */
+    : `<div class="card stack"><div class="row" style="align-items:flex-start">${rowIc('sync')}<div><b>Mettre l'AVEC sur le téléphone du groupe</b><p class="small muted">Deux téléphones face à face suffisent : l'un montre, l'autre photographie. Le fichier reste là pour les cas où l'on ne peut pas se voir.</p></div></div>
+        ${/* L'image passe devant, parce qu'elle ne demande ni réseau, ni câble, ni gestionnaire
+             de fichiers — rien que les deux appareils et huit signes dits à voix haute. Un
+             groupe neuf tient dans une ou deux images ; un cahier qui a vécu en demande une
+             vingtaine, montrées en boucle. */
           typeof qrPossible === 'function' && qrPossible(avec).ok
-            ? `<button class="btn ghost block" data-act="qrEnvoyer" data-id="${avec.id}">${ic('eye')} Montrer l'AVEC en image</button>` : ''}</div>`;
+            ? `<button class="btn brand block" data-act="qrEnvoyer" data-id="${avec.id}">${ic('eye')} Montrer l'AVEC en image</button>`
+            : typeof qrCahierPossible === 'function' && qrCahierPossible(avec)
+              ? `<button class="btn brand block" data-act="qrCahier" data-id="${avec.id}">${ic('eye')} Montrer le cahier en images (environ ${qrImagesEstimees(avec)})</button>` : ''}
+        <button class="btn ghost block" data-act="transferSheet" data-id="${avec.id}">${ic('sync')} Envoyer un fichier à la place</button></div>`;
 }
 ACT.transferSheet = d => {
   const avec = avecById(d.id);
@@ -145,21 +160,29 @@ ACT.transferRun = async d => {
 };
 
 /* ---------- recevoir ---------- */
+/* Quand le fichier est arrivé par « Ouvrir avec Akiba », il est déjà là : on ne demande
+   pas au groupe d'aller le rechercher dans un gestionnaire de fichiers qu'il ne connaît pas. */
 ACT.receiveSheet = () => App.openSheet(`<h2>Recevoir une AVEC</h2>
   <p class="muted">Pour le téléphone du groupe. Vous avez reçu un fichier <b>.akiba</b> et un code de 8 signes (de l'animateur, de l'organisation ou de l'ancien téléphone).</p>
-  <div class="field"><label for="rcF">Fichier reçu</label><input id="rcF" class="input" type="file" accept=".akiba,.kitabu,application/octet-stream,application/json"></div>
+  ${App.fichierRecu
+    ? `<div class="alert good">${icSpan('check')}<div><b>Fichier reçu : ${esc(App.fichierRecu.nom)}</b><span class="small">Ouvert depuis le message. Il ne reste que les huit signes à taper.</span></div></div>
+       <button class="btn ghost block" data-act="receiveAutre">Choisir un autre fichier</button>`
+    : `<div class="field"><label for="rcF">Fichier reçu</label><input id="rcF" class="input" type="file" accept=".akiba,.kitabu,application/octet-stream,application/json"></div>`}
   <div class="field"><label for="rcC">Code de transfert</label><input id="rcC" class="input bignum" maxlength="40" autocomplete="off" autocapitalize="characters" style="text-transform:uppercase" placeholder="ABCDEFGH">
     <span class="hint">Huit signes, dictés ou reçus par message. Tiret, espace, minuscules : tapez comme vous voulez, Akiba s'y retrouve.</span></div>
   <button class="btn primary block xl" data-act="receiveRun">${ic('check')} Recevoir l'AVEC</button>`);
+ACT.receiveAutre = () => { App.fichierRecu = null; ACT.receiveSheet(); };
 ACT.receiveRun = async () => {
   const f = document.getElementById('rcF');
-  if (!f || !f.files || !f.files[0]) return App.toast('Choisissez le fichier reçu');
+  if (!App.fichierRecu && (!f || !f.files || !f.files[0])) return App.toast('Choisissez le fichier reçu');
   if (cleanXfer(fval('rcC')).length !== 8) return App.toast('Le code de transfert a 8 signes');
   if (!canEncrypt()) return App.toast('Ce navigateur ne permet pas le déchiffrement. Mettez Chrome à jour.');
   let text;
-  try { text = await readFileText(f.files[0]); } catch (e) { return App.toast('Impossible de lire ce fichier'); }
+  if (App.fichierRecu) text = App.fichierRecu.texte;
+  else try { text = await readFileText(f.files[0]); } catch (e) { return App.toast('Impossible de lire ce fichier'); }
   const r = await importTransfer(text, fval('rcC'));
   if (r.error) return App.toast(r.error);
+  App.fichierRecu = null;
   rememberAvec(r.id);
   App.go('l.member', { id: r.id });
   App.toast(`« ${r.name} » est sur ce téléphone. Chaque membre touche son nom et tape son code.`);
@@ -191,4 +214,19 @@ ACT.moveBack = () => {
   avec.movedOut = null;
   secLog(avec, 'AVEC reprise sur ce téléphone', null, `${me.name} et ${ap.name}`);
   DB.save(); App.go('a.home'); App.toast('L\'AVEC est de nouveau active sur ce téléphone');
+};
+
+/* Appelée par l'application Android quand le groupe touche un fichier .akiba dans WhatsApp
+   et choisit « Ouvrir avec Akiba ». Le fichier n'est pas ouvert tout seul : il attend les huit
+   signes, comme toujours. Rien n'entre dans le cahier sans le code dit de vive voix. */
+window.akibaFichierRecu = (nom, texte) => {
+  if (!texte || texte.length < 40) return false;
+  App.fichierRecu = { nom: nom || 'cahier.akiba', texte };
+  /* Un fichier touché dans WhatsApp arrive quand il veut : l'application peut être sur
+     n'importe quel écran, et même sur l'écran d'un groupe dont la session vient d'être
+     fermée. On revient d'abord à la couverture, qui s'affiche toujours. */
+  try { if (!K.session) App.go('login'); } catch (e) { /* rien : la feuille s'ouvre quand même */ }
+  ACT.receiveSheet();
+  App.toast('Fichier ouvert : tapez les huit signes');
+  return true;                     // l'application Android cesse alors de le proposer
 };

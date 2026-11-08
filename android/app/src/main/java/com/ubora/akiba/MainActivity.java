@@ -14,6 +14,9 @@ import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import androidx.activity.OnBackPressedCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -145,6 +148,10 @@ public class MainActivity extends AppCompatActivity {
     });
 
     vue.loadUrl("https://" + DOMAINE + "/index.html");
+
+    /* un fichier touché dans WhatsApp a lancé l'application : on le garde, la page le
+       réclamera dès qu'elle sera prête */
+    garderFichier(getIntent());
   }
 
   /**
@@ -152,10 +159,82 @@ public class MainActivity extends AppCompatActivity {
    * la page doit se redessiner, sinon elle montre encore l'état d'avant. On ne redessine que
    * l'écran « Installer et protéger » : ailleurs, une saisie pourrait être en cours.
    */
+  /** Le cahier reçu par « Ouvrir avec Akiba », en attente que la page soit prête. */
+  private String fichierNom, fichierTexte;
+
+  /**
+   * Le groupe reçoit le cahier par WhatsApp et touche le fichier : Android propose Akiba,
+   * et c'est ici que le fichier entre. Il n'est pas ouvert pour autant — il est chiffré,
+   * et la page réclamera les huit signes dits de vive voix. Ce chemin ne remplace donc
+   * aucune vérification : il remplace seulement le gestionnaire de fichiers.
+   */
+  private void garderFichier(Intent intention) {
+    if (intention == null) return;
+    Uri u = intention.getData();
+    if (u == null && Intent.ACTION_SEND.equals(intention.getAction()))
+      u = intention.getParcelableExtra(Intent.EXTRA_STREAM);
+    if (u == null) return;
+    try (InputStream flux = getContentResolver().openInputStream(u)) {
+      if (flux == null) return;
+      ByteArrayOutputStream sortie = new ByteArrayOutputStream();
+      byte[] tampon = new byte[8192];
+      int lu, total = 0;
+      while ((lu = flux.read(tampon)) > 0) {
+        total += lu;
+        if (total > 12 * 1024 * 1024) return;      // un cahier ne pèse pas douze mégaoctets
+        sortie.write(tampon, 0, lu);
+      }
+      fichierTexte = sortie.toString(StandardCharsets.UTF_8.name());
+      fichierNom = nomDe(u);
+      remettreFichier();
+    } catch (Exception e) { fichierNom = null; fichierTexte = null; }
+  }
+
+  /** Le nom tel qu'il s'affichera au groupe : celui du message, à défaut un nom neutre. */
+  private String nomDe(Uri u) {
+    String n = u.getLastPathSegment();
+    if (n != null) { int i = n.lastIndexOf('/'); if (i >= 0) n = n.substring(i + 1); }
+    return (n == null || n.isEmpty()) ? "cahier.akiba" : n;
+  }
+
+  /** On ne remet le fichier que lorsque la page sait quoi en faire. */
+  private void remettreFichier() {
+    if (vue == null || fichierTexte == null) return;
+    final String nom = javaEnJs(fichierNom), texte = javaEnJs(fichierTexte);
+    vue.postDelayed(() -> {
+      if (vue == null) return;
+      vue.evaluateJavascript(
+          "(typeof window.akibaFichierRecu === 'function') && window.akibaFichierRecu(\"" + nom + "\", \"" + texte + "\")",
+          valeur -> { if (valeur != null && valeur.contains("true")) { fichierNom = null; fichierTexte = null; } });
+    }, 1200);
+  }
+
+  /** Une chaîne Java telle qu'on peut l'écrire au milieu d'un appel JavaScript. */
+  private static String javaEnJs(String t) {
+    if (t == null) return "";
+    StringBuilder b = new StringBuilder(t.length() + 32);
+    for (int i = 0; i < t.length(); i++) {
+      char c = t.charAt(i);
+      if (c == '\\' || c == '"') b.append('\\').append(c);
+      else if (c == '\n') b.append("\\n");
+      else if (c == '\r') b.append("\\r");
+      else if (c < 0x20) b.append(String.format("\\u%04x", (int) c));
+      else b.append(c);
+    }
+    return b.toString();
+  }
+
+  /** L'application était déjà ouverte : Android envoie le fichier par ici. */
+  @Override protected void onNewIntent(Intent intention) {
+    super.onNewIntent(intention);
+    setIntent(intention);
+    garderFichier(intention);
+  }
   @Override protected void onResume() {
     super.onResume();
     if (vue != null) vue.evaluateJavascript(
         "typeof App !== 'undefined' && App.screen === 'dev.backup' && typeof render === 'function' && render()", null);
+    if (fichierTexte != null) remettreFichier();
   }
 
   /** Laisser le cahier finir d'écrire avant que l'application s'efface de la mémoire. */

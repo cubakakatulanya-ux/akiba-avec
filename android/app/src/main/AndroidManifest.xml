@@ -64,6 +64,35 @@
         <action android:name="android.intent.action.MAIN" />
         <category android:name="android.intent.category.LAUNCHER" />
       </intent-filter>
+
+      <!-- « Ouvrir avec Akiba ». Le cahier d'un groupe arrive presque toujours par WhatsApp,
+           et c'est là que le chemin se perdait : il fallait enregistrer le fichier, puis le
+           retrouver dans un gestionnaire de fichiers que personne au village ne connaît. En
+           se déclarant capable d'ouvrir un .akiba, l'application devient un choix dans le
+           message lui-même : on touche le fichier, on choisit Akiba, et il ne reste que les
+           huit signes à taper. Le fichier reste chiffré : rien n'entre sans le code. -->
+      <intent-filter android:label="Ouvrir avec Akiba">
+        <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
+        <data android:scheme="content" android:host="*" android:mimeType="*/*"
+              android:pathPattern=".*\\.akiba" />
+        <data android:scheme="file" android:host="*" android:mimeType="*/*"
+              android:pathPattern=".*\\.akiba" />
+        <data android:scheme="content" android:host="*" android:mimeType="*/*"
+              android:pathPattern=".*\\.kitabu" />
+        <data android:scheme="file" android:host="*" android:mimeType="*/*"
+              android:pathPattern=".*\\.kitabu" />
+      </intent-filter>
+      <!-- Et « Partager vers Akiba », pour les applications qui envoient sans donner de nom
+           de fichier reconnaissable. -->
+      <intent-filter android:label="Envoyer à Akiba">
+        <action android:name="android.intent.action.SEND" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <data android:mimeType="application/octet-stream" />
+        <data android:mimeType="application/json" />
+        <data android:mimeType="text/plain" />
+      </intent-filter>
     </activity>
 
     <!-- Le verrou contre la suppression par erreur. Tant que le bureau l'a activé, le
