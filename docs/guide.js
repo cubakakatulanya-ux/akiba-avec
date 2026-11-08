@@ -269,8 +269,18 @@ const GUIDE = [
     <ul>
       <li>Chez l'animateur : la fiche du groupe › <b>Montrer l'AVEC en image</b>. Une ou deux images selon la taille du groupe.</li>
       <li>Sur le téléphone du groupe : <b>Recevoir par photo</b>, viser les images l'une après l'autre, puis taper les huit signes.</li>
-      <li>Cela ne vaut que pour un groupe <b>neuf</b>, le jour de sa création. Un cahier qui a déjà tenu des réunions passe par le <b>fichier</b> : il est trop gros pour une image.</li>
+      <li>Pour un groupe <b>neuf</b>, le jour de sa création : une ou deux images suffisent.</li>
     </ul>
+    <h4>Un cahier qui a déjà vécu</h4>
+    <p>Il ne tient plus dans une image, mais il tient souvent dans <b>quelques-unes</b>. Sur la fiche du groupe : <b>Montrer le cahier en images</b> — le bouton annonce le nombre, et il ne s'affiche que si le cahier tient en <b>vingt-cinq images</b> au plus.</p>
+    <ul>
+      <li>Les images <b>défilent toutes seules</b>, deux secondes chacune, et <b>recommencent</b> sans fin. Celui d'en face vise sans se presser : celle qu'il rate reviendra.</li>
+      <li>Son écran lui dit où il en est — « 5 images sur 7 · il manque la n° 6 » — jusqu'à ce que le cahier s'ouvre tout seul.</li>
+      <li>Plus gros que vingt-cinq images : c'est le <b>fichier</b>. Le bouton disparaît de lui-même, il n'y a rien à juger.</li>
+    </ul>
+    <h4>Le fichier reçu par WhatsApp</h4>
+    <p>Quand le cahier arrive en fichier dans un message, <b>touchez-le dans le message</b> et choisissez <b>Akiba</b> dans la liste que propose le téléphone. Il ne reste que les huit signes à taper. Plus besoin de l'enregistrer puis d'aller le rechercher dans les dossiers du téléphone.</p>
+    <div class="tip">Le fichier reste chiffré jusqu'au bout : l'ouvrir dans Akiba n'ouvre rien tant que le code de huit signes n'est pas tapé.</div>
     <h4>Du groupe vers l'animateur</h4>
     <ul>
       <li>Après la clôture : <b>Montrer à l'animateur</b>. Les écritures de la séance tiennent en deux ou trois images.</li>
