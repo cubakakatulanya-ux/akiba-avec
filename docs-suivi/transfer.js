@@ -221,6 +221,19 @@ ACT.moveBack = () => {
    signes, comme toujours. Rien n'entre dans le cahier sans le code dit de vive voix. */
 window.akibaFichierRecu = (nom, texte) => {
   if (!texte || texte.length < 40) return false;
+  /* « Envoyer à Akiba » accepte aussi du texte ordinaire : sans cela, le choix n'apparaîtrait
+     pas pour les applications qui partagent sans nommer le fichier. Il faut donc refuser ici
+     ce qui n'est pas un cahier, et le dire — plutôt que d'ouvrir une feuille qui réclamerait
+     huit signes pour une photo de famille. On répond quand même « c'est traité », pour que le
+     téléphone cesse de le reproposer à chaque retour d'écran. */
+  let boite = null;
+  try { boite = JSON.parse(String(texte).trim()); } catch (e) { boite = null; }
+  if (!boite || boite.app !== TRANSFER_KIND) {
+    App.toast(boite && (boite.app === 'kitabu-qr' || boite.app === 'kitabu-qr-r')
+      ? 'Ceci se reçoit par « Recevoir par photo », pas comme un fichier'
+      : 'Ce fichier n\'est pas un cahier Akiba');
+    return true;
+  }
   App.fichierRecu = { nom: nom || 'cahier.akiba', texte };
   /* Un fichier touché dans WhatsApp arrive quand il veut : l'application peut être sur
      n'importe quel écran, et même sur l'écran d'un groupe dont la session vient d'être

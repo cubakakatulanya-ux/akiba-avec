@@ -71,27 +71,59 @@
            se déclarant capable d'ouvrir un .akiba, l'application devient un choix dans le
            message lui-même : on touche le fichier, on choisit Akiba, et il ne reste que les
            huit signes à taper. Le fichier reste chiffré : rien n'entre sans le code. -->
+      <!-- Android assemble les <data> d'un même filtre en toutes les combinaisons possibles :
+           schéma × type × chemin. Une seule ligne par chemin suffit donc, et le type reste
+           « n'importe lequel » parce que WhatsApp nomme rarement un .akiba correctement —
+           c'est l'extension qui décide, jamais le type annoncé.
+
+           Les quatre chemins répétés ne sont pas une maladresse : pathPattern ne connaît ni
+           l'échappement ni la paresse, et « .* » avale tout jusqu'au bout. « Cahier.du.14.akiba »
+           ne passe donc pas par « .*\\.akiba ». Il faut un motif par point supplémentaire, et
+           quatre couvrent largement ce qu'un téléphone fabrique comme nom de fichier. -->
       <intent-filter android:label="Ouvrir avec Akiba">
         <action android:name="android.intent.action.VIEW" />
         <category android:name="android.intent.category.DEFAULT" />
         <category android:name="android.intent.category.BROWSABLE" />
-        <data android:scheme="content" android:host="*" android:mimeType="*/*"
-              android:pathPattern=".*\\.akiba" />
-        <data android:scheme="file" android:host="*" android:mimeType="*/*"
-              android:pathPattern=".*\\.akiba" />
-        <data android:scheme="content" android:host="*" android:mimeType="*/*"
-              android:pathPattern=".*\\.kitabu" />
-        <data android:scheme="file" android:host="*" android:mimeType="*/*"
-              android:pathPattern=".*\\.kitabu" />
+        <data android:scheme="content" />
+        <data android:scheme="file" />
+        <data android:host="*" />
+        <data android:mimeType="*/*" />
+        <data android:pathPattern=".*\\.akiba" />
+        <data android:pathPattern=".*\\..*\\.akiba" />
+        <data android:pathPattern=".*\\..*\\..*\\.akiba" />
+        <data android:pathPattern=".*\\..*\\..*\\..*\\.akiba" />
+        <data android:pathPattern=".*\\.kitabu" />
+        <data android:pathPattern=".*\\..*\\.kitabu" />
+        <data android:pathPattern=".*\\..*\\..*\\.kitabu" />
+        <data android:pathPattern=".*\\..*\\..*\\..*\\.kitabu" />
       </intent-filter>
-      <!-- Et « Partager vers Akiba », pour les applications qui envoient sans donner de nom
-           de fichier reconnaissable. -->
+      <!-- Un fichier posé par un gestionnaire de fichiers arrive parfois sans type du tout.
+           Le filtre précédent exige un type — Android ne fait pas correspondre un <data>
+           mimeType à une intention qui n'en porte aucun — alors celui-ci rattrape ce cas. -->
+      <intent-filter android:label="Ouvrir avec Akiba">
+        <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
+        <data android:scheme="file" />
+        <data android:scheme="content" />
+        <data android:host="*" />
+        <data android:pathPattern=".*\\.akiba" />
+        <data android:pathPattern=".*\\..*\\.akiba" />
+        <data android:pathPattern=".*\\..*\\..*\\.akiba" />
+        <data android:pathPattern=".*\\.kitabu" />
+        <data android:pathPattern=".*\\..*\\.kitabu" />
+        <data android:pathPattern=".*\\..*\\..*\\.kitabu" />
+      </intent-filter>
+      <!-- Et « Partager vers Akiba », pour les applications qui envoient un fichier sans nom
+           reconnaissable. On s'en tient aux deux types qu'un cahier porte réellement : ajouter
+           text/plain ferait apparaître Akiba dans le partage de n'importe quel message, et un
+           choix qui s'affiche partout finit par ne plus rien vouloir dire. Ce qui entre par ici
+           est vérifié avant d'ouvrir quoi que ce soit. -->
       <intent-filter android:label="Envoyer à Akiba">
         <action android:name="android.intent.action.SEND" />
         <category android:name="android.intent.category.DEFAULT" />
         <data android:mimeType="application/octet-stream" />
         <data android:mimeType="application/json" />
-        <data android:mimeType="text/plain" />
       </intent-filter>
     </activity>
 
