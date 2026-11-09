@@ -15,7 +15,10 @@ const PORT = 5215, DEBUG = 9361;
 const CHROME = 'C:/Program Files/Google/Chrome/Application/chrome.exe';
 
 const esc = t => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-const gras = t => esc(t).split(/(\*\*[^*]+\*\*)/).map(b => /^\*\*/.test(b) ? '<b>' + b.slice(2, -2) + '</b>' : b).join('');
+/* **gras** et `nom de fichier` : les marques de travail ne doivent jamais s'imprimer. */
+const gras = t => esc(t).split(/(\*\*[^*]+\*\*|`[^`]+`)/)
+  .map(b => /^\*\*/.test(b) ? '<b>' + b.slice(2, -2) + '</b>'
+    : /^`/.test(b) ? '<code>' + b.slice(1, -1) + '</code>' : b).join('');
 const b64 = p => { const f = path.join(RACINE, 'captures', p + '.png'); return fs.existsSync(f) ? fs.readFileSync(f).toString('base64') : null; };
 
 let n1 = 0;
@@ -49,6 +52,8 @@ const html = `<!doctype html><html lang="fr"><head><meta charset="utf-8">
   :root { --vert:#0F4D3A; --encre:#1B2A24; --gris:#5C6B64; --or:#F2B705; --ligne:#E2E5E2; --clair:#F4F7F4; }
   * { box-sizing: border-box; }
   body { margin:0; font-family:Ubuntu,system-ui,sans-serif; font-size:12pt; line-height:1.5; color:var(--encre); }
+  /* un nom de fichier : même police, mais détaché du texte courant, sans accents graves */
+  code { font-family:inherit; font-weight:700; white-space:nowrap; }
   @media screen { body { padding:18mm 16mm; } }
   h1 { font-size:22pt; color:var(--vert); margin:0 0 10pt; page-break-before:always; page-break-after:avoid; }
   h1:first-of-type { page-break-before:avoid; }

@@ -15,11 +15,16 @@ const F = 'Ubuntu';
 const VERT = '0F4D3A', ENCRE = '1B2A24', GRIS = '5C6B64', OR = 'F2B705', LIGNE = 'E2E5E2', BANDE = 'F4F7F4';
 
 /* ---------- petits outils de mise en forme ---------- */
-/* Le gras s'écrit **ainsi** dans le texte : un manuel se relit mieux en clair qu'en balises. */
+/* Le gras s'écrit **ainsi** dans le texte, et un nom de fichier `ainsi` : un manuel se relit
+   mieux en clair qu'en balises. Les accents graves ne doivent pas se retrouver imprimés — on
+   ne distribue pas à un village un document qui montre sa propre ponctuation de travail. La
+   police embarquée n'a pas de variante à chasse fixe ; un nom de fichier se distingue donc
+   par le gras, qui se lit aussi bien sur papier qu'à l'écran. */
 function runs(texte, opts = {}) {
-  return String(texte).split(/(\*\*[^*]+\*\*)/).filter(Boolean).map(bout => {
-    const gras = /^\*\*[^*]+\*\*$/.test(bout);
-    return new TextRun(Object.assign({ text: gras ? bout.slice(2, -2) : bout, bold: gras, font: F, size: 24, color: ENCRE }, opts));
+  return String(texte).split(/(\*\*[^*]+\*\*|`[^`]+`)/).filter(Boolean).map(bout => {
+    const gras = /^\*\*[^*]+\*\*$/.test(bout), code = /^`[^`]+`$/.test(bout);
+    return new TextRun(Object.assign({ text: gras || code ? bout.slice(gras ? 2 : 1, gras ? -2 : -1) : bout,
+      bold: gras || code, font: F, size: 24, color: ENCRE }, opts));
   });
 }
 const p = (texte, opts = {}) => new Paragraph(Object.assign({ children: runs(texte), spacing: { after: 120, line: 290 } }, opts));

@@ -1,6 +1,13 @@
 /* Fabrique la présentation des deux applications Akiba, au format PowerPoint.
    Usage :  node manuel/faire-presentation.js                                          */
 const fs = require('fs'), path = require('path');
+/* Le script de thème vit hors du dépôt et cherche jszip depuis SON dossier, pas depuis le
+   nôtre : il échouait dès que ce dossier bougeait. On lui ouvre d'abord le chemin de nos
+   propres modules, pour que « node manuel/faire-presentation.js » suffise, sans variable
+   d'environnement à se rappeler un an plus tard. */
+const nodeModules = path.join(__dirname, '..', 'node_modules');
+process.env.NODE_PATH = process.env.NODE_PATH ? process.env.NODE_PATH + path.delimiter + nodeModules : nodeModules;
+require('module').Module._initPaths();
 const pptxgen = require('pptxgenjs');
 const { applyTheme } = require('C:/Users/CUBAKA/AppData/Local/Claude-Data/claude_pzs8sxrjxfjjc/local-agent-mode-sessions/skills-plugin/4df56be6-8a0d-4200-87bb-8a6cb54bf43c/8076de61-5e5c-42e2-8b42-a760f850e0f8/skills/pptx/scripts/apply_theme.js');
 
@@ -201,11 +208,14 @@ s.addText('Trois quarts d’heure, sans réseau. À la fin, Akiba affiche une se
 
 s = pres.addSlide({ masterName: 'TITRE', sectionTitle: 'Akiba Suivi' });
 s.addText('Remettre le cahier au village, sans réseau', { placeholder: 'titre' });
-carte(s, 0.7, 1.5, 5.9, 2.4, 'Par image', 'L’animateur montre une image à l’écran, le téléphone du groupe la photographie, et le code de huit signes se dit de vive voix.\n\nPour un groupe neuf, le jour de sa création.', DOUX);
-carte(s, 6.9, 1.5, 5.7, 2.4, 'Par fichier', 'Un fichier .akiba chiffré part par WhatsApp, Bluetooth ou carte mémoire ; le code se donne par un autre canal.\n\nPour tout cahier qui a déjà vécu.', CLAIR);
-s.addImage(Object.assign(IMG('avec/ordi-feuille-recevoir'), { x: 3.3, y: 4.1, w: 6.7, h: 2.6 }));
+carte(s, 0.7, 1.5, 3.83, 2.5, 'Une image', 'L’animateur montre, le téléphone du groupe photographie.\n\nPour un groupe neuf, le jour de sa création.', DOUX);
+carte(s, 4.73, 1.5, 3.83, 2.5, 'Quelques images', 'Le cahier entier découpé en images qui défilent seules et recommencent. Celle qu’on rate revient.\n\nJusqu’à vingt-cinq images.', DOUX);
+carte(s, 8.76, 1.5, 3.84, 2.5, 'Un fichier', 'Un .akiba chiffré par WhatsApp. On le touche dans le message, on choisit Akiba.\n\nPour les gros cahiers.', CLAIR);
+s.addText('Les trois voyagent chiffrés. Aucune n’ouvre quoi que ce soit sans les huit signes, dits de vive voix et jamais dans le même message.',
+  { x: 0.7, y: 4.15, w: 11.9, h: 0.4, fontSize: 14, bold: true, color: ENCRE, isTextBox: true });
+s.addImage(Object.assign(IMG('avec/ordi-feuille-recevoir'), { x: 3.3, y: 4.65, w: 6.7, h: 2.1 }));
 s.addText('Et dans l’autre sens : après la clôture, la séance remonte à l’animateur en deux ou trois images. Sa copie se prolonge — elle ne remplace rien.',
-  { x: 0.7, y: 6.7, w: 11.2, h: 0.5, fontSize: 13, color: GRIS, isTextBox: true });
+  { x: 0.7, y: 6.8, w: 11.2, h: 0.45, fontSize: 13, color: GRIS, isTextBox: true });
 
 s = pres.addSlide({ masterName: 'TITRE', sectionTitle: 'Akiba Suivi' });
 s.addText('L’organisation voit ce que les groupes lui envoient', { placeholder: 'titre' });
@@ -246,7 +256,7 @@ stat(s, 6.9, 1.6, 2.9, '265', 'réunions tenues de bout en bout par les vrais é
 stat(s, 10.0, 1.6, 2.6, '0', 'défaut à l’audit de robustesse');
 carte(s, 0.7, 3.5, 5.9, 1.6, 'Ce qui est mesuré automatiquement', 'Contraste de chaque texte contre son fond (norme WCAG), taille des cibles du pouce, textes coupés, rangées mal ajustées — sur tous les écrans, en téléphone et en ordinateur.');
 carte(s, 6.9, 3.5, 5.7, 1.6, 'Et sur le terminal', 'Accueil en 750 ms sur un processeur bridé au niveau du MT8766, reçus à 32 colonnes sans accent, signature de l’APK vérifiée à chaque fabrication.');
-s.addText('Ce que ces bancs ne peuvent pas éprouver, et qui reste à faire sur le terminal : le scan par la caméra, le choix de fichier, et l’impression réelle.',
+s.addText('Ce que ces bancs ne peuvent pas éprouver, et qui reste à faire sur le terminal : le scan par la caméra, le fichier touché dans WhatsApp, et l’impression réelle.',
   { x: 0.7, y: 5.4, w: 11.9, h: 0.6, fontSize: 14, italic: true, color: 'A05A00', isTextBox: true });
 
 s = pres.addSlide({ masterName: 'TITRE', sectionTitle: 'Ce qui tient' });

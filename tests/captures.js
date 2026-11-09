@@ -53,6 +53,13 @@ const FEUILLES = [
   ['guichet-depot', 'avec', "K.session={kind:'avec',avecId:'avec1',memberId:bureauOf(avecById('avec1'))[0].id}; App.go('a.guichet'); ACT.guichetDepotSheet({});"],
   ['sauvegarde', '', "K.session={kind:'avec',avecId:'avec1',memberId:bureauOf(avecById('avec1'))[0].id}; App.go('a.home'); ACT.syncSheet({});"],
   ['recevoir', '', "K.session=null; App.go('login'); ACT.receiveSheet({});"],
+  /* Le fichier arrivé par « Ouvrir avec Akiba » : la feuille ne demande plus d'aller le
+     chercher, elle annonce qu'il est là. On fabrique un faux cahier reçu — la feuille ne
+     l'ouvre pas, elle l'affiche, donc il n'a pas besoin d'être déchiffrable. */
+  ['recevoir-du-message', '', "K.session=null; App.go('login'); App.fichierRecu={nom:'Umoja-ni-Nguvu.akiba',texte:'x'.repeat(200)}; ACT.receiveSheet({});"],
+  /* Le cahier entier montré en images : c'est un geste nouveau, et le manuel le décrit sans
+     pouvoir le montrer. Le groupe de démonstration est trop gros, on en bâtit un court. */
+  ['cahier-en-images', '', "(async()=>{const dit=App.toast;App.toast=()=>{};setTimeout(()=>App.toast=dit,4000);const a=avecById('avec1');const n=JSON.parse(JSON.stringify(a));n.id='avec-capture';n.name='Tujenge Capture';n.meetings=[];n.tx=[];n.visits=[];n.movedOut=null;n.members=n.members.slice(0,10).map((m,i)=>Object.assign({},m,{id:'km'+i,photo:''}));n.members.forEach(m=>appendTx(n,{type:'MEMBRE',amount:0,memberId:m.id,by:null,note:'Membre fondateur · '+m.name}));K.data.avecs.push(n);K.session={kind:'avec',avecId:n.id,memberId:n.members[0].id};await ACT.qrCahier({id:n.id});qrAutoArreter();})()"],
 ];
 
 (async () => {

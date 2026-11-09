@@ -49,7 +49,7 @@ module.exports = [
 ['ol', [
   'Sur l’ancien téléphone : **Plus › Envoyer vers un autre téléphone**. Noter le code de transfert.',
   'Envoyer le fichier au nouveau téléphone.',
-  'Sur le nouveau : **Recevoir une AVEC**, choisir le fichier, taper le code.',
+  'Sur le nouveau, dans le message : **toucher le fichier** et choisir **Akiba**, puis taper le code. Si le choix n’apparaît pas, enregistrer le fichier et passer par **Recevoir une AVEC**.',
   'L’ancien téléphone garde une copie à consulter, mais ne tient plus les réunions.',
 ]],
 ['h2', '14.3 Les mises à jour'],
@@ -85,7 +85,11 @@ module.exports = [
   ['Réservé au bureau', 'Le membre connecté n’a pas ce droit. Se connecter avec le code d’un membre du bureau.'],
   ['Expliquez l’écart : c’est obligatoire', 'Le montant compté ne correspond pas au cahier. Écrire ce qui s’est passé, même brièvement.'],
   ['Ce navigateur ne permet pas le chiffrement', 'Navigateur trop ancien. Mettre Chrome à jour, ou utiliser l’application Android.'],
-  ['Ce groupe est trop grand pour une image', 'Passer par le fichier : l’image ne porte qu’un groupe neuf.'],
+  ['Ce groupe est trop grand pour une image', 'Passer par **Montrer le cahier en images**, ou par le fichier si le cahier demande plus de vingt-cinq images.'],
+  ['Ce cahier demanderait XX images : envoyez le fichier', 'Au-delà de vingt-cinq images, viser devient plus long que d’envoyer. Créer le fichier et le transmettre.'],
+  ['Ce fichier n’est pas un cahier Akiba', 'Le fichier touché dans le message n’est pas un `.akiba` : ni cahier, ni sauvegarde. Vérifier qu’on a bien touché le bon fichier.'],
+  ['Ceci se reçoit par « Recevoir par photo », pas comme un fichier', 'Une image de transfert a été enregistrée puis envoyée comme fichier. Utiliser **Recevoir par photo**, ou demander un vrai fichier.'],
+  ['Akiba n’apparaît pas quand je touche le fichier dans WhatsApp', 'Enregistrer le fichier, puis **Recevoir une AVEC** et aller le chercher : le résultat est le même. Vérifier aussi que l’application Android est à jour — les versions d’avant novembre 2026 ne proposaient pas ce choix.'],
   ['Appareil photo indisponible', 'La caméra n’est pas autorisée, ou l’appareil n’en a pas. Autoriser dans les réglages, ou demander le fichier.'],
 ]],
 
