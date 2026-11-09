@@ -256,7 +256,7 @@ stat(s, 6.9, 1.6, 2.9, '265', 'réunions tenues de bout en bout par les vrais é
 stat(s, 10.0, 1.6, 2.6, '0', 'défaut à l’audit de robustesse');
 carte(s, 0.7, 3.5, 5.9, 1.6, 'Ce qui est mesuré automatiquement', 'Contraste de chaque texte contre son fond (norme WCAG), taille des cibles du pouce, textes coupés, rangées mal ajustées — sur tous les écrans, en téléphone et en ordinateur.');
 carte(s, 6.9, 3.5, 5.7, 1.6, 'Et sur le terminal', 'Accueil en 750 ms sur un processeur bridé au niveau du MT8766, reçus à 32 colonnes sans accent, signature de l’APK vérifiée à chaque fabrication.');
-s.addText('Ce que ces bancs ne peuvent pas éprouver, et qui reste à faire sur le terminal : le scan par la caméra, le fichier touché dans WhatsApp, et l’impression réelle.',
+s.addText('Trois choses ne se vérifient que sur l’appareil : la caméra, le fichier touché dans WhatsApp, l’impression. Akiba porte un écran qui les fait passer sur place et renvoie le compte rendu.',
   { x: 0.7, y: 5.4, w: 11.9, h: 0.6, fontSize: 14, italic: true, color: 'A05A00', isTextBox: true });
 
 s = pres.addSlide({ masterName: 'TITRE', sectionTitle: 'Ce qui tient' });

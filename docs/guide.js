@@ -398,6 +398,14 @@ const GUIDE = [
       <li>Android : activez <b>l'épinglage d'application</b> (Paramètres › Sécurité). Akiba reste à l'écran ; il faut le code du téléphone pour en sortir.</li>
       <li>Pour les téléphones de l'organisation, un outil de gestion des appareils (Family Link, Android Enterprise) bloque la désinstallation.</li>
       <li>N'utilisez jamais « Effacer les données » de Chrome ni les nettoyeurs de mémoire.</li></ul>
+    <h4>Contrôler un téléphone neuf avant de partir au village</h4>
+    <p>Trois choses ne se vérifient que sur l'appareil lui-même : l'<b>appareil photo</b> qui lit un code, le <b>fichier touché dans un message</b>, et l'<b>imprimante</b>. Un téléphone peut très bien ouvrir Akiba et ne savoir faire aucune des trois.</p>
+    <p><b>Installer et sauvegarder › Contrôler cet appareil.</b> La moitié haute se remplit toute seule. La moitié basse demande quatre gestes, qu'on peut faire en plusieurs fois : les réponses sont gardées.</p>
+    <ul><li><b>Lire un code</b> : sur un autre téléphone, montrez une AVEC en image, et visez-la.</li>
+      <li><b>Toucher un fichier</b> : Akiba fabrique un fichier d'essai. Envoyez-le-vous par message et touchez-le. Si Akiba vous est proposée, la case se coche <b>toute seule</b> — ce fichier ne contient aucun cahier et n'ajoute aucun groupe.</li>
+      <li><b>Sortir un ticket</b> : l'écran de l'imprimante essaie les voies une à une.</li>
+      <li><b>Le verrou</b> : l'activer, puis essayer de désinstaller Akiba.</li></ul>
+    <p>À la fin, un bouton envoie le compte rendu à Ubora. Il porte le modèle du terminal et chaque réponse, <b>aucun nom de membre et aucun chiffre du cahier</b>. C'est ce compte rendu qui permet de brancher l'imprimante d'un modèle encore inconnu.</p>
     <h4>Sauvegarde</h4>
     <p><b>Plus › Installer et sauvegarder › Créer une sauvegarde</b> : un fichier chiffré par un mot de passe. Faites-le chaque semaine et gardez le fichier hors du téléphone. Sur un nouveau téléphone : <b>Restaurer sur ce téléphone</b>. La restauration est refusée sur un téléphone qui contient déjà des données, pour qu'une vieille sauvegarde n'efface pas des opérations récentes.</p>` },
   { id: 'reseau', icon: 'cloud', t: 'Sans réseau et synchronisation', b: `
