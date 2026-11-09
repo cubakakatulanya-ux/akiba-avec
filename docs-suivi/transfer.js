@@ -112,16 +112,27 @@ function transferBlock(avec) {
   return avec.movedOut
     ? `<div class="alert good">${icSpan('sync')}<div><b>Sur le téléphone du groupe depuis le ${fdate(avec.movedOut)}</b><span class="small">Ce téléphone garde une copie. Les réunions se tiennent sur le téléphone du groupe.</span>
         <button class="btn sm ghost" style="margin-top:8px" data-act="transferSheet" data-id="${avec.id}">Renvoyer le fichier</button></div></div>`
-    : `<div class="card stack"><div class="row" style="align-items:flex-start">${rowIc('sync')}<div><b>Mettre l'AVEC sur le téléphone du groupe</b><p class="small muted">Deux téléphones face à face suffisent : l'un montre, l'autre photographie. Le fichier reste là pour les cas où l'on ne peut pas se voir.</p></div></div>
-        ${/* L'image passe devant, parce qu'elle ne demande ni réseau, ni câble, ni gestionnaire
-             de fichiers — rien que les deux appareils et huit signes dits à voix haute. Un
-             groupe neuf tient dans une ou deux images ; un cahier qui a vécu en demande une
-             vingtaine, montrées en boucle. */
-          typeof qrPossible === 'function' && qrPossible(avec).ok
-            ? `<button class="btn brand block" data-act="qrEnvoyer" data-id="${avec.id}">${ic('eye')} Montrer l'AVEC en image</button>`
-            : typeof qrCahierPossible === 'function' && qrCahierPossible(avec)
-              ? `<button class="btn brand block" data-act="qrCahier" data-id="${avec.id}">${ic('eye')} Montrer le cahier en images (environ ${qrImagesEstimees(avec)})</button>` : ''}
-        <button class="btn ghost block" data-act="transferSheet" data-id="${avec.id}">${ic('sync')} Envoyer un fichier à la place</button></div>`;
+    : (() => {
+      /* L'image passe devant quand elle est possible, parce qu'elle ne demande ni réseau, ni
+         câble, ni gestionnaire de fichiers — rien que les deux appareils et huit signes dits à
+         voix haute. Un groupe neuf tient dans une ou deux images ; un cahier qui a vécu en
+         demande une vingtaine, montrées en boucle ; au-delà, il n'y a que le fichier.
+         La phrase d'en-tête suit ce qui est réellement offert : promettre le face-à-face
+         au-dessus d'un seul bouton « fichier », c'est envoyer l'animatrice chercher un geste
+         qui n'existe pas sur cet écran. */
+      const neuve = typeof qrPossible === 'function' && qrPossible(avec).ok;
+      const cahier = !neuve && typeof qrCahierPossible === 'function' && qrCahierPossible(avec);
+      const image = neuve
+        ? `<button class="btn brand block" data-act="qrEnvoyer" data-id="${avec.id}">${ic('eye')} Montrer l'AVEC en image</button>`
+        : cahier
+          ? `<button class="btn brand block" data-act="qrCahier" data-id="${avec.id}">${ic('eye')} Montrer le cahier en images (environ ${qrImagesEstimees(avec)})</button>` : '';
+      const dit = neuve || cahier
+        ? 'Deux téléphones face à face suffisent : l\'un montre, l\'autre photographie. Le fichier reste là pour les cas où l\'on ne peut pas se voir.'
+        : 'Ce cahier est trop gros pour être montré en images : il passe par un fichier, protégé par huit signes qui se disent à part.';
+      return `<div class="card stack"><div class="row" style="align-items:flex-start">${rowIc('sync')}<div><b>Mettre l'AVEC sur le téléphone du groupe</b><p class="small muted">${dit}</p></div></div>
+        ${image}
+        <button class="btn ${image ? 'ghost' : 'brand'} block" data-act="transferSheet" data-id="${avec.id}">${ic('sync')} ${image ? 'Envoyer un fichier à la place' : 'Envoyer le fichier'}</button></div>`;
+    })();
 }
 ACT.transferSheet = d => {
   const avec = avecById(d.id);
