@@ -138,6 +138,14 @@ SCREENS['dev.backup'] = () => {
       ${canBackup() ? `<button class="btn brand block" data-act="backupSheet">${ic('shield')} Créer une sauvegarde</button>` : '<p class="hint">Connectez-vous (bureau, animateur ou organisation) pour créer une sauvegarde.</p>'}
       <button class="btn ghost block" data-act="restoreSheet">${ic('sync')} Restaurer sur ce téléphone</button>
     </section>
+
+    <!-- L'appareil photo, le fichier touché dans un message et l'imprimante ne se vérifient
+         que sur l'appareil. Sur un terminal de caisse, où rien ne répond de l'extérieur, c'est
+         la seule façon de savoir ce que la machine sait faire avant d'aller au village. -->
+    <section class="card stack"><h2>Contrôle du terminal</h2>
+      <p class="small muted">Avant la première réunion sur un nouveau téléphone : vérifier l'appareil photo, le fichier reçu par message et l'imprimante, puis envoyer le compte rendu à Ubora.</p>
+      <button class="btn ghost block" data-act="go" data-to="dev.terminal">${ic('eye')} Contrôler cet appareil</button>
+    </section>
   </main></div>`;
 };
 

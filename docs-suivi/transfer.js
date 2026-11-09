@@ -62,6 +62,10 @@ async function importTransfer(text, code) {
   let box;
   try { box = JSON.parse(text); } catch (e) { return { error: 'Ce fichier n\'est pas un fichier Akiba' }; }
   if (!box || box.app !== TRANSFER_KIND) return { error: box && box.app === 'kitabu-avec' ? 'C\'est une sauvegarde : utilisez « Restaurer sur ce téléphone »' : 'Ce fichier n\'est pas un transfert d\'AVEC' };
+  /* Le fichier du contrôle du terminal ne contient aucun cahier : il sert seulement à voir si
+     le téléphone propose Akiba quand on le touche dans un message. L'ouvrir créerait un faux
+     groupe dans la liste du bureau — on le refuse ici, avec la raison. */
+  if (box.essai) return { error: 'C\'est le fichier d\'essai du contrôle du terminal : il n\'y a pas de cahier dedans. Le test est réussi si Akiba vous a été proposée quand vous avez touché le fichier.' };
   let body;
   try {
     const plain = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: b64dec(box.iv) }, await backupKey(cleanXfer(code), b64dec(box.salt)), b64dec(box.data));
@@ -239,6 +243,15 @@ window.akibaFichierRecu = (nom, texte) => {
      téléphone cesse de le reproposer à chaque retour d'écran. */
   let boite = null;
   try { boite = JSON.parse(String(texte).trim()); } catch (e) { boite = null; }
+  /* Le fichier d'essai du contrôle du terminal : son arrivée ici EST le résultat cherché.
+     C'est la preuve que le téléphone a proposé Akiba quand on a touché le fichier dans le
+     message — personne n'a à en juger, et il n'y a rien à ouvrir. */
+  if (boite && boite.app === TRANSFER_KIND && boite.essai) {
+    if (typeof ctEcrire === 'function') ctEcrire('fichier', { ok: true, detail: 'Le fichier d\'essai est arrivé par le message, le ' + new Date().toLocaleString('fr-FR') + '.' });
+    try { App.go('dev.terminal'); } catch (e) { /* la page le dira au prochain passage */ }
+    App.toast('Le fichier est bien entré depuis le message : ce chemin marche ici');
+    return true;
+  }
   if (!boite || boite.app !== TRANSFER_KIND) {
     App.toast(boite && (boite.app === 'kitabu-qr' || boite.app === 'kitabu-qr-r')
       ? 'Ceci se reçoit par « Recevoir par photo », pas comme un fichier'

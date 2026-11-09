@@ -20,6 +20,10 @@ module.exports = `(() => {
     ['t.home', '', sNon, {}],
     ['t.mod', '', sNon, () => ({ id: (typeof TRAINING !== 'undefined' && TRAINING[0] ? TRAINING[0].id : 1) })],
     ['dev.backup', '', sAvec, {}],
+    /* Le contrôle du terminal se dessine deux fois : vierge, et une fois que le bureau a
+       répondu. Les deux doivent tenir, car la seconde est celle qu'on regarde vraiment. */
+    ['dev.terminal', '', () => { sAvec(); try { localStorage.removeItem('kitabu.controle.terminal'); } catch (e) { } }, {}],
+    ['dev.terminal', '', () => { sAvec(); try { localStorage.setItem('kitabu.controle.terminal', JSON.stringify({ scan: { ok: true, quand: Date.now() }, imprime: { ok: false, quand: Date.now(), detail: 'Aucune voie n\\'a sorti de papier.' } })); } catch (e) { } }, {}],
     ['tr.edit', '', sNon, { lang: 'ln' }],
     ['lic.gate', '', sNon, {}],
     ['c.avec', '', sNon, { from: 'login' }],
