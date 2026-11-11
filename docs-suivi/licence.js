@@ -217,7 +217,18 @@ async function applyValidationCode(raw, allowDemo = true) {
                   dans un village sans couverture, quand l'animateur passe avec son téléphone.
 
    Le code de retour, lui, tient déjà en huit signes dictés : c'est pour cela qu'il existe. */
-const demandeNom = () => String((typeof fval === 'function' && fval('licNom')) || '').trim().replace(/\s+/g, ' ');
+/* Le nom se lit dans le champ — mais le champ disparaît dès qu'une feuille en remplace une
+   autre, et un appel fait après coup rendrait une demande anonyme sans rien signaler. On
+   retient donc ce qui a été tapé : tant que le champ est là, c'est lui qui fait foi ; quand il
+   n'y est plus, on se souvient. Perdre le nom en silence est précisément ce qu'on voulait
+   empêcher. */
+function demandeNom() {
+  const champ = typeof document !== 'undefined' && document.getElementById('licNom');
+  if (!champ) return String(App.licNom || '');
+  const n = String(champ.value || '').trim().replace(/\s+/g, ' ');
+  App.licNom = n;
+  return n;
+}
 /* la demande envoyée à Ubora : générique, ou portant les renseignements d'une organisation */
 const demandText = d => d
   ? ['Bonjour Ubora, je demande l\'ouverture d\'un compte d\'organisation sur Akiba Suivi.', '',
@@ -281,6 +292,8 @@ function validationPanel(opts = {}) {
   /* les quatre boutons de l'étape 1 lisent le champ au moment du clic : ils ont besoin de
      savoir s'il s'agit d'une demande d'organisation, déjà remplie, ou d'une demande nue */
   App.licDemande = opts.demande || null;
+  /* le champ repart vide : le nom retenu ne doit pas survivre à un nouveau panneau */
+  App.licNom = '';
   return `<section class="card stack">
     ${r.blocked ? `<div class="alert bad">${icSpan('lock')}<div><b>Accès bloqué</b><span class="small">${esc(r.why)}. Les données restent sur ce téléphone. Contactez Ubora si c'est une erreur.</span></div></div>` : ''}
     ${r.expired ? `<div class="alert bad">${icSpan('alert')}<div><b>${esc(r.why)}</b><span class="small">Les données restent sur ce téléphone. Demandez un nouveau code à Ubora.</span></div></div>` : ''}

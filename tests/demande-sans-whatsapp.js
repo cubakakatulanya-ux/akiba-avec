@@ -90,6 +90,17 @@ const ESSAIS = `(async () => {
   dit(!!(typeof ACT.licDemSms === 'function'), 'le bouton « envoyer par SMS » existe');
   dit(!!(typeof ACT.licDemWa === 'function'), 'le bouton WhatsApp passe par le champ du nom');
 
+  /* ---- 5bis. le nom survit au remplacement de la feuille ----
+     Trouve en essayant pour de vrai : « Montrer la demande en image » remplace la feuille qui
+     portait le champ. Tout appel fait ensuite lisait un champ disparu et rendait une demande
+     ANONYME, sans rien signaler — exactement ce qu'on voulait empecher. */
+  champ.value = 'Espoir Ubangi';
+  demandeNom();                                   // le nom est lu, donc retenu
+  champ.remove();                                 // la feuille change : le champ n'existe plus
+  dit(demandeNom() === 'Espoir Ubangi', 'le nom survit au changement de feuille', '«' + demandeNom() + '»');
+  dit(demandText(null).indexOf('Espoir Ubangi') > 0, 'et la demande le porte encore');
+  document.body.appendChild(champ);
+
   /* ---- 6. sans nom, on ne laisse pas partir une demande anonyme ---- */
   champ.value = '';
   let refus = false;
