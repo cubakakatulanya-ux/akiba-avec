@@ -183,8 +183,15 @@ SCREENS['adm.home'] = () => {
       ${row('Partenaire', esc(last.name))}${row('Type', LIC_KINDS[last.kind])}${row('Téléphone', `<span class="mono">${esc(devNu(last.dev))}</span>`)}${row('Valable jusqu\'au', fdateY(new Date(last.exp + 'T12:00').getTime()))}
       ${last.court ? `<!-- le code à dicter : huit signes, comme le code du téléphone -->
       <div style="text-align:center;padding-top:4px"><span class="label">À dicter au téléphone</span>${bigCode(esc(last.court))}
-        <p class="hint" style="margin:6px 0 0">Huit signes, pour le téléphone <b class="mono">${esc(devNu(last.dev))}</b> seulement, valable ${last.courtAns} an${last.courtAns > 1 ? 's' : ''}.
+        <p class="hint" style="margin:6px 0 0">Huit signes, pour le téléphone <b class="mono">${esc(devNu(last.dev))}</b> seulement.
           Le partenaire le tape dans « Code de validation reçu ».</p>
+        <!-- la date que le téléphone calculera, pas celle qu'on a tapée : les deux ne tombent
+             pas toujours ensemble, et c'est l'écart qui se paie un an plus tard -->
+        ${row('Ce code dicté vaut jusqu\'au', fdateY(new Date(last.courtFin + 'T12:00').getTime()))}
+        ${last.courtEcart > 20 ? `<div class="alert warn">${icSpan('alert')}<div><b>${last.courtEcart} jours de plus que le partenaire</b>
+          <span class="small">Huit signes ne portent que des années entières. Pour la date exacte (${fdateY(new Date(last.exp + 'T12:00').getTime())}), envoyez le <b>code long</b> ci-dessous.</span></div></div>`
+          : last.courtEcart < -20 ? `<div class="alert warn">${icSpan('alert')}<div><b>${-last.courtEcart} jours de moins que le partenaire</b>
+          <span class="small">Huit signes ne portent que des années entières. Pour la date exacte (${fdateY(new Date(last.exp + 'T12:00').getTime())}), envoyez le <b>code long</b> ci-dessous.</span></div></div>` : ''}
         <div class="grid2" style="margin-top:8px"><button class="btn brand" data-act="admCourtCopier">${ic('clip')} Copier</button><button class="btn ghost" data-act="admCourtDire">${ic('chat')} Envoyer par SMS</button></div></div>
       <details class="g"><summary>Code long signé (QR, WhatsApp, collage)</summary>
         <p class="small muted" style="margin:0">Plus sûr que le code court : il porte une signature qu'on ne peut pas imiter. À préférer dès qu'on peut envoyer un message ou montrer un QR.</p>` : ''}
@@ -349,10 +356,21 @@ ACT.admCode = async () => {
     App.admForce = { id: p.id, dev, name: p.name, count: devs.length, seats: p.seats }; render(); return;
   }
   const c = await admSignCode(App.adminKey, p, dev);
-  /* le code court, à dicter : il vaut jusqu'à la fin de validité du partenaire, arrondie en années */
-  const ans = Math.max(1, Math.min(8, Math.ceil((new Date(p.exp + 'T23:59:59') - Date.now()) / (365.25 * 24 * 3600e3))));
+  /* ---------- le code court, à dicter ----------
+     Huit signes ne portent qu'un nombre ENTIER d'années : la durée du partenaire est donc
+     arrondie. Elle l'était vers le haut, et c'était un cadeau que personne ne voulait faire :
+     une validité d'un an mesure 1,0004 année, donc elle devenait deux. Le défaut du formulaire
+     étant précisément « un an », tout partenaire créé sans toucher à la date travaillait un an
+     de plus que son contrat — et l'avertissement des trente derniers jours arrivait un an trop
+     tard. On arrondit maintenant au plus proche, et on AFFICHE la date que le téléphone
+     retiendra vraiment, pour que l'écart se voie au lieu de se deviner.
+     Le code long signé, lui, porte la date exacte : c'est l'instrument précis. */
+  const ans = Math.max(1, Math.min(8, Math.round((new Date(p.exp + 'T23:59:59') - Date.now()) / (365.25 * 24 * 3600e3))));
   c.court = await ccFaire(dev, p.kind, ans);
   c.courtAns = ans;
+  /* la même règle que ccLire, pour annoncer exactement ce que le téléphone calculera */
+  c.courtFin = (() => { const d = new Date(); d.setFullYear(d.getFullYear() + ans); return isoDay(d.getTime()); })();
+  c.courtEcart = Math.round((new Date(c.courtFin + 'T23:59:59') - new Date(p.exp + 'T23:59:59')) / DAY);
   if (!already) admSet(ADM_ACT_STORE, JSON.stringify([{ lic: p.id, name: p.name, dev, date: c.date }].concat(admActs())));
   admKeep(App.adminKey);
   App.admForce = null; App.admPick = p.id; App.admLast = c; render(); paintQr(c.link);

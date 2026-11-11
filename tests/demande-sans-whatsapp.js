@@ -117,6 +117,27 @@ const ESSAIS = `(async () => {
   const ailleurs = await ccEmpreinte('ZZZZ-ZZZZ', 'avec', 2);
   dit(ailleurs !== court.slice(1), 'dicté à un autre téléphone, il ne vaut rien');
 
+  /* ---- 8. la duree du code dicte ne doit pas depasser ce qu'Ubora a accorde ----
+     Trouve en activant une organisation pour de vrai : la duree etait arrondie VERS LE HAUT,
+     et une validite d'un an - le defaut du formulaire - devenait deux ans sur le telephone.
+     Le partenaire travaillait un an de plus que son contrat, et l'avertissement des trente
+     derniers jours arrivait un an trop tard. */
+  const JOUR = 24 * 3600e3, ANNEE = 365.25 * JOUR;
+  const anneesPour = jours => {
+    const exp = isoDay(Date.now() + jours * JOUR);
+    return Math.max(1, Math.min(8, Math.round((new Date(exp + 'T23:59:59') - Date.now()) / ANNEE)));
+  };
+  dit(anneesPour(365) === 1, 'un an accorde un an, pas deux', anneesPour(365) + ' an(s)');
+  dit(anneesPour(730) === 2, 'deux ans accordent deux ans', anneesPour(730) + ' an(s)');
+  dit(anneesPour(1095) === 3, 'trois ans accordent trois ans', anneesPour(1095) + ' an(s)');
+  dit(anneesPour(182) === 1, 'six mois ne peuvent pas descendre sous un an', anneesPour(182) + ' an(s)');
+  /* et l'ecart annonce doit etre celui que le telephone calculera vraiment */
+  const ansT = 2, finAnnoncee = (() => { const d = new Date(); d.setFullYear(d.getFullYear() + ansT); return isoDay(d.getTime()); })();
+  const codeT = await ccFaire(deviceId(), 'org', ansT);
+  const luT = await ccLire(codeT, null);
+  dit(luT.ok && luT.data.exp === finAnnoncee, 'la date annoncee a l administrateur est celle que le telephone retient',
+      luT.ok ? luT.data.exp + ' / ' + finAnnoncee : luT.why);
+
   champ.remove();
   return essais;
 })()`;
