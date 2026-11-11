@@ -49,7 +49,7 @@ const html = `<!doctype html><html lang="fr"><head><meta charset="utf-8">
 <link href="https://fonts.googleapis.com/css2?family=Ubuntu:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
 <style>
   @page { size: A4; margin: 18mm 16mm 16mm; }
-  :root { --vert:#0F4D3A; --encre:#1B2A24; --gris:#5C6B64; --or:#F2B705; --ligne:#E2E5E2; --clair:#F4F7F4; }
+  :root { --vert:#26600E; --encre:#1B2A24; --gris:#5C6B64; --or:#F2B705; --ligne:#E2E5E2; --clair:#F4F7F4; }
   * { box-sizing: border-box; }
   body { margin:0; font-family:Ubuntu,system-ui,sans-serif; font-size:12pt; line-height:1.5; color:var(--encre); }
   /* un nom de fichier : même police, mais détaché du texte courant, sans accents graves */

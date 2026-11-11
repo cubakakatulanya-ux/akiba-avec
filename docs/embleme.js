@@ -26,7 +26,11 @@ const EMBLEMES = {
   colline: { nom: 'Colline', d: '<path d="M2 19l6-8 4 5 3-3.5 7 6.5z"/><circle cx="17" cy="6.5" r="2.5"/>' },
 };
 const TEINTES = {
-  vert: { nom: 'Vert', fond: '#1F6E53', trait: '#EAF4EE' },
+  /* Le vert de l'emblème suit celui de la maison : même teinte que le logo d'Ubora, même
+     clarté qu'avant (6,15 contre le blanc, à l'identique), pour que rien ne change de force
+     dans la lecture d'un badge déjà choisi par un groupe. Les cinq autres teintes
+     appartiennent au groupe et ne bougent pas. */
+  vert: { nom: 'Vert', fond: '#2C7011', trait: '#EAF4EE' },
   jaune: { nom: 'Jaune', fond: '#D9A313', trait: '#231A00' },
   terre: { nom: 'Terre', fond: '#9A5B2E', trait: '#FBEFE4' },
   ciel: { nom: 'Ciel', fond: '#2A6E96', trait: '#EAF3F8' },

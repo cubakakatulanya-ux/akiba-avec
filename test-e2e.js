@@ -116,6 +116,17 @@ const js = async (expr, attendre = true) => {
   /* Les feuilles : tout ce qui touche à l'argent passe par elles, et aucune revue ne les
      regardait. On les ouvre toutes, dans quatre situations. */
   await cdp('Emulation.setDeviceMetricsOverride', { width: 375, height: 812, deviceScaleFactor: 2, mobile: true });
+
+  /* Les mêmes écrans, sur fond sombre.
+     Le fond sombre n'est pas une variante décorative : c'est la moitié des couleurs de
+     l'application, et aucune revue ne les regardait jamais. Un contraste tenu en plein
+     jour ne dit rien de ce que donne le même écran le soir, à la lampe. */
+  await js("document.documentElement.dataset.theme='dark';1", false);
+  await dors(250);
+  const poseSombre = await revue();
+  await js("document.documentElement.dataset.theme='light';1", false);
+  await dors(250);
+
   const feuilles = await js(require('./tests/feuilles.js'));
 
   /* rapport */
@@ -163,12 +174,17 @@ const js = async (expr, attendre = true) => {
     return tot.contraste + tot.coupes + tot.petits + tot.rangs + (ordi ? 0 : tot.cibles);
   };
   const dessinTel = dessinRapport('téléphone', pose, false);
+  const dessinSombre = dessinRapport('téléphone, fond sombre', poseSombre, false);
   const dessinOrdi = dessinRapport('ordinateur', poseOrdi, true);
 
   console.log('\n=== Erreurs de console ===');
   console.log(erreursConsole.length ? erreursConsole.map(e => '  ' + e).join('\n') : '  aucune');
 
-  const echecs = resultats.length - reussis + pose.filter(mauvais).length + poseOrdi.filter(mauvais).length + erreursConsole.length + feuillesKo.length;
+  /* Le dessin comptait pour zéro dans le total : un contraste faible s'affichait et
+     l'essai se terminait quand même par « 0 problème ». Il compte maintenant. */
+  const echecs = resultats.length - reussis + pose.filter(mauvais).length + poseOrdi.filter(mauvais).length
+    + poseSombre.filter(mauvais).length + erreursConsole.length + feuillesKo.length
+    + dessinTel + dessinSombre + dessinOrdi;
   console.log('\nRésultat : ' + reussis + '/' + resultats.length + ' essais fonctionnels réussis, ' + echecs + ' problème(s) au total.');
 
   ws.close(); chrome.kill(); serveur.close();

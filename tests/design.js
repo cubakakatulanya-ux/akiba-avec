@@ -24,11 +24,26 @@ module.exports = `(() => {
     const p = m[1].split(/[ ,\\/]+/).filter(Boolean).map(Number); return { c: p.slice(0, 3), a: p.length > 3 ? p[3] : 1 }; };
   const melange = (av, ar) => av.c.map((x, i) => x * av.a + ar[i] * (1 - av.a));
   /* le vrai fond d'un élément : on remonte jusqu'à une couleur opaque, en empilant les voiles */
+  /* Les bandeaux de marque — la couverture, l'en-tête, la caisse — sont des dégradés. Le banc
+     les écartait : « non jugé ». C'était un trou, et c'est justement là que se trouve le texte
+     le plus regardé de l'application. On ne peut pas lire un pixel, mais on peut lire les
+     arrêts du dégradé : on retient le pire, c'est-à-dire l'arrêt le plus proche de la couleur
+     du texte. Une image, elle, reste hors de portée. */
+  function arretsDegrade(s) {
+    if (/url\\(/.test(s)) return null;                                          // une vraie image : non jugé
+    const m = String(s).match(/rgba?\\([^)]+\\)/g);
+    if (!m) return null;
+    const cs = m.map(rgb).filter(c => c && c.a >= .5).map(c => c.c);
+    return cs.length ? cs : null;
+  }
   function fond(el) {
     const pile = [];
     for (let e = el; e; e = e.parentElement) {
       const cs = getComputedStyle(e);
-      if (cs.backgroundImage && cs.backgroundImage !== 'none') return null;   // dégradé ou image : non jugé
+      if (cs.backgroundImage && cs.backgroundImage !== 'none') {
+        const a = arretsDegrade(cs.backgroundImage);
+        return a ? { arrets: a } : null;
+      }
       const b = rgb(cs.backgroundColor);
       if (b && b.a > 0) { pile.push(b); if (b.a === 1) break; }
     }
@@ -57,7 +72,10 @@ module.exports = `(() => {
       const taille = parseFloat(cs.fontSize), gras = +cs.fontWeight >= 700;
       const ar = fond(el), av = rgb(cs.color);
       if (ar && av) {
-        const r = ratio(melange(av, ar), ar);
+        /* sur un dégradé : le pire des arrêts */
+        const fonds = ar.arrets || [ar];
+        let r = Infinity, pire = fonds[0];
+        for (const f of fonds) { const x = ratio(melange(av, f), f); if (x < r) { r = x; pire = f; } }
         const seuil = (taille >= 24 || (taille >= 18.66 && gras)) ? 3 : 4.5;
         if (r < seuil - 0.05) res.contraste.push({ t: mot.slice(0, 38), r: Math.round(r * 100) / 100, seuil, px: Math.round(taille), cl: String(el.className).split(' ')[0] });
       }

@@ -977,7 +977,10 @@ function appliquerTheme(v = themeChoisi()) {
     if (v === 'auto') delete r.dataset.theme; else r.dataset.theme = v;
     const sombre = v === 'dark' || (v === 'auto' && window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches);
     const meta = document.querySelector('meta[name="theme-color"]');
-    if (meta) meta.setAttribute('content', sombre ? '#131F1B' : '#0F4D3A');
+    /* la barre d'état du téléphone prend le bandeau de l'application : le vert d'Ubora
+       pour le cahier du village, son bleu marine pour Akiba Suivi */
+    const barre = estSuivi() ? (sombre ? '#0D284A' : '#052E61') : (sombre ? '#204610' : '#23590D');
+    if (meta) meta.setAttribute('content', barre);
   } catch (e) { /* hors navigateur */ }
 }
 appliquerTheme();

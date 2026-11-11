@@ -12,7 +12,7 @@ const { Document, Packer, Paragraph, TextRun, ImageRun, HeadingLevel, AlignmentT
 
 const RACINE = __dirname;
 const F = 'Ubuntu';
-const VERT = '0F4D3A', ENCRE = '1B2A24', GRIS = '5C6B64', OR = 'F2B705', LIGNE = 'E2E5E2', BANDE = 'F4F7F4';
+const VERT = '26600E', ENCRE = '1B2A24', GRIS = '5C6B64', OR = 'F2B705', LIGNE = 'E2E5E2', BANDE = 'F4F7F4';
 
 /* ---------- petits outils de mise en forme ---------- */
 /* Le gras s'écrit **ainsi** dans le texte, et un nom de fichier `ainsi` : un manuel se relit

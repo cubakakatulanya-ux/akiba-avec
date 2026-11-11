@@ -20,12 +20,12 @@ const THEME = {
   headFontFace: 'Ubuntu',
   bodyFontFace: 'Ubuntu',
   colors: {
-    dk1: '1B2A24', lt1: 'FFFFFF', dk2: '0F4D3A', lt2: 'F1F6F2',
-    accent1: '0F4D3A', accent2: 'F2B705', accent3: '2E7D5B', accent4: 'D5E7DD',
-    accent5: 'A05A00', accent6: '5C6B64', hlink: '0F4D3A', folHlink: '5C6B64',
+    dk1: '1B2A24', lt1: 'FFFFFF', dk2: '26600E', lt2: 'F1F6F2',
+    accent1: '26600E', accent2: 'F2B705', accent3: '348414', accent4: 'D7EDCF',
+    accent5: 'A05A00', accent6: '5C6B64', hlink: '26600E', folHlink: '5C6B64',
   },
 };
-const VERT = '0F4D3A', OR = 'F2B705', ENCRE = '1B2A24', GRIS = '5C6B64', DOUX = 'D5E7DD', CLAIR = 'F1F6F2';
+const VERT = '26600E', OR = 'F2B705', ENCRE = '1B2A24', GRIS = '5C6B64', DOUX = 'D7EDCF', CLAIR = 'F1F6F2';
 
 const pres = new pptxgen();
 pres.layout = 'LAYOUT_WIDE';            // 13.3 x 7.5 pouces

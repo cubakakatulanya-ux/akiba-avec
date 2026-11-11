@@ -105,7 +105,7 @@ button{cursor:pointer}
 .iconbtn:hover{background:rgba(255,255,255,.12)}
 .main{padding:16px;display:flex;flex-direction:column;gap:16px;flex:1}
 .sync{display:inline-flex;align-items:center;gap:6px;border:0;border-radius:999px;padding:9px 12px;min-height:40px;font-size:var(--t-xs);font-weight:800;background:rgba(255,255,255,.14);color:inherit;white-space:nowrap}
-.sync i{width:8px;height:8px;border-radius:50%;background:#7EE2A8;display:block}
+.sync i{width:8px;height:8px;border-radius:50%;background:var(--vif);display:block}
 .sync .pt{display:none}
 @media (max-width:430px){.sync .lg{display:none}.sync .pt{display:inline}.sync{padding:9px;min-width:40px;justify-content:center}}
 .sync.off i{background:var(--maize)}
@@ -305,7 +305,7 @@ details.g h4{margin:6px 0 0;font-size:var(--t-base)}
 .tip>div>b{display:block}
 .tip>div>.small{display:block;margin-top:2px}
 .live{display:inline-flex;align-items:center;gap:6px;font-weight:800}
-.live i{width:8px;height:8px;border-radius:50%;background:#7EE2A8;display:block;animation:pulse 1.6s ease-in-out infinite}
+.live i{width:8px;height:8px;border-radius:50%;background:var(--vif);display:block;animation:pulse 1.6s ease-in-out infinite}
 @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(126,226,168,.7)}50%{box-shadow:0 0 0 6px rgba(126,226,168,0)}}
 /* assistance Ubora */
 .support .ubora-logo{width:68px;height:68px;flex:none;border-radius:50%;box-shadow:0 0 0 1px var(--line)}
@@ -431,13 +431,13 @@ button.li:active{background:var(--surface-2)}
 .devcode .label{color:var(--brand);opacity:1}
 /* mode sombre : en-têtes vert profond, texte clair */
 @media (prefers-color-scheme: dark){
-  :root:not([data-theme="light"]) .topbar{background:linear-gradient(135deg,#1D5E48,#113F31 55%,#0A2A20);color:#EAF4EE}
-  :root:not([data-theme="light"]) .hero{background:radial-gradient(120% 90% at 88% -10%,rgba(245,194,46,.2),transparent 55%),linear-gradient(160deg,#1D5E48,#113F31 55%,#0A2A20);color:#EAF4EE}
-  :root:not([data-theme="light"]) .caisse{background:radial-gradient(110% 80% at 100% 0%,rgba(245,194,46,.18),transparent 55%),linear-gradient(150deg,#1D5E48,#113F31 50%,#0A2A20);color:#EAF4EE;box-shadow:0 0 0 1px rgba(255,255,255,.06) inset,var(--sh-3)}
+  :root:not([data-theme="light"]) .topbar{background:linear-gradient(135deg,var(--entete-1),var(--entete-2) 55%,var(--entete-3));color:var(--entete-ink)}
+  :root:not([data-theme="light"]) .hero{background:radial-gradient(120% 90% at 88% -10%,rgba(245,194,46,.2),transparent 55%),linear-gradient(160deg,var(--entete-1),var(--entete-2) 55%,var(--entete-3));color:var(--entete-ink)}
+  :root:not([data-theme="light"]) .caisse{background:radial-gradient(110% 80% at 100% 0%,rgba(245,194,46,.18),transparent 55%),linear-gradient(150deg,var(--entete-1),var(--entete-2) 50%,var(--entete-3));color:var(--entete-ink);box-shadow:0 0 0 1px rgba(255,255,255,.06) inset,var(--sh-3)}
 }
-:root[data-theme="dark"] .topbar{background:linear-gradient(135deg,#1D5E48,#113F31 55%,#0A2A20);color:#EAF4EE}
-:root[data-theme="dark"] .hero{background:radial-gradient(120% 90% at 88% -10%,rgba(245,194,46,.2),transparent 55%),linear-gradient(160deg,#1D5E48,#113F31 55%,#0A2A20);color:#EAF4EE}
-:root[data-theme="dark"] .caisse{background:radial-gradient(110% 80% at 100% 0%,rgba(245,194,46,.18),transparent 55%),linear-gradient(150deg,#1D5E48,#113F31 50%,#0A2A20);color:#EAF4EE;box-shadow:0 0 0 1px rgba(255,255,255,.06) inset,var(--sh-3)}
+:root[data-theme="dark"] .topbar{background:linear-gradient(135deg,var(--entete-1),var(--entete-2) 55%,var(--entete-3));color:var(--entete-ink)}
+:root[data-theme="dark"] .hero{background:radial-gradient(120% 90% at 88% -10%,rgba(245,194,46,.2),transparent 55%),linear-gradient(160deg,var(--entete-1),var(--entete-2) 55%,var(--entete-3));color:var(--entete-ink)}
+:root[data-theme="dark"] .caisse{background:radial-gradient(110% 80% at 100% 0%,rgba(245,194,46,.18),transparent 55%),linear-gradient(150deg,var(--entete-1),var(--entete-2) 50%,var(--entete-3));color:var(--entete-ink);box-shadow:0 0 0 1px rgba(255,255,255,.06) inset,var(--sh-3)}
 /* mouvements d'entrée (seulement au changement d'écran) */
 @keyframes screenIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 @keyframes sheetIn{from{transform:translateY(40px);opacity:.4}to{transform:none;opacity:1}}
@@ -579,10 +579,10 @@ h2,h3{font-weight:600;letter-spacing:-.005em}
 /* mode sombre : mêmes règles, teintes sombres */
 @media (prefers-color-scheme:dark){
   :root:not([data-theme="light"]){--band:#1F302A;--sh-1:none}
-  :root:not([data-theme="light"]) .topbar,:root:not([data-theme="light"]) .hero,:root:not([data-theme="light"]) .caisse{background:#123A2C}
+  :root:not([data-theme="light"]) .topbar,:root:not([data-theme="light"]) .hero,:root:not([data-theme="light"]) .caisse{background:var(--entete-2)}
 }
 :root[data-theme="dark"]{--band:#1F302A;--sh-1:none}
-:root[data-theme="dark"] .topbar,:root[data-theme="dark"] .hero,:root[data-theme="dark"] .caisse{background:#123A2C}
+:root[data-theme="dark"] .topbar,:root[data-theme="dark"] .hero,:root[data-theme="dark"] .caisse{background:var(--entete-2)}
 .ticket{font-family:var(--f-mono);font-size:.74rem;line-height:1.35;white-space:pre;overflow-x:auto;background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r);padding:10px;margin:0}
 @media print{.topbar,.tabbar,.tabspace,.appfoot,.btn,.linkbtn,.scrim{display:none!important}.ticket{border:0;background:#fff;font-size:11pt}}
 /* ---------- structure de lecture, inspirée des sites de formation (Académie FAO, Ubora Académie) :
@@ -919,8 +919,8 @@ h2,h3{font-weight:600;letter-spacing:-.005em}
    autres bandeaux : cet écran n’est pas une barre de titre, c’est une couverture, et une
    couverture plate ne ressemble à rien. */
 .couv{flex:1;display:flex;flex-direction:column;align-items:center;position:relative;overflow:hidden;
-  color:#EAF4EE;padding:58px 20px 0;border-radius:0 0 26px 26px;
-  background:radial-gradient(120% 70% at 50% -8%,rgba(242,183,5,.2),transparent 60%),linear-gradient(170deg,#1E8160,#15664D 52%,#104F3C)}
+  color:var(--entete-ink);padding:58px 20px 0;border-radius:0 0 26px 26px;
+  background:radial-gradient(120% 70% at 50% -8%,rgba(242,183,5,.2),transparent 60%),linear-gradient(170deg,var(--entete-1),var(--entete-2) 52%,var(--entete-3))}
 .couv::before{content:"";position:absolute;inset:0;pointer-events:none;
   background:repeating-linear-gradient(180deg,transparent 0 31px,rgba(255,255,255,.055) 31px 32px)}
 .couv>*{position:relative}
@@ -937,8 +937,10 @@ h2,h3{font-weight:600;letter-spacing:-.005em}
   padding:8px 15px;font-family:var(--f-display);font-weight:600;font-size:var(--t-sm);background:rgba(255,255,255,.14)}
 .couv-etat svg,.couv-marquage svg{width:17px;height:17px;flex:none}
 .couv-etat.today{background:var(--maize);color:var(--maize-ink)}
-.couv-etat.cur{background:#EAF4EE;color:#093325}
-.couv-marquage{background:none;border:1.5px solid rgba(245,194,46,.55);color:var(--maize);
+.couv-etat.cur{background:var(--entete-ink);color:var(--entete-3)}
+/* Le mot « DÉMONSTRATION » était écrit en maïs sur le bandeau : 2,65 contre 4,5, illisible
+   au soleil. Le liseré garde la couleur de l'avertissement, le mot passe à l'encre du bandeau. */
+.couv-marquage{background:rgba(0,0,0,.22);border:1.5px solid rgba(245,194,46,.75);color:var(--entete-ink);
   text-transform:uppercase;letter-spacing:.07em;font-size:var(--t-xs)}
 .couv-codes{font-size:var(--t-sm);opacity:.8;margin:14px 0 0}
 .couv-codes b{letter-spacing:.08em}
@@ -961,16 +963,16 @@ h2,h3{font-weight:600;letter-spacing:-.005em}
   font-size:var(--t-xl);box-shadow:0 18px 32px -20px rgba(0,0,0,.9);touch-action:manipulation}
 .barre-or:active{transform:scale(.985)}
 .barre-or svg{width:23px;height:23px;flex:none}
-.couv .liens button{color:#EAF4EE;opacity:.8}
+.couv .liens button{color:var(--entete-ink);opacity:.8}
 .couv .liens button:hover,.couv .liens button:focus-visible{color:#fff;opacity:1;background:rgba(255,255,255,.12)}
-.couv .couv-discret{color:#EAF4EE;opacity:.6}
+.couv .couv-discret{color:var(--entete-ink);opacity:.6}
 /* les autres groupes du téléphone : une rangée d’emblèmes, lue plus vite qu’une liste de noms */
 .couv-autres{display:flex;flex-direction:column;gap:8px;margin-bottom:4px}
 .couv-autres-t{font-size:var(--t-2xs);text-transform:uppercase;letter-spacing:.1em;font-weight:700;opacity:.6;text-align:center}
 .couv-rang{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
 .couv-petit{display:flex;flex-direction:column;align-items:center;gap:5px;width:90px;padding:4px;background:none;border:0;color:inherit}
 .couv-petit span{font-size:var(--t-2xs);line-height:1.2;opacity:.8;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.couv-petit.cur .embleme{box-shadow:0 0 0 3px #EAF4EE}
+.couv-petit.cur .embleme{box-shadow:0 0 0 3px var(--entete-ink)}
 .couv-petit.today .embleme{box-shadow:0 0 0 3px var(--maize)}
 @media (min-height:720px){.couv{padding-top:70px}}
 /* la ligne de démonstration de l'accueil de Suivi */
@@ -1007,9 +1009,9 @@ h2,h3{font-weight:600;letter-spacing:-.005em}
 }
 /* mode sombre : la couverture passe au vert profond, comme les autres blocs de marque */
 @media (prefers-color-scheme:dark){
-  :root:not([data-theme="light"]) .couv{background:radial-gradient(120% 70% at 50% -8%,rgba(245,194,46,.18),transparent 60%),linear-gradient(170deg,#1F7A5C,#156349 52%,#0F4B39)}
+  :root:not([data-theme="light"]) .couv{background:radial-gradient(120% 70% at 50% -8%,rgba(245,194,46,.18),transparent 60%),linear-gradient(170deg,var(--entete-1),var(--entete-2) 52%,var(--entete-3))}
 }
-:root[data-theme="dark"] .couv{background:radial-gradient(120% 70% at 50% -8%,rgba(245,194,46,.18),transparent 60%),linear-gradient(170deg,#1F7A5C,#156349 52%,#0F4B39)}
+:root[data-theme="dark"] .couv{background:radial-gradient(120% 70% at 50% -8%,rgba(245,194,46,.18),transparent 60%),linear-gradient(170deg,var(--entete-1),var(--entete-2) 52%,var(--entete-3))}
 /* case à cocher d'une liste : assez grande pour le pouce, visible d'un coup d'oeil */
 .chk{width:24px;height:24px;flex:none;border:1.6px solid var(--line);border-radius:7px;display:grid;place-items:center;color:var(--brand-ink);background:var(--surface)}
 .chk.on{background:var(--brand);border-color:var(--brand)}
@@ -1101,10 +1103,102 @@ details.g.demo>:not(summary)+*{margin-top:8px}
 .f-e2{fill:var(--warn);font-size:12px;font-weight:700}
 .f-n{fill:var(--maize)}
 .f-nt{fill:var(--maize-ink);font-size:14px;font-weight:700}
+
+/* ==================================================================================
+   LES COULEURS DE LA MAISON UBORA
+   ----------------------------------------------------------------------------------
+   Le logo d'Ubora ne tient qu'en deux couleurs : le bleu marine du sigle (relevé à
+   #002050, #003060, #004080) et le vert de la feuille (#40A010, #209010, #30A010).
+   L'application était peinte en vert forêt et en maïs — une palette inventée pour
+   elle, que personne ne reconnaissait comme celle de la maison qui l'édite.
+
+   Les deux applications prennent donc chacune une des deux couleurs du logo :
+
+     Akiba, le cahier du village        → le VERT de la feuille, assombri pour porter
+                                          du texte blanc ;
+     Akiba Suivi, l'outil des animateurs → le BLEU MARINE du sigle, qui est déjà celui
+                                          de son icône — jusqu'ici l'icône était bleue
+                                          et l'intérieur vert, les deux ne se parlaient
+                                          pas, et sur le téléphone d'un animateur qui a
+                                          les deux applications, rien ne les distinguait.
+
+   Le maïs reste : c'est la couleur des gestes (le bouton qui engage, l'étape en cours,
+   la marge du cahier), et il se détache aussi bien sur le vert que sur le bleu.
+
+   Chaque valeur ci-dessous a été calculée pour un contraste donné, puis vérifiée par
+   le banc du dessin (tests/design.js), qui relit les couleurs telles que le navigateur
+   les calcule, écran par écran, dans les deux thèmes.
+   ================================================================================== */
+:root{
+  /* le logo, tel qu'il est dans l'image — ces deux-là ne servent pas directement :
+     elles disent d'où viennent toutes les autres */
+  --ubora-bleu:#003060; --ubora-vert:#40A010;
+
+  /* AKIBA · fond clair : le vert de la feuille, descendu jusqu'à porter du blanc */
+  --brand:#26600E; --brand-2:#348414; --brand-deep:#173C09; --brand-soft:#D7EDCF; --brand-ink:#FFFFFF;
+  --entete-1:#358217; --entete-2:#23590D; --entete-3:#153607; --entete-ink:#FFFFFF;
+  --vif:#9BE07A;                                     /* la pastille « en ligne » */
+}
+:root[data-cible="suivi"]{
+  /* AKIBA SUIVI · fond clair : le bleu marine du sigle */
+  --brand:#0751AB; --brand-2:#0A6FEA; --brand-deep:#04326B; --brand-soft:#D7E4F4; --brand-ink:#FFFFFF;
+  --entete-1:#0A448A; --entete-2:#052E61; --entete-3:#021C3B; --entete-ink:#FFFFFF;
+  --vif:#86C6FF;
+  --ink:#1B2430; --ink-2:#5C6775; --surface-2:#F2F4F7; --line:#E2E4E9; --band:#F7F8FA;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --brand:#5CBD35; --brand-2:#4F9B31; --brand-deep:#366823; --brand-soft:#23351D; --brand-ink:#06160A;
+    --entete-1:#32691C; --entete-2:#204610; --entete-3:#122A09; --entete-ink:#E9F5E3;
+    --vif:#8FE06A;
+  }
+  :root[data-cible="suivi"]:not([data-theme="light"]){
+    --brand:#7CA9E0; --brand-2:#528BD1; --brand-deep:#2B5C99; --brand-soft:#1C2C3F; --brand-ink:#030C1A;
+    --entete-1:#163C6A; --entete-2:#0D284A; --entete-3:#07182C; --entete-ink:#E3EDF9;
+    --vif:#79B4F0;
+    --ground:#0F1A24; --surface:#17222E; --surface-2:#22303E; --line:#2C3A49;
+    --ink:#E4EBF3; --ink-2:#97A5B5; --band:#1C2A38;
+  }
+}
+:root[data-theme="dark"]{
+  --brand:#5CBD35; --brand-2:#4F9B31; --brand-deep:#366823; --brand-soft:#23351D; --brand-ink:#06160A;
+  --entete-1:#32691C; --entete-2:#204610; --entete-3:#122A09; --entete-ink:#E9F5E3;
+  --vif:#8FE06A;
+}
+:root[data-cible="suivi"][data-theme="dark"]{
+  --brand:#7CA9E0; --brand-2:#528BD1; --brand-deep:#2B5C99; --brand-soft:#1C2C3F; --brand-ink:#030C1A;
+  --entete-1:#163C6A; --entete-2:#0D284A; --entete-3:#07182C; --entete-ink:#E3EDF9;
+  --vif:#79B4F0;
+  --ground:#0F1A24; --surface:#17222E; --surface-2:#22303E; --line:#2C3A49;
+  --ink:#E4EBF3; --ink-2:#97A5B5; --band:#1C2A38;
+}
+/* Les bandeaux de marque en fond clair : ils prenaient --brand-2/--brand/--brand-deep,
+   c'est-à-dire la couleur du texte de la marque, pas celle d'un bandeau. Ils prennent
+   maintenant les trois arrêts d'en-tête, les mêmes dans les deux thèmes. */
+.topbar{background:linear-gradient(135deg,var(--entete-1) 0%,var(--entete-2) 45%,var(--entete-3) 100%);color:var(--entete-ink)}
+.hero{background:radial-gradient(120% 90% at 88% -10%,rgba(242,183,5,.26),transparent 55%),radial-gradient(90% 70% at -10% 110%,color-mix(in srgb,var(--vif) 22%,transparent),transparent 60%),linear-gradient(160deg,var(--entete-1),var(--entete-2) 55%,var(--entete-3));color:var(--entete-ink)}
+.caisse{background:radial-gradient(110% 80% at 100% 0%,rgba(242,183,5,.22),transparent 55%),linear-gradient(150deg,var(--entete-1),var(--entete-2) 50%,var(--entete-3));color:var(--entete-ink)}
+.couv{background:radial-gradient(120% 70% at 50% -8%,rgba(242,183,5,.2),transparent 60%),linear-gradient(170deg,var(--entete-1),var(--entete-2) 52%,var(--entete-3));color:var(--entete-ink)}
+/* Le pied de page porte le logo d'Ubora : son lien prend la couleur de la maison. */
+.appfoot a,.docintro .sur{color:var(--brand)}
+/* ---------- l'anneau de foyer ----------
+   L'anneau était en maïs, partout. Sur un bandeau de marque il se voit très bien ; sur une
+   page blanche il vaut 1,82 contre les 3 exigés — c'est-à-dire qu'au clavier, on ne savait
+   plus où l'on était. Il prend donc la couleur de la marque sur les fonds clairs, et garde
+   le maïs à l'intérieur des blocs de marque, où c'est le maïs qui tranche. */
+:focus-visible{outline:3px solid var(--brand);outline-offset:2px}
+.choice input:focus-visible+span{outline:3px solid var(--brand);outline-offset:2px}
+.topbar :focus-visible,.hero :focus-visible,.caisse :focus-visible,.couv :focus-visible,
+.btn.brand:focus-visible,.chk.on:focus-visible,.tstep.done:focus-visible,.pm button.plus:focus-visible,
+.btn.primary:focus-visible,.barre-or:focus-visible,.avec-main:focus-visible{outline-color:var(--maize)}
+/* Le voile des feuilles : il était teinté de vert, dans les deux applications. Il suit la
+   maison, et reste assez dense pour isoler ce qu'on lit par-dessus. */
+.scrim{background:color-mix(in srgb,var(--entete-3) 72%,rgba(0,0,0,.72))}
+
 </style>
 <style>html,body{margin:0}</style>
 </head><body>
-<script>window.KITABU_PWA = true; window.KITABU_VERSION = 'akiba-20261109231754'; window.AKIBA_CIBLE = 'suivi';</script>
+<script>window.KITABU_PWA = true; window.KITABU_VERSION = 'akiba-20261111104929'; window.AKIBA_CIBLE = 'suivi';</script>
 
 <div id="app"></div>
 <script src="core.js"></script>

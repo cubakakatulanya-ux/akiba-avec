@@ -5,8 +5,8 @@
    qui a le droit de quoi, et que faire quand ça coince. */
 'use strict';
 
-const VERT = '#0F4D3A', VERT2 = '#2E7D5B', OR = '#F2B705', ENCRE = '#1B2A24', GRIS = '#5C6B64',
-  DOUX = '#D5E7DD', CLAIR = '#F1F6F2', LIGNE = '#D7DED9', ROUGE = '#A92C1A', AMBRE = '#A05A00';
+const VERT = '#26600E', VERT2 = '#348414', OR = '#F2B705', ENCRE = '#1B2A24', GRIS = '#5C6B64',
+  DOUX = '#D7EDCF', CLAIR = '#F1F6F2', LIGNE = '#D7DED9', ROUGE = '#A92C1A', AMBRE = '#A05A00';
 
 /* briques communes */
 const boite = (x, y, w, h, titre, sous, fond, bord, couleurTitre) => `
