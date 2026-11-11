@@ -139,7 +139,9 @@ module.exports = [
 ['fig', 'suivi/ordi-n-alerts', 'Les alertes : ce qui demande une action, groupe par groupe.'],
 
 ['h2', '3.5 Recevoir une réunion du groupe'],
-['p', 'Après chaque séance, le bureau peut renvoyer la réunion à l’animateur **en images** : deux ou trois codes à photographier, et la copie de l’animateur se prolonge de cette séance. Elle ne remplace rien : s’il manque une réunion entre les deux, Akiba refuse et demande le fichier.'],
+['p', 'Après chaque séance, le bureau peut renvoyer la réunion à l’animateur **en images** : **une seule** jusqu’à une quinzaine de membres, **deux** au-delà, et elles défilent toutes seules — l’animateur tient son appareil en face, celle qu’il rate revient. Sa copie se prolonge de cette séance. Elle ne remplace rien : s’il manque une réunion entre les deux, Akiba refuse et demande le fichier.'],
+['p', 'Ce qui voyage, c’est la séance entière : **chaque opération de chaque membre** ce jour-là, les totaux, les clés et le sceau. L’animateur peut réimprimer le journal de la séance, et il sort identique à celui du groupe, ligne pour ligne.'],
+['attention', 'Les deux téléphones doivent porter la **même version** d’Akiba. Si l’un est en retard, l’écran le dit et renvoie au fichier en attendant la mise à jour.'],
 ['p', 'Pour un cahier entier — changement de téléphone, fin de cycle, dossier pour une IMF — le groupe envoie plutôt un **fichier de sauvegarde**.'],
 
 ];

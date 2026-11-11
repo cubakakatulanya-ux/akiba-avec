@@ -214,7 +214,7 @@ carte(s, 8.76, 1.5, 3.84, 2.5, 'Un fichier', 'Un .akiba chiffré par WhatsApp. O
 s.addText('Les trois voyagent chiffrés. Aucune n’ouvre quoi que ce soit sans les huit signes, dits de vive voix et jamais dans le même message.',
   { x: 0.7, y: 4.15, w: 11.9, h: 0.4, fontSize: 14, bold: true, color: ENCRE, isTextBox: true });
 s.addImage(Object.assign(IMG('avec/ordi-feuille-recevoir'), { x: 3.3, y: 4.65, w: 6.7, h: 2.1 }));
-s.addText('Et dans l’autre sens : après la clôture, la séance remonte à l’animateur en deux ou trois images. Sa copie se prolonge — elle ne remplace rien.',
+s.addText('Et dans l’autre sens : après la clôture, la séance remonte à l’animateur en une ou deux images qui défilent seules. Sa copie se prolonge — elle ne remplace rien.',
   { x: 0.7, y: 6.8, w: 11.2, h: 0.45, fontSize: 13, color: GRIS, isTextBox: true });
 
 s = pres.addSlide({ masterName: 'TITRE', sectionTitle: 'Akiba Suivi' });

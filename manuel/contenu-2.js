@@ -47,11 +47,19 @@ module.exports = [
 ['h2', '5.1 Valider le téléphone'],
 ['p', 'Un téléphone qui porte de vraies données doit être validé par Ubora. L’écran de validation affiche le **code de ce téléphone** : huit signes, propres à l’appareil.'],
 ['ol', [
-  'Envoyer ce code à Ubora par WhatsApp, ou le lire au téléphone.',
+  'Écrire le **nom de l’AVEC**, puis envoyer le code à Ubora — par le chemin dont on dispose.',
   'Ubora répond avec un **code de validation**, lui aussi de huit signes.',
   'Le taper dans le champ du bas, et toucher **Valider ce téléphone**.',
 ]],
+['p', 'Beaucoup d’AVEC autonomes n’ont pas WhatsApp : pas de données mobiles, parfois pas de compte. L’écran propose donc quatre chemins, et ils ne demandent pas la même chose.'],
+['ul', [
+  '**WhatsApp** : il faut des données mobiles. Le message part tout prêt.',
+  '**SMS** : une simple carte SIM suffit, aucune connexion de données. C’est le plus sûr en village.',
+  '**Appel** : on dicte les huit signes, Ubora en dicte huit en retour. Rien à écrire, rien à envoyer.',
+  '**En image** : ni SIM ni réseau. **Pas de réseau ? Montrer la demande en image** affiche un QR que l’administrateur d’Ubora scane depuis son espace — c’est le seul chemin qui marche dans un village sans couverture.',
+]],
 ['p', 'Le code de validation ne fonctionne sur aucun autre appareil. Il porte une date de fin ; Akiba prévient trente jours à l’avance.'],
+['attention', 'Sans le nom de l’AVEC, Ubora reçoit huit signes anonymes et ne sait pas à qui rendre le code. Akiba retient donc une demande sans nom.'],
 ['fig', 'avec/ordi-lic-gate', 'L’écran de validation du téléphone, en trois pas.'],
 
 ['h2', '5.2 Recevoir le cahier'],

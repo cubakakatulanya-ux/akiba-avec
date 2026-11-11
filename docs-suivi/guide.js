@@ -283,9 +283,12 @@ const GUIDE = [
     <div class="tip">Le fichier reste chiffré jusqu'au bout : l'ouvrir dans Akiba n'ouvre rien tant que le code de huit signes n'est pas tapé.</div>
     <h4>Du groupe vers l'animateur</h4>
     <ul>
-      <li>Après la clôture : <b>Montrer à l'animateur</b>. Les écritures de la séance tiennent en deux ou trois images.</li>
+      <li>Après la clôture : <b>Montrer à l'animateur</b>. La séance tient en <b>une image</b> jusqu'à une quinzaine de membres, <b>deux</b> au-delà.</li>
+      <li>Sur le téléphone de l'animateur : <b>Recevoir par photo</b>. Il tient l'appareil en face, les images <b>défilent toutes seules</b>, et celle qu'il rate revient.</li>
       <li>La copie de l'animateur <b>se prolonge</b> de cette séance ; elle ne remplace rien. S'il manque une réunion entre les deux, Akiba refuse et demande le fichier.</li>
+      <li>Tout y est : <b>chaque opération de chaque membre</b> ce jour-là, les totaux, les clés et le sceau. L'animateur peut réimprimer le journal de la séance à l'identique.</li>
     </ul>
+    <div class="tip">Les deux téléphones doivent avoir la <b>même version</b> d'Akiba. Si l'un est en retard, l'écran le dit et il suffit de le mettre à jour.</div>
     <div class="tip">L'image se partage aussi comme une photo ordinaire, par WhatsApp ou Bluetooth, quand il y a du réseau. Le code, lui, se dit à part.</div>` },
   { id: 'amendes', icon: 'gavel', t: 'Les amendes', b: `
     <ul>
@@ -326,6 +329,14 @@ const GUIDE = [
     <p>À ne pas confondre avec le code de validation d'une AVEC par son organisation (ci-dessus). Celui-ci dit qu'un <b>téléphone</b> a le droit de travailler sur de vraies données. Il vient d'Ubora, une seule fois par téléphone.</p>
     <h4>Le code de ce téléphone</h4>
     <p>Chaque téléphone a son propre code de <b>huit signes</b>, par exemple <b class="mono">B6WE766A</b>. Il s'affiche sur l'écran de validation et dans <b>Installer et sauvegarder</b>. C'est lui qu'on donne à Ubora.</p>
+    <h4>Quatre façons de l'envoyer</h4>
+    <p>Beaucoup d'AVEC autonomes n'ont pas WhatsApp. L'écran de validation propose donc quatre chemins — écrivez d'abord le <b>nom de votre AVEC</b>, pour qu'Ubora sache à qui rendre le code.</p>
+    <ul>
+      <li><b>WhatsApp</b> : s'il y a des données mobiles. Le message part tout prêt.</li>
+      <li><b>SMS</b> : une simple carte SIM suffit, aucune connexion de données.</li>
+      <li><b>Appel</b> : vous dictez les huit signes, Ubora vous en dicte huit en retour. Rien à écrire.</li>
+      <li><b>En image</b> : ni SIM ni réseau. Touchez <b>Pas de réseau ? Montrer la demande en image</b> : l'écran affiche un QR que l'administrateur d'Ubora scane depuis son espace. C'est le chemin du village sans couverture.</li>
+    </ul>
     <h4>Ce qu'Ubora renvoie</h4>
     <ul>
       <li><b>Un code court de huit signes</b>, par exemple <b class="mono">CZQGA64P</b> : il se dicte au téléphone en vingt secondes. Tapez-le dans « Code de validation reçu ».</li>
