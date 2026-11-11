@@ -51,6 +51,18 @@ const VOYAGE = `(async () => {
   /* ce qu'on garde pour comparer après le voyage : la vérité d'avant */
   const avant = JSON.parse(JSON.stringify(txM));
   const mAvant = JSON.parse(JSON.stringify(m));
+  /* Le journal de la séance : ce que le bureau imprime et classe dans la caisse. Il reprend
+     chaque opération de chaque membre ce jour-là, les totaux, les clés et le sceau. C'est la
+     mesure qui compte vraiment — si une seule ligne manquait après le voyage, elle manquerait
+     ici, et ce papier est la dernière copie du cahier si le téléphone disparaît. */
+  const journalAvant = journalReunionText(avec, m);
+  const lignesAvant = journalAvant.split(String.fromCharCode(10)).length;
+  /* chaque membre qui a bougé de l'argent ce jour-là doit se retrouver dans ce papier */
+  const bougent = [...new Set(txM.map(t => t.memberId).filter(Boolean))];
+  const nommes = bougent.filter(id => { const mm = memberOf(avec, id);
+    return mm && journalAvant.indexOf(mm.name.split(' ')[0]) >= 0; });
+  dit(bougent.length > 0 && nommes.length === bougent.length,
+      'le journal nomme chaque membre qui a bougé de l\\'argent', nommes.length + '/' + bougent.length + ' membres');
 
   const code = randCode(8);
   const texte = await qrReunionTexte(avec, m, code);
@@ -110,6 +122,20 @@ const VOYAGE = `(async () => {
   dit(!ecartsM.length, 'la fiche de la réunion est revenue identique', ecartsM.length ? ecartsM.join(', ') : champsM.length + ' champs');
   dit(JSON.stringify(mAvant.presence) === JSON.stringify(mApres.presence), 'la présence de chaque membre est revenue');
   dit(JSON.stringify(mAvant.validators || []) === JSON.stringify(mApres.validators || []), 'ceux qui ont scellé sont revenus');
+
+  /* ---- le journal de la séance, réimprimé depuis la copie de l'animateur ----
+     C'est la vérification qui parle au bureau : le papier qu'il classerait est le même, ligne
+     pour ligne, opération par opération, sceau compris. */
+  const mRecue = avec.meetings.find(x => x.id === m.id);
+  const journalApres = mRecue ? journalReunionText(avec, mRecue) : '';
+  dit(journalApres === journalAvant, 'le journal de la séance se réimprime à l\\'identique',
+      journalApres === journalAvant ? lignesAvant + ' lignes, opérations et sceau compris'
+        : 'longueurs ' + journalAvant.length + ' / ' + journalApres.length);
+  if (journalApres !== journalAvant) {
+    const a1 = journalAvant.split(String.fromCharCode(10)), a2 = journalApres.split(String.fromCharCode(10));
+    const ecart = a1.findIndex((l, i) => l !== a2[i]);
+    dit(false, 'première ligne différente', 'ligne ' + (ecart + 1) + ' : «' + (a1[ecart] || '') + '» / «' + (a2[ecart] || '') + '»');
+  }
 
   /* ---- le sceau et la chaîne, vus par l'application elle-même ---- */
   if (typeof _chain === 'object') delete _chain[avec.id];
