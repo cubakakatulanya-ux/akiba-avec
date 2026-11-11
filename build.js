@@ -55,8 +55,16 @@ const cut = html.indexOf('</style>') + '</style>'.length;
 const head = html.slice(0, cut)
   .replace(/<title>[^<]*<\/title>/, '')                                // le titre du profil remplace celui de la source
   .replace(/<meta name="theme-color"[^>]*>/, `<meta name="theme-color" content="${P.teinte.fond}">`);
-/* les fichiers retirés de cette cible disparaissent aussi de la page */
-const body = P.sansFichiers.reduce((h, f) => h.split(`<script src="${f}"></script>\n`).join('').split(`<script src="${f}"></script>`).join(''), html.slice(cut));
+/* Les fichiers retirés de cette cible disparaissent aussi de la page.
+
+   La ligne retirée emporte sa fin de ligne, quelle qu'elle soit. On coupait sur « \n » seul :
+   sur une copie du dépôt où git avait remis des « \r\n », la coupe ratait la fin de ligne et
+   laissait une ligne vide. Le même source donnait donc deux fichiers différents selon la
+   machine — une ligne vide, rien de plus, mais assez pour rendre fausse toute comparaison
+   octet pour octet entre ce qui est publié et ce qui est dans l'APK. */
+const body = P.sansFichiers.reduce((h, f) =>
+  h.replace(new RegExp('<script src="' + f.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '"></script>\\r?\\n?', 'g'), ''),
+  html.slice(cut));
 /* Le numéro de version va jusqu'aux secondes. À la minute près, deux publications rapprochées
    portaient le même numéro : le service worker, qui ne se réinstalle que si son texte change,
    gardait la première et aucun téléphone ne voyait jamais la seconde. Les six premiers chiffres
