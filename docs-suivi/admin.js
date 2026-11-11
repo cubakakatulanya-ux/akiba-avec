@@ -13,10 +13,18 @@ const admReg = () => { try { return JSON.parse(admGet(ADM_REG_STORE) || '[]'); }
 const admActs = () => { try { return JSON.parse(admGet(ADM_ACT_STORE) || '[]'); } catch (e) { return []; } };
 // « 7Q2M-9XKD », « 7q2m9xkd », ou le message complet reçu du partenaire
 // (un message collé dans un champ perd ses retours à la ligne : on cherche d'abord après « téléphone : »)
+/* Un piège qui coûtait cher sans faire de bruit : la demande d'une organisation porte DEUX
+   lignes qui parlent de téléphone — « Téléphone : 0991234567 », celui du responsable, et
+   « Code du téléphone : EU8W2FPC », celui de l'appareil. En cherchant « téléphone » tout court,
+   on tombait sur le premier et on prenait les huit premiers chiffres du numéro : l'espace
+   administrateur affichait 0991-2345, créait un code pour un appareil qui n'existe pas, et le
+   partenaire voyait sa validation refusée sans que personne comprenne pourquoi.
+   On cherche donc l'étiquette complète d'abord, et un numéro trop long ne passe plus. */
 const devFrom = t => {
   const s = String(t || '').toUpperCase();
-  const m = s.match(/T[ÉE]L[ÉE]PHONE\s*:\s*([A-Z0-9]{4}-?[A-Z0-9]{4})/)        // le message reçu du partenaire
+  const m = s.match(/CODE\s+DU\s+T[ÉE]L[ÉE]PHONE\s*:\s*([A-Z0-9]{4}-?[A-Z0-9]{4})(?![A-Z0-9])/)  // l'étiquette exacte
     || s.match(/(?:^|[^A-Z0-9])([A-Z0-9]{4}-[A-Z0-9]{4})(?![A-Z0-9])/)          // avec tiret, n'importe où
+    || s.match(/T[ÉE]L[ÉE]PHONE\s*:\s*([A-Z0-9]{4}-?[A-Z0-9]{4})(?![A-Z0-9])/)  // « téléphone » seul, et huit signes pile
     || s.match(/(?:^|[^A-Z0-9])([A-Z0-9]{8})(?![A-Z0-9])/)                      // sans tiret, comme il s'affiche
     || s.replace(/[\s-]+/g, '').match(/^([A-Z0-9]{8})$/);
   return m ? m[1].replace(/-/g, '').replace(/^(.{4})/, '$1-') : '';
@@ -41,7 +49,10 @@ function demandeLire(texte) {
     return m[1].split(/\s(?=(?:Organisation|Zone|Responsable|T[ée]l[ée]phone|Courriel|Code du t[ée]l[ée]phone)\s*:)/i)[0].trim().replace(/[·;,]+$/, '').trim();
   };
   const d = {
-    name: apres('Organisation'),
+    /* « Organisation » pour une ONG, « Organisation ou AVEC » pour un groupe autonome qui
+       demande son propre code : la même étiquette dans les deux sens, sinon le nom arrive
+       vide et l'administrateur reçoit huit signes sans savoir à qui les rendre. */
+    name: apres('Organisation(?: ou AVEC)?'),
     zoneTexte: apres('Zone'),
     boss: apres('Responsable'),
     phone: apres('T[ée]l[ée]phone', 'Code du '),

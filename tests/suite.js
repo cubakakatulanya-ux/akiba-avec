@@ -1490,29 +1490,47 @@ window.__akibaTests = async function () {
         validators: [], sealSeq: copie.tx.length, seal: copie.tx[copie.tx.length - 1].hash });
       const txSeance = copie.tx.slice(n0);
       must(txSeance.length === 5, 'la séance doit porter cinq écritures : ' + txSeance.length);
+      /* La charge se fabrique AVANT de reculer : c'est le vrai producteur qui l'écrit, pas le
+         banc, pour qu'on essaie bien le format qui voyage et non une forme devinée. */
+      const charge = qrReunionCharge(copie, derniere);
+      must(charge.t.length === 5, 'la charge doit porter cinq lignes : ' + charge.t.length);
+      must(charge.p0 === txSeance[0].prev, 'la charge doit porter l’empreinte de raccord');
       /* l'animateur est resté à la veille de cette séance */
       copie.tx.length = n0;
       copie.meetings = copie.meetings.filter(x => x.id !== derniere.id);
       K.data.avecs = K.data.avecs.filter(x => x.id !== copie.id).concat([copie]);
       const avant = copie.tx.length;
+      const copier = o => JSON.parse(JSON.stringify(o));
 
-      const faitMal = { k: 'kitabu-qr-r', a: copie.id, m: derniere, t: txSeance.map((t, i) => i === 1 ? Object.assign({}, t, { amount: t.amount + 1000 }) : t) };
+      /* Une écriture retouchée en route donne une chaîne qui se tient — les empreintes étant
+         recalculées, elles sont cohérentes entre elles. Ce qui la démasque, c'est le SCEAU :
+         il a été posé sur l'autre téléphone, sur le contenu d'origine, et il ne retombe plus.
+         C'est pour cela que le sceau voyage, et c'est la garantie qu'il faut éprouver ici. */
+      const faitMal = copier(charge);
+      faitMal.t[1] = (p => { p[3] = Number(p[3]) + 1000; return p.join('|'); })(String(faitMal.t[1]).split('|'));
       const refuse = await qrReunionImporter(faitMal);
       must(refuse.error, 'une écriture retouchée doit être refusée');
+      must(/sceau|chaîne/i.test(refuse.error || ''), 'et c’est le sceau qui doit la démasquer : ' + refuse.error);
       eq(copie.tx.length, avant, 'rien ne doit rester après un refus');
 
-      const trou = { k: 'kitabu-qr-r', a: copie.id, m: derniere, t: txSeance.slice(1) };
+      const trou = copier(charge);
+      trou.t = trou.t.slice(1); trou.s0 = Number(trou.s0) + 1;
       must((await qrReunionImporter(trou)).error, 'une séance qui ne s’accroche pas doit être refusée');
 
-      const bon = await qrReunionImporter({ k: 'kitabu-qr-r', a: copie.id, m: derniere, t: txSeance });
+      const bon = await qrReunionImporter(copier(charge));
       must(!bon.error, 'la séance entière doit s’ajouter : ' + bon.error);
+      eq(bon.reunion, derniere.n, 'la réponse doit nommer la réunion reçue');
+      /* la preuve que rien ne s'est perdu en chemin : chaque empreinte refaite ici est celle
+         qui avait été calculée sur le téléphone du groupe */
+      eq(copie.tx.slice(n0).map(t => t.hash).join(), txSeance.map(t => t.hash).join(), 'les empreintes refaites');
+      eq(copie.tx.slice(n0).map(t => t.id).join(), txSeance.map(t => t.id).join(), 'les identifiants des écritures');
       /* la copie apprend du même coup que le groupe a été validé : il n'aurait pas pu tenir
          de réunion sans cela, et « À valider » resterait affiché pour rien */
       must(avecById(copie.id).status !== 'pending', 'une réunion reçue vaut preuve que le groupe est actif');
       eq(copie.tx.length, avant + txSeance.length, 'les écritures de la séance');
       must(verifyChain(copie).ok, 'le journal prolongé doit rester valide');
       must(avecById(copie.id).meetings.some(x => x.id === derniere.id && x.synced), 'la réunion doit être marquée reçue');
-      must((await qrReunionImporter({ k: 'kitabu-qr-r', a: copie.id, m: derniere, t: txSeance })).error, 'deux fois la même séance doit être refusée');
+      must((await qrReunionImporter(copier(charge))).error, 'deux fois la même séance doit être refusée');
 
       const recu = avecById(neuf.id);
       must(recu, 'l’AVEC doit être sur ce téléphone');

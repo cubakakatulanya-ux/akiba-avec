@@ -202,14 +202,34 @@ async function applyValidationCode(raw, allowDemo = true) {
 }
 
 /* écran de validation, le même partout */
+
+/* ---------- quatre chemins pour une demande, parce que WhatsApp n'est pas partout ----------
+
+   Beaucoup d'AVEC autonomes n'ont pas WhatsApp : pas de données, parfois pas de compte, et un
+   téléphone qui n'est pas celui d'un animateur. La demande ne doit donc pas dépendre d'une
+   application. Quatre chemins, du plus courant au plus dépouillé :
+
+     WhatsApp   — s'il y a des données. Le message part tout prêt.
+     SMS        — une carte SIM suffit, aucune connexion de données. Le plus sûr en village.
+     Appel      — on dicte les huit signes, Ubora dicte les huit signes en retour. Zéro écrit.
+     Image      — ni SIM ni réseau : l'écran montre la demande en QR, et l'administrateur la
+                  scanne avec « Scanner le QR » de son espace. C'est le seul chemin qui marche
+                  dans un village sans couverture, quand l'animateur passe avec son téléphone.
+
+   Le code de retour, lui, tient déjà en huit signes dictés : c'est pour cela qu'il existe. */
+const demandeNom = () => String((typeof fval === 'function' && fval('licNom')) || '').trim().replace(/\s+/g, ' ');
 /* la demande envoyée à Ubora : générique, ou portant les renseignements d'une organisation */
 const demandText = d => d
   ? ['Bonjour Ubora, je demande l\'ouverture d\'un compte d\'organisation sur Akiba Suivi.', '',
     'Organisation : ' + d.name, d.zoneTexte ? 'Zone : ' + d.zoneTexte : '',
     'Responsable : ' + d.boss, 'Téléphone : ' + d.phone, d.mail ? 'Courriel : ' + d.mail : '', '',
     'Code du téléphone : ' + devNu(deviceId())].filter(x => x !== '').join('\n')
-  : `Bonjour Ubora, je demande un code de validation Akiba.\nCode du téléphone : ${devNu(deviceId())}\nOrganisation ou AVEC : `;
+  /* Le nom d'abord, le code du téléphone ensuite : c'est l'ordre du message d'organisation, et
+     c'est celui que l'espace administrateur sait découper même quand un collage d'une seule
+     ligne a mangé les retours. */
+  : `Bonjour Ubora, je demande un code de validation Akiba.\nOrganisation ou AVEC : ${demandeNom()}\nCode du téléphone : ${devNu(deviceId())}`;
 ICONS.phone = '<path d="M6.5 3h3l1.5 4-2 1.5a12 12 0 0 0 6.5 6.5L17 13l4 1.5v3a2 2 0 0 1-2.2 2A16.5 16.5 0 0 1 4 5.2 2 2 0 0 1 6 3z"/>';
+ICONS.sms = '<path d="M21 12a8 8 0 0 1-11.6 7.1L4 20.5l1.4-4.1A8 8 0 1 1 21 12z"/>';
 ICONS.copy = '<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/>';
 
 /* Dicter huit signes au téléphone marche ; les recopier à la main dans un SMS se trompe. */
@@ -218,8 +238,49 @@ ACT.licCopier = async () => {
   try { await navigator.clipboard.writeText(code); App.toast('Code du téléphone copié : ' + code); }
   catch (e) { App.toast('Copie impossible : lisez le code à Ubora, ' + code); }
 };
+/* le nom est demandé une fois, et seulement s'il manque : sans lui, Ubora reçoit huit signes
+   anonymes et ne peut pas créer le partenaire */
+const licDemPret = () => !!App.licDemande || !!demandeNom() || (App.toast('Écrivez d\'abord le nom de votre AVEC ou organisation'), false);
+ACT.licDemWa = () => {
+  if (!licDemPret()) return;
+  window.open(`https://wa.me/${UBORA.wa}?text=${encodeURIComponent(demandText(App.licDemande))}`, '_blank', 'noopener');
+};
+/* Le SMS ne demande aucune connexion de données : c'est le chemin des AVEC autonomes qui n'ont
+   pas WhatsApp. Le corps du message est le même, et l'administrateur le colle dans
+   « Demande d'un partenaire » comme s'il venait de WhatsApp. */
+ACT.licDemSms = () => {
+  if (!licDemPret()) return;
+  /* « ?body= » marche sur Android, « &body= » sur iOS : les deux sont acceptés par Android,
+     on garde donc la forme qui passe des deux côtés */
+  window.open(`sms:${UBORA.tel}?&body=${encodeURIComponent(demandText(App.licDemande))}`, '_blank', 'noopener');
+  App.toast('Si le SMS ne s\'ouvre pas, dictez les huit signes à Ubora par appel.');
+};
+/* Ni SIM ni réseau : l'écran porte la demande, et l'administrateur la scanne. C'est le chemin
+   du village sans couverture, le jour où quelqu'un passe avec le téléphone d'Ubora. */
+ACT.licDemImage = async () => {
+  if (!licDemPret()) return;
+  const texte = demandText(App.licDemande);
+  App.openSheet(`<h2>Montrer la demande</h2>
+    <p class="muted">L'administrateur ouvre son <b>Espace administrateur</b>, puis <b>Scanner le QR</b>, et vise cet écran. Rien ne passe par le réseau.</p>
+    <div style="text-align:center"><img id="licDemQr" alt="Demande en image" style="width:260px;max-width:100%;border-radius:12px;background:#fff;padding:8px">
+      <p id="licDemNote" class="hint" hidden>Image impossible sur cet appareil : dictez les huit signes.</p></div>
+    <div class="receipt" style="text-align:center"><span class="label">Code de ce téléphone</span>${bigCode(devNu(deviceId()))}
+      <p class="hint" style="margin:6px 0 0">À dicter si l'image ne se lit pas.</p></div>
+    <button class="btn ghost block" data-act="closeSheet">Fermer</button>`);
+  try {
+    const Q = await carteChargerQr();
+    const url = await Q.toDataURL(texte, { width: 560, margin: 2, errorCorrectionLevel: 'M' });
+    const img = document.getElementById('licDemQr'); if (img) img.src = url;
+  } catch (e) {
+    const img = document.getElementById('licDemQr'); if (img) img.hidden = true;
+    const n = document.getElementById('licDemNote'); if (n) n.hidden = false;
+  }
+};
 function validationPanel(opts = {}) {
   const r = App.licence || {};
+  /* les quatre boutons de l'étape 1 lisent le champ au moment du clic : ils ont besoin de
+     savoir s'il s'agit d'une demande d'organisation, déjà remplie, ou d'une demande nue */
+  App.licDemande = opts.demande || null;
   return `<section class="card stack">
     ${r.blocked ? `<div class="alert bad">${icSpan('lock')}<div><b>Accès bloqué</b><span class="small">${esc(r.why)}. Les données restent sur ce téléphone. Contactez Ubora si c'est une erreur.</span></div></div>` : ''}
     ${r.expired ? `<div class="alert bad">${icSpan('alert')}<div><b>${esc(r.why)}</b><span class="small">Les données restent sur ce téléphone. Demandez un nouveau code à Ubora.</span></div></div>` : ''}
@@ -229,13 +290,19 @@ function validationPanel(opts = {}) {
          validation, qu'on REÇOIT. On numérote l'échange pour qu'on ne tape pas le sien dans la case. -->
     <ol class="echange">
       <li><i>1</i><div><b>Donnez ce code à Ubora</b>
-        <span>C'est le code de <b>ce téléphone-ci</b>. Envoyez-le par WhatsApp, ou lisez-le au téléphone à Ubora.</span>
+        <span>C'est le code de <b>ce téléphone-ci</b>. Choisissez le chemin que vous avez : WhatsApp demande des données, le SMS une simple carte SIM, l'appel rien du tout.</span>
         <div class="devcode"><span class="label">Code de ce téléphone</span><b class="mono">${devNu(deviceId())}</b></div>
+        ${opts.demande ? '' : `<div class="field" style="margin-top:8px"><label for="licNom">Nom de votre AVEC ou organisation</label>
+          <input id="licNom" class="input" autocomplete="off" placeholder="Ex. Espoir Ubangi">
+          <span class="hint">Pour qu'Ubora sache à qui rendre le code. Huit signes tout seuls ne disent rien.</span></div>`}
         <div class="row" style="gap:8px;flex-wrap:wrap">
-          <a class="btn wa" href="https://wa.me/${UBORA.wa}?text=${encodeURIComponent(demandText(opts.demande))}" target="_blank" rel="noopener">${ic('chat')} Envoyer sur WhatsApp</a>
+          <button class="btn wa" data-act="licDemWa">${ic('chat')} Envoyer sur WhatsApp</button>
+          <button class="btn brand" data-act="licDemSms">${ic('sms')} Envoyer par SMS</button>
           <a class="btn ghost" href="tel:${UBORA.tel}">${ic('phone')} Appeler ${UBORA.telShow}</a>
           <button class="btn ghost" data-act="licCopier">${ic('copy')} Copier le code</button>
-        </div></div></li>
+        </div>
+        <!-- le seul chemin qui marche sans SIM et sans réseau : l'administrateur scane l'écran -->
+        <button class="btn ghost block" data-act="licDemImage" style="margin-top:8px">${ic('eye')} Pas de réseau ? Montrer la demande en image</button></div></li>
       <li><i>2</i><div><b>Ubora vous répond avec le code de validation</b>
         <span>C'est un <b>autre</b> code, huit signes lui aussi. Ubora le dicte au téléphone, ou l'envoie en entier par WhatsApp. Ce n'est pas le code ci-dessus.</span></div></li>
       <li><i>3</i><div><b>Tapez ici le code reçu d'Ubora</b>
