@@ -42,7 +42,19 @@ const assets = ['ubora-logo.png', 'ubora-hub.png', 'qrcode.min.js', 'blocage.txt
 assets.forEach(f => fs.copyFileSync(path.join(src, f), path.join(out, f)));
 fs.writeFileSync(path.join(out, 'CNAME'), P.domaine + '\n');
 const cut = html.indexOf('</style>') + '</style>'.length;
-const head = html.slice(0, cut).replace(/<title>[^<]*<\/title>/, '');   // le titre du profil remplace celui de la source
+/* La couleur de la barre d'état, déclinée par profil.
+
+   core.js la repose au démarrage, selon l'application et le thème — mais « au démarrage »
+   veut dire : une fois le JavaScript exécuté. Avant cela, c'est cette balise que le système
+   lit : au lancement de l'application Android, pendant le premier affichage, et dans la liste
+   des applications ouvertes. Elle portait encore le vert sombre d'avant Ubora, le même dans
+   les deux applications — Akiba Suivi s'ouvrait donc en vert avant de virer au bleu marine.
+
+   Une seule balise, volontairement : core.js prend la première qu'il trouve, et une seconde
+   pour le thème sombre resterait en arrière sans qu'il la corrige. */
+const head = html.slice(0, cut)
+  .replace(/<title>[^<]*<\/title>/, '')                                // le titre du profil remplace celui de la source
+  .replace(/<meta name="theme-color"[^>]*>/, `<meta name="theme-color" content="${P.teinte.fond}">`);
 /* les fichiers retirés de cette cible disparaissent aussi de la page */
 const body = P.sansFichiers.reduce((h, f) => h.split(`<script src="${f}"></script>\n`).join('').split(`<script src="${f}"></script>`).join(''), html.slice(cut));
 /* Le numéro de version va jusqu'aux secondes. À la minute près, deux publications rapprochées

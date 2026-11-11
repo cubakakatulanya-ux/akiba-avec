@@ -1176,6 +1176,26 @@ window.__akibaTests = async function () {
     return signes.size + ' signes différents dans la démonstration';
   });
 
+  t('La barre d’état porte la couleur de CETTE application, avant même le JavaScript', () => {
+    /* core.js repose cette couleur au démarrage — mais « au démarrage » veut dire : une fois le
+       JavaScript exécuté. Avant cela, c'est la balise du document que le système lit : au
+       lancement de l'application Android, au premier affichage, dans la liste des applications
+       ouvertes. Elle portait le vert d'avant Ubora, LE MÊME dans les deux applications : Akiba
+       Suivi s'ouvrait en vert avant de virer au bleu marine. */
+    const meta = document.querySelector('meta[name="theme-color"]');
+    must(meta, 'la balise theme-color doit exister');
+    const servie = (meta.getAttribute('content') || '').toUpperCase();
+    const attendue = (estSuivi() ? '#052E61' : '#23590D');
+    eq(servie, attendue, 'la couleur servie avant le JavaScript');
+    /* et une seule balise : core.js prend la première, une seconde resterait en arrière */
+    eq(document.querySelectorAll('meta[name="theme-color"]').length, 1, 'le nombre de balises theme-color');
+    /* ce que core.js posera ensuite doit partir de la même couleur */
+    appliquerTheme('light');
+    const apres = (document.querySelector('meta[name="theme-color"]').getAttribute('content') || '').toUpperCase();
+    eq(apres, attendue, 'la couleur posée par core.js en thème clair');
+    return (estSuivi() ? 'Akiba Suivi' : 'Akiba') + ' · ' + attendue + ', avant et après le JavaScript';
+  });
+
   /* ---------- T. le fichier qui passe d'une application à l'autre ---------- */
   await t('Une AVEC envoyée par l’animateur arrive entière chez le groupe', async () => {
     /* Recevoir une AVEC ajoute aussi son organisation et ses animateurs : cet essai touche donc
