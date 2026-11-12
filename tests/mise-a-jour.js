@@ -110,10 +110,15 @@ async function jusqua(expr, quoi, max = 20000) {
      De l'argent est sur la table et le trésorier compte. Recharger la page sous ses doigts
      serait la pire façon d'annoncer une bonne nouvelle. */
   await js(`(async () => { const r = await navigator.serviceWorker.getRegistration(); await r.update(); return 1; })()`);
-  await dors(2500);
+  /* On ATTEND le bandeau au lieu de dormir un temps choisi au hasard. Dormir 2,5 s marchait
+     presque toujours : sur une machine occupée, le service worker mettait parfois plus
+     longtemps à voir la nouvelle version, et le banc annonçait trois échecs pour une
+     application qui faisait son travail — la preuve étant que les deux derniers essais, eux,
+     la trouvaient bien mise à jour. Un banc qui échoue au hasard finit par ne plus être cru. */
+  const venu = await jusqua("!!document.getElementById('updbar')", 'le bandeau de mise à jour');
   const pendant = await js(`({ version: window.KITABU_VERSION, bandeau: !!document.getElementById('updbar'), ecran: App.screen })`, false);
   verifier(pendant.version === v1, 'pendant une séance de guichet, l’application ne se recharge pas toute seule', 'reste en ' + pendant.version);
-  verifier(pendant.bandeau, 'un bandeau « Mettre à jour » apparaît à la place', 'écran ' + pendant.ecran);
+  verifier(pendant.bandeau, 'un bandeau « Mettre à jour » apparaît à la place', 'écran ' + pendant.ecran + ', après ' + venu + ' ms');
 
   /* ---------- 4. le guichet fermé, la mise à jour se prend d'un toucher ---------- */
   await js(`(async () => {

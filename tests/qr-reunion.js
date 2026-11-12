@@ -14,7 +14,7 @@
    Usage :  node tests/qr-reunion.js                                                        */
 const http = require('http'), fs = require('fs'), path = require('path'), { spawn } = require('child_process');
 const RACINE = path.join(__dirname, '..', 'docs');
-const PORT = 5247, DEBUG = 9391;
+const PORT = 5247, DEBUG = 9347;
 const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.png': 'image/png', '.jpg': 'image/jpeg', '.svg': 'image/svg+xml', '.webmanifest': 'application/manifest+json', '.json': 'application/json', '.txt': 'text/plain; charset=utf-8' };
 const CHROME = 'C:/Program Files/Google/Chrome/Application/chrome.exe';
 
