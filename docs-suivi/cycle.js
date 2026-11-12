@@ -84,7 +84,15 @@ SCREENS['a.share'] = () => {
       ${line('= Bénéfice du cycle à partager', fc(plan.profit), true)}
       ${line('÷ Parts des membres', grp(plan.parts))}
       <div class="row between" style="border-top:1px solid var(--line);padding-top:10px"><span class="label">Une part vaut en moyenne</span><b class="num" style="font-family:var(--f-display);font-size:1.6rem">${fc(plan.value)}</b></div>
-      <p class="hint">Chaque membre reprend d'abord toute son épargne. Le bénéfice (${fc(plan.profit)}) est ensuite partagé selon l'épargne <b>et le temps</b> qu'elle a passé dans la caisse : un membre entré en cours de cycle ne prend pas le bénéfice gagné avant son arrivée. Achetée ${fc(pv)}, une part vaut en moyenne ${fc(plan.value)}, soit ${plan.value >= pv ? '+' : ''}${pct(plan.value / pv - 1)}. Ce qu'un membre doit encore (crédit, amendes) est retiré de sa part. La caisse sociale (${fc(st.socialFund)}) n'est pas partagée : elle reste au groupe pour le cycle suivant. Un membre parti en cours de cycle a déjà repris son épargne ; le bénéfice gagné avec son argent reste au groupe.</p>
+      <!-- Ce paragraphe faisait 108 mots, le plus long de l'application. Il disait six choses
+           vraies dont une seule se regarde à chaque fois : combien la part a rapporté. Le
+           reste se lit une fois, en formation, et se replie. -->
+      <p class="hint">Achetée ${fc(pv)}, une part vaut ${fc(plan.value)} : <b>${plan.value >= pv ? '+' : ''}${pct(plan.value / pv - 1)}</b>.</p>
+      ${pourquoi(`<p>Chaque membre reprend d'abord <b>toute son épargne</b>. Le bénéfice (${fc(plan.profit)}) est ensuite partagé selon l'épargne <b>et le temps</b> qu'elle a passé dans la caisse : un membre entré en cours de cycle ne prend pas le bénéfice gagné avant son arrivée.</p>
+        <p>Ce qu'un membre doit encore — crédit, amendes — est retiré de sa part.</p>
+        <p>La caisse sociale (${fc(st.socialFund)}) n'est pas partagée : elle reste au groupe pour le cycle suivant.</p>
+        <p>Un membre parti en cours de cycle a déjà repris son épargne ; le bénéfice gagné avec son argent reste au groupe.</p>`,
+        'Comment la part est calculée')}
     </div>
     ${st.extDebt ? (plan.extShort ? `<div class="alert bad"><span style="width:22px;flex:none">${ic('alert')}</span><div><b>La caisse ne suffit pas pour rembourser le prêteur</b><span class="small">Il reste ${fc(st.extDebt)} à rendre, la caisse de crédit a ${fc(st.loanFund)}. Récupérez d'abord les crédits des membres.</span></div></div>`
       : `<div class="alert warn"><span style="width:22px;flex:none">${ic('building')}</span><div><b>Le prêteur est remboursé avant le partage</b><span class="small">${fc(st.extDebt)} sortent de la caisse de crédit pour solder le crédit extérieur, puis le reste est partagé.</span></div></div>`) : ''}

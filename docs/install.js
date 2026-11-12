@@ -110,7 +110,9 @@ SCREENS['dev.backup'] = () => {
 
     ${licenceCard()}
     <section class="card stack"><h2>Mises à jour</h2>
-      <p class="small muted">Akiba se met à jour tout seul, <b>sans désinstaller</b> et <b>sans perdre les données</b>. Il suffit de l'ouvrir de temps en temps avec du réseau. Si une saisie est en cours, un bandeau « Mettre à jour » apparaît.</p>
+      <p class="small muted">Akiba se met à jour tout seul, <b>sans perdre les données</b>.</p>
+      ${pourquoi(`<p>Il suffit d'ouvrir l'application de temps en temps avec du réseau : elle prend la nouvelle version sans qu'on désinstalle rien.</p>
+        <p>Si une saisie est en cours, elle ne se recharge pas sous vos doigts : un bandeau « Mettre à jour » attend que vous ayez fini.</p>`)}
       <div class="row between small"><span>Développée par</span><b>Entreprise Sociale Ubora</b></div>
       <div class="row between small"><span>Version sur ce téléphone</span><b style="text-align:right">${esc(versionLisible(window.KITABU_VERSION) || 'démonstration')}</b></div>
       <button class="btn ghost block" data-act="majChercher">${ic('sync')} Chercher une mise à jour maintenant</button>
@@ -118,21 +120,24 @@ SCREENS['dev.backup'] = () => {
     </section>
 
     <section class="card stack"><h2>Éviter une désinstallation par erreur</h2>
-      <p class="small muted">Aucune application ne peut interdire totalement sa désinstallation : c'est le téléphone qui décide. Voici comment rendre la suppression délibérée, et protéger surtout les données.</p>
+      <p class="small muted">Aucune application ne peut s'interdire d'être désinstallée : c'est le téléphone qui décide.</p>
       ${gardeBloc()}
       <div class="row between small"><span>Données protégées contre l'effacement automatique</span>${App.persisted ? '<span class="chip good">Oui</span>' : '<span class="chip warn">Pas encore</span>'}</div>
-      <ol class="small" style="margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:7px">
+      ${pourquoi(`<ol class="small" style="margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:7px">
         <li><b>Mettez l'icône dans un dossier « AVEC »</b>, loin des applications que l'on supprime souvent.</li>
         <li><b>Verrouillez le téléphone du groupe</b> par un schéma ou un code connu du bureau seulement.</li>
         <li><b>Android : « Épinglage d'application »</b> (Paramètres › Sécurité › Épingler l'application). Akiba reste à l'écran et on ne peut pas quitter ni désinstaller sans le code du téléphone.</li>
         <li><b>Téléphones de l'organisation</b> : un outil de gestion des appareils (Google Family Link ou Android Enterprise) peut bloquer la désinstallation.</li>
         <li><b>Ne jamais</b> utiliser « Effacer les données » de Chrome ou un nettoyeur de mémoire sur ce téléphone.</li>
         <li><b>Faites une sauvegarde chaque semaine</b> (ci-dessous) et envoyez les données dès qu'il y a du réseau.</li>
-      </ol>
+      </ol>`, 'Six façons de rendre la suppression délibérée')}
     </section>
 
     <section class="card stack"><h2>Sauvegarde</h2>
-      <p class="small muted">Un fichier chiffré avec un mot de passe. Gardez-le sur une carte mémoire, sur l'ordinateur de l'organisation ou dans Google Drive. Si le téléphone est perdu ou si Akiba est effacé, on restaure tout sur un autre téléphone.</p>
+      <p class="small muted">Un fichier chiffré par un mot de passe.</p>
+      ${pourquoi(`<p>Gardez-le sur une carte mémoire, sur l'ordinateur de l'organisation, ou dans Google Drive.</p>
+        <p>Si le téléphone est perdu, volé ou effacé, ce fichier remet tout le cahier sur un autre téléphone.</p>`,
+        'Où le garder, et à quoi il sert')}
       <div class="row between small"><span>Dernière sauvegarde</span><b>${last ? ago(last) : 'jamais'}</b></div>
       ${last && daysAgo(last) > 7 && hasRealData() ? `<div class="alert warn">${icSpan('alert')}<div><b>Sauvegarde trop ancienne</b><span class="small">Faites-en une nouvelle aujourd'hui.</span></div></div>` : ''}
       ${canBackup() ? `<button class="btn brand block" data-act="backupSheet">${ic('shield')} Créer une sauvegarde</button>` : '<p class="hint">Connectez-vous (bureau, animateur ou organisation) pour créer une sauvegarde.</p>'}

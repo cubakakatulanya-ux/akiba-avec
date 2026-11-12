@@ -175,7 +175,10 @@ SCREENS['a.imf'] = () => {
   const kpi = (l, v, s) => `<div class="kpi"><span>${l}</span><b class="num">${v}</b><span>${s}</span></div>`;
   const shares = avec.imfShares || [];
   return `<div class="shell">${topbar('Dossier pour une IMF', esc(avec.name), backBtn('a.more'), syncPill(avec))}<main class="main">
-    <div><h1>Montrer la bonne santé du groupe</h1><p class="muted">Une IMF (ou une banque) demande des chiffres avant d'accorder un crédit au groupe. Akiba prépare un fichier Excel à partir du cahier scellé.</p></div>
+    <div><h1>Montrer la bonne santé du groupe</h1><p class="muted">Un fichier Excel tiré du cahier scellé.</p></div>
+    ${pourquoi(`<p>Une IMF, une banque ou une ONG demande des chiffres avant d'accorder un crédit au groupe. Ces chiffres ne sont pas déclarés : ils sont calculés sur le journal scellé, celui que personne ne peut retoucher.</p>
+      <p>C'est ce qui donne du poids au dossier — et c'est aussi pourquoi un journal altéré se voit tout de suite.</p>`,
+      'À quoi sert ce dossier')}
     <div class="grid2">
       ${kpi('Ancienneté', i.months + ' mois', `${avec.cycles.length} cycle${avec.cycles.length > 1 ? 's' : ''} terminé${avec.cycles.length > 1 ? 's' : ''}`)}
       ${kpi('Membres', st.activeCount, `${st.activeCount ? pct(st.women / st.activeCount) : '—'} de femmes`)}
@@ -314,21 +317,31 @@ function extFlowCard(avec, st) {
 SCREENS['a.ext'] = () => {
   const { avec, me, st } = cur();
   const bureau = isBureau(me), open = openMeeting(avec), reqs = extReqs(avec);
+  /* Les neuf titres disent où en est la démarche, d'un coup d'œil : ils restent. Les neuf
+     descriptions pèsent cent quatre-vingts mots qu'on lit une fois — elles se replient juste
+     en dessous, numérotées pareil. */
   const steps = EXT_STEPS.map((s, i) => {
     const done = extStepDone(avec, st, i);
     return `<div class="li"><span class="av" style="border-radius:12px;${done ? 'background:var(--brand);color:var(--brand-ink)' : ''}">${done ? '✓' : i + 1}</span>
-      <span class="grow"><b>${s.t}</b><span class="small muted">${s.d}</span></span></div>`;
+      <span class="grow"><b>${s.t}</b></span></div>`;
   }).join('');
+  const stepsDetail = `<ol style="margin:0;padding-left:1.3em;display:flex;flex-direction:column;gap:8px">${
+    EXT_STEPS.map(s => `<li><b>${s.t}</b><br>${s.d}</li>`).join('')}</ol>`;
   const reqRows = reqs.map(r => `<div class="li"><span class="grow"><b>${esc(r.lender)}</b><span class="small muted">${fc(r.amount)} · ${r.months} mois · déposée le ${fdate(r.ts)}${r.note ? ' · ' + esc(r.note) : ''}</span></span>${extReqChip(r)}</div>
     ${bureau && r.status === 'depose' ? `<div class="li" style="gap:8px"><button class="btn sm brand" data-act="extReqStatus" data-id="${r.id}" data-v="accorde">Accordée</button>
       <button class="btn sm ghost" data-act="extReqStatus" data-id="${r.id}" data-v="refuse">Refusée</button>
       <span class="grow"></span><button class="btn sm danger" data-act="extReqDrop" data-id="${r.id}">Retirer</button></div>` : ''}`).join('');
   return `<div class="shell">${topbar('Crédit extérieur (IMF)', esc(avec.name), backBtn('a.more'), syncPill(avec))}<main class="main">
-    <div><h1>De la demande au remboursement</h1><p class="muted">Le groupe peut emprunter auprès d'une IMF, d'une banque ou d'une ONG pour renforcer sa caisse de crédit. C'est une dette du groupe : elle est retirée de la valeur des parts jusqu'au dernier franc remboursé.</p></div>
+    <!-- l'avertissement reste visible : il arrête la main. L'explication se replie. -->
+    <div><h1>De la demande au remboursement</h1><p class="muted">Une dette du groupe : elle est retirée de la valeur des parts jusqu'au dernier franc remboursé.</p></div>
+    ${pourquoi(`<p>Le groupe peut emprunter auprès d'une IMF, d'une banque ou d'une ONG pour renforcer sa caisse de crédit : il prête alors plus qu'il n'a épargné.</p>
+      <p>Tant que ce crédit n'est pas soldé, chaque part vaut moins — l'argent emprunté n'appartient pas au groupe. C'est pour cela qu'il apparaît en moins dans le partage de fin de cycle.</p>`,
+      'Pourquoi emprunter, et ce que ça coûte')}
     ${st.extList.length ? `<div class="grid2"><div class="kpi"><span>Reste à rembourser</span><b class="num" style="color:${st.extDebt ? 'var(--warn)' : 'var(--good)'}">${fck(st.extDebt)}</b><span>${st.extActive.length} crédit(s) en cours</span></div>
       <div class="kpi"><span>Coût payé</span><b class="num">${fck(st.sum.EXT_FEE)}</b><span>frais d'adhésion, dossier…</span></div></div>` : ''}
     ${st.extList.length ? extFlowCard(avec, st) : ''}
-    <section class="section"><h2>Le chemin</h2><div class="list">${steps}</div></section>
+    <section class="section"><h2>Le chemin</h2><div class="list">${steps}</div>
+      ${pourquoi(stepsDetail, 'Ce que chaque étape veut dire')}</section>
     <section class="section"><h2>Demandes</h2>
       <div class="list">${reqRows || '<div class="li muted">Aucune demande notée pour le moment</div>'}</div>
       <p class="hint">Les demandes sont des notes de suivi : elles ne déplacent pas d'argent. L'argent reçu, les frais, la garantie et les remboursements, eux, sont écrits dans le journal scellé.</p>

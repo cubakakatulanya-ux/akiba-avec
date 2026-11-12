@@ -74,7 +74,10 @@ SCREENS['dev.terminal'] = () => {
   };
 
   return `<div class="shell">${topbar('Contrôle du terminal', d ? esc(d.marque + ' ' + d.modele) : 'Ce que seul l\'appareil peut dire', backBtn('dev.backup'))}<main class="main">
-    <p class="muted">Trois choses ne se vérifient que sur l'appareil : l'appareil photo, le fichier touché dans un message, et l'imprimante. Passez-les une à une, dites ce qui s'est passé, puis envoyez le compte rendu à Ubora.</p>
+    <p class="muted">L'appareil photo, le fichier touché dans un message, l'imprimante.</p>
+    ${pourquoi(`<p>Ces trois choses ne se vérifient que sur l'appareil lui-même : aucun banc d'essai ne peut les éprouver à votre place.</p>
+      <p>Passez-les une à une, dites ce qui s'est passé, puis envoyez le compte rendu à Ubora. Un « non » n'empêche pas de tenir les réunions — il ferme seulement une voie.</p>`,
+      'Pourquoi ce contrôle existe')}
 
     ${manques ? `<div class="alert warn">${icSpan('alert')}<div><b>${manques} point${manques > 1 ? 's' : ''} à regarder</b>
       <span class="small">Le détail est juste en dessous. Un « non » n'empêche pas de tenir les réunions : il ferme seulement une voie.</span></div></div>` : ''}

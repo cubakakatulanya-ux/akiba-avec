@@ -240,7 +240,10 @@ SCREENS['a.receipts'] = p => {
   const here = activeM(avec).filter(x => (m.presence || {})[x.id] && (m.presence || {})[x.id] !== 'A');
   const rows = here.map(x => ({ x, r: memberReceipt(avec, m, x) }));
   return `<div class="shell">${topbar('Reçus des membres', `Réunion n°${m.n} · ${fdate(m.date)}`, backBtn('a.receipt', `data-id="${m.id}"`), syncPill(avec))}<main class="main">
-    <p class="muted">Un reçu par membre présent : épargne du jour, crédit, amendes, et le sceau de la réunion. Imprimez sur le terminal, ou partagez le texte par WhatsApp.</p>
+    <p class="muted">Un reçu par membre présent.</p>
+    ${pourquoi(`<p>Chaque reçu porte l'épargne du jour, le crédit, les amendes, et le <b>sceau de la réunion</b> : c'est lui qui permet de prouver, des mois plus tard, que le papier vient bien de cette séance-là.</p>
+      <p>Imprimez sur le terminal, ou partagez le texte par WhatsApp.</p>`,
+      'Ce que porte un reçu')}
     ${posAvailable() ? '' : '<div class="tip row" style="align-items:flex-start">' + icSpan('alert') + '<div><b>Aucune imprimante détectée</b><span class="small">Sur un terminal POS, ouvrez Akiba depuis l\'application Android. Sinon, installez RawBT pour une imprimante Bluetooth, ou partagez le reçu.</span></div></div>'}
     ${posAvailable() ? `<button class="li" data-act="go" data-to="a.imprimante" style="border:1px solid var(--line);border-radius:var(--r);margin-bottom:10px">
       ${rowIc('clip')}<span class="grow"><b>Imprimante du terminal</b><span class="small muted">Voir ce que ce terminal sait faire, et essayer chaque voie</span></span>${ic('chev')}</button>` : ''}
@@ -251,13 +254,13 @@ SCREENS['a.receipts'] = p => {
       <button class="li" data-act="recuFormat" style="border:1px solid var(--line);border-radius:var(--r)">
         ${rowIc('clip')}<span class="grow"><b>${recuCourt() ? 'Reçus courts' : 'Reçus détaillés'}</b>
           <span class="small muted">${recuCourt()
-            ? 'Le nécessaire et le sceau, sur ' + Math.round(receiptText(avec, m, rows[0].x, rows[0].r, true).split(String.fromCharCode(10)).length * 0.4) + ' cm environ. Touchez pour le détail complet.'
-            : 'Tout le détail, sur ' + Math.round(receiptText(avec, m, rows[0].x, rows[0].r, false).split(String.fromCharCode(10)).length * 0.4) + ' cm environ. Touchez pour économiser le papier.'}</span></span>
+            ? Math.round(receiptText(avec, m, rows[0].x, rows[0].r, true).split(String.fromCharCode(10)).length * 0.4) + ' cm de papier. Touchez pour le détail complet.'
+            : Math.round(receiptText(avec, m, rows[0].x, rows[0].r, false).split(String.fromCharCode(10)).length * 0.4) + ' cm de papier. Touchez pour économiser.'}</span></span>
         <span class="chip ${recuCourt() ? 'good' : 'warn'}">${recuCourt() ? 'économe' : 'complet'}</span></button>
       <!-- La largeur du rouleau : on la règle devant le terminal, parce que c est là qu on voit le papier. -->
       <button class="li" data-act="recuPapier" style="border:1px solid var(--line);border-radius:var(--r);margin-top:8px">
         ${rowIc('clip')}<span class="grow"><b>Papier ${recuMm()} mm</b>
-          <span class="small muted">${RECU_W} signes par ligne. Touchez pour passer en ${recuMm() === 58 ? '80' : '58'} mm si le rouleau du terminal est plus ${recuMm() === 58 ? 'large' : 'étroit'}.</span></span>
+          <span class="small muted">${RECU_W} signes par ligne. Touchez pour ${recuMm() === 58 ? '80' : '58'} mm.</span></span>
         <span class="chip">${recuMm()} mm</span></button>
       <button class="btn ghost block" data-act="recuVerifier">${ic('shield')} Vérifier un reçu contesté</button>` : ''}
   </main></div>`;

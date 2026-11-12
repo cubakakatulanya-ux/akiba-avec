@@ -194,6 +194,20 @@ const ICONS = {
 const penRate = s => (s.penaltyRate != null ? s.penaltyRate : s.rate);   // taux de pénalité de retard, par mois
 const ic = (n, cls = '') => `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[n] || ''}</svg>`;
 
+/* ---------- « Pourquoi ? » : l'explication qu'on replie au lieu de la supprimer ----------
+   Akiba s'adresse à des gens qui lisent peu et qui travaillent debout, en assemblée. Mesuré :
+   36 % des mots de l'application expliquent, et sur certains écrans il fallait descendre deux
+   mille pixels — cinq hauteurs de téléphone — avant d'atteindre un bouton.
+
+   Ce texte n'est pas de trop : il protège d'une erreur sur l'argent, et il sert en formation.
+   Il est au mauvais endroit. On le replie donc. Celui qui forme un groupe le retrouve d'un
+   doigt ; celui qui tient la séance voit le geste, et rien d'autre.
+
+   À n'employer que pour ce qu'on lit UNE FOIS. Un avertissement qui doit arrêter la main —
+   « cette opération ne se défait pas » — reste visible : il ne s'explique pas, il prévient. */
+const pourquoi = (corps, titre = 'Pourquoi ?') =>
+  `<details class="g pourquoi"><summary>${titre}</summary><div class="gb">${corps}</div></details>`;
+
 /* bande défilante : { icon, label, value } ou simple texte ; le texte est toujours échappé */
 function ticker(items, opts = {}) {
   const list = (items || []).filter(Boolean);
