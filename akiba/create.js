@@ -8,7 +8,17 @@ const fromIso = v => { const t = new Date((v || '') + 'T09:00').getTime(); retur
 const fval = id => { const e = document.getElementById(id); return e ? e.value : null; };
 
 function cDraft(p) {
-  const from = p.from || (K.session ? (K.session.kind === 'org' ? 'org' : 'anim') : 'login');
+  /* Qui crée ? La réponse décide du statut de l'AVEC : un animateur crée « en attente », et
+     l'organisation valide ensuite. Tout le reste crée une AVEC active tout de suite.
+
+     Le repli disait « sinon, animateur ». Une session de GROUPE qui serait arrivée ici sans
+     préciser d'où elle vient aurait donc créé une AVEC en attente — d'une organisation qui
+     n'existe pas. Le groupe aurait lu « L'AVEC doit d'abord être validée par l'organisation »
+     sans que personne puisse la valider : première réunion impossible, sans recours.
+
+     Aucun bouton ne fait cela aujourd'hui, tous passent « from ». Mais seul un animateur crée
+     en attente : on l'écrit, au lieu de le laisser dépendre de ce que personne n'a oublié. */
+  const from = p.from || (K.session ? (K.session.kind === 'org' ? 'org' : K.session.kind === 'anim' ? 'anim' : 'login') : 'login');
   if (!App.cdraft || App.cdraft.done || (p.from && App.cdraft.from !== p.from)) {
     App.cdraft = {
       from, step: 1, prep: true, mode: 'new', names: '', members: [], roles: {}, nextId: 0, editing: null,

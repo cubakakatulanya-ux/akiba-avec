@@ -1176,6 +1176,53 @@ window.__akibaTests = async function () {
     return signes.size + ' signes différents dans la démonstration';
   });
 
+  t('Une réunion s’ouvre quand il faut, et refuse quand il faut', () => {
+    const a = K.data.avecs[0], sauve = K.session;
+    const nM = a.meetings.length, statut = a.status, org = a.orgId, parti = a.movedOut;
+    const bureau = bureauOf(a)[0], simple = activeM(a).find(m => !isBureau(m));
+    const vraiToast = App.toast; let dit = '';
+    App.toast = t => { dit = t; };
+    const fermer = () => { a.meetings = a.meetings.filter(m => m.status !== 'open'); };
+    const essai = () => { fermer(); dit = ''; ACT.startMeeting();
+      return openMeeting(a) ? null : (dit || 'refusée sans message'); };
+    try {
+      a.movedOut = null; a.status = 'active'; a.orgId = org;
+      K.session = { kind: 'avec', avecId: a.id, memberId: bureau.id };
+      must(essai() === null, 'le bureau doit pouvoir ouvrir une réunion sur une AVEC active');
+
+      K.session = { kind: 'avec', avecId: a.id, memberId: simple.id };
+      must(/bureau/i.test(essai() || ''), 'un membre ordinaire ne doit pas pouvoir ouvrir');
+
+      K.session = { kind: 'avec', avecId: a.id, memberId: bureau.id };
+      a.movedOut = Date.now();
+      must(/autre téléphone/i.test(essai() || ''), 'un cahier parti ailleurs ne doit pas s’ouvrir ici');
+      a.movedOut = null;
+
+      /* La règle de validation reste entière : accompagnée, l'AVEC attend son organisation. */
+      a.status = 'pending'; a.orgId = org || 'org-essai';
+      must(/valid/i.test(essai() || ''), 'une AVEC accompagnée doit attendre sa validation');
+
+      /* Mais SANS organisation, personne ne peut valider : la bloquer serait la condamner à ne
+         jamais tenir sa première réunion. C'est le piège qu'on a trouvé en vérifiant. */
+      a.orgId = null;
+      must(essai() === null, 'une AVEC en attente SANS organisation ne doit pas rester bloquée');
+
+      /* Et l'origine ne doit jamais faire d'un groupe un animateur : ce serait créer l'AVEC
+         « en attente » d'une organisation inexistante. */
+      K.session = { kind: 'avec', avecId: a.id, memberId: bureau.id }; App.cdraft = null;
+      App.go('c.avec', {});
+      eq(App.cdraft && App.cdraft.from, 'login', 'l’origine pour une session de groupe');
+      K.session = { kind: 'anim', userId: (K.data.users.find(u => u.role === 'anim') || {}).id }; App.cdraft = null;
+      App.go('c.avec', {});
+      eq(App.cdraft && App.cdraft.from, 'anim', 'l’origine pour un animateur');
+      return 'bureau ok · membre, cahier parti et AVEC accompagnée refusés · AVEC sans organisation débloquée';
+    } finally {
+      App.toast = vraiToast; App.cdraft = null;
+      a.meetings.length = nM; a.status = statut; a.orgId = org; a.movedOut = parti;
+      K.session = sauve; DB.save();
+    }
+  });
+
   t('Le guide range ses trente-six parties, et n’en perd aucune', () => {
     /* Trente-six parties en une seule liste, c'est une table des matières qu'on parcourt du
        doigt en espérant tomber dessus. Les familles donnent six repères au lieu de trente-six.

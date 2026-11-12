@@ -755,7 +755,11 @@ const butDe = note => String(note || '').split(' · ')[0].trim();
 const openMeeting = avec => avec.meetings.find(m => m.status === 'open' && m.kind !== 'guichet');
 const openGuichet = avec => avec.meetings.find(m => m.status === 'open' && m.kind === 'guichet');
 const pending = avec => avec.tx.filter(t => !t.synced).length;
-const isActive = avec => !avec.status || avec.status === 'active';
+/* Une AVEC « en attente » attend sa validation PAR SON ORGANISATION. Sans organisation, il n'y
+   a personne pour valider : la garder en attente, ce serait la condamner à ne jamais tenir sa
+   première réunion, en lui affichant « à faire valider par l'organisation ». Un garde-fou, et
+   non un relâchement — une AVEC accompagnée reste bien bloquée jusqu'à sa validation. */
+const isActive = avec => !avec.status || avec.status === 'active' || (avec.status === 'pending' && !avec.orgId);
 
 /* Codes transmis par téléphone, vérifiables sans internet.
    Démonstration : secret partagé par organisation. En production : signature numérique (clé privée chez l'organisation). */
