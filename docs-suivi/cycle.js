@@ -360,7 +360,10 @@ SCREENS['a.roles'] = () => {
   const { avec, me } = cur();
   if (!isBureau(me)) return SCREENS['a.home']();
   return `<div class="shell">${topbar('Bureau', esc(avec.name), backBtn('a.more'))}<main class="main">
-    <p class="muted">À utiliser quand l'assemblée l'a décidé, en cours de cycle comme à la fin : nouvelle élection, démission, départ, maladie ou décès d'un responsable. Le changement est validé par un deuxième membre du bureau actuel, et <b>reste écrit dans le journal</b> — qui perd le rôle, qui le prend, et qui a validé.</p>
+    <p class="muted">Quand l'assemblée l'a décidé. Un deuxième membre du bureau valide.</p>
+    ${pourquoi(`<p>En cours de cycle comme à la fin : nouvelle élection, démission, départ, maladie ou décès d'un responsable.</p>
+      <p>Le changement <b>reste écrit dans le journal</b> — qui perd le rôle, qui le prend, et qui a validé. Personne ne peut l'effacer ensuite.</p>`,
+      'Quand changer le bureau')}
     ${openMeeting(avec) ? '<div class="alert warn"><div><b>Réunion ouverte</b><span class="small">Changez les rôles après la clôture : les clés servent à fermer la caisse.</span></div></div>' : `${rolesForm(avec, 'ro')}${approverFields(avec, me, 'ra')}
     <button class="btn primary block xl" data-act="saveRoles">${ic('check')} Enregistrer le nouveau bureau</button>`}
   </main></div>`;

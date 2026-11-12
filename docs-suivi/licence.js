@@ -298,16 +298,17 @@ function validationPanel(opts = {}) {
     ${r.blocked ? `<div class="alert bad">${icSpan('lock')}<div><b>Accès bloqué</b><span class="small">${esc(r.why)}. Les données restent sur ce téléphone. Contactez Ubora si c'est une erreur.</span></div></div>` : ''}
     ${r.expired ? `<div class="alert bad">${icSpan('alert')}<div><b>${esc(r.why)}</b><span class="small">Les données restent sur ce téléphone. Demandez un nouveau code à Ubora.</span></div></div>` : ''}
     ${r.limited ? `<div class="alert warn">${icSpan('key')}<div><b>Téléphone d'AVEC</b><span class="small">Ce téléphone tient les réunions de l'AVEC reçue. Pour le reste, il faut un code de validation.</span></div></div>` : ''}
-    ${opts.intro === false ? '' : `<p class="muted">${APP_NOM()} est libre à installer et à découvrir. Pour les vraies opérations, Ubora valide ce téléphone, une seule fois.</p>`}
+    ${opts.intro === false ? '' : `<p class="muted">Ubora valide ce téléphone, une seule fois.</p>`}
     <!-- Deux codes de huit signes se ressemblent : celui du téléphone, qu'on DONNE, et celui de
          validation, qu'on REÇOIT. On numérote l'échange pour qu'on ne tape pas le sien dans la case. -->
     <ol class="echange">
+      <!-- Les boutons disent déjà les chemins : la phrase qui les énumérait était un doublon.
+           Ce qui ne se devine pas — lequel marche sans réseau — se replie. -->
       <li><i>1</i><div><b>Donnez ce code à Ubora</b>
-        <span>C'est le code de <b>ce téléphone-ci</b>. Choisissez le chemin que vous avez : WhatsApp demande des données, le SMS une simple carte SIM, l'appel rien du tout.</span>
         <div class="devcode"><span class="label">Code de ce téléphone</span><b class="mono">${devNu(deviceId())}</b></div>
         ${opts.demande ? '' : `<div class="field" style="margin-top:8px"><label for="licNom">Nom de votre AVEC ou organisation</label>
           <input id="licNom" class="input" autocomplete="off" placeholder="Ex. Espoir Ubangi">
-          <span class="hint">Pour qu'Ubora sache à qui rendre le code. Huit signes tout seuls ne disent rien.</span></div>`}
+          <span class="hint">Pour qu'Ubora sache à qui le rendre.</span></div>`}
         <div class="row" style="gap:8px;flex-wrap:wrap">
           <button class="btn wa" data-act="licDemWa">${ic('chat')} Envoyer sur WhatsApp</button>
           <button class="btn brand" data-act="licDemSms">${ic('sms')} Envoyer par SMS</button>
@@ -315,13 +316,16 @@ function validationPanel(opts = {}) {
           <button class="btn ghost" data-act="licCopier">${ic('copy')} Copier le code</button>
         </div>
         <!-- le seul chemin qui marche sans SIM et sans réseau : l'administrateur scane l'écran -->
-        <button class="btn ghost block" data-act="licDemImage" style="margin-top:8px">${ic('eye')} Pas de réseau ? Montrer la demande en image</button></div></li>
+        <button class="btn ghost block" data-act="licDemImage" style="margin-top:8px">${ic('eye')} Pas de réseau ? Montrer la demande en image</button>
+        ${pourquoi(`<p><b>WhatsApp</b> demande des données mobiles. <b>Le SMS</b> se contente d'une carte SIM. <b>L'appel</b> ne demande rien : vous dictez les huit signes, Ubora vous en dicte huit en retour.</p>
+          <p><b>L'image</b> est le seul chemin qui marche sans SIM et sans réseau — mais l'administrateur doit être devant vous pour la scanner.</p>`,
+          'Quel chemin choisir ?')}</div></li>
       <li><i>2</i><div><b>Ubora vous répond avec le code de validation</b>
-        <span>C'est un <b>autre</b> code, huit signes lui aussi. Ubora le dicte au téléphone, ou l'envoie en entier par WhatsApp. Ce n'est pas le code ci-dessus.</span></div></li>
+        <span>Huit signes, mais <b>pas les mêmes</b> que ci-dessus.</span></div></li>
       <li><i>3</i><div><b>Tapez ici le code reçu d'Ubora</b>
         <div class="field" style="margin-top:6px"><label for="licS" class="sr-only">Code de validation reçu d'Ubora</label>
           <textarea id="licS" class="input mono" rows="2" autocomplete="off" spellcheck="false" autocapitalize="characters" placeholder="Les 8 signes dictés par Ubora, ou le code long collé"></textarea>
-          <span class="hint">Avec ou sans tiret, en minuscules, ou le message WhatsApp collé en entier : Akiba y retrouve le code tout seul.</span></div>
+          <span class="hint">Tiret, minuscules, message collé en entier : Akiba retrouve le code.</span></div>
         <button class="btn primary block xl" data-act="licSheetOk">${ic('key')} Valider ce téléphone</button></div></li>
     </ol>
   </section>`;

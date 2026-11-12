@@ -170,10 +170,10 @@ SCREENS['a.cards'] = () => {
       <button class="btn brand" data-act="cartesPos">${ic('home')} Imprimer sur le terminal</button>
       <button class="btn ghost" data-act="carteVerifier">${ic('shield')} Vérifier une carte</button>
     </div>
-    <p class="hint">Le QR code porte le nom du groupe, celui du membre, son rôle, son numéro, sa date d'entrée
-      et la référence <b class="mono">${seq}-…</b> : le numéro de l'écriture du journal au moment de l'impression,
-      suivi de son empreinte. Aucun code secret, aucun montant. « Vérifier une carte » refait le calcul hors réseau :
-      une carte recopiée ou venue d'un autre groupe est refusée.</p>
+    <p class="hint"><b>Aucun code secret, aucun montant</b> sur la carte.</p>
+    ${pourquoi(`<p>Le QR porte le nom du groupe, celui du membre, son rôle, son numéro, sa date d'entrée, et la référence <b class="mono">${seq}-…</b> — le numéro de l'écriture du journal au moment de l'impression, suivi de son empreinte.</p>
+      <p><b>Vérifier une carte</b> refait ce calcul hors réseau : une carte recopiée, ou venue d'un autre groupe, est refusée.</p>`,
+      'Ce que porte le QR, et ce qu\'il prouve')}
     <div class="cartes">${membres.map(m => carteHTML(avec, m, seq)).join('')}</div>
   </main></div>`;
 };

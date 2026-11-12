@@ -193,8 +193,8 @@ SCREENS['a.imf'] = () => {
     ${qualityCard(qd)}
     ${st.extList.length ? `<div class="alert ${st.extDebt ? 'warn' : 'good'}">${icSpan('building')}<div><b>Crédit extérieur</b><span class="small">${st.extList.length} crédit(s) · reste ${fc(st.extDebt)} · frais payés ${fc(st.sum.EXT_FEE)}${st.sum.EXT_GUAR ? ` · garantie ${fc(st.sum.EXT_GUAR)}` : ''}</span></div></div>` : ''}
     ${bureau ? `<section class="card stack"><h2>Préparer le fichier</h2>
-      <p class="small">Contenu : profil du groupe, indicateurs par cycle, réunions, crédits internes, crédits extérieurs, membres.
-        <b>Jamais</b> de téléphone ni d'adresse.</p>
+      <p class="small"><b>Jamais</b> de téléphone ni d'adresse dans le fichier.</p>
+      ${pourquoi('<p>Contenu : profil du groupe, indicateurs par cycle, réunions, crédits internes, crédits extérieurs, membres.</p>', 'Ce que contient le fichier')}
       <label class="row" style="gap:10px"><input id="imN" type="checkbox" style="width:24px;height:24px;flex:none"><span>Mettre les noms des membres (sinon « Membre 1, Membre 2… »)</span></label>
       <label class="row" style="gap:10px;align-items:flex-start"><input id="imA" type="checkbox" style="width:24px;height:24px;flex:none"><span>L'assemblée générale a accepté de partager ces informations avec l'IMF.</span></label>
       <div class="field"><label for="imI">Nom de l'IMF</label><input id="imI" class="input" placeholder="Ex. IMF Tujenge Mikopo"></div>
@@ -344,7 +344,8 @@ SCREENS['a.ext'] = () => {
       ${pourquoi(stepsDetail, 'Ce que chaque étape veut dire')}</section>
     <section class="section"><h2>Demandes</h2>
       <div class="list">${reqRows || '<div class="li muted">Aucune demande notée pour le moment</div>'}</div>
-      <p class="hint">Les demandes sont des notes de suivi : elles ne déplacent pas d'argent. L'argent reçu, les frais, la garantie et les remboursements, eux, sont écrits dans le journal scellé.</p>
+      <p class="hint">Des notes de suivi : elles ne déplacent pas d'argent.</p>
+      ${pourquoi('<p>L\'argent reçu, les frais, la garantie et les remboursements, eux, sont écrits dans le <b>journal scellé</b> — pas ici.</p>', 'Et l\'argent, alors ?')}
       ${bureau ? `<div class="grid2"><button class="btn ghost" data-act="extReqSheet">${ic('clip')} Noter une demande</button>
         <button class="btn ghost" data-act="go" data-to="a.imf">${ic('chart')} Préparer le dossier</button></div>` : ''}</section>
     ${extLoansSection(avec, st)}
@@ -352,7 +353,7 @@ SCREENS['a.ext'] = () => {
         <button class="btn ghost" data-act="extSheet">${ic('building')} Recevoir un crédit</button>
         ${st.extActive.length ? `<button class="btn ghost" data-act="extRepaySheet">${ic('coins')} Rembourser</button>` : ''}
         ${st.extList.length ? `<button class="btn ghost" data-act="extFeeSheet">${ic('clip')} Payer des frais</button>` : ''}</div></section>`
-      : `<div class="tip row" style="align-items:flex-start">${icSpan('calendar')}<div><b>L'argent se compte en réunion</b><span class="small">Recevoir le crédit, payer les frais et rembourser le prêteur se font pendant une réunion, à l'étape « Crédits », devant tout le groupe.</span></div></div>`) : ''}
+      : `<div class="tip row" style="align-items:flex-start">${icSpan('calendar')}<div><b>L'argent se compte en réunion</b><span class="small">À l'étape « Crédits », devant tout le groupe.</span></div></div>`) : ''}
   </main></div>`;
 };
 ACT.extReqSheet = () => {

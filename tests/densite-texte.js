@@ -42,12 +42,18 @@ const MESURE = `(() => {
   const mots = t => (String(t || '').trim().match(/[^\\s]+/g) || []).length;
   const visible = el => { const s = getComputedStyle(el); return s.display !== 'none' && s.visibility !== 'hidden'; };
   const total = mots(main.innerText);
-  /* ce qui explique, par opposition à ce qui agit ou chiffre */
-  const EXPL = '.muted, .hint, .small, .tip, .alert span, p.lead, .pas3 span, .echange span';
+  /* Ce qui EXPLIQUE, par opposition à ce qui agit ou chiffre.
+
+     Première version trop large : elle comptait aussi la petite ligne sous chaque rangée de
+     liste — « 12 nov. 2026 · dépôt de Solange » — et classait donc le journal parmi les
+     écrans bavards alors que ces mots sont des DONNÉES. Un indicateur qui se trompe envoie
+     corriger le mauvais écran. On écarte donc ce qui vit dans une rangée. */
+  const EXPL = 'p.muted, p.hint, p.small, .tip, .alert span.small, p.lead, .pas3 span, .echange span, .card > p, .section > p';
+  const RANGEE = '.li, .mrow, .kpi, tr, .receipt, .vignette, option';
   let expl = 0;
   main.querySelectorAll(EXPL).forEach(e => { if (!visible(e)) return;
-    /* on ne compte pas deux fois un texte imbriqué */
-    if (e.parentElement && e.parentElement.closest(EXPL)) return;
+    if (e.closest(RANGEE)) return;                       // sous-titre d'une rangée : c'est une donnée
+    if (e.parentElement && e.parentElement.closest(EXPL)) return;   // pas deux fois le même texte
     expl += mots(e.innerText); });
   /* à quelle hauteur se trouve le premier bouton : c'est ce qu'il faut lire ou sauter */
   const haut = main.getBoundingClientRect().top;
