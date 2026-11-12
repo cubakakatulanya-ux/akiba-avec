@@ -96,19 +96,72 @@ function livretHTML(avec, x, st, ancre) {
   </article>`;
 }
 
+/* ---------- choisir qui on imprime ----------
+   Une page A4 par membre : pour un groupe de trente, imprimer tout le monde coûte trente
+   feuilles. Or on réimprime rarement pour tous — on réimprime pour celui qui a perdu le sien,
+   pour les trois qui ont pris un crédit ce mois-ci, pour les nouveaux. Le choix vit dans App,
+   comme celui du dossier IMF, et il repart entier quand on change d'AVEC. */
+function livretChoisis(avec) {
+  const tous = activeM(avec).map(x => x.id);
+  if (!App.livretChoix || App.livretAvec !== avec.id) { App.livretAvec = avec.id; App.livretChoix = new Set(tous); }
+  /* un membre sorti du groupe entre-temps ne doit pas rester dans le choix */
+  const vivants = new Set(tous);
+  [...App.livretChoix].forEach(id => { if (!vivants.has(id)) App.livretChoix.delete(id); });
+  return App.livretChoix;
+}
+ACT.livretBascule = d => { const { avec } = cur(); const c = livretChoisis(avec);
+  if (c.has(d.id)) c.delete(d.id); else c.add(d.id); render(); };
+ACT.livretTous = () => { const { avec } = cur(); livretChoisis(avec); App.livretChoix = new Set(activeM(avec).map(x => x.id)); render(); };
+ACT.livretAucun = () => { const { avec } = cur(); livretChoisis(avec); App.livretChoix.clear(); render(); };
+/* Ceux qui ont un crédit en cours. « Ceux qui ont bougé depuis la dernière réunion » aurait
+   paru plus naturel, mais en réunion tout le monde achète des parts : le raccourci aurait
+   retenu les vingt membres sur vingt, et promis un tri qui ne trie rien. Un crédit, lui,
+   distingue vraiment — et c'est le livret qui porte l'échéancier, donc celui qu'on réimprime. */
+ACT.livretCredits = () => {
+  const { avec, st } = cur();
+  livretChoisis(avec);
+  const avecCredit = new Set((st.activeLoans || []).map(l => l.memberId));
+  App.livretChoix = new Set(activeM(avec).filter(x => avecCredit.has(x.id)).map(x => x.id));
+  render();
+  const n = App.livretChoix.size;
+  App.toast(n ? `${n} membre${n > 1 ? 's ont' : ' a'} un crédit en cours` : 'Aucun crédit en cours dans le groupe');
+};
+
 SCREENS['a.livret'] = p => {
   const { avec, me, st } = cur();
   const seul = p.id ? memberOf(avec, p.id) : null;
   if (!seul && !isBureau(me)) return SCREENS['a.member']({ id: me.id });
-  const liste = seul ? [seul] : activeM(avec);
+  const tous = seul ? [seul] : activeM(avec);
+  const choisis = seul ? null : livretChoisis(avec);
+  const liste = seul ? [seul] : tous.filter(x => choisis.has(x.id));
   const ancre = livretAncre(avec);
   return `<div class="shell">${topbar(seul ? 'Livret de ' + esc(seul.name.split(' ')[0]) : 'Livrets des membres', esc(avec.name), backBtn(seul ? 'a.member' : 'a.members', seul ? `data-id="${seul.id}"` : ''))}<main class="main">
-    <div class="alert">${icSpan('book')}<div><b>${liste.length} livret${liste.length > 1 ? 's' : ''} à imprimer</b>
+    <div class="alert">${icSpan('book')}<div><b>${liste.length} livret${liste.length > 1 ? 's' : ''} à imprimer${seul ? '' : ` sur ${tous.length} membre${tous.length > 1 ? 's' : ''}`}</b>
       <span class="small">Une page A4 par membre : le compte, les parts, les crédits, et deux lignes de signature. Le membre le garde chez lui.</span></div></div>
+    ${seul ? '' : `<section class="section"><div class="row between" style="flex-wrap:wrap;gap:8px"><h2 style="margin:0">Pour qui imprimer ?</h2>
+      <div class="row" style="gap:6px;flex-wrap:wrap"><button class="btn sm ghost" data-act="livretTous">Tous</button>
+        <button class="btn sm ghost" data-act="livretCredits">Ceux qui ont un crédit</button>
+        <button class="btn sm ghost" data-act="livretAucun">Aucun</button></div></div>
+      <p class="hint" style="margin:0 0 8px">Touchez un nom pour l'ajouter ou le retirer. Seuls les livrets cochés partent à l'impression.</p>
+      <div class="list">${tous.map(x => `<button class="li" data-act="livretBascule" data-id="${x.id}">
+        <span class="chk${choisis.has(x.id) ? ' on' : ''}" aria-hidden="true">${choisis.has(x.id) ? ic('check') : ''}</span>
+        <span class="grow"><b>${esc(x.name)}</b><span class="small muted">${(() => {
+          /* ce qui aide à décider si ce livret vaut une feuille : les parts, et le crédit —
+             « compte 0 FC » s'affichait pour tout le monde dans un groupe sans guichet */
+          const m = st.mem[x.id]; if (!m) return '';
+          const pret = (st.activeLoans || []).find(l => l.memberId === x.id);
+          const bouts = [`${m.parts} part${m.parts > 1 ? 's' : ''}`];
+          if (pret) bouts.push(`crédit ${fc(pret.remaining)}${pret.status === 'retard' ? ' · en retard' : ''}`);
+          else if (m.libre) bouts.push(`compte ${fc(m.libre)}`);
+          return bouts.join(' · ');
+        })()}</span></span>
+        </button>`).join('')}</div>
+    </section>`}
     <div class="row" style="flex-wrap:wrap">
-      <button class="btn primary" data-act="livretPrint">${ic('clip')} Imprimer sur A4</button>
+      <button class="btn primary" data-act="livretPrint"${liste.length ? '' : ' disabled'}>${ic('clip')} ${liste.length > 1 ? `Imprimer les ${liste.length} livrets` : liste.length === 1 ? 'Imprimer le livret' : 'Imprimer'}</button>
       ${seul ? `<button class="btn brand" data-act="releveSheet" data-id="${seul.id}">${ic('home')} Relevé sur le terminal</button>` : ''}
     </div>
+    ${liste.length ? '' : `<div class="alert warn">${icSpan('alert')}<div><b>Aucun membre choisi</b><span class="small">Touchez au moins un nom ci-dessus, ou « Tous ».</span></div></div>`}
     <div class="livrets">${liste.map(x => livretHTML(avec, x, st, ancre)).join('')}</div>
   </main></div>`;
 };

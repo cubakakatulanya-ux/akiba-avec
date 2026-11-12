@@ -193,8 +193,19 @@ button.li:hover{background:var(--surface-2)}
 .stp.cur i{background:var(--maize);border-color:var(--maize);color:var(--maize-ink)}
 .stp.cur{color:var(--ink)}
 /* member grid rows in meeting */
+/* ---------- les rangées de saisie d'une réunion ----------
+   Mesuré sur la démonstration, vingt membres : la pastille d'initiales prenait 40 px, plus son
+   écart, sur une largeur de 360 px. Il ne restait que 125 px pour le nom, et sept noms sur
+   vingt passaient à la ligne — chaque rangée montait alors à 130 px au lieu de 82. Le
+   secrétaire voyait six membres au lieu de dix, et faisait défiler deux fois plus pendant que
+   l'argent est sur la table.
+
+   La pastille s'en va d'ICI seulement : en réunion, c'est le nom qu'on lit à voix haute, pas
+   deux initiales. Elle reste partout ailleurs, où elle sert à reconnaître quelqu'un. Les 50 px
+   récupérés logent les noms entiers ET des boutons que le doigt atteint. */
 .mrow{display:flex;align-items:center;gap:10px;padding:10px 12px;border-top:1px solid var(--line)}
 .mrow:first-child{border-top:0}
+.mrow .av{display:none}
 .mrow .grow{flex:1;min-width:0}
 .mrow .grow b{display:block;font-weight:700;overflow-wrap:anywhere}
 .seg{display:flex;background:var(--surface-2);border-radius:10px;padding:3px;gap:2px}
@@ -203,10 +214,13 @@ button.li:hover{background:var(--surface-2)}
 .seg button.on.R{background:var(--warn);color:#fff}
 .seg button.on.A{background:var(--bad);color:#fff}
 .seg button.on.x{background:var(--brand);color:var(--brand-ink)}
+/* 48 px, et non 40 : en dessous de 44 le doigt rate la cible, et ici chaque ratage est une
+   part de trop ou de moins dans le cahier d'un membre. Le nombre au milieu grossit avec eux —
+   c'est lui que le secrétaire relit à l'assemblée. */
 .pm{display:flex;align-items:center;gap:6px}
-.pm button{width:40px;height:40px;border-radius:50%;border:0;background:var(--surface-2);font-size:1.3rem;font-weight:800;line-height:1}
+.pm button{width:48px;height:48px;border-radius:50%;border:0;background:var(--surface-2);font-size:1.5rem;font-weight:800;line-height:1}
 .pm button.plus{background:var(--brand);color:var(--brand-ink)}
-.pm output{min-width:26px;text-align:center;font-family:var(--f-display);font-size:1.3rem;font-weight:800}
+.pm output{min-width:30px;text-align:center;font-family:var(--f-display);font-size:1.5rem;font-weight:800}
 .stamps{display:flex;gap:3px;margin-top:3px}
 .stamps span{width:11px;height:11px;border-radius:50%;border:1.5px solid var(--line)}
 .stamps span.on{background:var(--maize);border-color:var(--maize)}
@@ -1203,7 +1217,7 @@ details.g.demo>:not(summary)+*{margin-top:8px}
 </style>
 <style>html,body{margin:0}</style>
 </head><body>
-<script>window.KITABU_PWA = true; window.KITABU_VERSION = 'akiba-20261111150108'; window.AKIBA_CIBLE = 'suivi';</script>
+<script>window.KITABU_PWA = true; window.KITABU_VERSION = 'akiba-20261112135926'; window.AKIBA_CIBLE = 'suivi';</script>
 
 <div id="app"></div>
 <script src="core.js"></script>

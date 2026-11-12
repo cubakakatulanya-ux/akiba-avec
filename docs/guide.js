@@ -259,6 +259,7 @@ const GUIDE = [
     <p>Chaque membre peut repartir avec <b>sa page</b> : ce que le cahier dit de lui, sur une feuille A4 qu'il garde chez lui.</p>
     <ul>
       <li><b>Membres › son nom › Livret</b> : les parts achetées réunion par réunion, les mouvements du guichet, les crédits, le solde, et deux lignes de signature.</li>
+      <li><b>Membres › Livrets</b> pour tout le groupe — et vous <b>choisissez qui</b> : touchez les noms, ou <b>Ceux qui ont un crédit</b>. Seuls les livrets cochés partent à l'impression. Une page A4 par membre, c'est trente feuilles pour trente membres : on réimprime rarement pour tous.</li>
       <li><b>Relevé sur le terminal</b> : le même compte, en court, sur le rouleau de l'imprimante.</li>
       <li>Chaque livret porte une référence qui dit de quel cahier et de quelle écriture il est tiré : on peut le confronter au journal.</li>
     </ul>

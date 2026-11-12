@@ -1176,6 +1176,79 @@ window.__akibaTests = async function () {
     return signes.size + ' signes différents dans la démonstration';
   });
 
+  t('On imprime les livrets de quelques membres, pas forcément de tous', () => {
+    /* Une page A4 par membre : pour un groupe de trente, tout imprimer coûte trente feuilles.
+       On réimprime rarement pour tous — pour celui qui a perdu le sien, pour ceux qui ont un
+       crédit en cours, dont le livret porte l'échéancier. */
+    const a = K.data.avecs[0], st = stats(a), tous = activeM(a);
+    const sauve = K.session;
+    K.session = { kind: 'avec', avecId: a.id, memberId: bureauOf(a)[0].id };
+    App.livretChoix = null; App.livretAvec = null;
+    try {
+      const compte = () => (SCREENS['a.livret']({}).match(/class="livret"/g) || []).length;
+      must(compte() === tous.length, `par défaut tout le monde : ${compte()} au lieu de ${tous.length}`);
+
+      /* on en retire trois : l'écran ne doit plus en porter que le reste */
+      const choix = livretChoisis(a);
+      tous.slice(0, 3).forEach(x => choix.delete(x.id));
+      eq(compte(), tous.length - 3, 'le nombre de livrets après avoir retiré trois membres');
+
+      /* aucun : rien à imprimer, et l'écran le dit au lieu d'imprimer une page vide */
+      choix.clear();
+      const vide = SCREENS['a.livret']({});
+      eq((vide.match(/class="livret"/g) || []).length, 0, 'aucun livret quand personne n’est choisi');
+      must(/Aucun membre choisi/.test(vide), 'l’écran doit dire que personne n’est choisi');
+      must(/data-act="livretPrint" disabled|livretPrint"\s+disabled/.test(vide), 'le bouton d’impression doit être désactivé');
+
+      /* un membre qui quitte le groupe ne doit pas rester dans le choix */
+      choix.add('membre-qui-n-existe-pas');
+      livretChoisis(a);
+      must(!choix.has('membre-qui-n-existe-pas'), 'un membre absent du groupe doit sortir du choix');
+
+      /* le raccourci « ceux qui ont un crédit » doit vraiment trier */
+      const avecCredit = new Set((st.activeLoans || []).map(l => l.memberId));
+      const attendus = tous.filter(x => avecCredit.has(x.id)).length;
+      must(attendus > 0 && attendus < tous.length,
+        `le raccourci doit distinguer : ${attendus} membres sur ${tous.length} ont un crédit`);
+
+      /* le livret d'un seul membre s'ouvre toujours, sans liste de choix */
+      const un = SCREENS['a.livret']({ id: tous[0].id });
+      eq((un.match(/class="livret"/g) || []).length, 1, 'le livret d’un seul membre');
+      must(!/livretBascule/.test(un), 'pas de liste de choix pour un livret seul');
+      return `${tous.length} membres, ${attendus} avec un crédit en cours`;
+    } finally { App.livretChoix = null; App.livretAvec = null; K.session = sauve; }
+  });
+
+  t('La rangée de saisie d’une réunion loge un nom entier et une cible qu’on atteint', () => {
+    /* Mesuré sur la démonstration : la pastille d'initiales prenait 40 px et son écart, et sur
+       360 px il ne restait que 125 px pour le nom — sept noms sur vingt passaient à la ligne,
+       et chaque rangée montait à 130 px au lieu de 82. Le secrétaire voyait six membres au
+       lieu de dix, et faisait défiler deux fois plus pendant que l'argent est sur la table. */
+    const bac = document.createElement('div');
+    bac.setAttribute('style', 'position:absolute;left:-9999px;top:0;width:360px');
+    bac.innerHTML = `<div class="list"><div class="mrow"><span class="av">AK</span>
+      <div class="grow"><b>Anuarite Kyavumba</b><span class="small muted">1 000 FC · total 46 parts</span></div>
+      <div class="pm"><button>−</button><output>2</output><button class="plus">+</button></div></div></div>`;
+    document.body.appendChild(bac);
+    try {
+      const pastille = bac.querySelector('.av'), bouton = bac.querySelector('.pm button');
+      const nom = bac.querySelector('.grow'), rangee = bac.querySelector('.mrow');
+      must(pastille.offsetWidth === 0, 'la pastille ne doit pas prendre de place dans une rangée de saisie');
+      const t = bouton.getBoundingClientRect();
+      must(t.width >= 44 && t.height >= 44, `le bouton doit faire 44 px au moins : ${Math.round(t.width)}×${Math.round(t.height)}`);
+      /* le nom doit tenir sur une ligne : on mesure ce qu'il demanderait sans retour */
+      const sonde = document.createElement('span');
+      sonde.setAttribute('style', 'position:absolute;visibility:hidden;white-space:nowrap;font:700 16px Ubuntu,system-ui,sans-serif');
+      document.body.appendChild(sonde);
+      sonde.textContent = 'Anuarite Kyavumba';
+      const besoin = sonde.getBoundingClientRect().width;
+      sonde.remove();
+      const dispo = nom.getBoundingClientRect().width;
+      must(dispo >= besoin, `sur 360 px, le nom demande ${Math.round(besoin)} px et n'en a que ${Math.round(dispo)}`);
+      return `sur 360 px : nom ${Math.round(dispo)} px pour ${Math.round(besoin)} demandés, bouton ${Math.round(t.width)} px, rangée ${Math.round(rangee.getBoundingClientRect().height)} px`;
+    } finally { bac.remove(); }
+  });
+
   t('La barre d’état porte la couleur de CETTE application, avant même le JavaScript', () => {
     /* core.js repose cette couleur au démarrage — mais « au démarrage » veut dire : une fois le
        JavaScript exécuté. Avant cela, c'est la balise du document que le système lit : au

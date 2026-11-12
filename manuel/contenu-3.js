@@ -63,7 +63,7 @@ module.exports = [
 ['fig', 'annote/membres', 'La liste des membres, sur ordinateur.'],
 ['reperes', ['Ajouter un membre en cours de cycle : il part de zéro part.',
   'Imprimer les cartes de membre : dix par feuille A4, à découper.',
-  'Imprimer les livrets : une page A4 par membre, à garder chez lui.']],
+  'Imprimer les livrets : une page A4 par membre, pour tout le groupe ou pour quelques-uns seulement.']],
 
 ['h2', '10.1 La fiche d’un membre'],
 ['p', 'Nom, sexe, date de naissance (l’âge s’en déduit), téléphone, activité, adresse, photo. Seuls le nom et le sexe sont obligatoires. La photo reste facultative, se prend avec l’accord de la personne, et Akiba la réduit pour qu’elle ne pèse pas sur le téléphone.'],
@@ -79,6 +79,14 @@ module.exports = [
 ['h2', '10.3 Le livret et le relevé'],
 ['p', 'Chaque membre peut repartir avec **sa page** : ce que le cahier dit de lui, sur une feuille A4 qu’il garde chez lui — parts réunion par réunion, mouvements du guichet, crédits, solde, et deux lignes de signature.'],
 ['p', 'Sur le terminal, le **relevé** donne le même compte en court, sur le rouleau. Chaque livret porte une référence qui dit de quel cahier et de quelle écriture il est tiré : on peut le confronter au journal.'],
+['h3', 'Imprimer pour quelques membres seulement'],
+['p', 'Une page A4 par membre, c’est trente feuilles pour trente membres — et on réimprime rarement pour tout le monde : on réimprime pour celui qui a perdu le sien, pour les nouveaux, pour ceux qui ont pris un crédit. Sur **Membres › Livrets**, la liste **Pour qui imprimer ?** laisse toucher les noms un à un.'],
+['ul', [
+  '**Tous** remet tout le monde.',
+  '**Ceux qui ont un crédit** ne retient que les membres dont un crédit court encore : c’est leur livret qui porte l’échéancier.',
+  '**Aucun** vide la liste ; le bouton d’impression se désactive tant que personne n’est choisi.',
+]],
+['p', 'Le compte en haut de l’écran dit toujours combien de livrets partiront — « 11 livrets à imprimer sur 20 membres » — et seuls les livrets cochés sont envoyés à l’imprimante.'],
 ['fig', 'avec/ordi-a-livret', 'Le livret d’un membre, tel qu’il s’imprimera sur A4.'],
 
 ['h2', '10.4 Les cartes de membre'],
