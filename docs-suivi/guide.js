@@ -651,6 +651,42 @@ const GUIDE = [
     <h4>Un membre veut voir son compte.</h4><p><b>AVEC › Voir mon carnet › Tous les membres</b>, puis son nom et son code : il voit seulement son carnet.</p>` }
 ];
 
+/* ---------- les familles du guide ----------
+   Trente-six parties en une seule liste, c'est une table des matières qu'on parcourt du doigt
+   en espérant tomber dessus. Le bureau, qui se sert de l'application toutes les semaines, en
+   voit trente-trois. Les ranger ne retire pas un mot : cela donne au regard six repères au
+   lieu de trente-six, et laisse la recherche faire le reste.
+
+   L'ordre suit le temps du groupe : on commence, on tient la réunion, on remet les papiers,
+   on finit le cycle. Puis ce qui protège, ce qui est de métier, et ce qu'on ouvre quand ça
+   coince. Une partie qui ne serait dans aucune famille s'ajoute d'elle-même à la dernière :
+   le guide peut grandir sans que cette liste devienne un piège. */
+const GUIDE_FAMILLES = [
+  { t: 'Commencer', ids: ['bref', 'premierjour', 'debut', 'connexion', 'lancer', 'validation', 'codes', 'installer'] },
+  { t: 'La réunion', ids: ['reunion', 'epargne', 'credit', 'social', 'amendes', 'guichet'] },
+  { t: 'Les papiers du groupe', ids: ['recus', 'cartes', 'livret', 'membres'] },
+  { t: 'Le cycle et l\'argent dans la durée', ids: ['partage', 'cycle', 'externe', 'qualite'] },
+  { t: 'Faire passer le cahier, et le protéger', ids: ['image', 'reseau', 'securite', 'cles', 'perdu'] },
+  { t: 'Pour l\'animateur et l\'organisation', ids: ['animateur', 'organisation'] },
+  { t: 'Quand ça coince', ids: ['messages', 'panne', 'limites'] },
+  { t: 'Pour s\'y retrouver', ids: ['audio', 'ouest', 'mots', 'faq'] },
+];
+/* range les parties visibles par famille, et place les orphelines à la fin */
+function guideFamilles(sections) {
+  const reste = new Map(sections.map(g => [g.id, g]));
+  const out = GUIDE_FAMILLES.map(f => {
+    const parts = f.ids.map(id => reste.get(id)).filter(Boolean);
+    parts.forEach(g => reste.delete(g.id));
+    return { t: f.t, parts };
+  }).filter(f => f.parts.length);
+  if (reste.size) {
+    const der = out[out.length - 1];
+    if (der) der.parts.push(...reste.values());
+    else out.push({ t: 'Pour s\'y retrouver', parts: [...reste.values()] });
+  }
+  return out;
+}
+
 /* parties du guide réservées à certains rôles (les autres sont pour tout le monde) */
 const GUIDE_WHO = {
   animateur: ['anim', 'org', 'none'], organisation: ['org', 'none'], lancer: ['org', 'none'],
@@ -674,6 +710,7 @@ INP.guideChercher = el => {
   if (!q) {
     parties.forEach(d => { d.hidden = false; if (d.dataset.ouvertAvant === '1') d.open = true; else d.open = false; });
     tuiles.forEach(t => t.hidden = false);
+    document.querySelectorAll('.gfam').forEach(f => f.hidden = false);
     if (compte) compte.textContent = '';
     return;
   }
@@ -687,6 +724,10 @@ INP.guideChercher = el => {
     const t = tuiles.find(x => x.dataset.s === id);
     if (t) t.hidden = !trouve;
     if (trouve) n++;
+  });
+  /* une famille dont plus aucune tuile ne reste ne doit pas laisser son titre tout seul */
+  document.querySelectorAll('.gfam').forEach(f => {
+    f.hidden = ![...f.querySelectorAll('.gtile')].some(t => !t.hidden);
   });
   /* Une partie dont le TITRE porte les mots cherchés est presque toujours la bonne : on la
      nomme, pour éviter de lire quatre parties avant de tomber sur celle qu'on voulait. */
@@ -736,13 +777,18 @@ SCREENS.guide = p => {
         <input id="gq" class="input" type="search" data-in="guideChercher" autocomplete="off"
           placeholder="Chercher : guichet, code perdu, écart de caisse…"></div>
       <p class="hint" id="gqn" aria-live="polite"></p>
-      <div class="gtiles">${sections.map(x => `<button class="gtile" data-act="guideTo" data-s="${x.id}"><span class="gi">${ic(x.icon)}</span><b>${guideSection(x).t}</b></button>`).join('')}</div>
+      ${guideFamilles(sections).map(f => `<div class="gfam">
+        <h3 class="gfam-t">${esc(f.t)}</h3>
+        <div class="gtiles">${f.parts.map(x => `<button class="gtile" data-act="guideTo" data-s="${x.id}"><span class="gi">${ic(x.icon)}</span><b>${guideSection(x).t}</b></button>`).join('')}</div>
+      </div>`).join('')}
     </section>
     <div class="row">${speakBtn('all', '.g summary, .g .gb p, .g .gb li, .g .gb h4, .g .gb .formula, .g .gb .tip', 'Écouter tout le guide')}</div>
     <!-- Le guide est de la prose : il se traduit section par section (guide-tr.js), pas mot à mot.
          Le corps porte « no-tr » dans les deux cas : traduit, il ne doit pas être redécoupé ; en
          français faute de traduction, il ne doit pas noyer la liste de travail du traducteur. -->
-    ${sections.map(g => { const x = guideSection(g); return `<details class="g" id="g-${g.id}" ${g.id === open ? 'open' : ''}><summary><span class="gi">${ic(g.icon)}</span>${esc(x.t)}</summary><div class="gb">
+    <!-- Les parties suivent l'ordre des familles : une tuile rangée dans « La réunion » doit
+         mener à un endroit rangé pareil, sinon le classement ne sert qu'en haut de l'écran. -->
+    ${guideFamilles(sections).flatMap(f => f.parts).map(g => { const x = guideSection(g); return `<details class="g" id="g-${g.id}" ${g.id === open ? 'open' : ''}><summary><span class="gi">${ic(g.icon)}</span>${esc(x.t)}</summary><div class="gb">
       <div>${speakBtn(g.id, `#g-${g.id} summary, #g-${g.id} .gb p, #g-${g.id} .gb li, #g-${g.id} .gb h4, #g-${g.id} .gb .formula, #g-${g.id} .gb .tip`, 'Écouter cette partie')}</div>
       <!-- En français, le texte d'origine EST le texte lu : la partie n'a pas à s'excuser de
            « n'être pas encore écrite en Français ». L'avertissement ne vaut que pour une autre

@@ -629,6 +629,11 @@ h2,h3{font-weight:600;letter-spacing:-.005em}
 .etapes b{display:block;font-family:var(--f-display);font-size:var(--t-base)}
 .etapes span{display:block;color:var(--ink-2);font-size:var(--t-sm);margin-top:2px;line-height:1.35}
 .gtiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:9px}
+/* Le titre d'une famille : assez net pour servir de repère au pouce qui descend, assez discret
+   pour ne pas se disputer avec les titres des parties elles-mêmes. */
+.gfam+.gfam{margin-top:16px}
+.gfam-t{margin:0 0 8px;font-family:var(--f-display);font-size:var(--t-sm);font-weight:700;
+  letter-spacing:.09em;text-transform:uppercase;color:var(--ink-2)}
 .gtile{display:flex;flex-direction:row;align-items:center;gap:9px;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:10px 11px;font:inherit;color:inherit;cursor:pointer;min-height:58px}
 .gtile b{font-family:var(--f-display);font-size:var(--t-sm);font-weight:600;line-height:1.22}
 .gtile .gi{width:28px;height:28px;border-radius:8px;background:var(--brand-soft);color:var(--brand);display:grid;place-items:center;flex:none}
@@ -1228,7 +1233,7 @@ details.g.demo>:not(summary)+*{margin-top:8px}
 </style>
 <style>html,body{margin:0}</style>
 </head><body>
-<script>window.KITABU_PWA = true; window.KITABU_VERSION = 'akiba-20261112162846'; window.AKIBA_CIBLE = 'suivi';</script>
+<script>window.KITABU_PWA = true; window.KITABU_VERSION = 'akiba-20261112172702'; window.AKIBA_CIBLE = 'suivi';</script>
 
 <div id="app"></div>
 <script src="core.js"></script>

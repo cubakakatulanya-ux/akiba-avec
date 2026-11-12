@@ -1176,6 +1176,31 @@ window.__akibaTests = async function () {
     return signes.size + ' signes différents dans la démonstration';
   });
 
+  t('Le guide range ses trente-six parties, et n’en perd aucune', () => {
+    /* Trente-six parties en une seule liste, c'est une table des matières qu'on parcourt du
+       doigt en espérant tomber dessus. Les familles donnent six repères au lieu de trente-six.
+       Le piège serait qu'une partie ajoutée plus tard tombe hors des familles et devienne
+       introuvable : guideFamilles() la rattache à la dernière, et cet essai le vérifie. */
+    const rangees = guideFamilles(GUIDE);
+    const dedans = rangees.flatMap(f => f.parts.map(g => g.id));
+    eq(dedans.length, GUIDE.length, 'le nombre de parties rangées');
+    eq(new Set(dedans).size, GUIDE.length, 'aucune partie rangée deux fois');
+    GUIDE.forEach(g => must(dedans.includes(g.id), 'partie perdue : ' + g.id));
+    /* une partie inventée, qui n'est dans aucune famille, doit quand même ressortir */
+    const faux = { id: 'partie-inventee', t: 'Essai', icon: 'book', b: '<p>x</p>' };
+    const avecFaux = guideFamilles(GUIDE.concat([faux])).flatMap(f => f.parts.map(g => g.id));
+    must(avecFaux.includes('partie-inventee'), 'une partie hors famille doit être rattachée, pas perdue');
+    /* chaque rôle voit un sous-ensemble cohérent, sans famille vide */
+    ['none', 'membre', 'bureau', 'anim', 'org'].forEach(role => {
+      const vues = GUIDE.filter(g => !GUIDE_WHO[g.id] || GUIDE_WHO[g.id].includes(role));
+      const f = guideFamilles(vues);
+      must(f.every(x => x.parts.length), 'famille vide pour le rôle ' + role);
+      eq(f.flatMap(x => x.parts).length, vues.length, 'parties rangées pour le rôle ' + role);
+    });
+    const membre = guideFamilles(GUIDE.filter(g => !GUIDE_WHO[g.id] || GUIDE_WHO[g.id].includes('membre')));
+    return `${rangees.length} familles · un membre en voit ${membre.flatMap(f => f.parts).length} parties sur ${GUIDE.length}`;
+  });
+
   t('On imprime les livrets de quelques membres, pas forcément de tous', () => {
     /* Une page A4 par membre : pour un groupe de trente, tout imprimer coûte trente feuilles.
        On réimprime rarement pour tous — pour celui qui a perdu le sien, pour ceux qui ont un
