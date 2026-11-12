@@ -42,7 +42,10 @@ const GUIDE = [
     <p>Touchez <b>Commencer notre AVEC</b> sur l'écran d'accueil. La première fois, Akiba demande le <b>code de validation</b> délivré par l'Entreprise Sociale Ubora. Un animateur ou une organisation crée l'AVEC depuis son propre espace. Tout se prépare en 5 étapes, avec l'assemblée réunie.</p>
     <ol>
       <li><b>Groupe</b> : nom, puis le lieu. La <b>province</b> et le <b>territoire ou la ville</b> se choisissent dans la liste officielle de toute la RDC (26 provinces, 145 territoires, villes et communes de Kinshasa). Le secteur, le groupement et le village s'écrivent : les noms déjà utilisés sont proposés pour éviter les fautes. Puis le jour et le rythme des réunions. L'organisation choisit aussi l'animateur.</li>
-      <li><b>Point GPS</b> (facultatif) : dès l'étape <b>Groupe</b>, le bouton « Prendre le point maintenant » enregistre où le groupe se réunit — c'est le bon moment, l'assemblée est là et on est sur place. On peut aussi le prendre plus tard dans <b>Plus › Lieu du groupe</b>. Il faut être <b>dehors</b>, à ciel ouvert ; le premier point peut demander une minute. <b>Le réseau n'est pas nécessaire</b> : le téléphone lit les satellites. Le point est écrit dans le journal scellé et part avec les données ; l'organisation le retrouve dans l'export Excel.</li>
+      <li><b>Point GPS</b> (facultatif) : à l'étape <b>Groupe</b>, « Prendre le point maintenant » enregistre où le groupe se réunit. C'est le bon moment — l'assemblée est là, et on est sur place. Sinon, plus tard dans <b>Plus › Lieu du groupe</b>.
+        <ul><li>Il faut être <b>dehors</b>, à ciel ouvert. Le premier point peut demander une minute.</li>
+          <li><b>Pas besoin de réseau</b> : le téléphone lit les satellites.</li>
+          <li>Le point entre dans le journal scellé et part avec les données. L'organisation le retrouve dans l'export Excel.</li></ul></li>
       <li><b>Règlement</b> : valeur d'une part, nombre de parts par réunion, caisse sociale, durée et date de début du cycle, intérêt, crédit maximum, durée des crédits, amendes. Un exemple chiffré montre ce que les règles donnent.</li>
       <li><b>Membres</b> : une fiche par personne. <b>Obligatoire</b> : nom et sexe. <b>Facultatif</b> : âge, téléphone, activité, adresse. Pour aller plus vite, on peut aussi coller une liste de noms, puis compléter les fiches.</li>
       <li><b>Bureau</b> : président, secrétaire, trésorier, deux compteurs et <b>trois porte-clés</b>. Le trésorier garde la caisse, il ne peut donc pas garder une clé.</li>
@@ -54,7 +57,12 @@ const GUIDE = [
   { id: 'connexion', icon: 'users', t: 'Comment une AVEC se connecte', b: `
     ${FIG.photo('guide-accueil.jpg', 'L’accueil du groupe : la caisse, ce qu’il faut surveiller, et le geste du jour.')}
     ${FIG.droits()}
-    <p>L'écran d'accueil est fait pour le groupe et tient sur un seul écran, quel que soit le téléphone. Le grand bouton jaune <b>AVEC</b> mène directement aux noms des membres. Sur un téléphone encore vide, il devient <b>Entrer mon AVEC</b> et propose de <b>recevoir</b> l'AVEC (fichier et code envoyés par l'animateur) ou de la <b>créer</b>. Le bouton <b>« Recevoir une AVEC »</b> est en bas de l'écran.</p>
+    <p>L'écran d'accueil tient sur un seul écran, quel que soit le téléphone.</p>
+    <ul>
+      <li>Le grand bouton jaune <b>AVEC</b> mène aux noms des membres.</li>
+      <li>Sur un téléphone encore vide, il devient <b>Entrer mon AVEC</b> : recevoir l'AVEC (fichier et code de l'animateur), ou la créer.</li>
+      <li><b>Recevoir une AVEC</b> est en bas de l'écran.</li>
+    </ul>
     ${!estSuivi() ? '' : `<div class="alert"><div><b>Sur Akiba Suivi, l'accueil ne montre que l'entrée</b><span class="small">Recevoir une AVEC et la Formation sont des gestes de métier : ils sont dans l'espace de l'animateur (bouton <b>Recevoir une AVEC</b> et onglet <b>Formation</b>) et dans les <b>Outils</b> de l'organisation. L'accueil ne garde que le guide.</span></div></div>`}
     ${estSuivi() ? '' : `<div class="alert"><div><b>Les autres espaces ont leur propre application</b><span class="small">L'animateur, l'organisation et l'administration d'Ubora travaillent sur <b>Akiba Suivi</b> (akibas.uborardc.com). Celle-ci est l'application du groupe : elle ne contient plus ces espaces.</span></div></div>`}
     <h4>L'AVEC a été créée sur son propre téléphone</h4>
@@ -113,10 +121,21 @@ const GUIDE = [
     <h4>Exemple de calcul</h4>
     <div class="formula">Crédit 50 000 FC · 10 % par mois · 3 mois<br>Intérêt = 50 000 × 10 % × 3 = 15 000 FC<br>À rembourser = 65 000 FC, soit environ 21 700 FC par mois</div>
     <h4>Demandes non servies : chacun son tour</h4>
-    <p>Quand la caisse n'a pas assez d'argent pour servir tout le monde, le bureau touche <b>Noter une demande non servie</b> à l'étape « Crédits ». Ces membres apparaissent en haut de l'étape à la réunion suivante, <b>dans l'ordre où ils se sont inscrits</b> : le premier inscrit est servi le premier. Le bouton <b>Servir</b> ouvre la demande avec le montant déjà écrit ; dès que le crédit est accordé, le nom sort de la liste.</p>
+    <p>La caisse n'a pas assez pour tout le monde ? À l'étape <b>Crédits</b>, touchez <b>Noter une demande non servie</b>.</p>
+    <ul>
+      <li>Ces membres reviennent <b>en haut de l'étape</b> à la réunion suivante.</li>
+      <li><b>Dans l'ordre où ils se sont inscrits</b> : le premier inscrit est servi le premier.</li>
+      <li><b>Servir</b> ouvre la demande avec le montant déjà écrit. Le crédit accordé, le nom sort de la liste.</li>
+    </ul>
     <p>La liste d'attente repart à zéro au partage de fin de cycle.</p>
     <h4>Pénalité de retard</h4>
-    <p>Un crédit qui dépasse sa date de fin paie une <b>pénalité de retard</b>, dont le taux est voté dans le règlement (par défaut, le taux du crédit ; « aucune pénalité » est possible). Akiba la calcule toute seule : <b>reste à rembourser × taux de pénalité × mois commencés de retard</b>, arrondie à 100 FC. <b>Un mois déjà payé ne l'est jamais deux fois</b> : Akiba lit dans le journal scellé les mois déjà facturés. Elle est proposée à l'étape « Amendes », cochée par défaut, et le bureau peut la retirer si l'assemblée l'a décidé (maladie, deuil…). Une fois enregistrée, elle entre dans la caisse comme une amende et apparaît dans le carnet du membre.</p>
+    <p>Un crédit qui dépasse sa date de fin paie une <b>pénalité de retard</b>. Le taux est voté dans le règlement — par défaut celui du crédit, et « aucune pénalité » est possible.</p>
+    <ul>
+      <li>Akiba la calcule : <b>reste à rembourser × taux × mois commencés de retard</b>, arrondie à 100 FC.</li>
+      <li><b>Un mois déjà payé ne l'est jamais deux fois</b> : Akiba relit le journal scellé.</li>
+      <li>Elle est proposée à l'étape <b>Amendes</b>, cochée d'avance. Le bureau peut la retirer si l'assemblée l'a décidé — maladie, deuil.</li>
+      <li>Enregistrée, elle entre dans la caisse comme une amende, et s'inscrit dans le carnet du membre.</li>
+    </ul>
     <div class="formula">Exemple : reste 30 000 FC · 10 % par mois · 45 jours de retard (2 mois commencés)<br>Pénalité = 30 000 × 10 % × 2 = 6 000 FC</div>
     <h4>Solder un crédit avant la fin</h4>
     <p>Un membre peut rembourser tout ce qui reste avant l'échéance : à l'étape « Remboursements », touchez <b>Solder</b> à côté de son nom. Akiba écrit le reste dû en entier ; le crédit passe aussitôt en « soldé » et le membre peut redemander un crédit.</p>
@@ -143,11 +162,18 @@ const GUIDE = [
       <li><b>Solder avant le partage</b> : au partage de fin de cycle, le prêteur est remboursé <b>en premier</b> avec la caisse de crédit ; les membres ne partagent que ce qui reste.</li>
     </ol>
     <h4>Garantie retenue par le prêteur</h4>
-    <p>Beaucoup d'IMF gardent un <b>pourcentage du crédit en garantie</b> (souvent 5 à 20 %). Écrivez ce pourcentage au moment de recevoir le crédit : Akiba calcule le montant, ne le compte pas dans la caisse (le groupe reçoit moins d'argent) et le <b>déduit de la fin de la dette</b>. Au dernier remboursement, le groupe ne verse donc que le solde : la garantie déjà chez le prêteur éteint le reste. Maximum accepté : 30 %.</p>
+    <p>Beaucoup d'IMF gardent un <b>pourcentage du crédit en garantie</b>, souvent 5 à 20 %. Écrivez-le au moment de recevoir le crédit.</p>
+    <ul>
+      <li>Akiba ne le compte pas dans la caisse : le groupe reçoit moins d'argent.</li>
+      <li>Il le <b>déduit de la fin de la dette</b>. Au dernier versement, le groupe ne paie que le solde — la garantie déjà chez le prêteur éteint le reste.</li>
+      <li>Maximum accepté : 30 %.</li>
+    </ul>
     <div class="formula">Exemple : crédit 300 000 FC · garantie 10 % · intérêt 2 % par mois sur 6 mois<br>Garantie = 30 000 FC (gardés par l'IMF)<br>Entre dans la caisse = 300 000 − 30 000 − frais<br>Total dû = 336 000 FC, moins la garantie → le groupe verse 306 000 FC</div>
     <h4>Comment cet argent alimente le fonds de crédit</h4>
     <div class="formula">Caisse de crédit = épargne des membres + remboursements + amendes<br>+ argent reçu de l'IMF − frais payés − remboursements au prêteur</div>
-    <p>L'argent emprunté est prêté aux membres exactement comme l'épargne du groupe, aux mêmes règles (3 fois l'épargne au plus, un seul crédit à la fois, intérêt voté par l'assemblée). Les intérêts que paient les membres restent au groupe ; ceux que le groupe paie à l'IMF sortent de la caisse. <b>La différence entre les deux taux est le gain du groupe</b> : si le groupe prête à 10 % par mois et emprunte à 2,5 %, il gagne 7,5 points, à condition que les membres remboursent à temps.</p>
+    <p>L'argent emprunté se prête aux membres comme l'épargne du groupe, aux mêmes règles : 3 fois l'épargne au plus, un seul crédit à la fois, intérêt voté par l'assemblée.</p>
+    <p>Les intérêts que paient les membres restent au groupe. Ceux que le groupe paie à l'IMF sortent de la caisse.</p>
+    <p><b>La différence entre les deux taux est le gain du groupe.</b> Prêter à 10 % et emprunter à 2,5 % rapporte 7,5 points — si les membres remboursent à temps.</p>
     <h4>Effet sur la valeur des parts</h4>
     <p>Tant que la dette n'est pas remboursée, Akiba la <b>retire</b> de la valeur d'une part : personne ne partage de l'argent emprunté. L'écran <b>Comment l'argent circule</b> montre, en chiffres réels, ce qui est entré, ce qui est sorti et ce qui reste dû.</p>
     <div class="tip">N'empruntez que ce que les membres demandent vraiment : un crédit extérieur qui dort dans la caisse coûte des intérêts sans rien rapporter.</div>` },
@@ -189,19 +215,20 @@ const GUIDE = [
       <li>une <b>référence</b> du genre <b class="mono">14-A78E64</b> : c'est elle qui permet de vérifier le reçu.</li>
     </ul>
     <h4>Reçu court ou reçu détaillé</h4>
-    <p>Le papier thermique coûte cher et se trouve mal. Akiba imprime donc par défaut un <b>reçu court</b> : environ
-      trois fois moins de papier, en gardant tout ce qui prouve — le nom, la réunion, ce qui a bougé ce jour-là, le
-      cumul du cycle, le crédit restant et la référence. Sur une réunion de vingt membres, cela fait à peu près
-      <b>184 cm de bande au lieu de 5 mètres</b>. Le format se change d'un toucher sur l'écran des reçus : la longueur
-      en centimètres y est annoncée pour chacun.</p>
+    <p>Le papier thermique coûte cher et se trouve mal. Akiba imprime donc un <b>reçu court</b> : trois fois moins de papier.</p>
+    <p>Sur une réunion de vingt membres, <b>184 cm de bande au lieu de 5 mètres</b>.</p>
+    <p>Le court garde tout ce qui prouve : le nom, la réunion, ce qui a bougé ce jour-là, le cumul du cycle, le crédit restant, la référence.</p>
+    <p>Le format se change d'un toucher sur l'écran des reçus, qui annonce la longueur de chacun.</p>
     <h4>Un membre conteste son reçu</h4>
     <p>C'est le cas le plus difficile d'une AVEC : trois mois plus tard, quelqu'un dit « on m'a écrit deux parts,
       j'en avais payé trois ». Avant, seul le téléphone du groupe pouvait trancher — et c'est justement lui que l'on
       soupçonne.</p>
-    <p>Maintenant, n'importe quel téléphone du groupe fait le juge. <b>Reçus des membres › Vérifier un reçu contesté</b> :
-      visez le QR du reçu, ou recopiez la <b>référence</b> et le nom. Akiba refait le calcul <b>sans réseau</b> et répond
-      « Reçu authentique », avec les montants — ou bien dit ce que le journal annonce vraiment. Un reçu refait, un reçu
-      attribué à quelqu'un d'autre, un reçu venu d'un autre groupe : tous sont refusés.</p>
+    <p>N'importe quel téléphone du groupe fait le juge : <b>Reçus des membres › Vérifier un reçu contesté</b>.</p>
+    <ul>
+      <li>Visez le QR du reçu, ou recopiez la <b>référence</b> et le nom.</li>
+      <li>Akiba refait le calcul <b>sans réseau</b> : « Reçu authentique » et les montants — ou bien ce que le journal annonce vraiment.</li>
+      <li>Refait, attribué à quelqu'un d'autre, venu d'un autre groupe : refusé.</li>
+    </ul>
     <div class="tip">Le QR n'est imprimé ni sur le reçu court ni en série : il est à l'écran et sur le reçu partagé par
       WhatsApp. Sur le papier, c'est la <b>référence en chiffres</b> qui sert, et elle se recopie à la main.</div>
     <h4>Le journal de la séance : votre sauvegarde en papier</h4>
@@ -373,7 +400,11 @@ const GUIDE = [
     <ol>
       <li>Tout le monde peut installer Akiba et essayer la démonstration. Sur l'écran d'accueil, touchez <b>Commencer avec mes vraies données</b> : Akiba affiche le <b>code de ce téléphone</b> : touchez « Demander le code sur WhatsApp » (ou appelez Ubora). Ubora renvoie un <b>code de validation</b> fait pour ce téléphone seulement : collez-le ou ouvrez le lien, une seule fois. La démonstration est ensuite effacée.</li>
       <li>Le code de validation ne marche sur aucun autre téléphone : ne le partagez pas, il ne servirait à rien. Un téléphone utilisé de façon frauduleuse peut être bloqué par Ubora ; ses données restent dans le téléphone.</li>
-      <li><b>Organisation</b> : le compte s'ouvre sur <b>Akiba Suivi</b>, et c'est Ubora qui l'ouvre, en trois temps. <b>1.</b> Vous écrivez qui vous êtes : nom de l'organisation, province et territoire, responsable, téléphone. <b>2.</b> Akiba prépare la demande — envoyez-la par WhatsApp, ou montrez le QR code à un responsable d'Ubora ; elle porte vos renseignements et le code de ce téléphone. Ubora vérifie et renvoie un code de validation. <b>3.</b> Vous choisissez votre code secret, et le compte existe. Seule l'étape 2 demande du réseau.</li>
+      <li><b>Organisation</b> : le compte s'ouvre sur <b>Akiba Suivi</b>, et c'est Ubora qui l'ouvre.
+        <ol><li>Vous écrivez qui vous êtes : organisation, province et territoire, responsable, téléphone.</li>
+          <li>Akiba prépare la demande. Envoyez-la par WhatsApp ou par SMS, ou montrez le QR à un responsable d'Ubora. Ubora vérifie et renvoie un code de validation.</li>
+          <li>Vous choisissez votre code secret. Le compte existe.</li></ol>
+        <b>Seule l'étape 2 demande du réseau</b> — et même elle s'en passe, si quelqu'un d'Ubora est devant vous.</li>
       <li>Ensuite, <b>Ajouter un animateur</b> pour chaque animateur. Chacun reçoit un code et le change avec <b>Mon code</b>.</li>
       <li>Les animateurs créent les AVEC, et l'organisation les valide.</li>
       <li><b>AVEC autonome</b> : créez directement votre groupe.</li>
@@ -391,10 +422,11 @@ const GUIDE = [
     <p><b>Plus › Voix de lecture</b> : Akiba liste les voix installées sur ce téléphone, on les écoute une par une et
       on garde celle qui sonne le mieux. Les voix récentes, plus naturelles, sont proposées d'abord.</p>
     <h4>Écouter dans sa langue</h4>
-    <p>Aucun téléphone n'a de voix lingála, kikongo ni tshiluba : elles n'existent nulle part. Mais ces langues ont les
-      <b>cinq voyelles pures</b> du kiswahili, de l'espagnol et de l'italien — rien à voir avec les voyelles nasales et
-      les lettres muettes du français. Akiba cherche donc, dans l'ordre : la langue elle-même, le kiswahili, l'espagnol,
-      l'italien, et le français en dernier. Une voix kiswahili lit le lingála bien plus près du vrai qu'une voix française.</p>
+    <p>Aucun téléphone n'a de voix lingála, kikongo ni tshiluba : elles n'existent nulle part.</p>
+    <p>Mais ces langues ont les <b>cinq voyelles pures</b> du kiswahili, de l'espagnol et de l'italien — rien à voir
+      avec les voyelles nasales et les lettres muettes du français.</p>
+    <p>Akiba cherche donc dans l'ordre : la langue elle-même, le kiswahili, l'espagnol, l'italien, le français en dernier.</p>
+    <p>Une voix kiswahili lit le lingála bien plus près du vrai qu'une voix française.</p>
     <div class="tip">Pour ajouter ces voix, gratuitement : <b>Paramètres du téléphone › Langues › Synthèse vocale ›
       Google</b>, puis téléchargez le kiswahili ou l'espagnol. Pas de son du tout ? Montez le volume, et vérifiez que
       « Services vocaux Google » est installé.</div>` },
@@ -429,7 +461,13 @@ const GUIDE = [
     </ul>
     <p>Dès que le réseau revient (au marché, en ville), touchez le badge puis <b>Envoyer maintenant</b>. L'animateur et l'organisation ne voient que les données envoyées.</p>` },
   { id: 'membres', icon: 'users', t: 'Gérer les membres', b: `
-    <p><b>Cartes des membres.</b> Dans <b>Membres › Cartes des membres</b>, l'application prépare une carte par membre, au format carte bancaire : nom du groupe, nom et rôle du membre, numéro, date d'entrée, et un QR code. Imprimez sur une feuille A4 ordinaire — dix cartes par page — puis découpez en suivant les traits. Le QR ne contient ni code secret ni montant : il porte l'identité et une empreinte tirée du journal scellé, que l'animateur compare avec l'application pour vérifier qu'une carte est authentique.</p>
+    <p><b>Cartes des membres.</b> Dans <b>Membres › Cartes des membres</b> : une carte par membre, au format carte bancaire.</p>
+    <ul>
+      <li>Elle porte le nom du groupe, le nom et le rôle du membre, son numéro, sa date d'entrée, et un QR.</li>
+      <li>Dix cartes par feuille A4 ordinaire : imprimez, puis découpez en suivant les traits.</li>
+      <li>Le QR ne contient <b>ni code secret ni montant</b> — l'identité, et une empreinte tirée du journal scellé.</li>
+      <li>L'animateur compare cette empreinte avec l'application : une carte recopiée est refusée.</li>
+    </ul>
     <h4>Nouveau membre</h4><p><b>Membres › Ajouter un membre</b>, avec l'accord d'un 2ᵉ membre du bureau. On remplit la fiche : nom et sexe obligatoires ; âge, téléphone (ex. 099 123 4567), activité et adresse facultatifs. Akiba donne un code secret provisoire à remettre en main propre.</p>
     <h4>Compléter ou corriger une fiche</h4><p>Ouvrez le carnet du membre puis <b>Modifier les informations</b>. Le bureau ou le membre lui-même peut le faire ; chaque changement est noté dans le journal de sécurité.</p>
     <h4>Départ d'un membre</h4><p>Pendant une réunion ouverte, ouvrez son carnet puis <b>Départ du groupe</b>. Il récupère son épargne, moins son crédit et ses amendes dues. Les bénéfices restent au groupe.</p>
@@ -445,10 +483,11 @@ const GUIDE = [
     <p>C'est <b>permis</b>, et c'est l'assemblée qui décide — jamais le bureau seul. Un groupe partage parfois plus tôt :
       avant la rentrée scolaire, avant une saison de semis, avant un déplacement. Akiba ne l'interdit pas, mais il le dit :
       l'écran de partage rappelle la date de fin prévue et le temps qui reste, et la confirmation le redit une dernière fois.</p>
-    <p>Le calcul ne change pas : chacun reçoit son épargne et sa part des bénéfices, <b>arrêtés au jour du partage</b>.
-      Comme les bénéfices n'ont pas eu le temps de grossir, la part de chacun est simplement plus petite —
-      personne n'est lésé, le groupe gagne seulement moins. Les conditions restent les mêmes :
-      tous les crédits remboursés, le prêteur extérieur soldé, la caisse comptée, les trois clés, puis le code du président.</p>
+    <p>Le calcul ne change pas : chacun reçoit son épargne et sa part des bénéfices, <b>arrêtés au jour du partage</b>.</p>
+    <p>Les bénéfices n'ayant pas eu le temps de grossir, la part de chacun est plus petite.
+      <b>Personne n'est lésé</b> — le groupe gagne seulement moins.</p>
+    <p>Les conditions restent les mêmes : crédits remboursés, prêteur extérieur soldé, caisse comptée,
+      les trois clés, puis le code du président.</p>
     <div class="tip">Après un partage anticipé, le cycle suivant s'ouvre tout de suite : le groupe ne s'arrête pas,
       il recommence. La caisse sociale, elle, n'est pas partagée : elle passe au cycle suivant.</div>
     <h4>Le calcul</h4>
@@ -502,7 +541,11 @@ const GUIDE = [
     <ul>
       <li>Le tableau de bord additionne toutes les AVEC accompagnées : membres, part des femmes, épargne, crédits, PAR, caisses sociales.</li>
       <li>Filtrez par animateur avec les boutons en haut.</li>
-      <li><b>Impact</b> : un écran qui chiffre les trois promesses d'Akiba sur toutes vos AVEC. Hors ligne (AVEC, membres, réunions, écritures scellées) ; données fiables (journaux intacts, qualité moyenne, caisse à 3 clés, écarts) ; supervision allégée (données à jour, AVEC sans alerte, visites sur 90 jours, AVEC suivies à distance) ; passerelle vers la finance formelle (AVEC prêtes ou presque prêtes pour une IMF, épargne, remboursement à temps, crédits extérieurs, dossiers IMF). Utile pour les rapports et les bailleurs.</li>
+      <li><b>Impact</b> : ce que vos AVEC donnent en chiffres, pour un rapport ou un bailleur.
+        <ul><li><b>Hors ligne</b> : AVEC, membres, réunions, écritures scellées.</li>
+          <li><b>Données fiables</b> : journaux intacts, qualité moyenne, caisse à 3 clés, écarts.</li>
+          <li><b>Supervision allégée</b> : données à jour, AVEC sans alerte, visites sur 90 jours, suivi à distance.</li>
+          <li><b>Vers la finance formelle</b> : AVEC prêtes pour une IMF, épargne, remboursement à temps, crédits extérieurs.</li></ul></li>
       <li>Le tableau des AVEC montre aussi la <b>qualité des données</b> et l'indicateur <b>« prête pour une IMF »</b> de chacune.</li>
       <li>Le tableau des AVEC indique le cycle, la dernière réunion et la date du dernier envoi. Touchez une ligne pour voir le détail.</li>
       <li>Créez une AVEC et confiez-la à un animateur avec <b>Nouvelle AVEC</b>.</li>
