@@ -761,7 +761,7 @@ SCREENS.guide = p => {
           : c > 0 ? `${Math.round(c * 100)} % du guide est écrit en ${esc(I18N.name(l))} ; le reste s'affiche en français.`
             : `Le guide n'est pas encore écrit en ${esc(I18N.name(l))} : il s'affiche en français.`} Traduction à faire relire par des locuteurs de la zone.</p>`; })()}
     </header>
-    <section class="docbloc"><h2 class="surtitre">Akiba en quatre étapes</h2>
+    <section class="docbloc"><h2 class="surtitre deux">Akiba en <b>quatre étapes</b></h2>
       <ol class="etapes">
         <li><i>1</i><div><b>Créer ou recevoir l'AVEC</b><span>Le groupe, le règlement, les membres et le bureau, une fois pour toutes.</span></div></li>
         <li><i>2</i><div><b>Tenir la réunion</b><span>Huit étapes dans l'ordre du cahier : présences, comptage, épargne, remboursements, crédits, amendes, clôture.</span></div></li>
@@ -769,7 +769,7 @@ SCREENS.guide = p => {
         <li><i>4</i><div><b>Envoyer et préparer la suite</b><span>L'animateur et l'organisation reçoivent les chiffres ; le dossier IMF se prépare tout seul.</span></div></li>
       </ol>
     </section>
-    <section class="docbloc"><h2 class="surtitre">Tout le guide</h2>
+    <section class="docbloc"><h2 class="surtitre deux">Tout le <b>guide</b></h2>
       <!-- Trente-six parties : personne ne doit faire défiler pour trouver « code perdu ». La
            recherche travaille dans la page, sans réseau et sans redessiner l'écran — le champ
            garde donc le curseur pendant qu'on tape. -->

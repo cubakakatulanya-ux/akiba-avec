@@ -5,30 +5,55 @@
 <meta name="description" content="Comment installer l'application Akiba Suivi sur un téléphone ou un terminal Android, pas à pas.">
 <meta name="robots" content="noindex, follow">
 <link rel="icon" href="icon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@300;400;500;700&display=swap">
 <style>
-  :root { color-scheme: light }
-  body { margin: 0; padding: 24px 18px 56px; font: 17px/1.6 system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-         color: #16221c; background: #f6f8f7; max-width: 640px; margin-inline: auto }
-  h1 { font-size: 25px; line-height: 1.25; margin: 18px 0 6px }
-  h2 { font-size: 19px; margin: 32px 0 8px }
-  .chapeau { color: #4a5a52 }
-  a.bouton { display: block; text-align: center; background: #052E61; color: #fff; text-decoration: none;
-             padding: 18px; border-radius: 14px; font-weight: 600; font-size: 19px; margin: 24px 0 8px }
-  .sous { text-align: center; color: #4a5a52; font-size: 15px }
+  /* La manière du site Transforme, dans les couleurs d'Ubora et en Ubuntu : une bande de
+     couleur pleine largeur rayée en diagonale, un sur-titre en capitales très espacées, un
+     titre à deux graisses, puis le contenu sur fond clair. La page gardait system-ui alors
+     que l'application est en Ubuntu depuis toujours : elle ne ressemblait à rien d'autre. */
+  :root { color-scheme: light; --vert: #052E61; --vert-clair: #0A448A; --or: #F2B705 }
+  * { box-sizing: border-box }
+  body { margin: 0; font: 17px/1.6 'Ubuntu', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+         color: #16221c; background: #fff }
+  .bande { background: linear-gradient(165deg, var(--vert-clair), var(--vert)); color: #fff; position: relative; overflow: hidden;
+           padding: 30px 18px 36px; text-align: center }
+  .bande::before { content: ""; position: absolute; inset: 0; pointer-events: none;
+    background: repeating-linear-gradient(135deg, transparent 0 13px, rgba(255,255,255,.055) 13px 26px) }
+  .bande > * { position: relative }
+  .dedans { max-width: 640px; margin-inline: auto }
+  .sur { font-size: 12.5px; font-weight: 500; letter-spacing: .22em; text-transform: uppercase; opacity: .82; margin: 0 0 10px }
+  h1 { font-size: 30px; line-height: 1.2; margin: 0 0 10px; font-weight: 300 }
+  h1 b { font-weight: 700 }
+  .chapeau { color: rgba(255,255,255,.88); margin: 0 auto; max-width: 30em }
+  main { max-width: 640px; margin-inline: auto; padding: 4px 18px 56px }
+  h2 { font-size: 19px; margin: 34px 0 8px; font-weight: 700 }
+  a.bouton { display: block; text-align: center; background: var(--or); color: #2A1F00; text-decoration: none;
+             padding: 17px; border-radius: 12px; font-weight: 700; font-size: 19px; margin: 22px auto 8px; max-width: 420px;
+             box-shadow: 0 10px 24px -14px rgba(0,0,0,.6) }
+  .sous { text-align: center; color: rgba(255,255,255,.8); font-size: 15px; margin: 0 }
   ol { padding-left: 22px } li { margin: 12px 0 }
-  .avis { background: #fff; border: 1px solid #dde6e1; border-radius: 14px; padding: 14px 16px; margin: 20px 0 }
+  .avis { background: #F6F8F7; border: 1px solid #DDE6E1; border-left: 4px solid var(--vert-clair);
+          border-radius: 0 12px 12px 0; padding: 14px 16px; margin: 18px 0 }
   .avis b { display: block; margin-bottom: 4px }
-  footer { margin-top: 40px; color: #6b7a73; font-size: 15px }
-  img.logo { width: 72px; height: 72px; display: block }
+  footer { margin-top: 36px; padding: 20px 18px 28px; background: #F6F8F7; color: #5e6c66; font-size: 15px; text-align: center }
+  footer a { color: var(--vert) }
+  img.logo { width: 68px; height: 68px; display: block; margin: 0 auto 14px }
+  @media (prefers-reduced-motion: no-preference) { a.bouton { transition: transform .15s ease } a.bouton:active { transform: scale(.98) } }
 </style>
 </head><body>
+<header class="bande"><div class="dedans">
 <img class="logo" src="icon.svg" alt="">
-<h1>Installer Akiba Suivi sur un téléphone Android</h1>
+<p class="sur">Entreprise Sociale Ubora</p>
+<h1>Installer Akiba Suivi<br><b>sur un téléphone Android</b></h1>
 <p class="chapeau">Akiba Suivi marche déjà dans le navigateur, sans rien installer. Cette application sert surtout aux terminaux de caisse, où l'icône n'apparaît pas toujours sur l'écran d'accueil, et où l'on veut imprimer les reçus.</p>
 
 <a class="bouton" href="akiba-suivi.apk" download>Télécharger l'application</a>
-<p class="sous">3.4M · version du 12/11/2026</p>
+<p class="sous">3.4M · version du 12/11/2026</p>
 
+</div></header>
+
+<main>
 <h2>Pas à pas</h2>
 <ol>
   <li>Appuyez sur <b>Télécharger l'application</b>. Le téléphone enregistre un fichier nommé <b>akiba-suivi.apk</b>.</li>
@@ -49,5 +74,6 @@
 <h2>Si l'installation est refusée</h2>
 <p>Certains terminaux demandent d'activer l'autorisation à l'avance : <b>Paramètres</b> › <b>Applications</b> › <b>Accès spécial</b> › <b>Installer des applications inconnues</b>, puis choisissez le navigateur et autorisez-le.</p>
 
+</main>
 <footer><a href="./">Retour à Akiba Suivi</a> · Entreprise Sociale Ubora</footer>
 </body></html>

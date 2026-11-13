@@ -622,6 +622,11 @@ h2,h3{font-weight:600;letter-spacing:-.005em}
 .docintro h1{margin:0 0 7px}
 .docintro .lead{color:var(--ink-2);margin:0}
 .surtitre{font-family:var(--f-display);margin:0 0 12px;font-size:var(--t-lg)}
+/* Titre à deux graisses, à la manière du site Transforme — « Tout le GUIDE ». Le mot léger
+   pose le sujet, le mot gras dit de quoi il s'agit : on lit le second même en diagonale.
+   Réservé aux écrans de présentation ; un écran de travail n'a pas de titre à admirer. */
+.surtitre.deux{font-weight:300}
+.surtitre.deux b{font-weight:700}
 .docbloc{margin:20px 0}
 .etapes{list-style:none;margin:0;padding:0;display:grid;gap:10px}
 .etapes li{display:flex;gap:13px;align-items:flex-start;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:13px 14px}
@@ -956,8 +961,11 @@ h2,h3{font-weight:600;letter-spacing:-.005em}
 .couv{flex:1;display:flex;flex-direction:column;align-items:center;position:relative;overflow:hidden;
   color:var(--entete-ink);padding:58px 20px 0;border-radius:0 0 26px 26px;
   background:radial-gradient(120% 70% at 50% -8%,rgba(242,183,5,.2),transparent 60%),linear-gradient(170deg,var(--entete-1),var(--entete-2) 52%,var(--entete-3))}
+/* Rayures en diagonale, à la manière du site Transforme : les mêmes traits, mais penchés.
+   Horizontaux, ils faisaient des lignes de cahier ; penchés, ils donnent du mouvement sans
+   rien dire de plus. La couleur reste celle d'Ubora, et la police Ubuntu ne bouge pas. */
 .couv::before{content:"";position:absolute;inset:0;pointer-events:none;
-  background:repeating-linear-gradient(180deg,transparent 0 31px,rgba(255,255,255,.055) 31px 32px)}
+  background:repeating-linear-gradient(135deg,transparent 0 15px,rgba(255,255,255,.05) 15px 30px)}
 .couv>*{position:relative}
 .couv-haut{position:absolute;top:12px;left:12px;right:12px;z-index:2;display:flex;justify-content:space-between;gap:8px}
 .couv-haut .langbtn{position:static}
@@ -1233,7 +1241,7 @@ details.g.demo>:not(summary)+*{margin-top:8px}
 </style>
 <style>html,body{margin:0}</style>
 </head><body>
-<script>window.KITABU_PWA = true; window.KITABU_VERSION = 'akiba-20261112180134'; window.AKIBA_CIBLE = 'suivi';</script>
+<script>window.KITABU_PWA = true; window.KITABU_VERSION = 'akiba-20261113153354'; window.AKIBA_CIBLE = 'suivi';</script>
 
 <div id="app"></div>
 <script src="core.js"></script>
