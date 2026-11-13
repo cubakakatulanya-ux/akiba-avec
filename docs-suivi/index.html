@@ -617,6 +617,27 @@ h2,h3{font-weight:600;letter-spacing:-.005em}
 @media print{.topbar,.tabbar,.tabspace,.appfoot,.btn,.linkbtn,.scrim{display:none!important}.ticket{border:0;background:#fff;font-size:11pt}}
 /* ---------- structure de lecture, inspirée des sites de formation (Académie FAO, Ubora Académie) :
      un surtitre, un titre, une phrase d'introduction, puis des blocs nettement séparés ---------- */
+/* ---------- la bande d'en-tête, à la manière du site Transforme ----------
+   Elle sort des 16 px de marge de .main pour toucher les bords de la coquille : sur un
+   téléphone, c'est toute la largeur de l'écran. Les rayures sont les mêmes que sur la
+   couverture, penchées pareil, et la couleur est celle de l'application — vert feuille ici,
+   bleu marine sur Akiba Suivi. Réservée aux écrans qu'on REGARDE avant de s'en servir :
+   le guide, la formation. Un écran de saisie n'a pas d'en-tête à contempler. */
+/* Le dégradé part de --entete-2, pas de --entete-1 : sur le vert le plus clair, même du blanc
+   pur ne donne que 4,82 de contraste, et le sur-titre fait 12 px. Le banc l'a attrapé — 3,80
+   et 4,12 — avant la publication. Parti plus sombre, le sur-titre monte à 6,2 et le chapeau
+   au-delà. La bande s'accorde aussi mieux avec le bandeau du haut, qui est déjà en entete-2. */
+.docintro.bandeau{margin:-16px -16px 4px;padding:26px 20px 22px;text-align:center;position:relative;overflow:hidden;
+  color:var(--entete-ink);
+  background:radial-gradient(120% 90% at 50% -20%,rgba(242,183,5,.12),transparent 62%),
+    linear-gradient(165deg,var(--entete-2),var(--entete-3))}
+.docintro.bandeau::before{content:"";position:absolute;inset:0;pointer-events:none;
+  background:repeating-linear-gradient(135deg,transparent 0 15px,rgba(255,255,255,.05) 15px 30px)}
+.docintro.bandeau>*{position:relative}
+.docintro.bandeau .sur{color:rgba(255,255,255,.82);letter-spacing:.2em}
+.docintro.bandeau h1{font-weight:300}
+.docintro.bandeau h1 b{font-weight:700}
+.docintro.bandeau .lead{color:rgba(255,255,255,.88);max-width:32ch;margin-inline:auto}
 .docintro{margin-bottom:4px}
 .docintro .sur{font-family:var(--f-display);font-size:var(--t-2xs);font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--brand);margin:0 0 5px}
 .docintro h1{margin:0 0 7px}
@@ -1241,7 +1262,7 @@ details.g.demo>:not(summary)+*{margin-top:8px}
 </style>
 <style>html,body{margin:0}</style>
 </head><body>
-<script>window.KITABU_PWA = true; window.KITABU_VERSION = 'akiba-20261113153354'; window.AKIBA_CIBLE = 'suivi';</script>
+<script>window.KITABU_PWA = true; window.KITABU_VERSION = 'akiba-20261113155951'; window.AKIBA_CIBLE = 'suivi';</script>
 
 <div id="app"></div>
 <script src="core.js"></script>

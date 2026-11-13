@@ -752,9 +752,9 @@ SCREENS.guide = p => {
   const open = p.s || (isAnim ? 'animateur' : s && s.kind === 'org' ? 'organisation' : 'bref');
   return `<div class="shell">${topbar('Guide d\'utilisation', APP_NOM(), isAnim ? '' : backBtn(back))}<main class="main">
     ${figDefs()}
-    <header class="docintro">
-      <p class="sur">Guide d'utilisation</p>
-      <h1>Comment utiliser Akiba</h1>
+    <header class="docintro bandeau">
+      <p class="sur">Entreprise Sociale Ubora</p>
+      <h1>Comment utiliser <b>${esc(APP_NOM())}</b></h1>
       <p class="lead">Touchez un titre pour l'ouvrir. Les mots en gras sont ceux que vous voyez à l'écran. Touchez « Écouter » pour que le téléphone lise à voix haute, même sans réseau.</p>
       ${(() => { const l = I18N.cur(); if (l === 'fr') return ''; const c = guideCouverture(l, sections);
         return `<p class="hint no-tr">${c >= 1 ? `Tout le guide est écrit en ${esc(I18N.name(l))}.`
