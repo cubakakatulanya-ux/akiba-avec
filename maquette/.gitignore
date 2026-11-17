@@ -1,0 +1,5 @@
+# Les pages sont fabriquées : « node maquette/faire-maquette.js [suivi] ».
+# Elles embarquent toute la feuille de style de l'application — 110 Ko qui changeraient
+# à chaque retouche du style. Le moule se garde, le moulage non.
+index.html
+suivi.html
