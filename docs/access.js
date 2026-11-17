@@ -67,11 +67,15 @@ ACT.activate = () => {
 
 /* ---------- organisation : valider ---------- */
 const pendingOf = u => K.data.avecs.filter(a => a.orgId === u.orgId && a.status === 'pending');
+/* Un titre « AVEC à valider », une carte qui dit « Aucune AVEC en attente », et deux boutons :
+   une section entière pour annoncer qu'il n'y a rien à faire. Quand la file est vide, le titre
+   et la carte s'effacent — les deux boutons restent, parce qu'on peut vouloir valider par
+   téléphone ou débloquer un membre sans qu'une AVEC attende. */
 function pendingBlock(u) {
   const list = pendingOf(u);
-  return `<h2>AVEC à valider</h2>
+  return `${list.length ? '<h2>AVEC à valider</h2>' : ''}
     ${list.length ? `<div class="list">${list.map(a => `<button class="li" data-act="go" data-to="o.review" data-id="${a.id}">${rowIc('clip')}<span class="grow"><b>${esc(a.name)}</b><span class="small muted">${esc(a.village)} · ${a.members.length} membres · ${esc(userById(a.animId)?.name || '—')} · ${ago(a.submittedAt || a.createdAt)}</span></span><span class="chip warn">À valider</span></button>`).join('')}</div>`
-      : '<div class="card small muted">Aucune AVEC en attente.</div>'}
+      : ''}
     <div class="grid2"><button class="btn ghost" data-act="phoneActSheet">${ic('key')} Valider par téléphone</button><button class="btn ghost" data-act="unlockSheet">${ic('lock')} Débloquer un membre</button></div>`;
 }
 function statusBanner(avec, u) {

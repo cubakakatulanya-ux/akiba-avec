@@ -339,14 +339,18 @@ SCREENS['o.home'] = p => {
   /* jusqu'à trois animateurs : des boutons. Au-delà : une liste déroulante, sinon la barre déborde */
   const filtre = anims.length > 3
     ? `<select class="input sm" data-in="oAnim" aria-label="Filtrer par animateur" style="max-width:190px"><option value="">Tous les animateurs</option>${anims.map(a => `<option value="${a.id}"${p.anim === a.id ? ' selected' : ''}>${esc(a.name)}</option>`).join('')}</select>`
-    : `<button class="btn sm ${p.anim ? 'ghost' : 'brand'}" data-act="go" data-to="o.home">Toutes</button>
-       ${anims.map(a => `<button class="btn sm ${p.anim === a.id ? 'brand' : 'ghost'}" data-act="go" data-to="o.home" data-anim="${a.id}">${esc(a.name)}</button>`).join('')}`;
+    /* Les boutons de tri flottaient librement, mêlés au bouton « Nouvelle AVEC » : cinq
+       éléments qui passaient à la ligne trois fois, où rien ne disait lequel trie et lequel
+       agit. Le tri prend le composant segmenté que l'application a déjà — un seul bloc, une
+       seule ligne — et l'action reste à part, en haut. */
+    : `<div class="seg" role="group" aria-label="Filtrer par animateur">
+        <button class="${p.anim ? '' : 'on x'}" data-act="go" data-to="o.home">Toutes</button>
+        ${anims.map(a => `<button class="${p.anim === a.id ? 'on x' : ''}" data-act="go" data-to="o.home" data-anim="${a.id}">${esc(a.name)}</button>`).join('')}
+      </div>`;
   return `<div class="shell wide">${topbar(esc(org.name), liveTag() + demoTag(), '', logoutBtn)}<main class="main">
     <div class="row between" style="flex-wrap:wrap">
       <h1>Vue d'ensemble</h1>
       <div class="row" style="flex-wrap:wrap;gap:6px">
-        ${filtre}
-        <span class="sep" aria-hidden="true"></span>
         <!-- sur un téléphone ces trois-là passent dans « Outils » : une barre de quatre rangées
              mange l'écran, et on ne les touche pas à chaque visite -->
         <button class="btn sm brand surOrdi" data-act="go" data-to="o.impact">${ic('chart')} Impact</button>
@@ -356,6 +360,7 @@ SCREENS['o.home'] = p => {
         <button class="btn sm ghost" data-act="outilsSheet" aria-label="Autres outils">${ic('more')}</button>
       </div>
     </div>
+    ${anims.length ? `<div class="row" style="flex-wrap:wrap;gap:8px">${filtre}</div>` : ''}
     ${supBand(rows, [{ icon: 'users', label: 'Membres', value: String(members) }, { icon: 'coins', label: 'Crédits en cours', value: fck(outstanding) }, { icon: 'chart', label: 'AVEC suivies', value: String(rows.length) }])}
     <div class="kpis">
       <div class="kpi"><span>AVEC suivies</span><b class="num">${rows.length}</b><span>${rows.filter(r => r.h.level === 'good').length} sans alerte</span></div>
@@ -387,21 +392,31 @@ SCREENS['o.home'] = p => {
             <td>${r.st.last ? ago(r.st.last.date) : '—'}</td>
             <td>${pending(r.avec) ? `<span class="chip warn">${ago(r.avec.lastSync)}</span>` : '<span class="chip good">à jour</span>'}</td></tr>`).join('')}</tbody>
         </table></div>
-        <p class="hint">PAR : portefeuille à risque, la part des crédits en retard. « Données » note ce qu'un prêteur
-          regarde — journal intact, caisse fermée à trois clés, écritures complètes. Touchez une AVEC pour ouvrir sa fiche.</p>
-        <h2>Épargne et crédits par AVEC</h2>
+        ${/* Quarante mots de légende étaient posés ENTRE le tableau et le graphique. On lit une
+              légende une fois dans sa vie ; on regarde le tableau toutes les semaines. */ ''}
+        ${pourquoi(`<p><b>PAR</b> : portefeuille à risque — la part des crédits en retard.</p>
+          <p><b>Données</b> : ce qu'un prêteur regarde — journal intact, caisse fermée à trois clés, écritures complètes.</p>
+          <p>Touchez une AVEC pour ouvrir sa fiche.</p>`, 'Lire ce tableau')}
+        ${/* Un graphique d'une seule barre n'est pas un graphique : c'est un chiffre déguisé,
+              avec sa légende en prime. Il n'apparaît qu'à partir de deux AVEC à comparer. */ ''}
+        ${rows.length < 2 ? '' : `<h2>Épargne et crédits par AVEC</h2>
         <div class="card stack">
           <div class="row small muted" style="gap:14px"><span class="row" style="gap:6px"><i style="width:12px;height:12px;border-radius:3px;background:var(--brand);display:inline-block"></i>Épargne</span><span class="row" style="gap:6px"><i style="width:12px;height:12px;border-radius:3px;background:var(--maize);display:inline-block"></i>Crédits dehors</span></div>
           ${rows.slice().sort((a, b) => b.st.sum.EPARGNE - a.st.sum.EPARGNE).slice(0, 12).map(r => `<div class="stack" style="gap:4px"><div class="row between small"><b>${esc(r.avec.name)}</b><span class="num muted">${fc(r.st.sum.EPARGNE)} · ${fc(r.st.outstanding)}</span></div>
             <div class="bar" style="height:10px"><i style="width:${(r.st.sum.EPARGNE / maxSav * 100).toFixed(1)}%"></i></div>
             <div class="bar" style="height:10px"><i style="width:${(r.st.outstanding / maxSav * 100).toFixed(1)}%;background:var(--maize)"></i></div></div>`).join('')}
           ${rows.length > 12 ? '<p class="hint">Les douze premières AVEC par épargne. L’export Excel contient toutes les lignes.</p>' : ''}
-        </div>
+        </div>`}
       </div>
       <div class="stack">
         ${pendingBlock(u)}
-        <h2>Alertes</h2>
-        ${alerts.map(a => alertHtml(a, 'o')).join('') || `<div class="alert good">${icSpan('check')}<div><b>Aucune alerte</b><span class="small">Aucun écart de caisse, aucun retard, aucune réunion manquée.</span></div></div>`}
+        ${/* La bande du haut montre les trois alertes les plus graves, avec leur détail. Quand
+              il n'y en a pas plus de trois, elle les montre TOUTES : refaire la liste ici, c'est
+              écrire deux fois la même chose sur le même écran. On ne la refait qu'à partir de
+              la quatrième, celle que la bande n'a pas pu dire. */ ''}
+        ${alerts.length > 3 || !alerts.length ? `<h2>Alertes</h2>` : ''}
+        ${alerts.length > 3 ? alerts.map(a => alertHtml(a, 'o')).join('') : ''}
+        ${alerts.length ? '' : `<div class="alert good">${icSpan('check')}<div><b>Aucune alerte</b><span class="small">Aucun écart de caisse, aucun retard, aucune réunion manquée.</span></div></div>`}
         <h2>Animateurs</h2>
         ${anims.length ? oAnimListe(anims, all) : '<div class="card small muted" style="padding:14px">Aucun animateur : vous suivez les AVEC vous-même.</div>'}
         ${oAnimBoutons(anims)}

@@ -1301,6 +1301,10 @@ details.g.demo>:not(summary)+*{margin-top:8px}
    qu'on compte de l'argent. On emprunte la forme d'Oracle, pas sa taille : le banc a refusé
    56 cibles le jour où j'ai essayé. */
 .btn,.input,select.input,.btn.sm{min-height:44px}
+/* « .seg button » fixe sa hauteur à 36 px : un min-height ne la relève pas, il faut la
+   réécrire. Le banc a compté trois cibles trop petites le jour où le filtre des animateurs
+   est devenu un segmenté. */
+.seg button{height:44px}
 /* Le filet, à la place du trait plein : il sépare sans dessiner. */
 .card,.section,.kpi,.tablewrap{border:1px solid var(--line)}
 /* Ce qui reste rond, parce que c'est un objet et non un cadre : les pastilles d'identité,

@@ -73,17 +73,16 @@ const accueilProposeSuivi = (st, liste) => `
 </div>
 ${liste}`;
 
-const accueilPropose = st => `
-<section class="caisse" aria-label="Caisse"><span class="label">Argent dans la caisse</span>
-  <b class="num">${fc(st.caisse)}</b>
-  <div class="row between small"><span>Crédit ${fc(st.credit)}</span><span>Social ${fc(st.social)}</span></div></section>
-<button class="btn primary block xl">Ouvrir la réunion n°${st.prochaine}</button>
-<div class="sommaire">
-  <div><span>Épargne</span><b class="num">${fc(st.epargne)}</b></div>
-  <div><span>Crédits</span><b class="num">${fc(st.encours)}</b></div>
-  <div><span>Membres</span><b class="num">${st.membres}</b></div>
-  <div><span>Semaine</span><b class="num">${st.semaine}/${st.semaines}</b></div>
-</div>`;
+const accueilPropose = (st, pris) => [
+  pris.caisse,          // la vraie caisse, capturée
+  pris.bouton,          // le vrai grand bouton, capturé
+  `<div class="sommaire">
+    <div><span>Épargne</span><b class="num">${fc(st.epargne)}</b></div>
+    <div><span>Crédits</span><b class="num">${fc(st.encours)}</b></div>
+    <div><span>Membres</span><b class="num">${st.membres}</b></div>
+    <div><span>Semaine</span><b class="num">${st.semaine}/${st.semaines}</b></div>
+  </div>`,
+].join('\n');
 
 const FAMILLES = [
   ['L\u2019argent du groupe', [['Partage de fin de cycle', 'Cycle 1 · fin le 11 déc.'], ['Cycles passés', '0 terminé'],
@@ -137,7 +136,9 @@ const plusPropose = FAMILLES.map(([t, items]) => `<section class="section">
     const m = document.querySelector('.shell main');
     const t = document.querySelector('.shell .topbar');
     const lst = document.querySelector('.shell main .dash');
-    return { html: m.innerHTML, topbar: t ? t.outerHTML : '', liste: lst ? lst.outerHTML : '', hauteur: Math.round(m.scrollHeight), blocs: m.children.length };
+    const cai = document.querySelector('.shell main .caisse');
+    const bou = document.querySelector('.shell main .btn.primary');
+    return { html: m.innerHTML, topbar: t ? t.outerHTML : '', liste: lst ? lst.outerHTML : '', caisse: cai ? cai.outerHTML : '', bouton: bou ? bou.outerHTML : '', hauteur: Math.round(m.scrollHeight), hBarre: t ? Math.round(t.getBoundingClientRect().height) : 0, blocs: m.children.length };
   })()`);
   const accueil = await capter(ECRANS.accueil);
   const plus = CIBLE === 'suivi' ? { html:'', topbar:'', liste:'', hauteur:0, blocs:0 } : await capter(ECRANS.tiroir);
@@ -154,7 +155,7 @@ const plusPropose = FAMILLES.map(([t, items]) => `<section class="section">
     const b = d.querySelector('main').children.length;
     d.remove(); return { hauteur: h, blocs: b };
   })()`, false);
-  const propAcc = await mesurerPropose(CIBLE === 'suivi' ? accueilProposeSuivi(etat, accueil.liste) : accueilPropose(etat));
+  const propAcc = await mesurerPropose(CIBLE === 'suivi' ? accueilProposeSuivi(etat, accueil.liste) : accueilPropose(etat, accueil));
   const propPlus = await mesurerPropose(plusPropose);
 
   ws.close(); chrome.kill(); serveur.close();
@@ -168,10 +169,11 @@ const plusPropose = FAMILLES.map(([t, items]) => `<section class="section">
     const doc = '<!doctype html><html lang="fr" data-theme="light"><head><meta charset="utf-8">'
       + '<meta name="viewport" content="width=device-width,initial-scale=1">'
       + police + style
-      + '<style>body{margin:0;background:var(--ground)}</style></head><body>'
+      + '<style>body{margin:0;background:var(--ground)}' + "/* Les composants PROPOSÉS n'existent pas encore dans la feuille de l'application :   ils doivent voyager avec le cadre, sinon ils s'y affichent en texte brut. */.sommaire{display:grid;grid-template-columns:repeat(4,1fr);background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}.sommaire>div{padding:10px 6px;text-align:center;border-left:1px solid var(--line)}.sommaire>div:first-child{border-left:0}.sommaire span{display:block;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);line-height:1.2}.sommaire b{display:block;font-size:14px;margin-top:3px}.cloche{position:relative}.cloche svg{width:22px;height:22px}.cloche .pastille{position:absolute;top:-2px;right:-2px;min-width:18px;height:18px;border-radius:9px;display:grid;place-items:center;font-size:11px;font-weight:800;padding:0 4px;background:var(--maize);color:var(--maize-ink);box-shadow:0 0 0 2px var(--entete-2)}.cloche .pastille.bad{background:var(--bad);color:#fff}" + '</style></head><body>'
       + '<div class="shell">' + (barre || '') + '<main class="main">' + corps + '</main></div>'
       + '</body></html>';
-    const h = Math.min(hauteur || 700, 760);
+    /* le cadre doit porter le bandeau EN PLUS du contenu, sinon il coupe le bas */
+    const h = Math.min((hauteur || 700) + (barre ? (accueil.hBarre || 96) : 0) + 8, 820);
     return '<div class="tel"><iframe title="aperçu" style="width:390px;height:' + h + 'px;border:0;display:block" srcdoc="'
       + doc.replace(/&/g, '&amp;').replace(/"/g, '&quot;') + '"></iframe></div>';
   };
@@ -256,7 +258,7 @@ ${style}
         : "L'argent, le geste du jour, une ligne de repères qui mène aux onglets. Les alertes passent dans <b>la cloche</b> du bandeau."}
         On les consulte quand on veut, et la pastille dit déjà combien il y en a — et laquelle est
         la plus grave, par sa couleur.</p>
-      ${tel(CIBLE === 'suivi' ? accueilProposeSuivi(etat, accueil.liste) : accueilPropose(etat), barreAvecCloche, propAcc.hauteur)}
+      ${tel(CIBLE === 'suivi' ? accueilProposeSuivi(etat, accueil.liste) : accueilPropose(etat, accueil), barreAvecCloche, propAcc.hauteur)}
       <div class="apres"><span class="fleche">↓ en touchant la cloche</span>${panneauAlertes(etat)}</div>
       ${mesure(propAcc.hauteur, propAcc.blocs, `<span style="color:#23590D"><b>−${Math.round((1 - propAcc.hauteur / accueil.hauteur) * 100)} %</b> de hauteur</span>`)}
     </div>

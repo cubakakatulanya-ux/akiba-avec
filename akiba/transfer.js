@@ -130,10 +130,14 @@ function transferBlock(avec) {
         ? `<button class="btn brand block" data-act="qrEnvoyer" data-id="${avec.id}">${ic('eye')} Montrer l'AVEC en image</button>`
         : cahier
           ? `<button class="btn brand block" data-act="qrCahier" data-id="${avec.id}">${ic('eye')} Montrer le cahier en images (environ ${qrImagesEstimees(avec)})</button>` : '';
+      /* Le titre, le geste, et la raison repliée. La phrase expliquait POURQUOI c'est un
+         fichier plutôt qu'une image — on la lit une fois, et elle s'intercalait chaque fois
+         entre le titre et le bouton. */
       const dit = neuve || cahier
         ? 'Deux téléphones face à face suffisent : l\'un montre, l\'autre photographie. Le fichier reste là pour les cas où l\'on ne peut pas se voir.'
         : 'Ce cahier est trop gros pour être montré en images : il passe par un fichier, protégé par huit signes qui se disent à part.';
-      return `<div class="card stack"><div class="row" style="align-items:flex-start">${rowIc('sync')}<div><b>Mettre l'AVEC sur le téléphone du groupe</b><p class="small muted">${dit}</p></div></div>
+      return `<div class="card stack"><div class="row" style="align-items:flex-start">${rowIc('sync')}<div><b>Mettre l'AVEC sur le téléphone du groupe</b></div></div>
+        ${pourquoi(`<p>${dit}</p>`, neuve || cahier ? 'Image ou fichier ?' : 'Pourquoi un fichier ?')}
         ${image}
         <button class="btn ${image ? 'ghost' : 'brand'} block" data-act="transferSheet" data-id="${avec.id}">${ic('sync')} ${image ? 'Envoyer un fichier à la place' : 'Envoyer le fichier'}</button></div>`;
     })();
