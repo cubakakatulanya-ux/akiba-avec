@@ -1259,10 +1259,87 @@ details.g.demo>:not(summary)+*{margin-top:8px}
    maison, et reste assez dense pour isoler ce qu'on lit par-dessus. */
 .scrim{background:color-mix(in srgb,var(--entete-3) 72%,rgba(0,0,0,.72))}
 
+/* ═══════════ LA SOBRIÉTÉ D'UN LOGICIEL BANCAIRE ═══════════
+
+   Mesuré sur le thème Redwood d'Oracle, celui des applications bancaires de la maison
+   (Oracle Banking Digital Experience) : rayon des cartes 6 px et des petits éléments 4 px,
+   page en blanc chaud pour que les cartes s'en détachent, filets à 12 % de l'encre au lieu de
+   traits pleins, champs et boutons à 44 px, une ombre nette et basse.
+
+   Akiba arrondissait trois fois plus — 12 px, et jusqu'à 20 px sur les chiffres —, posait du
+   blanc sur du blanc, et traçait des traits pleins. D'où une allure de carnet, là où l'on
+   tient de l'argent. On ne change pas une couleur : la maison Ubora garde les siennes, et
+   Ubuntu reste la police. On change la FORME.
+
+   Ce qui n'est pas touché, et c'est le partage convenu : la couverture, l'en-tête du guide et
+   les pages d'installation. Ce sont des vitrines — on les regarde avant de se servir. Les
+   écrans de travail, eux, deviennent sobres.
+
+   Le piège de cette couche : poser --ground sur :root écraserait le thème sombre, déclaré plus
+   haut. Les deux thèmes sont donc réaffirmés ici, chacun le sien. */
+:root{
+  --r:6px; --r-sm:4px;
+  --ground:#FAF9F8;
+  --line:color-mix(in srgb,var(--ink) 12%,transparent);
+  --shadow:0 1px 4px rgba(0,0,0,.10);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --ground:#111D19;
+    --line:color-mix(in srgb,var(--ink) 16%,transparent);
+    --shadow:0 1px 4px rgba(0,0,0,.4);
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#111D19;
+  --line:color-mix(in srgb,var(--ink) 16%,transparent);
+  --shadow:0 1px 4px rgba(0,0,0,.4);
+}
+:root[data-cible="suivi"]{ --ground:#FAF9FA }
+@media (prefers-color-scheme:dark){ :root[data-cible="suivi"]:not([data-theme="light"]){ --ground:#0F1A24 } }
+:root[data-cible="suivi"][data-theme="dark"]{ --ground:#0F1A24 }
+
+/* Les blocs qui arrondissaient le plus : le chiffre était à 20 px, soit cinq fois Oracle. */
+.kpi,.tablewrap,.formula,.receipt,.alert,.tip,.scanbox,.devcode{border-radius:var(--r)}
+/* « .btn.xl » est plus spécifique que « .btn » : sans le nommer, les grands boutons gardaient
+   leurs 12 px pendant que les petits passaient à 4. Il faut écrire les deux. */
+.btn,.btn.xl,.btn.sm,.chip,.input,.seg,.li,.gtile,.toggle{border-radius:var(--r-sm)}
+.seg button{border-radius:2px}
+/* 44 px, et pas moins — y compris pour les petits boutons.
+
+   Oracle descend ses boutons « small » à 36 px : son terrain est l'écran de bureau et la
+   souris, qui vise au pixel. Ici, c'est un doigt sur un téléphone posé sur une natte, pendant
+   qu'on compte de l'argent. On emprunte la forme d'Oracle, pas sa taille : le banc a refusé
+   56 cibles le jour où j'ai essayé. */
+.btn,.input,select.input,.btn.sm{min-height:44px}
+/* Le filet, à la place du trait plein : il sépare sans dessiner. */
+.card,.section,.kpi,.tablewrap{border:1px solid var(--line)}
+/* Ce qui reste rond, parce que c'est un objet et non un cadre : les pastilles d'identité,
+   les commandes + et −, les puces d'étape, le bouton doré de la couverture. */
+.av,.pm button,.etapes i,.echange i,.stp i,.gi,.langbtn{border-radius:50%}
+.gi,.etapes i,.echange i{border-radius:10px}
+.barre-or{border-radius:14px}
+
+/* ---------- « À surveiller » : une liste, pas quatre cartes ----------
+   Mesuré : quatre alertes prenaient 274 px sur un écran de 812. Une carte par alerte, c'est
+   quatre bordures, quatre ombres et trois espaces entre elles — pour quatre phrases. Un
+   logiciel bancaire en fait une liste : un seul cadre, des filets entre les lignes, et la
+   gravité portée par une barre de trois pixels. On la parcourt au lieu de la contempler. */
+.veille{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.veille-l{padding:10px 12px 10px 15px;border-top:1px solid var(--line);position:relative}
+.veille-l:first-child{border-top:0}
+.veille-l::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--ink-2)}
+.veille-l.bad::before{background:var(--bad)}
+.veille-l.warn::before{background:var(--warn)}
+.veille-l.good::before{background:var(--good)}
+.veille-l b{display:block;font-weight:700;line-height:1.3}
+.veille-l span{display:block;color:var(--ink-2);font-size:var(--t-sm);line-height:1.35;margin-top:1px}
+.section>h2 .chip{margin-left:8px;vertical-align:middle}
+
 </style>
 <style>html,body{margin:0}</style>
 </head><body>
-<script>window.KITABU_PWA = true; window.KITABU_VERSION = 'akiba-20261113155951'; window.AKIBA_CIBLE = 'suivi';</script>
+<script>window.KITABU_PWA = true; window.KITABU_VERSION = 'akiba-20261117114725'; window.AKIBA_CIBLE = 'suivi';</script>
 
 <div id="app"></div>
 <script src="core.js"></script>

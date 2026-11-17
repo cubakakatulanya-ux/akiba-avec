@@ -142,7 +142,14 @@ SCREENS['a.home'] = () => {
       : `<button class="btn primary block xl" data-act="startMeeting">${ic('unlock')} Ouvrir la réunion n°${next}</button>`}
     <!-- Ce qu'il faut corriger passe avant ce qu'il faut lire : les alertes montent juste sous
          le bouton de la réunion, là où le regard tombe. -->
-    ${h.alerts.length ? `<section class="section"><h2>À surveiller</h2>${h.alerts.map(a => `<div class="alert ${a.lvl}"><span style="width:22px;flex:none">${ic('alert')}</span><div><b>${esc(a.title)}</b><span class="small">${esc(a.detail)}</span></div></div>`).join('')}</section>` : ''}
+    ${/* Chaque alerte était une carte entière : quatre d'entre elles prenaient 274 px sur un
+          écran de 812, pour quatre phrases. Une liste compacte dit la même chose en deux fois
+          moins de place — un filet entre les lignes, une barre qui donne la gravité, et le
+          détail juste sous le titre. C'est la forme qu'un logiciel bancaire donne à une liste
+          de points à surveiller : on la parcourt, on ne la contemple pas. */ ''}
+    ${h.alerts.length ? `<section class="section"><h2>À surveiller<span class="chip">${h.alerts.length}</span></h2>
+      <div class="veille">${h.alerts.map(a => `<div class="veille-l ${a.lvl}">
+        <b>${esc(a.title)}</b><span>${esc(a.detail)}</span></div>`).join('')}</div></section>` : ''}
     <div class="grille-avec">
       ${chiffre('Épargne du cycle', fck(st.sum.EPARGNE), `${grp(st.parts)} parts`)}
       ${chiffre('Crédits à rembourser', fck(st.outstanding), `${st.activeLoans.length} crédits`)}
