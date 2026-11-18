@@ -101,5 +101,7 @@ for h in akiba.uborardc.com akibas.uborardc.com; do for f in robots.txt sitemap.
 Attendu : `text/plain` pour les deux `.txt`, `application/xml` (ou `text/xml`) pour le sitemap,
 et jamais `<!doctype html>` dans la dernière colonne.
 
-**C'est aussi ce que `tools/indexnow.js` doit contrôler** avant d'envoyer les adresses : que le
-corps du fichier de clé vaut exactement la clé, et non qu'il a reçu un 200.
+**`tools/indexnow.js` fait déjà ce contrôle** : il compare le corps du fichier de clé, une fois
+nettoyé, à la clé elle-même. C'est pourquoi il a classé les deux hôtes en « clé absente, non
+envoyé » le 18/11 malgré la réponse 200. Rien à changer de ce côté : dès que les trois fichiers
+sont réellement publiés, il enverra les adresses de lui-même.
