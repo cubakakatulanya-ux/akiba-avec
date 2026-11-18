@@ -23,10 +23,11 @@
 > licence doit être bloquée. Rien n'arrive en ligne tout seul pour autant — il faut un
 > déploiement de la v2 pour que la copie soit reprise.
 >
-> *Une exception, à corriger :* `docs-suivi/` a bien son script équivalent dans la v2, mais celui-ci
-> n'est pas appelé par la commande de publication d'Akiba Suivi. Aujourd'hui
-> `akibas.uborardc.com/version.txt` rend la page de l'application, pas le fichier : les anciennes
-> installations d'Akiba Suivi **ne reçoivent ni version ni liste de blocage**.
+> *Et `docs-suivi/` aussi, depuis le 18/11/2026 :* son script équivalent n'était appelé par rien,
+> si bien que les anciennes installations d'Akiba Suivi ne recevaient ni version ni liste de
+> blocage. L'étape est désormais branchée dans la construction de la v2, où on ne peut plus
+> l'oublier. Elle ne reprend que `version.txt`, `blocage.txt` et l'APK — il n'y a pas de
+> `/ancien/` pour Akiba Suivi.
 >
 > **Dernier état publié**, tous les bancs au vert : `akiba-20261117124657` et
 > `akiba-20261117124704` · 84/84 essais sur chaque application, 0 contraste faible,
