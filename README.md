@@ -1,12 +1,32 @@
-> ## ⚠ Ce dépôt est gelé — c'est la version 1
+> ## ⚠ Ce dépôt est la version 1 — on ne publie plus *depuis* lui, mais il est toujours lu
 >
-> **Depuis le 18 novembre 2026**, `akiba.uborardc.com` et `akibas.uborardc.com` servent **Akiba v2**,
-> une application différente (SPA, routes `#/`, son propre `akiba-v2.apk`). Ce dépôt-ci est la v1 :
-> un PWA en JavaScript simple, sans dépendance.
+> **Depuis le 18 novembre 2026**, `akiba.uborardc.com` et `akibas.uborardc.com` servent **Akiba
+> v2** : une application différente (SPA, routes `#/`, son propre `akiba-v2.apk`), dont la source
+> est le dépôt **`akiba-v2`** et non celui-ci. Les deux `CNAME` d'ici ne mènent plus à rien :
+> GitHub Pages est contourné, Cloudflare sert la v2.
 >
-> **On n'y publie plus.** Les deux dépôts GitHub se construisent et se déploient toujours sans
-> erreur, mais leurs `CNAME` pointent vers des adresses que la v2 occupe : `docs/` et
-> `docs-suivi/` ne sont donc plus lus par personne. Rien n'est cassé — c'est simplement sans effet.
+> **Mais `docs/` n'est pas mort : il est devenu une entrée de construction de la v2.** Son script
+> de dépôt (`apps/mobile/scripts/deploy-web.mjs`) lit `C:/Users/CUBAKA/Documents/Akiba-source/docs`
+> — ce dossier-ci, ou celui que désigne `AKIBA_ANCIENNE` — et en recopie :
+>
+> - tout le dossier, sous **`akiba.uborardc.com/ancien/`**, filet de sécurité pour les téléphones
+>   déjà installés : même adresse, donc **mêmes données** ;
+> - `version.txt`, `blocage.txt`, `akiba.apk` et `akiba-apk.txt`, **à la racine de la v2**, là où
+>   les anciennes installations vont les chercher.
+>
+> Donc : **la v1 est en ligne**, et **la liste de blocage des licences atteint toujours les
+> téléphones**. Vérifié le 18/11/2026 — `/ancien/` rend bien la v1 (106 ko, son titre),
+> `/version.txt` donne `akiba-20261117124657`, `/blocage.txt` est servi, et `/akiba.apk` fait
+> 3 473 781 octets, exactement l'APK de ce dépôt.
+>
+> **Ce qu'il faut en retenir :** continuer de construire `docs/` quand la v1 change ou qu'une
+> licence doit être bloquée. Rien n'arrive en ligne tout seul pour autant — il faut un
+> déploiement de la v2 pour que la copie soit reprise.
+>
+> *Une exception, à corriger :* `docs-suivi/` a bien son script équivalent dans la v2, mais celui-ci
+> n'est pas appelé par la commande de publication d'Akiba Suivi. Aujourd'hui
+> `akibas.uborardc.com/version.txt` rend la page de l'application, pas le fichier : les anciennes
+> installations d'Akiba Suivi **ne reçoivent ni version ni liste de blocage**.
 >
 > **Dernier état publié**, tous les bancs au vert : `akiba-20261117124657` et
 > `akiba-20261117124704` · 84/84 essais sur chaque application, 0 contraste faible,
@@ -14,14 +34,14 @@
 >
 > ### Si un téléphone tourne encore en v1
 >
-> - **Il continue de fonctionner.** Une APK installée ne se met pas à jour toute seule : elle
->   restera telle quelle tant que personne ne la remplace.
+> - **Il continue de fonctionner**, et il est même toujours servi : une APK installée ne se met pas
+>   à jour toute seule, et la version web reste accessible sous `/ancien/`.
 > - **Son cahier vit dans `kitabu.avec.v4`**, dans le stockage privé de l'application
 >   (IndexedDB, avec `localStorage` en secours). Seule une désinstallation le détruit.
-> - **La v2 sait reprendre ce cahier**, mais seulement là où elle lit le même stockage : un
->   téléphone qui avait ouvert la v1 *à cette adresse* se voit proposer *Récupérer mon ancien
->   cahier* — membres, codes secrets, réunions, épargne, prêts, amendes — et l'ancien cahier
->   n'est ni modifié ni effacé.
+> - **La v2 sait reprendre ce cahier**, et c'est précisément pour cela que `/ancien/` est à la même
+>   adresse : un téléphone qui avait ouvert la v1 là se voit proposer *Récupérer mon ancien cahier*
+>   — membres, codes secrets, réunions, épargne, prêts, amendes — et l'ancien cahier n'est ni
+>   modifié ni effacé.
 > - **Depuis l'APK v1, cette reprise n'est pas possible** : une application Android a son stockage
 >   à elle, que le site ne voit pas. Il faut alors passer par un **transfert** — fichier chiffré
 >   de la v1, ou sauvegarde.
@@ -31,7 +51,7 @@
 >   une v1 *par-dessus* une v1 : il faudrait désinstaller d'abord, et la désinstallation détruit
 >   le cahier. Voir la note de sécurité plus bas.
 >
-> Tout ce qui suit décrit la v1 telle qu'elle a été laissée, et reste exact pour elle.
+> Tout ce qui suit décrit la v1, et reste exact pour elle.
 
 ---
 
@@ -46,14 +66,15 @@ Le cahier des **Associations Villageoises d'Épargne et de Crédit (AVEC)** dans
 
 ## Deux applications, deux publics
 
-| | Pour qui | Adresse — *occupée par la v2 depuis le 18/11/2026* |
+| | Pour qui | Adresse de la v1, aujourd'hui |
 |---|---|---|
-| **Akiba** | Le groupe : bureau et membres | ~~https://akiba.uborardc.com/~~ |
-| **Akiba Suivi** | Animateurs, organisations, administration Ubora | ~~https://akibas.uborardc.com/~~ |
+| **Akiba** | Le groupe : bureau et membres | https://akiba.uborardc.com/**ancien/** |
+| **Akiba Suivi** | Animateurs, organisations, administration Ubora | *plus servie* |
 
-Ces deux adresses servent aujourd'hui la v2. Pour remettre la v1 en ligne, il faudrait retirer les
-`CNAME` de `docs/` et `docs-suivi/` — elle reviendrait alors à ses adresses GitHub — ou lui donner
-un sous-domaine à elle.
+La racine des deux sous-domaines sert la v2. Le groupe garde sa v1 sous `/ancien/`, recopiée depuis
+`docs/` à chaque déploiement de la v2 — même adresse, donc mêmes données, ce qui est exactement ce
+qui permet à la v2 de reprendre un ancien cahier. Akiba Suivi n'a pas d'équivalent : `docs-suivi/`
+n'est plus servi nulle part.
 
 Un seul code source (`akiba/`), deux cibles de construction. Un groupe n'a jamais sous les yeux les écrans de supervision, et un animateur n'a pas le cahier du groupe dans les mains. Voir [DEUX-APPLICATIONS.md](DEUX-APPLICATIONS.md).
 
@@ -89,8 +110,10 @@ node test-e2e.js docs-suivi
 node serve.js docs 5173          # aperçu local d'une construction
 ```
 
-- `docs/` part sur **akiba-avec** (GitHub Pages), `docs-suivi/` sur **akiba-suivi**. *Depuis le gel,
-  ces deux publications n'atteignent plus personne : voir l'avertissement en tête.*
+- Les `CNAME` de `docs/` et `docs-suivi/` ne mènent plus à rien : GitHub Pages est contourné.
+  En revanche **`docs/` reste lu** — la v2 le recopie sous `/ancien/` et en tire `version.txt`,
+  `blocage.txt` et `akiba.apk`. Construire la v1 garde donc tout son sens ; c'est le déploiement
+  de la v2 qui met la copie en ligne. Voir l'avertissement en tête.
 - Chaque construction publie un `version.txt` : c'est lui qui permet à un téléphone de dire s'il est à jour.
 - **Ne jamais changer la clé de stockage** (`kitabu.avec.v4`) : les données des téléphones installés y sont rangées.
 - **Jamais dans le dépôt** : clé privée de signature (`.pem`), registre des licences, fichiers `.akibakey`, exports `.xlsx`.
